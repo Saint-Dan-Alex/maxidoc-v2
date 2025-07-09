@@ -1,0 +1,1 @@
+cd /home/u115315654/domains/app-tecteur.tech/public_html && php artisan schedule:run

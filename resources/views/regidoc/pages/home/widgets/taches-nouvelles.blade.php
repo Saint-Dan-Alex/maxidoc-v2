@@ -1,0 +1,1 @@
+@livewire('dashboard.taches-nouvelles')
