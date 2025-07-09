@@ -1,0 +1,64 @@
+#dropzone {
+    padding: 20px 30px;
+    text-align: center;
+    cursor: pointer;
+}
+
+#dropzone-container {
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+#dropzone p {
+    margin: 0px;
+    padding: 0px;
+    font-size: 12px;
+    color: rgb(187, 185, 185);
+    font-weight: 500;
+}
+
+#dropzone-container input {
+    display: none;
+}
+
+#dropzone-container.dragover {
+    background-color: #f5f5f5;
+    border-color: #000;
+}
+
+#dropzone-container.has-file #dropzone {
+    padding: 25px 30px;
+    background-color: #f8f8f8;
+    margin-bottom: 10px;
+    border-radius: 20px;
+}
+
+.dropzone-preview {}
+
+.dropzone-preview .dropzone-preview-list {
+    display: flex !important;
+    align-items: center;
+    padding: 0px;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.content .card-table small {
+    font-size: 10px;
+}
+
+.dropzone-preview .dropzone-preview-list>.dropzone-preview-list-item {
+    list-style: none;
+    width: 10%;
+    max-width: 50%;
+    margin: 0px;
+    padding: 0px;
+}
+
+.dropzone-preview .dropzone-preview-list>.dropzone-preview-list-item .dropzone-preview-image {
+    width: 100%;
+    max-height: 100px;
+    object-fit: cover;
+    border-radius: 8px
+}

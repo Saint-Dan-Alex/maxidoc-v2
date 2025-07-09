@@ -1,0 +1,43 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../../ADS-2023"
+		},
+		{
+			"path": "../../../../../../LigabloPOS"
+		},
+		{
+			"path": "../../../../../../Mintindos"
+		},
+		{
+			"path": "../../../../../../Juridixiophp"
+		},
+		{
+			"path": "../../../../../../Regi-patrimoine"
+		},
+		{
+			"path": "../../../../../../pharmans_ERP"
+		},
+		{
+			"path": "../../../../../../electra2023"
+		},
+		{
+			"path": "../../../../../../ADS-Optimum"
+		},
+		{
+			"path": "../../../../../../regideso-officiel"
+		},
+		{
+			"path": "../../../../../../Regideso-fondation"
+		},
+		{
+			"path": "../../../../../../gombepropre"
+		},
+		{
+			"path": "../../../../.."
+		}
+	],
+	"settings": {
+		"CodeGPT.apiKey": "CodeGPT Plus Beta"
+	}
+}

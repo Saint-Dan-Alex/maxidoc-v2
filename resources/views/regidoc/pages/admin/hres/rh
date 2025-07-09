@@ -1,0 +1,425 @@
+@extends('layouts.home')
+@section('content')
+                
+            <!-- <a href="{{route('dige.departements')}}"> departement</a>
+            <a href="{{route('dige.divisions')}}"> division</a>
+            <a href="{{route('dige.fonctions')}}"> fonction</a>
+            <a href="{{route('dige.personnels')}}"> personnel</a> -->
+               <div class="container-fluid">
+               <div class="row g-lg-3">
+                    <div class="col-lg-3">
+                        <div class="card card-sm">
+                            <div class="content-text">
+
+                                <div class="d-flex justify-content-between">
+                                    <h5>Total agents</h5>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <h3>{{ count($personnels) }}</h3>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="card card-sm">
+                            <div class="content-text">
+
+                                <div class="d-flex justify-content-between ">
+                                    <h5>Pointage</h5>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <h3>72</h3>
+                                    <div class="block-statuts d-flex align-items-center">
+                                        <div class="statut d-flex align-items-center">
+                                            <div class="bubble active"></div>
+                                            <div>12</div>
+                                        </div>
+                                        <div class="statut d-flex align-items-center">
+                                            <div class="bubble missing"></div>
+                                            <div>12</div>
+                                        </div>
+                                        <div class="statut d-flex align-items-center">
+                                            <div class="bubble vacation"></div>
+                                            <div>12</div>
+                                        </div>
+                                        <div class="statut d-flex align-items-center">
+                                            <div class="bubble offsite"></div>
+                                            <div>12</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="card card-sm">
+                            <div class="content-text">
+
+                                <div class="d-flex justify-content-between ">
+                                    <h5>Demandes d'absence</h5>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <h3>72</h3>
+                                    <div class="block-statuts d-flex align-items-center">
+                                        <div class="statut d-flex align-items-center">
+                                            <div class="bubble active"></div>
+                                            <div>12</div>
+                                        </div>
+                                        <div class="statut d-flex align-items-center">
+                                            <div class="bubble missing"></div>
+                                            <div>12</div>
+                                        </div>
+                                        <div class="statut d-flex align-items-center">
+                                            <div class="bubble vacation"></div>
+                                            <div>12</div>
+                                        </div>
+                                        <div class="statut d-flex align-items-center">
+                                            <div class="bubble offsite"></div>
+                                            <div>12</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-lg-3">
+                         <div class="card card-sm">
+                             <div class="content-text">
+
+                                 <div class="d-flex justify-content-between">
+                                     <h5>Dossiers</h5>
+                                    
+                                 </div>
+                                 <div class="d-flex justify-content-between align-items-center mt-3">
+                                     <h3>{{ count($dossiers) }}</h3>
+                                    
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                </div>
+                <div class="row g-lg-3 mt-3">
+                    <div class="col-lg-12">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <ul class="nav nav-tabs mb-0" id="myTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                  <button class="nav-link active ps-0" id="home-tab" data-bs-toggle="tab" data-bs-target="#departement" type="button" role="tab" aria-controls="departement" aria-selected="true">Départements</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                  <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#division" type="button" role="tab" aria-controls="division" aria-selected="false">Divisions</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#fonction" type="button" role="tab" aria-controls="fonction" aria-selected="false">Fonctions</button>
+                                  </li>
+                                  <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#personnel" type="button" role="tab" aria-controls="personnel" aria-selected="false">Personnels</button>
+                                  </li>
+                                <!-- <li class="nav-item" role="presentation">
+                                  <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Contact</button>
+                                </li> -->
+                            </ul>
+                        </div>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="departement" role="tabpanel" aria-labelledby="home-tab">
+                                <div class="text-end mb-4">
+                                    <a  class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-new-departement">
+                                        <i class="fi fi-rr-plus"></i>
+                                        Creer
+                                    </a>
+                                </div>
+                                <div class="card card-table">
+                                    <div class="row">
+                                        <div class="col">
+                                            <h4 class="no-padding no-margin">Details</h4>
+
+                                        </div>
+                                        <div class="col-6 d-flex align-items-center justify-content-end">
+                                            <input type="text" class="form-control me-2" placeholder="Recherche" style="width: 50%;">
+                                            <div class="dropdown">
+                                                <button class="btn btn-filter" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"><i class="fi fi-rr-filter"></i> Filtres</button>
+                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                  <li><a class="dropdown-item" href="#">Action</a></li>
+                                                  <li><a class="dropdown-item" href="#">Another action</a></li>
+                                                  <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                                </ul>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <hr class="mb-0">
+                                    <table class="table table-hover table-responsive">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Id</th>
+                                                <th scope="col">Dénomination</th>
+                                                <th scope="col">Description</th>
+                                                <th scope="col">Responsable</th>
+                                                <th scope="col">Créé par</th>
+                                                <th scope="col">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($departements as $departement)
+                                                <tr>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-departement" aria-controls="offcanvasRight">{{ $loop->index + 1 }}</td>
+
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-departement" aria-controls="offcanvasRight"><span>{{ $departement->nom }}</span></td>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-departement" aria-controls="offcanvasRight">{{ $departement->description }}</td>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-departement" aria-controls="offcanvasRight">{{ $departement->depChef->personnel->nom ?? ''}}</td>
+
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-departement" aria-controls="offcanvasRight">{{ $departement->creator->nom ?? ''}}</td>
+                                                    <td>
+                                                        <div class="d-flex">
+                                                            <button class="btn" data-bs-toggle="modal" data-bs-target="#modal-Modifier-contact">Modifier</button>
+                                                            <button class="btn" data-bs-toggle="modal" data-bs-target="#modal-delete-contact">Supprimer</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                
+                                            @endforelse
+                                    
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="card card-table mt-3">
+                                    <div class="card-header bg-light py-0 px-0" style="background:none!important">
+                                        <div class="row flex-between-center">
+                                            <div class="col-auto">
+                                            <h6 class="mb-0">Avancement des projects</h6>
+                                            </div>
+                                            <div class="col-auto d-flex"><a class="btn btn-link btn-sm me-2" href="#!">Voir les détails</a>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body  px-0">
+                                    <!-- Find the JS file for the following chart at: src/js/charts/echarts/top-products.js-->
+                                    <!-- If you are not using gulp based workflow, you can find the transpiled code at: public/assets/js/theme.js-->
+                                    <div class="echart-bar-top-products " data-echart-responsive="true"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="division" role="tabpanel" aria-labelledby="profile-tab">
+                                <div class="text-end mb-4">
+                                    <a  class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-new-division">
+                                        <i class="fi fi-rr-plus"></i>
+                                        Creer
+                                    </a>
+                                </div>
+                                <div class="card card-table">
+                                    <div class="row">
+                                        <div class="col">
+                                            <h4 class="no-padding no-margin">Details</h4>
+
+                                        </div>
+                                        <div class="col-6 d-flex align-items-center justify-content-end">
+                                            <input type="text" class="form-control me-2" placeholder="Recherche" style="width: 75%;">
+                                            <div class="dropdown">
+                                                <button class="btn btn-filter" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-filter"></i> Filtres</button>
+                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                  <li><a class="dropdown-item" href="#">Action</a></li>
+                                                  <li><a class="dropdown-item" href="#">Another action</a></li>
+                                                  <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                                </ul>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <hr class="mb-0">
+                                    <table class="table table-hover table-responsive">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Id</th>
+                                                <th scope="col">Dénomination</th>
+                                                <th scope="col">Description</th>
+                                                <th scope="col">Créé par</th>
+                                                <th scope="col">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @forelse ($divisions as $division)
+                                                <tr>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-division" aria-controls="offcanvasRight">{{ $loop->index + 1 }}</td>
+
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-division" aria-controls="offcanvasRight"><span>{{ $division->denomination }}</span></td>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-division" aria-controls="offcanvasRight">{{ $division->description }}</td>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-division" aria-controls="offcanvasRight">{{ $division->divChef->personnel->nom ?? ''}}</td>
+
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-division" aria-controls="offcanvasRight">{{ $division->creator->nom ?? ''}}</td>
+                                                    <td>
+                                                        <div class="d-flex">
+                                                            <button class="btn" data-bs-toggle="modal" data-bs-target="#modal-Modifier-contact">Modifier</button>
+                                                            <button class="btn" data-bs-toggle="modal" data-bs-target="#modal-delete-contact">Supprimer</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                
+                                            @endforelse
+
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="fonction" role="tabpanel" aria-labelledby="contact-tab">
+                                <div class="text-end mb-4">
+                                    <a  class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-new-fonction">
+                                        <i class="fi fi-rr-plus"></i>
+                                        Creer
+                                    </a>
+                                </div>
+                                <div class="card card-table">
+                                    <div class="row">
+                                        <div class="col">
+                                            <h4 class="no-padding no-margin">Details</h4>
+
+                                        </div>
+                                        <div class="col-6 d-flex align-items-center justify-content-end">
+                                            <input type="text" class="form-control me-2" placeholder="Recherche" style="width: 75%;">
+                                            <div class="dropdown">
+                                                <button class="btn btn-filter" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-filter"></i> Filtres</button>
+                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                  <li><a class="dropdown-item" href="#">Action</a></li>
+                                                  <li><a class="dropdown-item" href="#">Another action</a></li>
+                                                  <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                                </ul>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <hr class="mb-0">
+                                    <table class="table table-hover table-responsive">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Id</th>
+                                                <th scope="col">Dénomination</th>
+                                                <th scope="col">Description</th>
+                                                {{-- <th scope="col">Créé par</th> --}}
+                                                <th scope="col">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($fonctions as $fonction)
+                                                <tr>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-fonction" aria-controls="offcanvasRight">{{ $loop->index + 1 }}</td>
+
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-fonction" aria-controls="offcanvasRight"><span>{{ $fonction->name }}</span></td>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-fonction" aria-controls="offcanvasRight">{{ $fonction->display_name }}</td>
+                                                    {{-- <td data-bs-toggle="offcanvas" data-bs-target="#detail-fonction" aria-controls="offcanvasRight">{{ $fonction->creator->name ?? ''}}</td> --}}
+                                                    <td>
+                                                        <div class="d-flex">
+                                                            <button class="btn" data-bs-toggle="modal" data-bs-target="#modal-Modifier-contact">Modifier</button>
+                                                            <button class="btn" data-bs-toggle="modal" data-bs-target="#modal-delete-contact">Supprimer</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                
+                                            @endforelse
+                                                
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="personnel" role="tabpanel" aria-labelledby="contact-tab">
+                                <div class="text-end mb-4">
+                                    <a  class="btn btn-add btn-download" data-bs-toggle="modal" data-bs-target="#modal-import-contact">
+                                        <i class="fi fi-rr-angle-down"></i>
+                                        Importer
+                                    </a>
+                                    <a  class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-new-personnel">
+                                        <i class="fi fi-rr-plus"></i>
+                                        Creer
+                                    </a>
+                                </div>
+                                <div class="card card-table">
+                                    <div class="row">
+                                        <div class="col">
+                                            <h4 class="no-padding no-margin">Details</h4>
+
+                                        </div>
+                                        <div class="col-6 d-flex align-items-center justify-content-end">
+                                            <input type="text" class="form-control me-2" placeholder="Recherche" style="width: 75%;">
+                                            <div class="dropdown">
+                                                <button class="btn btn-filter" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-filter"></i> Filtres</button>
+                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                  <li><a class="dropdown-item" href="#">Action</a></li>
+                                                  <li><a class="dropdown-item" href="#">Another action</a></li>
+                                                  <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                                </ul>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <hr class="mb-0">
+                                    <table class="table table-hover table-responsive">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Id</th>
+                                                <th scope="col">Nom complet</th>
+                                                <th scope="col">Fonction</th>
+                                                <th scope="col">Département</th>
+                                                <th scope="col">Division</th>
+                                                <th scope="col">Statut</th>
+                                                <th scope="col">Suspendre</th>
+                                                <th scope="col">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($personnels as $user)
+                                                <tr>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-personnel" aria-controls="offcanvasRight"><span>{{ $loop->index + 1 }}</span></td>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-personnel" aria-controls="offcanvasRight">
+                                                        <div class="block-avatar-user d-flex align-items-center">
+                                                            <div class="avatar-sm">
+                                                                <img src="{{asset('uploads/profiles/'.($users->personnel->avatar ?? 'default.png'))}}" alt="image de profil">
+                                                            </div>
+                                                            <span>{{ $user->personnel->nom ?? '' }} {{ $user->personnel->postnom  ?? ''}}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-personnel" aria-controls="offcanvasRight">{{ $user->personnel->fonction->name ?? '' }}</td>
+
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-personnel" aria-controls="offcanvasRight">{{ $user->personnel->departement->nom ?? '' }}</td>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-personnel" aria-controls="offcanvasRight">{{$user->personnel->division->denomination  ?? '' }}</td>
+                                                    <td data-bs-toggle="offcanvas" data-bs-target="#detail-personnel" aria-controls="offcanvasRight"><span class="badge bg-success" style="border-radius: 12px"> {{$user->personnel->statut->name  ?? '' }}</span></td>
+                                                    <td>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" class="form-check-input swich-mail" name="channels" value="email" data-class="form-check-input" role="switch" id="id_channels_0" data-bs-toggle="modal" data-bs-target="#modal-suspend">
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex">
+                                                            <button class="btn" data-bs-toggle="modal" data-bs-target="#modal-Modifier-contact">Modifier</button>
+                                                            <button class="btn" data-bs-toggle="modal" data-bs-target="#modal-delete-contact">Supprimer</button>
+                                                        </div>
+                                                    </td>
+                                                <tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    <nav aria-label="Page navigation example">
+                                        <ul class="pagination justify-content-end pagination-sm">
+                                            <li class="page-item disabled">
+                                            <a class="page-link">Previous</a>
+                                            </li>
+                                            <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                            <li class="page-item">
+                                            <a class="page-link" href="#">Next</a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               </div>
+                
+                @include('components.admin.modals.personal-new')
+@endsection

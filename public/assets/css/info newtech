@@ -1,0 +1,31 @@
+ <!--
+    # Project developed by Newtech Consulting SARL
+    # Contacts:
+    # - Direction +243977776901
+    # - contact@newtech-rdc.net
+    -->
+
+
+
+<!--
+    # Project developed by REGIDESO S.A with Newtech Consulting
+    # Developers:
+    # - Jean-Louis DIKASA MVITA jdikasa@yahoo.fr +243811647737
+    # - Francis ISASI MPEMBA isafranck23@gmail.com +243828580212
+    # - Pedrien KINKANI pedrienk@gmail.com +243810678167
+    # - Siméon ZILU ximeonzilu@gmail.com +243810814949
+    -->
+
+
+  #pdf-main-container .nav-tools-page .btn-conf-on{
+    background: #bedcfe;
+    color: #0a64ca;
+    padding: 10px 24px;
+    border-radius: 12px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: .3s;
+
+    .pb-5 {
+  /*! padding-bottom:3rem!important; */
