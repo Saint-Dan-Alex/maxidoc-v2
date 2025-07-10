@@ -354,11 +354,25 @@ class Courrier extends Model implements Viewable
      *
      * @return array
      */
+    // public function toSearchableArray()
+    // {
+    //     $array = $this->toArray();
+    //     return $array;
+    // }
+
     public function toSearchableArray()
-    {
-        $array = $this->toArray();
-        return $array;
-    }
+{
+    return [
+        'id' => $this->id,
+        'objet' => $this->objet,
+        'reference_interne' => $this->reference_interne,
+        'title' => $this->title,
+        'reference_courrier' => $this->reference_courrier,
+        'date_arrive' => optional($this->date_arrive)->toDateString(),
+        'libelle' => optional($this->document)->libelle, // ⚠️ si tu veux inclure un champ de relation, vérifie qu’il est bien string
+    ];
+}
+
 
     /**
      * Get the statut that owns the Courrier

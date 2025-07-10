@@ -170,38 +170,81 @@ class DesDocuments extends Component
         return $query;
     }
 
-    public function render()
-    {
-        $documents = collect();
-        $shareds = collect();
+    // public function render()
+    // {
+    //     $documents = collect();
+    //     $shareds = collect();
 
-        $documentsQuery = Document::query(); 
-        $documentsQuery = $this->applyFilters($documentsQuery);
-        // Exécuter la requête pour obtenir une collection
-        $documents = $documentsQuery->get(); 
-        // Appliquer le filtre sur la collection
-        $documents = $documents->filter(function ($document) {
-            return Gate::allows('view', $document);
-        });
+    //     $documentsQuery = Document::query(); 
+    //     $documentsQuery = $this->applyFilters($documentsQuery);
+    //     // Exécuter la requête pour obtenir une collection
+    //     $documents = $documentsQuery->get(); 
+    //     // Appliquer le filtre sur la collection
+    //     $documents = $documents->filter(function ($document) {
+    //         return Gate::allows('view', $document);
+    //     });
     
-        // Paginer manuellement la collection filtrée
-        $currentPage = $this->page; // Page actuelle
-        $perPage = 10; // Nombre d'éléments par page
-        $documentsPaginated = new LengthAwarePaginator(
-            $documents->forPage($currentPage, $perPage), 
-            $documents->count(), 
-            $perPage, 
-            $currentPage
-        );
+    //     // Paginer manuellement la collection filtrée
+    //     $currentPage = $this->page; // Page actuelle
+    //     $perPage = 10; // Nombre d'éléments par page
+    //     $documentsPaginated = new LengthAwarePaginator(
+    //         $documents->forPage($currentPage, $perPage), 
+    //         $documents->count(), 
+    //         $perPage, 
+    //         $currentPage
+    //     );
 
-        $sharedQuery = $documentsQuery->whereHas('followers', function($query){
-                $query->where('agent_id', auth()->user()->agent->id);
-            });
-        $shareds = $sharedQuery->orderBy('id','desc')->paginate(10);
+    //     $sharedQuery = $documentsQuery->whereHas('followers', function($query){
+    //             $query->where('agent_id', auth()->user()->agent->id);
+    //         });
+    //     $shareds = $sharedQuery->orderBy('id','desc')->paginate(10);
             
-        return view('livewire.document.des-documents', [
-            'documents' => $documentsPaginated,
-            'shareds' => $shareds,
-        ]);
-    }
+    //     return view('livewire.document.des-documents', [
+    //         'documents' => $documentsPaginated,
+    //         'shareds' => $shareds,
+    //     ]);
+    // }
+
+public function render()
+{
+    $documentsQuery = Document::query(); 
+    $documentsQuery = $this->applyFilters($documentsQuery);
+
+    // Filtrer uniquement les documents dont le statut est "Traité"
+    $documentsQuery = $documentsQuery->whereHas('statut', function($query) {
+        $query->where('titre', 'Traité');
+    });
+
+    // Exécuter la requête pour obtenir une collection
+    $documents = $documentsQuery->get(); 
+
+    // Appliquer le filtre d'autorisation
+    $documents = $documents->filter(function ($document) {
+        return Gate::allows('view', $document);
+    });
+
+    // Pagination manuelle
+    $currentPage = $this->page; 
+    $perPage = 10; 
+    $documentsPaginated = new LengthAwarePaginator(
+        $documents->forPage($currentPage, $perPage), 
+        $documents->count(), 
+        $perPage, 
+        $currentPage
+    );
+
+    // Pour shareds (documents suivis)
+    $sharedQuery = $documentsQuery->whereHas('followers', function($query){
+        $query->where('agent_id', auth()->user()->agent->id);
+    });
+
+    $shareds = $sharedQuery->orderBy('id','desc')->paginate(10);
+
+    return view('livewire.document.des-documents', [
+        'documents' => $documentsPaginated,
+        'shareds' => $shareds,
+    ]);
+}
+
+
 } 
