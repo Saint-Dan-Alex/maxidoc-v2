@@ -156,16 +156,16 @@
         </a>
     @else
         @can('Créer un document')
-            <a href="{{ route('document.creation') }}" class="link-action">
+            {{-- <a href="{{ route('document.creation') }}" class="link-action">
                 <div class="card card-sm pointer">
                     <div class="text-center d-flex justify-content-center align-items-center g-2 gap-2">
                         <i class="fi fi-rr-plus icon-plus" style="font-size: 10px;"></i>
                         <span>
-                            Créer un document
+                            Créer un document  
                         </span>
                     </div>
                 </div>
-            </a>
+            </a> --}}
         @endcan
     @endif
     <div class="tooltip-lg">
