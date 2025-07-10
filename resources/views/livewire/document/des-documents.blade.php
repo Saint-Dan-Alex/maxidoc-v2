@@ -22,10 +22,10 @@
                 </div>
             </div>
             <div class="col-lg-4 col-sm-4 col-3 d-flex align-items-center justify-content-end">
-                <a href="{{ route('document.creation') }}" class="btn btn-add btn-add-hover ms-auto btn-doc-inbox"
+                {{-- <a href="{{ route('document.creation') }}" class="btn btn-add btn-add-hover ms-auto btn-doc-inbox"
                     style="flex: 0 0 auto;">
-                    Créer un document
-                </a>
+                    Créer un document 
+                </a> --}}
             </div>
         </div>
         <div class="tab-content" id="myTabContent" style="border-radius: 12px">
