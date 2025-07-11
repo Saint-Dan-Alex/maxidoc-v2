@@ -1455,32 +1455,161 @@ public function store(Request $request)
      * @param  \App\Models\Courrier  $courrier
      * @return \Illuminate\Http\Response
      */
+    // public function valider(Courrier $courrier)
+    // {
+    //     try {
+    //         // Mettre à jour le statut à 3 (validé)
+    //         $courrier->statut_id = 3;
+    //         $courrier->save();
+
+    //         // Ajouter une entrée dans l'historique
+    //         $historique = new Historique();
+    //         $historique->user_id = Auth::id();
+    //         $historique->key = 'courrier_valide';
+    //         $historique->description = 'Le courrier a été marqué comme validé';
+    //         $historique->historiquecable()->associate($courrier);
+    //         $historique->save();
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Le courrier a été validé avec succès.'
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Une erreur est survenue lors de la validation du courrier: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
     public function valider(Courrier $courrier)
-    {
-        try {
-            // Mettre à jour le statut à 3 (validé)
+{
+    try {
+        // S'assurer que $courrier est un objet valide
+        if (!($courrier instanceof Courrier)) {
+            $courrier = Courrier::find($courrier);
+            if (!$courrier) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Courrier introuvable.'
+                ], 404);
+            }
+        }
+
+        // Traitement selon type_id
+        if ($courrier->type_id == 1) { // Courrier entrant
+            $courrier->mark_as_done = 1;
+            $courrier->save();
+
+            // Marquer document comme "Traité"
+            if ($courrier->document) {
+                $courrier->document->statut_id = 5; // Traité
+                $courrier->document->save();
+            }
+
+            $traitement = new CourrierTraitement();
+            $traitement->agent_id = Auth::user()->agent->id;
+            $traitement->note = 'Document traité';
+            $traitement->save();
+
+            $courrier->traitements()->attach($traitement);
+            $courrier->etapes()->attach(3); // Étape assistant
+
+            // Création du courrier sortant
+            $oldata = $courrier->getAttributes();
+            unset($oldata['id'], $oldata['updated_at'], $oldata['created_at']);
+
+            $nouveau_destinataire = CourrierDestinateurExterne::where('nom', $courrier->externExpediteur->nom)->first();
+            $extern_destinataire = $nouveau_destinataire ?: new CourrierDestinateurExterne(['nom' => $courrier->externExpediteur->nom]);
+            if (!$nouveau_destinataire) {
+                $extern_destinataire->save();
+            }
+
+            $oldata['type_id'] = 2; // Sortant
+            $oldata['created_by'] = Auth::user()->id;
+            $oldata['exped_externe'] = null;
+            $oldata['exped_interne_id'] = Auth::user()->agent->id;
+            $oldata['parent_id'] = $courrier->id;
+            $oldata['traitement_id'] = null;
+            $oldata['mark_as_done'] = null;
+            $oldata['reference_interne'] = $this->changeNumRef(2);
+            $oldata['dest_externe_id'] = $extern_destinataire->id;
+
+            $newCourrier = $this->saveCourrierSortant(new Courrier($oldata));
+
+            foreach ($courrier->traitements as $traitement) {
+                $newCourrier->traitements()->attach($traitement);
+            }
+
+            if (Auth::user()->agent->direction->dgAssistanats->pluck('responsable_id')->count()) {
+                $newCourrier->destinateurs()->attach(Auth::user()->agent->direction->dgAssistanats->pluck('responsable_id'));
+            }
+
+            $newCourrier->etapes()->attach(3);
+
+            $notifyAgents = $newCourrier->destinateurs->where('id', '!=', Auth::user()->agent->id);
+            if (count($newCourrier->followers ?? []) > 0) {
+                $notifyAgents = $notifyAgents->merge($newCourrier->followers)->flatten();
+            }
+
+            if (count($notifyAgents)) {
+                event(new CourrierCreated($courrier, $notifyAgents, 'Un nouveau courrier traité vous a été transmis !'));
+            }
+
             $courrier->statut_id = 3;
             $courrier->save();
 
-            // Ajouter une entrée dans l'historique
-            $historique = new Historique();
-            $historique->user_id = Auth::id();
-            $historique->key = 'courrier_valide';
-            $historique->description = 'Le courrier a été marqué comme validé';
-            $historique->historiquecable()->associate($courrier);
-            $historique->save();
+        } elseif ($courrier->type_id == 3) { // Courrier interne
+            $courrier->mark_as_done = 1;
+            $courrier->save();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Le courrier a été validé avec succès.'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Une erreur est survenue lors de la validation du courrier: ' . $e->getMessage()
-            ], 500);
+            if ($courrier->document) {
+                $courrier->document->statut_id = 5;
+                $courrier->document->save();
+            }
+
+            $traitement = new CourrierTraitement();
+            $traitement->agent_id = Auth::user()->agent->id;
+            $traitement->note = 'Document traité';
+            $traitement->save();
+
+            $courrier->traitements()->attach($traitement);
+            $courrier->statut_id = 3;
+            $courrier->save();
+
+        } else {
+            // Cas autres types de courrier ? Possibilité d'ajouter ici selon besoin.
+            $courrier->statut_id = 3;
+            $courrier->save();
         }
+
+        // Ajouter une entrée dans l'historique
+        $historique = new Historique();
+        $historique->user_id = Auth::id();
+        $historique->key = 'courrier_valide';
+        $historique->description = 'Le courrier a été marqué comme validé';
+        $historique->historiquecable()->associate($courrier);
+        $historique->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Le courrier a été validé et traité avec succès.'
+        ]);
+
+    } catch (\Throwable $e) {
+        \Log::error('Erreur lors de la validation du courrier', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Une erreur est survenue lors de la validation du courrier: ' . $e->getMessage()
+        ], 500);
     }
+}
+
     
     /**
      * Rejeter un courrier
@@ -1488,14 +1617,95 @@ public function store(Request $request)
      * @param  \App\Models\Courrier  $courrier
      * @return \Illuminate\Http\Response
      */
-   public function rejeter(Courrier $courrier)
+//    public function rejeter(Courrier $courrier)
+// {
+//     try {
+//         // Mettre à jour le statut à 4 (rejeté)
+//         $courrier->statut_id = 3;
+//         $courrier->save();
+
+//         // Ajouter une entrée dans l'historique
+//         $historique = new Historique();
+//         $historique->user_id = Auth::id();
+//         $historique->key = 'courrier_rejete';
+//         $historique->description = 'Le courrier a été marqué comme rejeté';
+//         $historique->historiquecable()->associate($courrier);
+//         $historique->save();
+
+//         return response()->json([
+//             'success' => true,
+//             'message' => 'Le courrier a été rejeté avec succès.'
+//         ]);
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             'success' => false,
+//             'message' => 'Une erreur est survenue lors du rejet du courrier: ' . $e->getMessage()
+//         ], 500);
+//     }
+// }
+public function rejeter(Courrier $courrier)
 {
     try {
-        // Mettre à jour le statut à 4 (rejeté)
-        $courrier->statut_id = 3;
-        $courrier->save();
+        // S'assurer que $courrier est bien un objet
+        if (!($courrier instanceof Courrier)) {
+            $courrier = Courrier::find($courrier);
+            if (!$courrier) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Courrier introuvable.'
+                ], 404);
+            }
+        }
 
-        // Ajouter une entrée dans l'historique
+        // Traitement en fonction du type de courrier
+        if ($courrier->type_id == 1) { // Courrier entrant
+            $courrier->mark_as_done = 1;
+            $courrier->save();
+
+            // Marquer le document comme traité (statut_id = 5)
+            if ($courrier->document) {
+                $courrier->document->statut_id = 5;
+                $courrier->document->save();
+            }
+
+            // Ajouter le traitement "rejeté"
+            $traitement = new CourrierTraitement();
+            $traitement->agent_id = Auth::user()->agent->id;
+            $traitement->note = 'Document rejeté';
+            $traitement->save();
+
+            $courrier->traitements()->attach($traitement);
+            $courrier->etapes()->attach(3); // Étape 3 (assistant ?)
+
+            $courrier->statut_id = 3; // 4 = Rejeté
+            $courrier->save();
+
+        } elseif ($courrier->type_id == 3) { // Courrier interne
+            $courrier->mark_as_done = 1;
+            $courrier->save();
+
+            if ($courrier->document) {
+                $courrier->document->statut_id = 5;
+                $courrier->document->save();
+            }
+
+            $traitement = new CourrierTraitement();
+            $traitement->agent_id = Auth::user()->agent->id;
+            $traitement->note = 'Document rejeté';
+            $traitement->save();
+
+            $courrier->traitements()->attach($traitement);
+
+            $courrier->statut_id = 3; // 4 = Rejeté
+            $courrier->save();
+
+        } else {
+            // Autres types de courrier
+            $courrier->statut_id = 3;
+            $courrier->save();
+        }
+
+        // Historique du rejet
         $historique = new Historique();
         $historique->user_id = Auth::id();
         $historique->key = 'courrier_rejete';
@@ -1507,13 +1717,21 @@ public function store(Request $request)
             'success' => true,
             'message' => 'Le courrier a été rejeté avec succès.'
         ]);
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
+        \Log::error('Erreur lors du rejet du courrier', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
         return response()->json([
             'success' => false,
             'message' => 'Une erreur est survenue lors du rejet du courrier: ' . $e->getMessage()
         ], 500);
     }
 }
+
 
 
     public function scan(Request $request)
