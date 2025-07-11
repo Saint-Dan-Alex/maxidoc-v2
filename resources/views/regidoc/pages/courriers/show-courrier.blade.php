@@ -1013,7 +1013,23 @@
                                         </p>
                                     </div>
                                 </div>
-
+                            </div>
+                        </div>
+                    @endif
+                    
+                    @if ($courrier->statut_id === 3)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            Statut
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <span class="badge bg-success">Validé</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -1777,6 +1793,58 @@
     @livewire('livewire-alert')
     <script>
         $(document).ready(function() {
+            // Gestion de la validation du courrier
+            $('.btn-valider').on('click', function() {
+                const courrierId = '{{ $courrier->id }}';
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                const $btn = $(this);
+                
+                // Désactiver le bouton pour éviter les clics multiples
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validation en cours...');
+                
+                // Envoyer la requête AJAX
+                $.ajax({
+                    url: '/courriers/' + courrierId + '/valider',
+                    type: 'POST',
+                    data: {
+                        _token: csrfToken,
+                        _method: 'POST'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Afficher un message de succès
+                            alert(response.message);
+                            
+                            // Mettre à jour l'interface utilisateur
+                            $('.btn-valider').remove();
+                            
+                            // Ajouter un badge de validation
+                            const badge = $('<span class="badge bg-success ms-2">Validé</span>');
+                            $('.modal-title').append(badge);
+                            
+                            // Fermer la modale après 1,5 secondes
+                            setTimeout(function() {
+                                $('#modal-validation').modal('hide');
+                                // Recharger la page pour afficher les changements
+                                location.reload();
+                            }, 1500);
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'Une erreur est survenue lors de la validation du courrier.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        alert(errorMessage);
+                        $btn.prop('disabled', false).text('Valider');
+                    }
+                });
+            });
+            
+            // Réinitialiser le bouton si la modale est fermée sans valider
+            $('#modal-validation').on('hidden.bs.modal', function () {
+                $('.btn-valider').prop('disabled', false).text('Valider');
+            });
 
             // Enforce focus within the modal
             $('#traitement-modal').on('shown.bs.modal', function() {

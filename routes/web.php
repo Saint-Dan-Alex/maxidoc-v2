@@ -190,18 +190,25 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::get('courriers/signer/{id}', [CourrierController::class, 'signer'])->name('courriers.signer');
 
 
+            // Routes pour les courriers
             Route::prefix('courriers')->group(function () {
+                // Routes sans ID
                 Route::post('partages', [CourrierController::class, 'partages'])->name('courriers.partages');
-                Route::get('/receptions', [CourrierController::class, 'receivedMails'])->name('courriers.received');
-                Route::get('/envoyes', [CourrierController::class, 'sendMails'])->name('courriers.sent');
-                Route::get('/nouveau', [CourrierController::class, 'create'])->name('courriers.add');
-                Route::post('/save/signature', [CourrierController::class, 'saveSignature'])->name('courriers.saveSignature');
-                Route::post('{id}/save/traitement', [CourrierController::class, 'saveTraitement'])->name('courriers.saveTraitement');
-                Route::get('{id}/relance', [CourrierController::class, 'relance'])->name('courriers.relance');
-                Route::get('{id}/traitement', [CourrierController::class, 'traitement'])->name('courriers.traitement');
-                Route::get('{id}/confidentiel', [CourrierController::class, 'confidentiel'])->name('courriers.confidentiel');
-                Route::get('{id}/nonconfidentiel', [CourrierController::class, 'nonconfidentiel'])->name('courriers.nonconfidentiel');
-                // Route::get('/finish/{id}', [CourrierController::class, 'finish'])->name('courriers.finish');
+                Route::get('receptions', [CourrierController::class, 'receivedMails'])->name('courriers.received');
+                Route::get('envoyes', [CourrierController::class, 'sendMails'])->name('courriers.sent');
+                Route::get('nouveau', [CourrierController::class, 'create'])->name('courriers.add');
+                Route::post('save/signature', [CourrierController::class, 'saveSignature'])->name('courriers.saveSignature');
+                
+                // Routes avec ID
+                Route::prefix('{courrier}')->group(function () {
+                    Route::post('save/traitement', [CourrierController::class, 'saveTraitement'])->name('courriers.saveTraitement');
+                    Route::get('relance', [CourrierController::class, 'relance'])->name('courriers.relance');
+                    Route::get('traitement', [CourrierController::class, 'traitement'])->name('courriers.traitement');
+                    Route::get('confidentiel', [CourrierController::class, 'confidentiel'])->name('courriers.confidentiel');
+                    Route::get('nonconfidentiel', [CourrierController::class, 'nonconfidentiel'])->name('courriers.nonconfidentiel');
+                    Route::post('valider', [CourrierController::class, 'valider'])->name('courriers.valider');
+                    // Route::get('finish', [CourrierController::class, 'finish'])->name('courriers.finish');
+                });
             });
 
             Route::post('/upload', [UploadController::class, 'store']);
