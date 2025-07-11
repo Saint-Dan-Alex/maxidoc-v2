@@ -222,7 +222,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
             Route::prefix('ajax')->group(function () {
                 Route::get('types/courriers', [AjaxController::class, 'typescourriers'])->name('ajax.typescourriers'); 
-
+                Route::get('/priorites', [AjaxController::class, 'priorites'])->name('ajax.priorites');
                 Route::get('types/get/all/agents', [DirectionController::class, 'getAgents'])->name('ajax.getAgents');
                 Route::get('categories/courriers', [AjaxController::class, 'categorycourriers'])->name('ajax.categorycourriers');
                 Route::post('categories/courriers/save', [AjaxController::class, 'categoryCourriersSave'])->name('ajax.categorycourriers.save');

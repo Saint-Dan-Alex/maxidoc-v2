@@ -35,11 +35,17 @@ use Intervention\Image\Image as InterventionImage;
 
 class AjaxController extends Controller
 {
-    public function typescourriers(Request $request)
-    {
-        return $this->relation($request, 'courrier-type')->orderBy('id', 'asc');
+    // public function typescourriers(Request $request)
+    // {
+    //     return $this->relation($request, 'courrier-type')->orderBy('id', 'asc');
     
-    }
+    // }
+    public function typescourriers(Request $request)
+{
+    // Appelle la méthode relation qui retourne directement une JsonResponse
+    return $this->relation($request, 'courrier-type');
+}
+
 
     public function categorycourriers(Request $request)
     {
@@ -670,6 +676,11 @@ class AjaxController extends Controller
         // No result found, return empty array
         // return response()->json([], 404);
     }
+
+    public function priorites(Request $request)
+{
+    return $this->relation($request, 'priorite');
+}
 
     public function generateFileName($file, $path)
     {
