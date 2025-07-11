@@ -1453,7 +1453,7 @@
         </div>
     @endcan
 
-    @can('Rejeter un courrier')
+    {{-- @can('Rejeter un courrier')
         <div class="modal fade" id="modal-reject" tabindex="-1" aria-labelledby="exampleModalLabel">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -1473,7 +1473,7 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <form wire:submit.prevent="saveNote"> --}}
+                        
                         <div class="form-group row g-2">
                             <div class="col-lg-12">
                                 <label for="">Direction en charge du suivi</label>
@@ -1496,12 +1496,62 @@
                                 <button type="submit" class="mt-0 btn btn-add btn-rejeter">Enregistrer</button>
                             </div>
                         </div>
-                        {{-- </form> --}}
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
-    @endcan
+    @endcan--}}
+    @can('Rejeter un courrier')
+    <!-- Modal Rejet -->
+    <div class="modal fade" id="modal-reject" tabindex="-1" aria-labelledby="modalRejectLabel">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title d-flex align-items-center" id="modalRejectLabel">
+                        <span>Rejeter le courrier</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Loader facultatif -->
+                    <div class="d-none position-absolute d-flex loader-card justify-content-center"
+                        style="z-index: 2; height:90%; width:90%; background-color:rgba(255,255,255,0.95)"
+                        wire:loading="" wire:target="filter" wire:loading.class.remove="d-none">
+                        <div class="m-auto text-center">
+                            <div class="spinner-border text-success" role="status"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group row g-2">
+                        <div class="col-lg-12">
+                            <label for="direction_id">Direction en charge du suivi</label>
+                            <select name="direction_id" id="direction_id" class="form-control" required>
+                                <option value="" selected disabled>Sélectionnez</option>
+                                @foreach ($directions as $direction)
+                                    <option value="{{ $direction->id }}">{{ $direction->titre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <label for="note">Note</label>
+                            <textarea name="note" id="note" cols="30" rows="5" class="form-control" required placeholder="Saisissez vos annotations ici"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 from-group row">
+                        <div class="mb-3 col-lg-12 text-end">
+                            <button type="reset" class="btn btn-cansel" data-bs-dismiss="modal">Annuler</button>
+                            <button type="button" class="mt-0 btn btn-add btn-rejeter">Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endcan
 
     @can('Partager un courrier')
         @livewire('taches.add-courrier-tache-modal', ['courrier' => $courrier])
@@ -1840,6 +1890,59 @@
                     }
                 });
             });
+
+            
+    $(document).ready(function () {
+        $('.btn-rejeter').on('click', function (e) {
+            e.preventDefault();
+
+            const courrierId = '{{ $courrier->id }}';
+            const csrfToken = $('meta[name="csrf-token"]').attr('content');
+            const note = $('#note').val();
+            const directionId = $('#direction_id').val();
+            const $btn = $(this);
+
+            if (!note || !directionId) {
+                alert("Veuillez remplir tous les champs.");
+                return;
+            }
+
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Rejet en cours...');
+
+            $.ajax({
+                url: '/courriers/' + courrierId + '/rejeter',
+                type: 'POST',
+                data: {
+                    _token: csrfToken,
+                    note: note,
+                    direction_id: directionId
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        $('.btn-rejeter').remove();
+                        const badge = $('<span class="badge bg-danger ms-2">Rejeté</span>');
+                        $('.modal-title').append(badge);
+                        setTimeout(function () {
+                            $('#modal-reject').modal('hide');
+                            location.reload();
+                        }, 1500);
+                    }
+                },
+                error: function (xhr) {
+                    let errorMessage = 'Erreur lors du rejet.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    alert(errorMessage);
+                    $btn.prop('disabled', false).text('Enregistrer');
+                }
+            });
+        });
+    });
+
+
+
             
             // Réinitialiser le bouton si la modale est fermée sans valider
             $('#modal-validation').on('hidden.bs.modal', function () {
