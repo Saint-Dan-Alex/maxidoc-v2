@@ -1481,43 +1481,40 @@ public function store(Request $request)
             ], 500);
         }
     }
-
+    
     /**
      * Rejeter un courrier
      *
      * @param  \App\Models\Courrier  $courrier
      * @return \Illuminate\Http\Response
      */
-    public function rejeter(Request $request, Courrier $courrier)
-    {
-        try {
-            $request->validate([
-                'raison' => 'required|string|max:255'
-            ]);
-            
-            // Mettre à jour le statut à 4 (rejeté)
-            $courrier->statut_id = 4;
-            $courrier->save();
+   public function rejeter(Courrier $courrier)
+{
+    try {
+        // Mettre à jour le statut à 4 (rejeté)
+        $courrier->statut_id = 3;
+        $courrier->save();
 
-            // Ajouter une entrée dans l'historique
-            $historique = new Historique();
-            $historique->user_id = Auth::id();
-            $historique->key = 'courrier_rejete';
-            $historique->description = 'Le courrier a été rejeté. Raison: ' . $request->raison;
-            $historique->historiquecable()->associate($courrier);
-            $historique->save();
+        // Ajouter une entrée dans l'historique
+        $historique = new Historique();
+        $historique->user_id = Auth::id();
+        $historique->key = 'courrier_rejete';
+        $historique->description = 'Le courrier a été marqué comme rejeté';
+        $historique->historiquecable()->associate($courrier);
+        $historique->save();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Le courrier a été rejeté avec succès.'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Une erreur est survenue lors du rejet du courrier: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Le courrier a été rejeté avec succès.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Une erreur est survenue lors du rejet du courrier: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
     public function scan(Request $request)
     {
