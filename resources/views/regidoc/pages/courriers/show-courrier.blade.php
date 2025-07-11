@@ -1594,8 +1594,7 @@
                             <div class="d-flex gap-2 mt-4">
                                 <button type="reset" class="btn btn-cansel w-50"
                                     data-bs-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-add mt-0 w-50"
-                                    data-bs-dismiss="modal">Valider</button>
+                                <button type="submit" class="btn btn-add mt-0 w-50" id="submit-traitement">Valider</button>
                             </div>
                         </div>
                     </form>
@@ -1782,25 +1781,59 @@
             // Enforce focus within the modal
             $('#traitement-modal').on('shown.bs.modal', function() {
                 $(this).find('.form-control:first').focus();
+                // Réactiver le bouton de soumission lorsque la modale est rouverte
+                $('#submit-traitement').prop('disabled', false).text('Valider');
+            });
+            
+            // Désactiver le bouton de soumission pendant la requête AJAX
+            $(document).on('submit', '#traitement-form', function() {
+                $('#submit-traitement').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...');
             });
             $('#traitement-form').submit(function(e) {
                 e.preventDefault();
                 $('page-load').removeClass('d-none');
+                
+                // Afficher les données du formulaire dans la console
+                const formData = $(this).serializeArray();
+                console.log('Données du formulaire:', formData);
+                
                 $.ajax({
                     url: "{{ route('regidoc.courriers.saveTraitement', $courrier) }}",
                     method: 'POST',
-                    data: $(this).serialize(),
+                    data: formData,
                     success: function(response) {
-                        Livewire.emit('alert', 'success', 'Traitement effectué avec succès')
-                        $('page-load').addClass('d-none');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1000);
+                        console.log('Réponse du serveur:', response);
+                        if (response.success) {
+                            Livewire.emit('alert', 'success', 'Traitement effectué avec succès');
+                            $('page-load').addClass('d-none');
+                            $('#traitement-modal').modal('hide');
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            console.error('Erreur dans la réponse:', response);
+                            Livewire.emit('alert', 'error', response.message || 'Une erreur est survenue');
+                            $('page-load').addClass('d-none');
+                        }
                     },
-                    error: function(error) {
-                        console.log(error.message);
-                        Livewire.emit('alert', 'error', error.message);
+                    error: function(xhr, status, error) {
+                        console.error('Erreur lors de la soumission du formulaire:', xhr.responseText);
+                        let errorMessage = 'Une erreur est survenue lors du traitement';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            } else if (xhr.status === 422 && response.errors) {
+                                // Gestion des erreurs de validation
+                                errorMessage = Object.values(response.errors).flat().join('\n');
+                            }
+                        } catch (e) {
+                            console.error('Erreur lors de l\'analyse de la réponse:', e);
+                        }
+                        
+                        Livewire.emit('alert', 'error', errorMessage);
                         $('page-load').addClass('d-none');
+                        // Ne pas recharger la page en cas d'erreur
                     }
                 });
             });
@@ -1848,12 +1881,6 @@
                 dropdownParent: $('#traitement-modal')
             });
 
-            // Handle form submission
-            $('#traitement-form').on('submit', function(e) {
-                e.preventDefault(); // Prevent default form submission
-                // Process form data here (e.g., send AJAX request)
-                $('#traitement-modal').modal('hide'); // Close the modal
-            });
 
         });
     </script>

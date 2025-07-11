@@ -123,16 +123,14 @@ $(".signature-name-container2 h1")
   );
 
 $('select[name="police"]').on("change", function () {
-  $(this)
-    .parent()
-    .parent()
-    .parent()
-    .find("h1")
-    .css({
-      fontFamily: "" + $(this).val(),
-      fontSize: $(this).val() == "Arty Signature" ? "180px" : "80px",
-    })
-    .text($(this).parent().parent().find('input[name="user-name"]').val());
+  const container = $(this).closest('.tab-pane');
+  const targetH1 = container.find("h1");
+  const inputValue = container.find('input[type="text"]').val();
+  
+  targetH1.css({
+    fontFamily: $(this).val(),
+    fontSize: $(this).val() == "Arty Signature" ? "180px" : "80px"
+  }).text(inputValue);
 });
 
 $(".block-pallete-name .bubble-color").on("click", function () {
@@ -156,8 +154,12 @@ $(".block-pallete-name .bubble-color").on("click", function () {
   });
 });
 
-$('input[name="user-name"]').on("keyup", function () {
-  $(this).parent().parent().parent().find("h1").text($(this).val());
+$('#user-name-paraphe, #user-name-signature').on("keyup", function () {
+  if ($(this).attr('id') === 'user-name-paraphe') {
+    $(".signature-name-container2 h1").text($(this).val());
+  } else {
+    $(".signature-name-container h1").text($(this).val());
+  }
 });
 
 $(".btn-close").click(function () {

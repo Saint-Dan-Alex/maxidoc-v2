@@ -205,6 +205,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             });
 
             Route::post('/upload', [UploadController::class, 'store']);
+            Route::post('/courriers/upload-scan', [App\Http\Controllers\Courriers\CourrierController::class, 'handleScanUpload'])
+    ->name('courriers.uploadScan');
+
 
             Route::prefix('systemes')->group(function () {
                 Route::resource('sections', SectionController::class)->only('index', 'store', 'update', 'destroy');
