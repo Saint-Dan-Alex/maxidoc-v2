@@ -534,17 +534,22 @@
                         @endcan
 
 
-                        {{-- @can('Valider un courrier')
-                        <li>
-                            <a href="javascript:void(0)" @class(['dropdown-item', 'btn disabled' => $aTraite]) data-bs-target="#modal-validation"
-                                data-bs-toggle="modal" @disabled($aTraite)>
-                                <i class="fi fi-rr-check"></i>
-                                <span class="title">
-                                    Valider
-                                </span>
-                            </a>
-                        </li>
-                    @endcan --}}
+                        @can('Valider un courrier')
+                            @if($courrier->statut_id != 3 && $courrier->statut_id != 4)
+                            <li>
+                                <a href="javascript:void(0)" class="dropdown-item btn-valider-courrier" data-id="{{ $courrier->id }}">
+                                    <span class="d-flex align-items-center">
+                                        <svg viewBox="0 0 24 24" width="512" height="512">
+                                            <path d="M9,16.17L4.83,12l-1.42,1.41L9,19L21,7l-1.41-1.41L9,16.17z"/>
+                                        </svg>
+                                    </span>
+                                    <span class="title">
+                                        Valider
+                                    </span>
+                                </a>
+                            </li>
+                            @endif
+                        @endcan
 
                         @can('Partager un courrier')
                             @if (!Auth::user()->agent->isSecretaire())
@@ -559,24 +564,23 @@
                         @endcan
                     @endif
 
-                    {{-- @can('Rejeter un courrier')
-                        <li>
-                            <a href="javascript:void(0)" data-bs-target="#modal-reject" data-bs-toggle="modal"
-                                @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
-                                <span>
-                                    <svg viewBox="0 0 24 24" width="512" height="512">
-                                        <path
-                                            d="M16,8a1,1,0,0,0-1.414,0L12,10.586,9.414,8A1,1,0,0,0,8,9.414L10.586,12,8,14.586A1,1,0,0,0,9.414,16L12,13.414,14.586,16A1,1,0,0,0,16,14.586L13.414,12,16,9.414A1,1,0,0,0,16,8Z" />
-                                        <path
-                                            d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z" />
-                                    </svg>
-                                </span>
-                                <span class="title">
-                                    Rejeter
-                                </span>
-                            </a>
-                        </li>
-                    @endcan --}}
+                        @can('Rejeter un courrier')
+                            @if($courrier->statut_id != 3 && $courrier->statut_id != 4)
+                            <li>
+                                <a href="javascript:void(0)" class="dropdown-item btn-rejeter-courrier" data-id="{{ $courrier->id }}">
+                                    <span class="d-flex align-items-center">
+                                        <svg viewBox="0 0 24 24" width="512" height="512">
+                                            <path d="M16,8a1,1,0,0,0-1.414,0L12,10.586,9.414,8A1,1,0,0,0,8,9.414L10.586,12,8,14.586A1,1,0,0,0,9.414,16L12,13.414,14.586,16A1,1,0,0,0,16,14.586L13.414,12,16,9.414A1,1,0,0,0,16,8Z"/>
+                                            <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"/>
+                                        </svg>
+                                    </span>
+                                    <span class="title">
+                                        Rejeter
+                                    </span>
+                                </a>
+                            </li>
+                            @endif
+                        @endcan
 
                     @can('Annoter un courrier')
                         @if (
@@ -1013,7 +1017,23 @@
                                         </p>
                                     </div>
                                 </div>
-
+                            </div>
+                        </div>
+                    @endif
+                    
+                    @if ($courrier->statut_id === 3)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            Statut
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <span class="badge bg-success">Validé</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -1594,8 +1614,7 @@
                             <div class="d-flex gap-2 mt-4">
                                 <button type="reset" class="btn btn-cansel w-50"
                                     data-bs-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-add mt-0 w-50"
-                                    data-bs-dismiss="modal">Valider</button>
+                                <button type="submit" class="btn btn-add mt-0 w-50" id="submit-traitement">Valider</button>
                             </div>
                         </div>
                     </form>
@@ -1778,29 +1797,152 @@
     @livewire('livewire-alert')
     <script>
         $(document).ready(function() {
+            // Gestion du clic sur le bouton de validation
+            $(document).on('click', '.btn-valider-courrier', function(e) {
+                e.preventDefault();
+                
+                const courrierId = $(this).data('id');
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                
+                // Demander confirmation
+                if (!confirm('Êtes-vous sûr de vouloir valider ce courrier ?')) {
+                    return;
+                }
+                
+                // Afficher un message de chargement
+                alert('Traitement en cours...');
+                
+                // Envoyer la requête AJAX
+                $.ajax({
+                    url: '/courriers/' + courrierId + '/valider',
+                    type: 'POST',
+                    data: {
+                        _token: csrfToken
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            // Recharger la page pour afficher les mises à jour
+                            location.reload();
+                        } else {
+                            alert('Erreur: ' + (response.message || 'Une erreur inconnue est survenue'));
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'Une erreur est survenue lors de la validation du courrier';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage += ': ' + xhr.responseJSON.message;
+                        }
+                        alert(errorMessage);
+                    }
+                });
+            });
+            
+            // Gestion du clic sur le bouton de rejet
+            $(document).on('click', '.btn-rejeter-courrier', function(e) {
+                e.preventDefault();
+                
+                const courrierId = $(this).data('id');
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                
+                // Demander la raison du rejet
+                const raison = prompt('Veuillez indiquer la raison du rejet :');
+                if (raison === null || raison.trim() === '') {
+                    alert('La raison du rejet est obligatoire.');
+                    return;
+                }
+                
+                // Demander confirmation
+                if (!confirm('Êtes-vous sûr de vouloir rejeter ce courrier ?')) {
+                    return;
+                }
+                
+                // Afficher un message de chargement
+                alert('Traitement en cours...');
+                
+                // Envoyer la requête AJAX
+                $.ajax({
+                    url: '/courriers/' + courrierId + '/rejeter',
+                    type: 'POST',
+                    data: {
+                        _token: csrfToken,
+                        raison: raison
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            // Recharger la page pour afficher les mises à jour
+                            location.reload();
+                        } else {
+                            alert('Erreur: ' + (response.message || 'Une erreur inconnue est survenue'));
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'Une erreur est survenue lors du rejet du courrier';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage += ': ' + xhr.responseJSON.message;
+                        }
+                        alert(errorMessage);
+                    }
+                });
+            });
 
             // Enforce focus within the modal
             $('#traitement-modal').on('shown.bs.modal', function() {
                 $(this).find('.form-control:first').focus();
+                // Réactiver le bouton de soumission lorsque la modale est rouverte
+                $('#submit-traitement').prop('disabled', false).text('Valider');
+            });
+            
+            // Désactiver le bouton de soumission pendant la requête AJAX
+            $(document).on('submit', '#traitement-form', function() {
+                $('#submit-traitement').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...');
             });
             $('#traitement-form').submit(function(e) {
                 e.preventDefault();
                 $('page-load').removeClass('d-none');
+                
+                // Afficher les données du formulaire dans la console
+                const formData = $(this).serializeArray();
+                console.log('Données du formulaire:', formData);
+                
                 $.ajax({
                     url: "{{ route('regidoc.courriers.saveTraitement', $courrier) }}",
                     method: 'POST',
-                    data: $(this).serialize(),
+                    data: formData,
                     success: function(response) {
-                        Livewire.emit('alert', 'success', 'Traitement effectué avec succès')
-                        $('page-load').addClass('d-none');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1000);
+                        console.log('Réponse du serveur:', response);
+                        if (response.success) {
+                            Livewire.emit('alert', 'success', 'Traitement effectué avec succès');
+                            $('page-load').addClass('d-none');
+                            $('#traitement-modal').modal('hide');
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            console.error('Erreur dans la réponse:', response);
+                            Livewire.emit('alert', 'error', response.message || 'Une erreur est survenue');
+                            $('page-load').addClass('d-none');
+                        }
                     },
-                    error: function(error) {
-                        console.log(error.message);
-                        Livewire.emit('alert', 'error', error.message);
+                    error: function(xhr, status, error) {
+                        console.error('Erreur lors de la soumission du formulaire:', xhr.responseText);
+                        let errorMessage = 'Une erreur est survenue lors du traitement';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            } else if (xhr.status === 422 && response.errors) {
+                                // Gestion des erreurs de validation
+                                errorMessage = Object.values(response.errors).flat().join('\n');
+                            }
+                        } catch (e) {
+                            console.error('Erreur lors de l\'analyse de la réponse:', e);
+                        }
+                        
+                        Livewire.emit('alert', 'error', errorMessage);
                         $('page-load').addClass('d-none');
+                        // Ne pas recharger la page en cas d'erreur
                     }
                 });
             });
@@ -1848,12 +1990,6 @@
                 dropdownParent: $('#traitement-modal')
             });
 
-            // Handle form submission
-            $('#traitement-form').on('submit', function(e) {
-                e.preventDefault(); // Prevent default form submission
-                // Process form data here (e.g., send AJAX request)
-                $('#traitement-modal').modal('hide'); // Close the modal
-            });
 
         });
     </script>
