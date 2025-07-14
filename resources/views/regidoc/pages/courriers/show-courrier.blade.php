@@ -645,7 +645,9 @@
                                 Retour
                             </div>
                         </a>
-                        @livewire('courrier.traitement-doc-select', ['courrier' => $courrier])
+                        @livewire('courrier.traitement-doc-select', ['courrier' => $courrier]) 
+            <h5 class="offcanvas-title" id="offcanvasRightLabel"> <span style="color: white">{!! $courrier->status_badge !!}</span> </h5>
+
                         <div class="menu-action d-flex d-lg-none">
                             <i class="fi fi-rr-menu-burger"></i>
                         </div>
@@ -784,7 +786,7 @@
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasInfoDoc" aria-labelledby="offcanvasRightLabel"
         style="width: 550px;">
         <div class="offcanvas-header align-items-center">
-            <h5 class="offcanvas-title" id="offcanvasRightLabel">Détails du courrier</h5>
+            <h5 class="offcanvas-title" id="offcanvasRightLabel">Détails du courrier {!! $courrier->status_badge !!}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
                 <i class="fi fi-rr-cross"></i>
             </button>
