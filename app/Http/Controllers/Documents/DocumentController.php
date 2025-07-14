@@ -739,7 +739,7 @@ class DocumentController extends Controller
             $content
         );
 
-        return redirect()->route('regidoc.dossiers.show', $document->dossier);
+        return redirect()->route('regidoc.documents.index', $document->dossier);
     }
 
     public function desarchiver(Request $request)
