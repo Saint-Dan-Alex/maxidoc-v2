@@ -1848,6 +1848,72 @@
 
     @livewire('livewire-alert')
     <script>
+    $(document).ready(function () {
+        // ... (Votre code existant pour le bouton de rejet 'btn-rejeter' reste ici) ...
+
+        // --- CODE CORRIGÉ POUR LE BOUTON DE VALIDATION ---
+        $('.btn-valider').on('click', function (e) {
+            e.preventDefault();
+
+            // Assurez-vous que $courrier->id est accessible et correctement renseigné dans cette vue Blade.
+            // Si le modal s'ouvre depuis un bouton, l'ID peut être passé via un attribut data-id :
+            // Par exemple, sur le bouton qui ouvre le modal: <button data-bs-toggle="modal" data-bs-target="#modal-validation" data-courrier-id="{{ $courrier->id }}">Valider</button>
+            // Et ensuite récupéré ici:
+            // const courrierId = $('#modal-validation').data('courrier-id'); OU
+            // const courrierId = $(this).closest('.modal').find('.some-element-with-id').data('courrier-id');
+            //
+            // Pour l'exemple, nous continuons avec l'hypothèse qu'il est directement accessible via Blade:
+            const courrierId = '{{ $courrier->id ?? '' }}'; // Assurez-vous qu'elle est définie !
+            if (!courrierId) {
+                alert("Erreur : ID du courrier introuvable pour la validation.");
+                return;
+            }
+
+            const csrfToken = $('meta[name="csrf-token"]').attr('content');
+            const $btn = $(this);
+
+            // Désactive le bouton et affiche un spinner pendant l'opération
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Validation en cours...');
+
+            $.ajax({
+                url: '/courriers/' + courrierId + '/valider', // L'URL de votre route de validation
+                type: 'POST',
+                data: {
+                    _token: csrfToken,
+                    // Aucun champ 'note' ou 'direction_id' n'est nécessaire ici pour la validation
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message || 'Courrier validé avec succès !');
+                        // Mettre à jour l'interface utilisateur
+                        $('.btn-valider').remove(); // Supprime le bouton Valider après succès
+                        const badge = $('<span class="badge bg-success ms-2">Validé</span>');
+                        $('.modal-title').append(badge);
+
+                        // Ferme le modal et recharge la page après un court délai
+                        setTimeout(function () {
+                            $('#modal-validation').modal('hide');
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        // Gérer les cas où success est false mais sans erreur HTTP
+                        alert(response.message || 'La validation a échoué.');
+                        $btn.prop('disabled', false).text('Valider'); // Réactive le bouton
+                    }
+                },
+                error: function (xhr) {
+                    let errorMessage = 'Erreur lors de la validation.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    alert(errorMessage);
+                    $btn.prop('disabled', false).text('Valider'); // Réactive le bouton et remet le texte initial
+                }
+            });
+        });
+    });
+</script>
+    <script>
         $(document).ready(function() {
             // Gestion du clic sur le bouton de validation
             $(document).on('click', '.btn-valider-courrier', function(e) {
