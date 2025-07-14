@@ -444,5 +444,31 @@ class Courrier extends Model implements Viewable
     {
         return $this->views->where('user_id', Auth::id())->count() == 0;
     }
+
+    // Dans app/Models/Courrier.php
+public function getStatusBadgeAttribute()
+{
+    $lastHistory = $this->history()
+        ->whereIn('description', [
+            'Le courrier a été marqué comme validé',
+            'Le courrier a été marqué comme rejeté'
+        ])
+        ->latest()
+        ->first();
+    
+    if (!$lastHistory) {
+        return '';
+    }
+    
+    if (str_contains($lastHistory->description, 'validé')) {
+        return '<span class="badge bg-success ms-2">Validé</span>';
+    }
+    
+    if (str_contains($lastHistory->description, 'rejeté')) {
+        return '<span class="badge bg-danger ms-2">Rejeté</span>';
+    }
+    
+    return '';
+}
    
 }
