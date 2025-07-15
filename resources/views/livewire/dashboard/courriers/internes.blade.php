@@ -59,7 +59,8 @@
                                     {{ $courrier->service->titre ?? 'N/D' }}
                                 </td>
                                 <td>
-                                    {{ $courrier->toDirection->titre ?? 'N/D' }}
+                                    {{ optional($courrier->destinateurs->first())->prenom }} {{ optional($courrier->destinateurs->first())->nom ?? 'N/D' }}
+
                                 </td>
                                 <td class="text-nowrap">
                                     @if ($courrier->followers->unique()->count())
