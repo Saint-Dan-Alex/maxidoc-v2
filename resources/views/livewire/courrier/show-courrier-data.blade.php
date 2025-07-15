@@ -23,13 +23,7 @@
                 }
             @endphp
 
-            @if (!Auth::user()->agent->isDG())
-                @if (!$hasSeen && $courrier->author->id != Auth::user()->agent->id)
-                    <div class="block-assign mb-0" wire:click="accuserReception">
-                        Accuser réception
-                    </div>
-                @endif
-            @else
+            @if ($courrier->isIntern() && $courrier->dest_interne_id == Auth::user()->agent->id)
                 <div class="blockBnts d-flex align-items-center" wire:ignore>
                     <div class="dropdown">
                         <button class="block-assign mb-0 btn" id="dropdownMenuButton2" data-bs-toggle="dropdown"
@@ -42,7 +36,7 @@
                                 @if ($courrier->document)
                                     <li>
                                         <a class="dropdown-item"
-                                            href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction']) }} ">
+                                            href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction']) }} " >
                                             Assigner une tâche à une direction
                                         </a>
                                     </li>
@@ -52,7 +46,7 @@
                                 @if ($courrier->document)
                                     <li>
                                         <a class="dropdown-item"
-                                            href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'agent']) }} ">
+                                            href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'agent']) }} " >
                                             Assigner une tâche à un agent
                                         </a>
                                     </li>
@@ -69,12 +63,64 @@
                             <li>
                                 <a class="dropdown-item" href="javascrip:void(0)" data-bs-toggle="offcanvas"
                                     data-bs-target="#offcanvasComment" aria-controls="offcanvasRight">
-                                    Annotations
-                                </a>
+                                        Annotations
+                                    </a>
                             </li>
                         </ul>
                     </div>
                 </div>
+            @else
+                @if (!$hasSeen && $courrier->author->id != Auth::user()->agent->id)
+                    <div class="block-assign mb-0" wire:click="accuserReception">
+                        Accuser réception
+                    </div>
+                @else
+                    <div class="blockBnts d-flex align-items-center" wire:ignore>
+                        <div class="dropdown">
+                            <button class="block-assign mb-0 btn" id="dropdownMenuButton2" data-bs-toggle="dropdown"
+                                aria-expanded="true">
+                                Traiter le courrier
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton2"
+                                data-popper-placement="bottom-end">
+                                @can('Assigner une tâche')
+                                    @if ($courrier->document)
+                                        <li>
+                                            <a class="dropdown-item"
+                                                href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction']) }} " >
+                                                Assigner une tâche à une direction
+                                            </a>
+                                        </li>
+                                    @endif
+                                @endcan
+                                @can('Assigner une tâche')
+                                    @if ($courrier->document)
+                                        <li>
+                                            <a class="dropdown-item"
+                                                href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'agent']) }} " >
+                                                Assigner une tâche à un agent
+                                            </a>
+                                        </li>
+                                    @endif
+                                @endcan
+                                @can('Suivi des courriers')
+                                    <li>
+                                        <a class="dropdown-item" href="javascrip:void(0)" data-bs-toggle="offcanvas"
+                                            data-bs-target="#offcanvasHisto" aria-controls="offcanvasRight">
+                                            Signer le document
+                                        </a>
+                                    </li>
+                                @endcan
+                                <li>
+                                    <a class="dropdown-item" href="javascrip:void(0)" data-bs-toggle="offcanvas"
+                                        data-bs-target="#offcanvasComment" aria-controls="offcanvasRight">
+                                            Annotations
+                                        </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                @endif
             @endif
 
             @if ($mode != 'edit')
