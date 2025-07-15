@@ -368,22 +368,7 @@
                                                     </select>
                                                 </div>
 
-                                                <div class="col-lg-4">
-                                                    <label>Division</label>
-                                                    <select class="form-select select2" name="division_id"
-                                                        aria-label="Default select example"
-                                                        wire:model='form_stat.division_id'>
-                                                        <option value="" selected disabled>Selectionnez</option>
-                                                        <option value="0" @selected($form_stat['division_id'] == 0 || $form_stat['division_id'] == '')>Aucun
-                                                        </option>
-                                                        @foreach ($divisions as $division)
-                                                            <option value="{{ $division->id }}"
-                                                                @selected($form_stat['division_id'] == $division->id)>
-                                                                {{ $division->libelle }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
+                                                
 
                                                 <div class="col-lg-4">
                                                     <label>Service</label>
@@ -402,22 +387,7 @@
                                                     </select>
                                                 </div>
 
-                                                <div class="col-lg-4">
-                                                    <label>Section</label>
-                                                    <select class="form-select select2" name="section_id"
-                                                        aria-label="Default select example"
-                                                        wire:model='form_stat.section_id'>
-                                                        <option value="" selected disabled>Selectionnez</option>
-                                                        <option value="0" @selected($form_stat['section_id'] == 0 || $form_stat['section_id'] == '')>Aucun
-                                                        </option>
-                                                        @foreach ($sections as $section)
-                                                            <option value="{{ $section->id }}"
-                                                                @selected($form_stat['section_id'] == $section->id)>
-                                                                {{ $section->titre }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
+                                               
 
                                                 <div class="col-lg-4">
                                                     <label>Fonction</label>
@@ -1139,7 +1109,7 @@
 
     </div>
 
-    @include('components.admin.modals.personals', ['divisions' => $divisions, 'fonctions' => $fonctions])
+    @include('components.admin.modals.personals', [ 'fonctions' => $fonctions])
 </div>
 
 @section('scripts')

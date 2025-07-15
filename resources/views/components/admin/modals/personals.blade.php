@@ -216,14 +216,7 @@
                         @endforeach --}}
                     </select>
                 </div>
-                <div class="col-lg-12">
-                    <select wire:model="division" class="form-control" >
-                        <option value="" selected disabled >Sélectionnez</option>
-                        @foreach ($divisions as $division)
-                            <option value="{{ $division->id}}">{{ $division->denomination}}</option>
-                        @endforeach
-                    </select>
-                </div>
+                
                 <div class="col-lg-12">
                     <select wire:model="fonction" name="fonction" id="depart" class="form-control">
                         <option value="" selected >Sélectionnez</option>
