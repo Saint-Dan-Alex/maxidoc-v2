@@ -47,6 +47,12 @@ class TraitementModal extends Component
         $this->followers = Direction::get()->except([1, 2]);
         $this->traitements = CourrierTypesTraitement::select('id', 'titre')->get();
         $this->priorites = Priorite::select('id', 'titre')->get();
+        
+        // Pour les courriers internes, on passe directement en mode édition
+        if ($courrier->type_id == 3) {
+            $this->mode = 'edit';
+            $this->emit('modeChanged');
+        }
     }
 
     public function setCopie($value)

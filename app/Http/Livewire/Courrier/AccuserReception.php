@@ -42,6 +42,12 @@ class AccuserReception extends Component
     public function mount($courrier)
     {
         $this->courrier = $courrier;
+        
+        // Pour les courriers internes, on passe directement en mode traitement
+        if ($courrier->type_id == 3) {
+            $this->mode = 'edit';
+            $this->emit('modeChanged');
+        }
     }
 
     public function render()
