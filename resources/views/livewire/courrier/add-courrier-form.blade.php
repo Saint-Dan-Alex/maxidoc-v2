@@ -17,7 +17,8 @@
                 <div class="form-group row g-3">
                     <div class="col-12">
                         <div class="row" wire:ignore>
-                            <label class="col-5 col-form-label">Type de courrier</label>
+                            <label class="col-5 col-form-label">Type de document</label>
+                            
                             <div class="col-7">
                                 <select class="form-select form-control select autreSelect2"
                                     aria-label="Default select example" name="type" id="type_id" required>
