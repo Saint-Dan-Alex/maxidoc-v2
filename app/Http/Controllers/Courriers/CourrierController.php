@@ -1680,8 +1680,6 @@ public function rejeter(Courrier $courrier)
     }
 }
 
-
-
     public function scan(Request $request)
     {
         return response(['status' => $request]);
