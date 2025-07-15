@@ -141,7 +141,7 @@
                 <div class="text-center">
                     <i class="fi fi-rr-"></i>
                     <span>
-                        Numériser un courrier
+                        Numériser un document
                     </span>
                 </div>
             </div>
