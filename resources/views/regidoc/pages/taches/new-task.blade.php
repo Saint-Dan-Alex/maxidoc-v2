@@ -187,12 +187,12 @@
                                         </div>
                                         <div class="col-lg-12 mb-2 echeance d-none">
                                             <label class="mb-2">Date de début</label>
-                                            <input type="date" class="form-control" placeholder="Objectif assigné"
+                                            <input type="datetime-local" class="form-control" placeholder="Objectif assigné"
                                                 name="date_debut">
                                         </div>
                                         <div class="col-lg-12 mb-2 echeance d-none">
                                             <label class="mb-2">Date d'échéance</label>
-                                            <input type="date" class="form-control" placeholder="Objectif assigné"
+                                            <input type="datetime-local" class="form-control" placeholder="Objectif assigné"
                                                 name="date_fin">
                                         </div>
 
