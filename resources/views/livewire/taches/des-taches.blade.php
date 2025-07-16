@@ -462,7 +462,7 @@
                     </div>
                 </div>
 
-                <div class = "tab-pane  {{ $tab == 4 ? 'show active' : '' }}" id="terminees" role="tabpanel"
+                <div class="tab-pane {{ $tab == 4 ? 'show active' : '' }}" id="terminees" role="tabpanel"
                     aria-labelledby="terminees-tab">
                     <div class="card card-table w-100" style="height: 250px; border-radius: 0 12px 12px 12px"
                         wire:loading>
@@ -472,145 +472,93 @@
                             </div>
                         </div>
                     </div>
-                    <div class="px-3 pt-3 card card-table">
-                        <div class="row align-items-center">
-                            <div class="col-lg-6 col-6">
-                                <h4 class="no-padding no-margin">Liste des tâches terminées</h4>
-                            </div>
-                        </div>
-                        <hr class="mb-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Titre</th>
-                                        <th scope="col">Priorité</th>
-                                        <th scope="col">Participants</th>
-                                        <th scope="col">Date d'échéance</th>
-                                        <th scope="col">Statut</th>
-                                        <th scope="col">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td> Signer le document pour Secrét... </td>
-                                        <td> Absolue </td>
-                                        <td>
-                                            <div class="box-avatar d-flex align-items-center">
-                                                <div class="cursor-pointer avatar-team" data-bs-toggle="modal"
-                                                    data-bs-target="#modal-edit-participants-8">
-                                                    <div class="tooltip-team">
-                                                        Yasmine Kabengele
+                    <div class="card-table card" style="border-radius: 0 12px 12px 12px">
+                        <div class="row g-3" wire:loading.remove>
+                            @forelse ($endTaches as $key => $tache)
+                                <div class="col-lg-4 col-xxl-3 col-md-6 col-sm-6">
+                                    <div class="card-table widget-task">
+                                        <div class="block-taks task p-0" style="border: none">
+                                            <div
+                                                class="badge-task mb-2 @if ($tache->priorite_id == 1) normal @elseif($tache->priorite_id == 2) urgent @else absolu @endif">
+                                                {{ $tache->priorite->titre }}
+                                            </div>
+                                            <div class="block">{{ $tache->titre }}</div>
+                                            <div class="row g-2">
+                                                <div class="col-12">
+                                                    <div class="block-detail">
+                                                        <p>{{ 'La tâche est terminée.' }}</p>
                                                     </div>
-                                                    <img src="{{ asset('assets/regidoc/default.png') }}"
-                                                        alt="image de profil Yasmine Kabengele">
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="d-flex align-items-center gap-2 info-echeance">
+                                                        @if ($tache->date_debut)
+                                                            <i class="fi fi-rr-calendar-clock icon"></i>
+                                                            <p class="debute-task task-date">
+                                                                {{ $tache->date_debut->format('d/m/Y') }}
+                                                            </p>
+                                                        @endif
+                                                        @if ($tache->date_fin)
+                                                            <span style="color: var(--colorParagraph)">-</span>
+                                                            <p class="end-task task-date">
+                                                                {{ $tache->date_fin->format('d/m/Y') }}
+                                                            </p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div
+                                                        class="block-progress d-flex justify-content-between align-items-center">
+                                                        <div class="progressBar">
+                                                            <div class="move"
+                                                                style="width: {{ $tache->pourcentage }}%">
+                                                            </div>
+                                                        </div>
+                                                        <div class="pourcentage">
+                                                            {{ $tache->pourcentage }}%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 d-flex justify-content-between">
+                                                    <div class="block-user d-flex">
+                                                        @foreach ($tache->objectifs as $objectif)
+                                                            <div class="user">
+                                                                <span class="online"></span>
+                                                                <div class="tooltip-team">
+                                                                    {{ $objectif->agent?->prenom . ' ' . $objectif->agent?->nom }}
+                                                                </div>
+                                                                <img src="{{ imageOrDefault($objectif->agent?->image) }}"
+                                                                    alt="image de profil {{ $objectif->agent?->prenom . ' ' . $objectif->agent?->nom }}">
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="block-options-sm d-flex align-items-center">
+                                                        <a href="{{ route('regidoc.taches.show', $tache) }}"
+                                                            class="btn btn-sm btn-add btn-add-hover">
+                                                            Voir
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td> 28/11/2024 </td>
-                                        <td>
-                                            <div class="badge  badge-green ">
-                                                Fini
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center btns-action-table">
-                                                <a href="#" class="btn">
-                                                    <i class="fi fi-rr-eye"></i>
-                                                    <div class="tooltip-btn">Voir détails</div>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-lg-12 mx-auto">
+                                    <div class="card card-table"
+                                        style="border-radius: 0 12px 12px 12px; box-shadow: none!important">
+                                        <div class="text-center col-12">
+                                            <img src="{{ asset('assets/images/sad.gif') }}" alt=""
+                                                class="" width="35px">
+                                            <p class="text-center para"
+                                                style="font-size: 14px; color: vafr(--colorParagraph)">
+                                                Aucune tâche terminée
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforelse
                         </div>
                     </div>
-                    {{-- <div class="row g-3" wire:loading.remove>
-                        @forelse ($endTaches as $key => $tache)
-                            <div class="col-lg-4 col-xxl-3 col-md-6 col-sm-6">
-                                <div class="card-table widget-task">
-                                    <div class="block-taks task p-0" style="border: none">
-                                        <div
-                                            class="badge-task mb-2 @if ($tache->priorite_id == 1) normal @elseif($tache->priorite_id == 2) urgent @else absolu @endif">
-                                            {{ $tache->priorite->titre }}
-                                        </div>
-                                        <div class="block">{{ $tache->titre }}</div>
-                                        <div class="row">
-                                            <div class="col-12">
-                                                <div class="block-detail">
-                                                    <h6>{{ $tache->tache }}</h6>
-                                                    <p>{{ 'La tâche est terminée.' }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div class="col-12">
-                                                <div class="d-flex align-items-center gap-2 info-echeance">
-                                                    @if ($tache->date_debut)
-                                                        <i class="fi fi-rr-calendar-clock icon"></i>
-                                                        <p class="debute-task task-date">
-                                                            {{ $tache->date_debut->format('d/m/Y') }}
-                                                        </p>
-                                                    @endif
-                                                    @if ($tache->date_fin)
-                                                    <span style="color: var(--colorParagraph)">-</span>
-                                                        <p class="end-task task-date">
-                                                            {{ $tache->date_fin->format('d/m/Y') }}
-                                                        </p>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            <div class="col-12">
-                                                <div
-                                                    class="block-progress d-flex justify-content-between align-items-center">
-                                                    <div class="progressBar">
-                                                        <div class="move"
-                                                            style="width: {{ $tache->pourcentage }}%">
-                                                        </div>
-                                                    </div>
-                                                    <div class="pourcentage">
-                                                        {{ $tache->pourcentage }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-12 d-flex justify-content-between">
-                                                <div class="block-user d-flex">
-                                                    @foreach ($tache->objectifs as $objectif)
-                                                        <div class="user">
-                                                            <span class="online"></span>
-                                                            <div class="tooltip-team">
-                                                                {{ $objectif->agent?->prenom . ' ' . $objectif->agent?->nom }}
-                                                            </div>
-                                                            <img src="{{ imageOrDefault($objectif->agent?->image) }}"
-                                                                alt="image de profil {{ $objectif->agent?->prenom . ' ' . $objectif->agent?->nom }}">
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                                <div class="block-options-sm d-flex align-items-center">
-                                                    <a href="{{ route('regidoc.taches.show', $tache) }}"
-                                                        class="btn btn-sm btn-add">Voir</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="col-lg-12 mx-auto">
-                                <div class="card card-table" style="border-radius: 12px 12px 12px 12px; box-shadow: none!important">
-                                    <div class="text-center col-12">
-                                        <img src="{{ asset('assets/images/sad.gif') }}" alt=""
-                                            class="" width="35px">
-                                        <p class="text-center para"
-                                            style="font-size: 14px; color: vafr(--colorParagraph)">
-                                            Aucune tâche terminée
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforelse
-                    </div> --}}
-                    {{-- {!! $endTaches->withQueryString()->links() !!} --}}
                 </div>
 
                 <div class = "tab-pane  {{ $tab == 5 ? 'show active' : '' }}" id="hors-delais" role="tabpanel"
