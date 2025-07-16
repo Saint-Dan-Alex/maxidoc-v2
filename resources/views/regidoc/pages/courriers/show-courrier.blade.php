@@ -608,21 +608,23 @@
 
 @elseif ($courrier->type_id == 2)
     {{-- Logique pour type_id == 2 : Retire tous les CAN et IF, sauf $aTraite --}}
-
-    <li>
-        <a href="javascript:void(0)" data-bs-target="#dga-modal" data-bs-toggle="modal"
-            @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
-            <span class="d-flex align-items-center">
-                <svg viewBox="0 0 24 24" width="512" height="512">
-                    <path
-                        d="M19,4h-1.1c-.46-2.28-2.48-4-4.9-4h-2c-2.41,0-4.43,1.72-4.9,4h-1.1C2.24,4,0,6.24,0,9v10c0,2.76,2.24,5,5,5h14c2.76,0,5-2.24,5-5V9c0-2.76-2.24-5-5-5ZM11,2h2c1.3,0,2.42,.84,2.83,2h-7.66c.41-1.16,1.52-2,2.83-2Zm11,17c0,1.65-1.35,3-3,3H5c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3h14c1.65,0,3,1.35,3,3v10Zm-4.85-7.1c.54,.54,.85,1.3,.85,2.1s-.31,1.55-.88,2.12l-2.39,2.56c-.2,.21-.46,.32-.73,.32-.24,0-.49-.09-.68-.27-.4-.38-.43-1.01-.05-1.41l2.16-2.32H7c-.55,0-1-.45-1-1s.45-1,1-1H15.43l-2.16-2.32c-.38-.4-.35-1.04,.05-1.41,.4-.38,1.04-.35,1.41,.05l2.41,2.59Z" />
-                </svg>
-            </span>
-            <span class="title">
-                Transmettre au DGA
-            </span>
-        </a>
-    </li>
+    @can('Assigner une tâche')
+        <li>
+            <a href="javascript:void(0)" data-bs-target="#dga-modal" data-bs-toggle="modal"
+                @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                <span class="d-flex align-items-center">
+                    <svg viewBox="0 0 24 24" width="512" height="512">
+                        <path
+                            d="M19,4h-1.1c-.46-2.28-2.48-4-4.9-4h-2c-2.41,0-4.43,1.72-4.9,4h-1.1C2.24,4,0,6.24,0,9v10c0,2.76,2.24,5,5,5h14c2.76,0,5-2.24,5-5V9c0-2.76-2.24-5-5-5ZM11,2h2c1.3,0,2.42,.84,2.83,2h-7.66c.41-1.16,1.52-2,2.83-2Zm11,17c0,1.65-1.35,3-3,3H5c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3h14c1.65,0,3,1.35,3,3v10Zm-4.85-7.1c.54,.54,.85,1.3,.85,2.1s-.31,1.55-.88,2.12l-2.39,2.56c-.2,.21-.46,.32-.73,.32-.24,0-.49-.09-.68-.27-.4-.38-.43-1.01-.05-1.41l2.16-2.32H7c-.55,0-1-.45-1-1s.45-1,1-1H15.43l-2.16-2.32c-.38-.4-.35-1.04,.05-1.41,.4-.38,1.04-.35,1.41,.05l2.41,2.59Z" />
+                    </svg>
+                </span>
+                <span class="title">
+                    Transmettre au DGA
+                </span>
+            </a>
+        </li>
+    @endcan
+    
     <li>
         <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) }}"
             @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>

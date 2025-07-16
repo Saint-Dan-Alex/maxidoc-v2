@@ -1,0 +1,290 @@
+Voici un récapitulatif des appels API avec leurs noms et les corps de requêtes associés pour tester l'application Nganda :
+
+### 1. Vérification du numéro de téléphone
+**API :** `POST /api/auth/verifyPhoneNumber`
+```json
+{
+  "phoneNumber": "+243851234567"
+}
+CORRECT
+```
+
+### 2. Authentification et récupération du token
+**API :** `POST /api/auth/login`
+```json
+{
+  "phoneNumber": "+243851234567",
+  "verificationCode": "123456"
+}
+```
+CORRECT
+### 3. Création du compte utilisateur
+**API :** `POST /api/users/register`
+```json
+{
+  "phoneNumber": "+243 85 123 4567",
+  "fullName": "Jean Propriétaire",
+  "role": "OWNER"
+}
+```
+CORRECT
+### 4. Création d'un bar // j'ai ajouter GET/api/bars pour visualiser
+**API :** `POST /api/bars`
+```json
+{
+  "name": "Bar La Joie",
+  "address": {
+    "street": "Avenue Lukusa",
+    "city": "Kinshasa",
+    "coordinates": {
+      "latitude": -4.3276,
+      "longitude": 15.3136
+    }
+  }
+}
+
+Pour la création des bars J'ai changé le json en 
+{
+  "name": "Bar MDD",
+  "ownerId":1,  
+   "street": "Avenue Lukusa",
+   "city": "Kinshasa",
+   "latitude": -4.3276,
+   "longitude": 15.3136
+    
+  
+}
+```
+
+### 5. Ajout d'un nouveau membre
+**API :** `POST /api/bars/:barId/members`
+```json
+{
+  "userId": "user456",
+  "role": "BARTENDER",
+  "permissions": ["STOCK_ACCESS", "SALES_ACCESS"]
+}
+```
+CORRECT
+### 6. Création d'un produit
+**API :** `POST /api/products`
+```json
+{
+  "name": "Primus 50cl",
+  "description": "Bière Primus 50cl",
+  "category": "Bière",
+  "barcode": "123456789",
+  "unitPrice": 2500,
+  "purchasePrice": 2000
+}
+```
+CORRECT
+### 7. Ajout de stock au dépôt
+**API :** `POST /api/stocks`
+```json
+{
+    "barId" : 5,
+  "productId": 2,
+  "quantity": 100,
+  "location": "DEPOT",
+  "isDepotStock": true,
+  "minQuantity": 20,
+  "maxQuantity": 200
+}
+```
+CORRECT
+### 8. Mise à jour du stock (ajout de 100 bouteilles)
+**API :** `PUT /api/stocks/:stockId`
+```json
+{
+  "quantity": 100,
+  "operation": "ADD"
+}
+```
+CORRECT
+### 9. Transfert de stock vers le frigo
+**API :** `POST /api/stock-transfers`
+```json
+{
+  "sourceBarId": null,
+  "destinationBarId": "bar123",
+  "type": "DEPOT_TO_BAR",
+  "products": [
+    {
+      "productId": "prod123",
+      "quantity": 20,
+      "sourceQuantity": 120
+    }
+  ],
+  "notes": "Transfert vers le frigo du bar",
+  "transferReason": "Approvisionnement du frigo"
+}
+
+CORRECTION
+{
+  "sourceBarId": 1,
+  "destinationBarId": 2,
+  "type": "DEPOT_TO_BAR",
+  "products": [
+    {
+      "productId": 1,
+      "quantity": 20,
+      "sourceQuantity": 120,
+      "status" : "PENDING"
+    }
+  ],
+  "notes": "Transfert vers le frigo du bar",
+  "transferReason": "Approvisionnement du frigo",
+  "createdBy":1,
+  "approveBy" : 2
+
+}
+
+```
+CORRECT
+### 10. Validation du transfert
+**API :** `PUT /api/stock-transfers/:transferId/status`
+```json
+{
+  "status": "COMPLETED"
+}
+```
+CORRECT
+### 11. Création d'une commande
+**API :** `POST /api/orders`
+```json
+{
+  "barId": "bar123",
+  "tableNumber": "T1",
+  "items": [
+    {
+      "productId": "prod123",
+      "quantity": 2,
+      "unitPrice": 2500,
+      "notes": "Avec glaçons"
+    }
+  ],
+  "paymentMethod": "CASH"
+}
+
+{
+  "barId": 2,
+  "tableNumber": "T1",
+  "items": [
+    {
+      "productId": 2,
+      "quantity": 2,
+      "unitPrice": 2500,
+      "notes": "Avec glaçons"
+    },{
+      "productId": 1,
+      "quantity": 4,
+      "unitPrice": 2500,
+      "notes": "Avec glaçons"
+    }
+  ],
+  "paymentMethod": "CASH"
+}
+
+```
+CORRECT
+### 12. Mise à jour du statut de la commande
+**API :** `PUT /api/orders/:orderId/status`
+```json
+{
+  "status": "COMPLETED",
+  "paymentStatus": "PAID"
+}
+```
+CORRECT
+### 13. Création d'une promotion
+**API :** `POST /api/promotions`
+```json
+{
+  "barId": "bar123",
+  "productId": "prod123",
+  "type": "PERCENTAGE",
+  "value": 20,
+  "startDate": "2024-03-20T00:00:00Z",
+  "endDate": "2024-03-25T23:59:59Z",
+  "targetAudience": "ALL"
+}
+CORRIGE (ENLEVE JUSTE LES Z A LA FIN)
+{
+  "barId": 2,
+  "productId": 2,
+  "type": "PERCENTAGE",
+  "value": 20,
+  "startDate": "2024-03-20T00:00:00",
+  "endDate": "2024-03-25T23:59:59",
+  "targetAudience": "ALL"
+}
+
+```
+
+### 14. Création d'un abonnement
+**API :** `POST /api/subscriptions`
+```json
+{
+  "barId": "bar123",
+  "plan": "PREMIUM",
+  "startDate": "2024-03-20T00:00:00Z",
+  "endDate": "2024-04-20T23:59:59Z",
+  "paymentMethod": "MOBILE_MONEY",
+  "autoRenew": true
+}
+ICI EGALEMENT ENLEVE LES Z
+{
+  "barId": 2,
+  "plan": "PREMIUM",
+  "startDate": "2024-03-20T00:00:00",
+  "endDate": "2024-04-20T23:59:59",
+  "paymentMethod": "MOBILE_MONEY",
+  "autoRenew": true
+}
+
+```
+
+### 15. Rapport des ventes
+**API :** `GET /api/reports/sales/?barId=bar123&startDate=2024-03-01&endDate=2024-03-20`
+https://projet-nganda-new-main-fid4v1.laravel.cloud/api/reports/sales/?barId=2&startDate=2024-03-01&endDate=2025-05-20
+```json
+reponse
+{
+    "totalSales": 20000,
+    "orderCount": 2,
+    "salesByPaymentMethod": {
+        "CASH": 20000
+    },
+    "period": {
+        "start": "2025-03-01",
+        "end": "2025-05-20"
+    }
+}
+```
+CORRECT
+### 16. Rapport des stocks
+**API :** `GET /api/reports/stock?barId=bar123`
+```json
+{
+  "barId": "bar123"
+}
+```
+CORRECT
+### 17. Liste des produits d'un bar
+**API :** `GET /api/bars/:barId/products?location=FRIDGE`
+```json
+{
+  "location": "FRIDGE"
+}
+CORRECT```
+
+### 18. Historique des transferts
+**API :** `GET /api/stock-transfers/barId=bar123&status=COMPLETED`
+```json
+{
+  "barId": "bar123",
+  "status": "COMPLETED"
+}
+```
+J AI CHANGE L URL EN GET/api/stock-transfers/?sourceBarId=1&status=COMPLETED VU QUE barId n'existe pas
