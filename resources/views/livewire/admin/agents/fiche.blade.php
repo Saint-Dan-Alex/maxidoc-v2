@@ -30,8 +30,15 @@
                         <span class="input-group-text" id="basic-addon1">
                             <i class="fi fi-rr-search"></i>
                         </span>
-                        <input type="text" class="form-control" placeholder="Recherche"
-                            wire:model.debounce.500ms='search' wire:.ignore.self>
+                        <div class="position-relative w-100">
+                            <input type="text" class="form-control" placeholder="Recherche"
+                                wire:model.debounce.500ms='search' wire:loading.attr="disabled" wire:target="search">
+                            <div wire:loading wire:target="search" class="position-absolute top-50 end-0 translate-middle-y me-2">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Chargement...</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </form>
                 <ul class="nav nav-tabs nav-sm mt-3 nav-tab-users">
@@ -53,6 +60,14 @@
 
                 <div class="tab-pane fade {{ $tab == 1 ? 'show active' : '' }} " id="person-active" role="tabpanel"
                     aria-labelledby="home-tab" wire:ignore.self>
+                    @if($isSearching)
+                        <div class="d-flex justify-content-center align-items-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Recherche en cours...</span>
+                            </div>
+                            <span class="ms-2">Recherche en cours...</span>
+                        </div>
+                    @endif
                     <div class="block-personnels">
                         <ul class="nav nav-tabs all-person pb-0" id="list-contact" wire:ignore.self>
                             @forelse ($actifAgents ?? [] as $actifAgent)
@@ -83,6 +98,14 @@
 
                 <div class="tab-pane fade {{ $tab == 2 ? 'show active' : '' }}" id="person-unactive" role="tabpanel"
                     aria-labelledby="profile-tab" wire:ignore.self>
+                    @if($isSearching)
+                        <div class="d-flex justify-content-center align-items-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Recherche en cours...</span>
+                            </div>
+                            <span class="ms-2">Recherche en cours...</span>
+                        </div>
+                    @endif
                     <div class="block-personnels">
                         <ul class="nav nav-tabs all-person" id="list-contact" wire:ignore.self>
                             @forelse ($inactifAgents ?? [] as $inactifAgent)

@@ -47,6 +47,7 @@ class Fiche extends Component
     public $search;
     public $statut;
     public $statuts;
+    public $isSearching = false;
     public $tab = 1;
     public $directions = [];
     public $lieus = [];
@@ -212,6 +213,19 @@ class Fiche extends Component
             $this->tab = $tab;
             // $this->emit('tabChange');
         }
+    }
+
+    public function updatedSearch()
+    {
+        $this->isSearching = true;
+        
+        // Réinitialiser la pagination lors d'une nouvelle recherche
+        $this->resetPage();
+        
+        // Simuler un délai pour montrer l'indicateur de chargement
+        usleep(300000); // 300ms de délai
+        
+        $this->isSearching = false;
     }
 
     public function searchFilter($query)
