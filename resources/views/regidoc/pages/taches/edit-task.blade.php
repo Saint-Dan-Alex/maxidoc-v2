@@ -174,12 +174,12 @@
                                         </div> --}}
                                     <div class="col-lg-12">
                                         <label class="mb-2">Date de début</label>
-                                        <input type="date" class="form-control" name="date_debut"
+                                        <input type="datetime-local" class="form-control" name="date_debut"
                                             value="{{ $tache->date_debut }}">
                                     </div>
                                     <div class="col-lg-12 echeance">
                                         <label class="mb-2">Date d'échéance</label>
-                                        <input type="date" class="form-control" name="date_fin"
+                                        <input type="datetime-local" class="form-control" name="date_fin"
                                             value="{{ $tache->date_fin }}">
                                     </div>
                                     {{-- <div class="col-12">
