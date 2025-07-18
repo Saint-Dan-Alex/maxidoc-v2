@@ -615,8 +615,9 @@ class TacheController extends Controller
 
     public function show($id)
     {
-        $tache = Tache::find($id);
-        return view('regidoc.pages.taches.show-task')->with(['tache' => $tache]);
+        $tache = Tache::with('documents')->find($id);
+        $documents = $tache->documents ?? collect();
+        return view('regidoc.pages.taches.show-task', compact('tache', 'documents'));
     }
 
     public function edit($id)
