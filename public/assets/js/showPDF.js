@@ -19,13 +19,37 @@ let code = $("#pdf-main-container").data("code");
 showPDF(url);
 
 function showPDF(pdf_url) {
-    // $("#pdf-loader").show();
-
+    // Nettoyer l'URL
+    if (typeof pdf_url === 'string') {
+        // Supprimer les échappements et guillemets
+        pdf_url = pdf_url.replace(/\\/g, '').replace(/^"|"$/g, '');
+        
+        // Corriger les doubles 'documents' dans l'URL
+        pdf_url = pdf_url.replace(/(\/storage\/documents\/?)documents\//, '$1');
+    }
+    
+    console.log('Tentative de chargement du PDF depuis :', pdf_url);
+    
+    // Afficher le loader
+    const pdfContents = $("#pdf-contents");
+    pdfContents.html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement...</span></div><p class="mt-2">Chargement du document en cours...</p></div>');
+    
     $(".pdf-tools #download").attr("href", pdf_url);
     $(".pdf-tools #download").attr("download", pdf_url);
 
+    // Vérifier si l'URL est valide
+    if (!pdf_url) {
+        const errorMsg = 'Aucune URL de document fournie';
+        console.error(errorMsg);
+        pdfContents.html('<div class="alert alert-danger m-3"><h5>Erreur de chargement</h5><p>' + errorMsg + '</p></div>');
+        return;
+    }
+
     PDFJS.getDocument({
         url: pdf_url,
+        // Activer CORS si nécessaire
+        // withCredentials: true,
+        // httpHeaders: { 'X-Requested-With': 'XMLHttpRequest' }
     }).then(function (pdf_doc) {
             __PDF_DOC = pdf_doc;
             __TOTAL_PAGES = __PDF_DOC.numPages;
@@ -123,11 +147,33 @@ function showPDF(pdf_url) {
             }
         })
         .catch(function (error) {
-            // If error re-show the upload button
-            // $("#pdf-loader").hide();
-            // $("#upload-button").show();
-
-            alert(error.message);
+            console.error('Erreur lors du chargement du PDF:', error);
+            
+            // Message d'erreur plus détaillé
+            let errorMessage = 'Impossible de charger le document PDF. ';
+            
+            if (error.name === 'MissingPDFException') {
+                errorMessage += 'Le fichier PDF est introuvable à l\'emplacement spécifié. ';
+                errorMessage += 'Veuillez vérifier que le fichier existe bien à l\'URL : ' + pdf_url;
+            } else if (error.name === 'InvalidPDFException') {
+                errorMessage += 'Le fichier PDF est corrompu ou n\'est pas un PDF valide.';
+            } else if (error.message && error.message.includes('NetworkError')) {
+                errorMessage += 'Erreur réseau lors du chargement du document. ';
+                errorMessage += 'Veuillez vérifier votre connexion internet ou contacter l\'administrateur.';
+            } else {
+                errorMessage += 'Erreur : ' + (error.message || 'Erreur inconnue');
+            }
+            
+            // Afficher l'erreur dans l'interface
+            const errorHtml = `
+                <div class="alert alert-danger m-3">
+                    <h5>Erreur de chargement du document</h5>
+                    <p>${errorMessage}</p>
+                    <p><small>URL tentée : ${pdf_url}</small></p>
+                    <button onclick="window.location.reload()" class="btn btn-sm btn-primary mt-2">Réessayer</button>
+                </div>`;
+                
+            $("#pdf-contents").html(errorHtml);
         });
 }
 

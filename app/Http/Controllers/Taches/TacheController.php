@@ -28,9 +28,81 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Courriers\CourrierController as CourrierController;
 use App\Models\Historique;
+use Illuminate\Support\Facades\Log;
 
 class TacheController extends Controller
 {
+    /**
+     * Construit une URL valide pour un document
+     *
+     * @param string $documentPath Chemin du document depuis la base de données
+     * @return string URL complète du document
+     */
+    public static function buildDocumentUrl($documentPath)
+    {
+        if (empty($documentPath)) {
+            return '';
+        }
+
+        // Essayer de décoder le JSON si c'est une chaîne JSON
+        $decoded = json_decode($documentPath, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            // Si c'est un tableau avec une clé download_link
+            if (is_array($decoded) && isset($decoded['download_link'])) {
+                $documentPath = $decoded['download_link'];
+            } 
+            // Si c'est un tableau avec un premier élément contenant download_link
+            elseif (is_array($decoded) && isset($decoded[0]['download_link'])) {
+                $documentPath = $decoded[0]['download_link'];
+            }
+            // Si c'est un tableau simple
+            elseif (is_array($decoded) && !empty($decoded[0])) {
+                $documentPath = $decoded[0];
+            }
+        }
+
+        // Nettoyer le chemin
+        $documentPath = ltrim($documentPath, '["\'');
+        $documentPath = rtrim($documentPath, '\"]}');
+
+        // Si c'est déjà une URL complète, la retourner telle quelle
+        if (Str::startsWith($documentPath, ['http://', 'https://', '/'])) {
+            return $documentPath;
+        }
+
+        // Si le chemin contient 'documentsJuly2025', le corriger en 'documents/July2025/'
+        if (str_contains($documentPath, 'documentsJuly2025')) {
+            $documentPath = str_replace('documentsJuly2025', 'July2025/', $documentPath);
+        }
+        // Sinon, si le chemin contient 'July2025' mais pas de slash après, l'ajouter
+        elseif (str_contains($documentPath, 'July2025') && !str_contains($documentPath, 'July2025/')) {
+            $documentPath = str_replace('July2025', 'July2025/', $documentPath);
+        }
+
+        // Si le nom de fichier commence par 'documents', nettoyer le chemin
+        if (Str::startsWith($documentPath, 'documents')) {
+            $documentPath = ltrim($documentPath, 'documents');
+            $documentPath = ltrim($documentPath, '/');
+        }
+
+        // Construire le chemin relatif du stockage
+        $relativePath = 'documents/' . ltrim($documentPath, '/');
+        
+        // Vérifier si le fichier existe directement
+        if (Storage::disk('public')->exists($relativePath)) {
+            return asset('storage/' . $relativePath);
+        }
+
+        // Si le fichier n'existe pas, essayer de le trouver directement dans le dossier July2025
+        $filename = basename($documentPath);
+        $directPath = 'documents/July2025/' . $filename;
+        if (Storage::disk('public')->exists($directPath)) {
+            return asset('storage/' . $directPath);
+        }
+
+        // Si on arrive ici, retourner le chemin même s'il n'existe pas (pour éviter les erreurs)
+        return asset('storage/' . $relativePath);
+    }
     public function index()
     {
        
@@ -617,6 +689,12 @@ class TacheController extends Controller
     {
         $tache = Tache::with('documents')->find($id);
         $documents = $tache->documents ?? collect();
+        
+        // Préparer les URLs des documents
+        $documents->each(function($document) {
+            $document->document_url = self::buildDocumentUrl($document->document);
+        });
+        
         return view('regidoc.pages.taches.show-task', compact('tache', 'documents'));
     }
 
