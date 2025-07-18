@@ -1,3 +1,7 @@
+@php
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
 
@@ -525,9 +529,8 @@
                                 @if ($tache->documents->first())
                                     <a href="{{ route('regidoc.documents.sign', ['doc_id' => $tache->documents->last()?->id, 'tache_id' => $tache->id, 'is_original' => $tache->documents->count() <= 1]) }}"
                                         class="link-nav" @disabled($tache->tache_statut_id == 3)>
-                                        <svg viewBox="0 0 24 24" width="512" height="512">
-                                            <path
-                                                d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1,.45,1,1Z" />
+                                        <svg viewBox="0 0 24 24" width="24" height="24">
+                                            <path d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1,.45,1,1Z" />
                                         </svg>
                                         Demander eSignature
                                     </a>
@@ -622,6 +625,87 @@
                 </div>
             </div>
         </div>
+
+        {{-- Barre de sélection des documents --}}
+        @if($documents->count() > 1)
+        <div class="document-selector-bar py-2 px-3" style="background-color: #f8f9fa; border-top: 1px solid #dee2e6; border-bottom: 1px solid #dee2e6;">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label for="document-select" class="form-label mb-0">Document actuel :</label>
+                </div>
+                <div class="col-md-8">
+                    <select class="form-select form-select-sm" id="document-select" onchange="changeDocument(this)">
+                        @foreach($documents as $index => $document)
+                            @php
+                                $documentUrl = '';
+                                $documentData = $document->document ?? '';
+                                
+                                // Décoder la chaîne JSON si nécessaire
+                                if (!empty($documentData)) {
+                                    // Essayer de décoder la chaîne JSON
+                                    $decodedData = json_decode($documentData, true);
+                                    
+                                    if (json_last_error() === JSON_ERROR_NONE) {
+                                        // Si c'est un tableau, prendre le premier élément
+                                        if (is_array($decodedData) && isset($decodedData[0]['download_link'])) {
+                                            $documentPath = $decodedData[0]['download_link'];
+                                        } 
+                                        // Si c'est un objet avec download_link
+                                        elseif (is_array($decodedData) && isset($decodedData['download_link'])) {
+                                            $documentPath = $decodedData['download_link'];
+                                        } 
+                                        // Si c'est un tableau simple
+                                        elseif (is_array($decodedData) && !empty($decodedData[0])) {
+                                            $documentPath = $decodedData[0];
+                                        } else {
+                                            $documentPath = $documentData;
+                                        }
+                                    } else {
+                                        // Si ce n'est pas du JSON valide, utiliser directement la valeur
+                                        $documentPath = $documentData;
+                                    }
+                                    
+                                    // Nettoyer le chemin du document
+                                    $documentPath = is_string($documentPath) ? $documentPath : '';
+                                    $documentPath = trim($documentPath);
+                                    
+                                    // Supprimer les caractères indésirables au début et à la fin
+                                    $charsToRemove = ['[', ']', '"', "'", '\\'];
+                                    foreach ($charsToRemove as $char) {
+                                        $documentPath = trim($documentPath, $char);
+                                    }
+                                    
+                                    // Remplacer les antislashs par des slashes
+                                    $documentPath = str_replace('\\', '/', $documentPath);
+                                    
+                                    // Générer l'URL complète
+                                    if (!empty($documentPath)) {
+                                        // Supprimer les barres obliques en double et au début
+                                        $documentPath = ltrim($documentPath, '/');
+                                        
+                                        // Si le chemin commence déjà par 'documents/' ou 'documents\', on le nettoie
+                                        if (str_starts_with($documentPath, 'documents/') || str_starts_with($documentPath, 'documents\\')) {
+                                            $documentPath = 'documents/' . ltrim(substr($documentPath, 10), '/');
+                                        }
+                                        
+                                        $documentUrl = asset('storage/' . $documentPath);
+                                    }
+                                    
+                                    // Nettoyer l'URL finale
+                                    $documentUrl = str_replace('//', '/', $documentUrl);
+                                    $documentUrl = str_replace('http:/', 'http://', $documentUrl);
+                                    $documentUrl = str_replace('https:/', 'https://', $documentUrl);
+                                }
+                            @endphp
+                            <option value="{{ $document->id }}" data-url="{{ $documentUrl }}" {{ $loop->last || $document->id == request('document_id') ? 'selected' : '' }}>
+                                Document {{ $loop->iteration }} - {{ $document->libelle }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <div class="container-fluid">
             <div class="row justify-content-end">
@@ -1229,6 +1313,264 @@
     </script>
 
     <script>
+        // Fonction pour nettoyer et normaliser une URL de document
+        function cleanDocumentUrl(url) {
+            if (!url) return '';
+            
+            // Convertir en chaîne et supprimer les espaces
+            let cleanedUrl = String(url).trim();
+            
+            // Supprimer les guillemets au début et à la fin
+            while ((cleanedUrl.startsWith('"') || cleanedUrl.startsWith("'") || 
+                   cleanedUrl.endsWith('"') || cleanedUrl.endsWith("'"))) {
+                if (cleanedUrl.startsWith('"') || cleanedUrl.startsWith("'")) {
+                    cleanedUrl = cleanedUrl.substring(1);
+                }
+                if (cleanedUrl.endsWith('"') || cleanedUrl.endsWith("'")) {
+                    cleanedUrl = cleanedUrl.substring(0, cleanedUrl.length - 1);
+                }
+            }
+            
+            // Remplacer tous les antislashs par des slashes
+            cleanedUrl = cleanedUrl.split('\\').join('/');
+            
+            // Supprimer les doubles slashes (sauf après http:)
+            let parts = cleanedUrl.split('//');
+            for (let i = 1; i < parts.length; i++) {
+                if (!parts[i-1].endsWith('http:') && !parts[i-1].endsWith('https:')) {
+                    parts[i-1] = parts[i-1] + '/';
+                    parts[i] = parts[i].replace(/^\/+/, '');
+                }
+            }
+            cleanedUrl = parts.join('//').replace(/\/\//g, '/');
+            
+            // Si l'URL ne commence pas par http ou /
+                // Si le chemin commence déjà par documents/, on nettoie
+                cleanedUrl = cleanedUrl.replace(/^documents\//, '');
+                // On reconstruit l'URL complète
+                cleanedUrl = `/storage/documents/${cleanedUrl}`;
+            }
+            
+            return cleanedUrl;
+        }
+
+        // Fonction pour changer le document affiché
+        function changeDocument(selectElement) {
+            try {
+                // Si on reçoit directement l'ID (cas de l'event onchange avec this.value)
+                const documentSelect = typeof selectElement === 'string' 
+                    ? document.getElementById('document-select')
+                    : selectElement;
+                    
+                // Récupérer l'ID du document sélectionné
+                const documentId = typeof selectElement === 'string' 
+                    ? selectElement 
+                    : selectElement.value;
+                    
+                console.log('Changement de document vers ID:', documentId);
+                
+                if (!documentSelect) {
+                    console.error('Élément de sélection de document non trouvé');
+                    throw new Error('Élément de sélection de document non trouvé');
+                }
+                
+                // Trouver l'option sélectionnée
+                const selectedOption = documentSelect.querySelector(`option[value="${documentId}"]`);
+                if (!selectedOption) {
+                    console.error('Option sélectionnée non trouvée pour l\'ID:', documentId);
+                    throw new Error('Document non trouvé');
+                }
+                
+                // Récupérer l'URL du document depuis l'attribut data-url
+                let documentUrl = selectedOption.getAttribute('data-url');
+                if (!documentUrl) {
+                    console.error('URL du document non trouvée pour le document ID:', documentId);
+                    throw new Error('URL du document non disponible');
+                }
+
+                // Nettoyer et normaliser l'URL du document
+                documentUrl = cleanDocumentUrl(documentUrl);
+                console.log('URL du document nettoyée:', documentUrl);
+                
+                // Afficher un indicateur de chargement
+                const pdfContainer = document.querySelector('#pdf-contents');
+                if (pdfContainer) {
+                    pdfContainer.innerHTML = `
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <p class="mt-2">Chargement du document en cours...</p>
+                        </div>`;
+                }
+
+                // Mettre à jour l'URL sans recharger la page
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('document_id', documentId);
+                window.history.pushState({}, '', newUrl);
+
+                // Vider le conteneur PDF existant
+                if (pdfContainer) {
+                    pdfContainer.innerHTML = '';
+                }
+                
+                // Mettre à jour l'URL du document dans le conteneur principal
+                const pdfMainContainer = document.querySelector('#pdf-main-container');
+                if (!pdfMainContainer) {
+                    console.error('Conteneur PDF principal non trouvé');
+                    throw new Error('Conteneur PDF principal non trouvé');
+                }
+                
+                pdfMainContainer.setAttribute('data-url', documentUrl);
+                pdfMainContainer.setAttribute('data-docid', documentId);
+                
+                // Vérifier si la fonction showPDF est disponible
+                if (typeof window.showPDF !== 'function') {
+                    console.error('La fonction showPDF n\'est pas disponible');
+                    window.location.reload();
+                    return;
+                }
+                
+                // Réinitialiser les variables globales
+                if (window.__PDF_DOC) {
+                    try {
+                        window.__PDF_DOC.destroy();
+                    } catch (e) {
+                        console.warn('Erreur lors de la destruction du document PDF existant:', e);
+                    }
+                }
+                
+                window.__PDF_DOC = null;
+                window.__TOTAL_PAGES = 0;
+                window.__CURRENT_PAGE = 1;
+                window.__PAGE_RENDERING_IN_PROGRESS = 0;
+                
+                console.log('Chargement du document avec URL:', documentUrl);
+                
+                let loadTimeout = null;
+                let isLoading = true;
+                
+                try {
+                    // Désactiver le sélecteur pendant le chargement
+                    documentSelect.disabled = true;
+                    
+                    // Charger le nouveau document avec un timeout pour éviter les blocages
+                    loadTimeout = setTimeout(() => {
+                        if (isLoading && window.__PAGE_RENDERING_IN_PROGRESS) {
+                            console.warn('Le chargement du document prend plus de temps que prévu');
+                            // Afficher un message à l'utilisateur
+                            const loadingMessage = document.createElement('div');
+                            loadingMessage.className = 'alert alert-warning mt-3';
+                            loadingMessage.innerHTML = `
+                                <div class="d-flex align-items-center">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                    <div>
+                                        Le chargement du document prend plus de temps que prévu. Veuillez patienter...
+                                    </div>
+                                </div>`;
+                            
+                            const existingAlert = pdfContainer.querySelector('.alert-warning');
+                            if (!existingAlert) {
+                                pdfContainer.prepend(loadingMessage);
+                            }
+                        }
+                    }, 5000);
+                    
+                    console.log('Début du chargement du document:', documentUrl);
+                    
+                    // Charger le nouveau document
+                    return window.showPDF(documentUrl)
+                        .then(() => {
+                            console.log('Document chargé avec succès');
+                            // Mettre à jour l'historique du navigateur
+                            const newUrl = new URL(window.location.href);
+                            newUrl.searchParams.set('document_id', documentId);
+                            window.history.pushState({ documentId }, '', newUrl);
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors du chargement du document:', error);
+                            throw error; // Propager l'erreur pour la gérer dans le bloc catch externe
+                        });
+                } finally {
+                    // Nettoyer dans tous les cas (succès ou échec)
+                    isLoading = false;
+                    if (loadTimeout) clearTimeout(loadTimeout);
+                    documentSelect.disabled = false;
+                    
+                    // Supprimer les messages de chargement
+                    const loadingMessages = document.querySelectorAll('.alert-warning');
+                    loadingMessages.forEach(msg => msg.remove());
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors du changement de document:', error);
+                
+                // Afficher un message d'erreur à l'utilisateur
+                const errorContainer = document.querySelector('#pdf-contents') || document.body;
+                if (!errorContainer) {
+                    console.error('Conteneur d\'erreur non trouvé');
+                    return;
+                }
+                
+                // Sauvegarder le contenu actuel pour le restaurer si nécessaire
+                const currentContent = errorContainer.innerHTML;
+                
+                try {
+                    // Créer un message d'erreur plus détaillé
+                    let errorMessage = 'Une erreur est survenue lors du chargement du document sélectionné.';
+                    let errorDetails = error.message || 'Erreur inconnue';
+                    
+                    // Personnaliser le message en fonction du type d'erreur
+                    if (error.message && error.message.includes('Failed to fetch')) {
+                        errorMessage = 'Impossible de charger le document. Vérifiez votre connexion internet.';
+                    } else if (error.message && error.message.includes('404')) {
+                        errorMessage = 'Le document demandé est introuvable.';
+                    }
+                    
+                    // Afficher le message d'erreur
+                    errorContainer.innerHTML = `
+                        <div class="alert alert-danger m-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="alert-heading">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Erreur lors du chargement du document
+                                </h5>
+                                <button type="button" class="btn-close" onclick="this.closest('.alert').remove()"></button>
+                            </div>
+                            <p>${errorMessage}</p>
+                            <div class="bg-light p-2 mb-3 rounded">
+                                <small class="text-muted d-block mb-1">Détails techniques :</small>
+                                <code class="text-danger">${errorDetails}</code>
+                            </div>
+                            <div class="mt-3 d-flex flex-wrap gap-2">
+                                <button onclick="window.location.reload()" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-sync-alt me-1"></i> Réessayer
+                                </button>
+                                <button onclick="history.back()" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i> Retour
+                                </button>
+                                <button onclick="navigator.clipboard.writeText('${errorDetails}').then(() => alert('Erreur copiée dans le presse-papier'))" 
+                                        class="btn btn-sm btn-outline-dark ms-auto"
+                                        title="Copier les détails de l'erreur">
+                                    <i class="far fa-copy me-1"></i> Copier l'erreur
+                                </button>
+                            </div>
+                        </div>`;
+                    
+                    // Ajouter automatiquement un défilement vers le haut pour voir le message d'erreur
+                    errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                } catch (innerError) {
+                    console.error('Erreur lors de l\'affichage du message d\'erreur:', innerError);
+                    // En cas d'échec, restaurer le contenu précédent
+                    errorContainer.innerHTML = currentContent;
+                    alert('Erreur lors du chargement du document: ' + (error.message || 'Erreur inconnue'));
+                }
+            }
+        }
+
         // Livewire.on('documentAdded', (e) => {
         //     $(".doc-vignette").empty();
         //     showFirstPageImg(e, $(".doc-vignette"));
