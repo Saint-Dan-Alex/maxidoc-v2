@@ -551,6 +551,12 @@ use Illuminate\Support\Facades\Storage;
                                     <i class="fi fi-rr-clip"></i>
                                     Pièce jointes
                                 </a>
+                                @if (Auth::user()->agent->isDG() || Auth::id() == $tache->user_id)
+                                    <a href="{{ route('regidoc.taches.edit', $tache->id) }}" class="link-nav">
+                                        <i class="fi fi-rr-edit"></i>
+                                        Modifier la tâche
+                                    </a>
+                                @endif
                             @endif
 
                         </div>
