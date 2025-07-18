@@ -448,136 +448,146 @@ $(document).on("scroll", function () {
 });
 
 $("#print").on("click", function () {
+    // Vérifier si l'élément #pdf-contents existe
+    const pdfContents = document.getElementById('pdf-contents');
+    if (!pdfContents) {
+        console.error("Élément #pdf-contents introuvable");
+        alert("Impossible de trouver le contenu à imprimer");
+        return;
+    }
 
-        // var divContents = document.getElementById("pdf-contents").innerHTML; 
-        imprimerTousLesCanvas()
+    // Vérifier s'il y a des canvas à imprimer
+    const allCanvas = pdfContents.querySelectorAll('canvas');
+    if (allCanvas.length === 0) {
+        console.error("Aucun canvas trouvé pour l'impression");
+        alert("Aucun document à imprimer");
+        return;
+    }
 
+    // Afficher un indicateur de chargement
+    const originalButtonText = $(this).html();
+    $(this).html('<i class="fas fa-spinner fa-spin"></i> Préparation de l\'impression...').prop('disabled', true);
 
-
-    // Remplacez 'your_pdf_file.pdf' par le lien de votre fichier PDF
-    // var pdfUrl = 'your_pdf_file.pdf';
-
-    // var content = document.getElementById('pdf-contents');
-    // let printWindow = window.open("", "", "width=800,height=600");
-    // printWindow.document.write(
-    //     "<html><head>"+document.querySelector('head').innerHTML+"</head><body>"
-    // );
-
-    // printWindow.document.write(content.innerHTML);
-
-    // printWindow.document.write("</body></html>");
-    // printWindow.document.close();
-
-    // // Attendre que l'image soit chargée avant d'initier l'impression
-    //   printWindow.onload = function () {
-    //     printWindow.print();
-    //   };
-
-    // Charger le PDF
-    // PDFJS.getDocument(url).promise.then(function (pdf) {
-    //     // Créer une fenêtre d'impression
-    //     let printWindow = window.open("", "", "width=800,height=600");
-    //     //   printWindow.document.open();
-    //     printWindow.document.write(
-    //         "<html><head><title>Impression PDF</title></head><body>"
-    //     );
-    //     let parent = document.createElement("div");
-
-    //     //   var printWindow = window.open('', '_blank');
-    //     //   printWindow.document.write('<html><head><title>Impression PDF</title></head><body>');
-
-    //     // Imprimer chaque page du PDF
-    //     for (var pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-    //         var pdfPage = document.createElement("div");
-    //         pdfPage.classList.add("pdf-page");
-    //         pdfPage.setAttribute("id", "page-" + pageNum);
-
-    //         var canvas = document.createElement("canvas");
-    //         // canvas.setAttribute('width', '595px');
-    //         canvas.setAttribute("data-page", pageNum);
-    //         canvas.classList.add("pdf-canvas");
-    //         canvas.classList.add("mb-2");
-
-    //         $(pdfPage).append(canvas);
-
-    //         var textLayer = document.createElement("div");
-    //         textLayer.classList.add("text-layer");
-    //         $(pdfPage).append(textLayer);
-
-    //         var annotationLayer = document.createElement("div");
-    //         annotationLayer.classList.add("annotationLayer");
-    //         $(pdfPage).append(annotationLayer);
-
-    //         var loader = document.createElement("div");
-    //         loader.classList.add("page-loader");
-    //         loader.classList.add("page-" + pageNum);
-
-    //         var loaderIcon = document.createElement("img");
-    //         loaderIcon.src = "/assets/images/loader.svg";
-    //         $(loader).append(loaderIcon);
-
-    //         $(pdfPage).append(loader);
-
-    //         $(parent).append(pdfPage);
-
-    //         test(canvas, parent, textLayer, pageNum, pdf, printWindow);
-
-    //         // pdf.getPage(pageNum).then(function (page) {
-    //         //   var canvas = document.createElement("canvas");
-    //         //   var context = canvas.getContext("2d");
-
-    //         //   // Définir la taille du canevas pour correspondre à la taille de la page
-    //         //   var viewport = page.getViewport({ scale: 1.5 });
-    //         //   canvas.width = viewport.width;
-    //         //   canvas.height = viewport.height;
-
-    //         //   // Dessiner la page sur le canevas
-    //         //   page.render({ canvasContext: context, viewport: viewport }).promise.then(function () {
-    //         //     // Créer une image de la page
-    //         //     var imgData = canvas.toDataURL("image/png");
-
-    //         //     // Ajouter l'image à la fenêtre d'impression
-    //         //     // printWindow.document.write('<img src="' + imgData + '">');
-
-    //         //     parent.append(canvas)
-    //         //     printWindow.document.write(parent.innerHTML);
-
-    //         //     // Si c'est la dernière page, fermer la fenêtre et lancer l'impression
-    //         //     if (pageNum === pdf.numPages) {
-    //         //       printWindow.document.write('</body></html>');
-    //         //       printWindow.document.close();
-
-    //         //       // Attendre que l'image soit chargée avant d'initier l'impression
-    //         //     //   printWindow.onload = function () {
-    //         //     //     printWindow.print();
-    //         //     //   };
-    //         //     }
-    //         //   });
-    //         // });
-    //     }
-    // });
+    // Appeler la fonction d'impression avec un léger délai pour permettre à l'UI de se mettre à jour
+    setTimeout(() => {
+        try {
+            imprimerTousLesCanvas();
+        } catch (error) {
+            console.error("Erreur lors de l'impression :", error);
+            alert("Une erreur est survenue lors de l'impression : " + error.message);
+        } finally {
+            // Réactiver le bouton dans tous les cas
+            $(this).html(originalButtonText).prop('disabled', false);
+        }
+    }, 100);
 });
 
 // Fonction pour imprimer tous les canvas
 function imprimerTousLesCanvas() {
-    var printWindow = window.open('', '_blank');
-    printWindow.document.write('<html><head><title>Imprimés</title></head><body>');
-    var allCanvas = document.querySelectorAll('#pdf-contents canvas');
+    try {
+        const allCanvas = document.querySelectorAll('#pdf-contents canvas');
+        if (!allCanvas || allCanvas.length === 0) {
+            throw new Error("Aucun canvas trouvé pour l'impression");
+        }
 
-    // Ajoutez chaque canvas à la fenêtre d'impression
-    for (let index = 0; index < allCanvas.length; index++) {
-        const can = allCanvas[index];
-        imprimerCanvas(printWindow, can, allCanvas.length);
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            throw new Error("Impossible d'ouvrir une nouvelle fenêtre. Veuillez désactiver votre bloqueur de fenêtres popup.");
+        }
+
+        // Créer le contenu HTML de base avec des styles d'impression
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Impression de document</title>
+                    <style>
+                        @page {
+                            size: A4;
+                            margin: 0.5cm;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            font-family: Arial, sans-serif;
+                        }
+                        .page-container {
+                            page-break-after: always;
+                            margin-bottom: 20px;
+                        }
+                        .page-container:last-child {
+                            page-break-after: auto;
+                        }
+                        img {
+                            max-width: 100%;
+                            height: auto;
+                            display: block;
+                            margin: 0 auto;
+                        }
+                        @media print {
+                            .no-print {
+                                display: none !important;
+                            }
+                            body {
+                                padding: 0;
+                                margin: 0;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="no-print" style="text-align: center; padding: 20px; background: #f5f5f5; margin-bottom: 20px;">
+                        <h2>Aperçu avant impression</h2>
+                        <p>Utilisez la fonction d'impression de votre navigateur (Ctrl+P ou Cmd+P)</p>
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 10px;">
+                            Imprimer
+                        </button>
+                        <button onclick="window.close()" style="padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 10px;">
+                            Fermer
+                        </button>
+                    </div>
+        `);
+
+        // Ajouter chaque canvas comme une image
+        allCanvas.forEach((canvas, index) => {
+            try {
+                const imgData = canvas.toDataURL('image/png');
+                printWindow.document.write(`
+                    <div class="page-container">
+                        <img src="${imgData}" alt="Page ${index + 1}" style="max-width: 100%; height: auto;">
+                    </div>
+                `);
+            } catch (error) {
+                console.error(`Erreur lors de la conversion du canvas ${index + 1}:`, error);
+            }
+        });
+
+        // Fermer les balises HTML
+        printWindow.document.write('</body></html>');
+        
+        // Fermer le document
+        printWindow.document.close();
+
+        // Attendre que le contenu soit chargé avant d'imprimer
+        printWindow.onload = function() {
+            // Donner le focus à la fenêtre d'impression
+            printWindow.focus();
+            
+            // Ne pas lancer l'impression automatiquement pour permettre l'aperçu
+            // L'utilisateur peut utiliser le bouton d'impression dans la fenêtre
+            // printWindow.print();
+        };
+
+    } catch (error) {
+        console.error("Erreur lors de l'impression :", error);
+        alert("Erreur lors de l'impression : " + error.message);
+        
+        // Fermer la fenêtre d'impression si elle a été ouverte
+        if (printWindow) {
+            printWindow.close();
+        }
+        
+        throw error; // Propager l'erreur pour une gestion ultérieure
     }
-    // Ajoutez autant de canvas que nécessaire
-
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
-    printWindow.close();
-}
-
-// Fonction pour imprimer un canvas spécifique
-function imprimerCanvas(printWindow, can, count) {
-    printWindow.document.write('<img src="' + can.toDataURL() + '" style="width:'+can.width+'px;height:'+(can.height - (25 * count))+'px">');
 }
