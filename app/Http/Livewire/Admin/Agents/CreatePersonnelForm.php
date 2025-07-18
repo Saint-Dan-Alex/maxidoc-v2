@@ -59,6 +59,7 @@ class CreatePersonnelForm extends Component
     public $fonction_id = null;
     public $sections;
     public $section_id;
+    public $grade_id;
 
     public $isReadyOnly = [
         'direction' => true,
@@ -78,7 +79,13 @@ class CreatePersonnelForm extends Component
         $this->divisions = collect();
         $this->services = collect();
         $this->sections = collect();
-        $this->fonctions = Fonction::select('id', 'titre')->get();
+        
+        // Récupération des fonctions avec logging
+        $this->fonctions = Fonction::select('id', 'titre', 'description')->get();
+        
+        // Log pour débogage
+        \Log::info('Fonctions chargées : ', $this->fonctions->toArray());
+        \Log::info('Nombre de fonctions : ' . $this->fonctions->count());
     }
     public function updatedLieuId()
     {
@@ -351,7 +358,7 @@ class CreatePersonnelForm extends Component
     {
         $nomSansAccents = $this->removeAccents($this->nom);
         $prenomSansAccents = $this->removeAccents($this->post_nom);
-        $this->newMail = Str::lower($nomSansAccents) . '.' . Str::lower($prenomSansAccents) . '@regideso.cd';
+        $this->newMail = Str::lower($nomSansAccents) . '.' . Str::lower($prenomSansAccents) . '@lerexcompetroleum.com';
     }
 
 

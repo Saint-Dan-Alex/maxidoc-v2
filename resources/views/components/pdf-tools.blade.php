@@ -57,7 +57,7 @@
             </button>
         @endcan
 
-        @can('Télécharger un document')
+        @can('Telecharger un document')
             <a id="download" class="toolbarButton btn" title="Télécharger" tabindex="33" href="#" download>
                 <span class="fi fi-rr-download icon-pdf-tools"></span>
             </a>

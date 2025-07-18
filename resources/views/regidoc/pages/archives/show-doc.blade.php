@@ -74,10 +74,40 @@
                         </div>
                         <div class="col-12">
                             <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Référence</label>
+                                <div class="col-7">
+                                    <p class="items">{{ Str::ucfirst($find_document->reference ?? '') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Description</label>
+                                <div class="col-7">
+                                    <p class="items scrollable-text">
+                                        {{ Str::ucfirst($find_document->description ?? '') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-12">
+                            <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Catégorie</label>
                                 <div class="col-7">
                                     <p class="items">
                                         {{ Str::ucfirst($find_document->categorie->title) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Type de document</label>
+                                <div class="col-7">
+                                    <p class="items">
+                                        {{$find_document->typeDocument->titre}}
                                     </p>
                                 </div>
                             </div>
@@ -92,6 +122,24 @@
                                 </div>
                             </div>
                         </div>
+                        @if ($find_document->priorite)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Priorité
+                                            </span>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ Str::ucfirst($find_document->priorite->titre ?? '') }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Ajouté par</label>

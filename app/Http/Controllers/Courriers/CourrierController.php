@@ -31,6 +31,7 @@ use Illuminate\Support\Str;
 use Nette\Utils\Random;
 use App\Mail\DocumentPasswordMail;
 use App\Models\CourrierDestinateurExterne;
+use Illuminate\Support\Collection;
 
 use Illuminate\Support\Facades\Log;
 
@@ -71,7 +72,7 @@ class CourrierController extends Controller
             return view('regidoc.pages.courriers.new-doc')->with([
                 'types' => $types,
                 'services' => $services,
-                // 'agents' => $agents,
+                'agents' => $agents,
                 'natures' => $natures,
                 'newDoc' => $newDoc,
                 'textSelected' => $textSelected,
@@ -79,13 +80,18 @@ class CourrierController extends Controller
             ]);
 
         } else {
+            $agents = Agent::actif()->select('id','user_id','direction_id','nom','post_nom','prenom','division_id','service_id','fonction_id')->get();
+
             $types = CourrierType::select('id', 'titre')->get();
             $services = Service::select('id', 'titre','responsable_id')->get();
             $natures = CourrierNature::select('id', 'titre')->get();
-            return view('regidoc.pages.courriers.new-doc', compact('types', 'services', 'natures'));
+            return view('regidoc.pages.courriers.new-doc', compact('types', 'services', 'natures','agents'));
         }
 
     }
+
+    
+
 
     public function relance(Courrier $courrier)
     {
@@ -1033,94 +1039,214 @@ public function createDocument($request, $destinateur, $doc = null)
      */
    
 
-
-
-
-
-public function store(Request $request)
-{
-    try {
-        if ($request->get('type') == 1) {
-            // Récupérer les assistants du DG via la relation assistanats()
-            $assistantsDG = Direction::find(1)->assistanats->pluck('responsable_id');
-
-            if ($assistantsDG->isEmpty()) {
-                $content = json_encode([
-                    'name' => 'Courrier',
-                    'statut' => 'error',
-                    'message' => 'Impossible d\'envoyer le courrier, aucun assistant du DG trouvé.',
-                ]);
-                session()->flash('session', $content);
-                return redirect()->route('regidoc.courriers.index');
-            }
-
-            // Création du document avec le premier assistant DG comme responsable
-            $document = $this->createDocument($request, $assistantsDG->first());
-
-            // Création du courrier
-            $courrier = new Courrier;
-            $courrier->type_id = $request->get('type');
-            $courrier->category_id = $request->get('categorie');
-            $courrier->exped_externe = $request->get('exp');
-            $courrier->reference_courrier = $request->get('ref');
-            $courrier->reference_interne = $request->get('ref_interne');
-            $courrier->confidentiel = $request->get('confidentiel') ? '1' : '0';
-            $courrier->title = $request->get('title');
-            $courrier->nature_id = $request->get('nature');
-            $courrier->date_du_courrier = $request->get('date-doc');
-            $courrier->date_arrive = $request->get('date-arriv');
-            $courrier->objet = $request->get('objet');
-            $courrier->document_id = $document?->id;
-            $courrier->created_by = Auth::user()->agent->id;
-            $courrier->statut_id = 1;
-            $courrier->save();
-
-            // Attacher les assistants DG comme destinataires
-            $courrier->destinateurs()->attach($assistantsDG);
-
-            // Attacher l'étape (exemple : étape 2)
-            $courrier->etapes()->attach(2);
-
-            // Notification aux assistants DG sauf le créateur
-            $notifyAgents = $courrier->destinateurs->where('id', '!=', Auth::user()->agent->id);
-            if ($notifyAgents->count()) {
-                event(new CourrierCreated($courrier, $notifyAgents, 'A créé un nouveau courrier !'));
-            }
-
-            // Historique
-            Historique::create([
-                "key" => "Numérisation du courrier",
-                "historiquecable_id" => $courrier->id,
-                "historiquecable_type" => Courrier::class,
-                "description" => "A numérisé un courrier",
-                "user_id" => Auth::user()->id,
-            ]);
-
-            $content = json_encode([
-                'name' => 'Courriers',
-                'statut' => 'success',
-                'message' => 'Courrier numérisé et envoyé aux assistants du DG avec succès !',
-            ]);
-        } else {
-            $content = json_encode([
-                'name' => 'Courrier',
-                'statut' => 'error',
-                'message' => 'Type de courrier non supporté pour la numérisation.',
-            ]);
-        }
-    } catch (\Throwable $th) {
-        \Log::error("Erreur store courrier : " . $th->getMessage());
-
+    public function store(Request $request)
+    {
+        // Initialiser $content pour s'assurer qu'il est toujours défini.
         $content = json_encode([
             'name' => 'Courrier',
             'statut' => 'error',
-            'message' => 'Impossible de numériser le courrier, une erreur s\'est produite.',
+            'message' => 'Type de courrier non supporté pour la numérisation.', // Message par défaut
         ]);
+
+        try {
+            // Récupérer la valeur de 'copie' si elle est présente dans la requête.
+            // On l'initialise à un tableau vide si elle n'existe pas.
+            $copie = $request->get('copie', []); 
+
+            if ($request->get('type') == 1) { // Logique pour Courrier Entrant
+                // Récupérer les assistants du DG via la relation assistanats()
+                $assistantsDG = Direction::find(1)->assistanats->pluck('responsable_id');
+
+                if ($assistantsDG->isEmpty()) {
+                    $content = json_encode([
+                        'name' => 'Courrier',
+                        'statut' => 'error',
+                        'message' => 'Impossible d\'envoyer le courrier, aucun assistant du DG trouvé.',
+                    ]);
+                    session()->flash('session', $content);
+                    return redirect()->route('regidoc.courriers.index');
+                }
+
+                // Création du document avec le premier assistant DG comme responsable
+                // Assurez-vous que la méthode createDocument existe et est accessible (private, protected, ou helper)
+                $document = $this->createDocument($request, $assistantsDG->first());
+
+                // Création du courrier
+                $courrier = new Courrier;
+                $courrier->type_id = $request->get('type');
+                $courrier->category_id = $request->get('categorie');
+                $courrier->exped_externe = $request->get('exp');
+                $courrier->reference_courrier = $request->get('ref');
+                $courrier->reference_interne = $request->get('ref_interne');
+                $courrier->confidentiel = $request->get('confidentiel') ? '1' : '0';
+                $courrier->title = $request->get('title');
+                $courrier->nature_id = $request->get('nature');
+                $courrier->date_du_courrier = $request->get('date-doc');
+                $courrier->date_arrive = $request->get('date-arriv');
+                $courrier->objet = $request->get('objet');
+                $courrier->document_id = $document?->id;
+                $courrier->created_by = Auth::user()->agent->id;
+                $courrier->statut_id = 1; // Statut initial
+                $courrier->save();
+
+                // Attacher les assistants DG comme destinataires
+                $courrier->destinateurs()->attach($assistantsDG);
+
+                // Attacher l'étape (exemple : étape 2)
+                $courrier->etapes()->attach(2);
+
+                // Notification aux assistants DG sauf le créateur
+                $notifyAgents = $courrier->destinateurs->where('id', '!=', Auth::user()->agent->id);
+                if ($notifyAgents->count()) {
+                    event(new CourrierCreated($courrier, $notifyAgents, 'A créé un nouveau courrier !'));
+                }
+
+                // Historique
+                Historique::create([
+                    "key" => "Numérisation du courrier",
+                    "historiquecable_id" => $courrier->id,
+                    "historiquecable_type" => Courrier::class,
+                    "description" => "A numérisé un courrier",
+                    "user_id" => Auth::user()->id,
+                ]);
+
+                $content = json_encode([
+                    'name' => 'Courriers',
+                    'statut' => 'success',
+                    'message' => 'Courrier numérisé et envoyé aux assistants du DG avec succès !',
+                ]);
+
+            } elseif ($request->get('type') == 3) { // Logique pour Courrier Interne (Destinataire est un agent)
+                $destinataireAgentId = $request->get('destination2');
+                // dd( $destinataireAgentId);
+                // Vérifier si l'agent destinataire existe
+                $destinataireAgent = Agent::find($destinataireAgentId);
+                if (!$destinataireAgent) {
+                    $content = json_encode([
+                        'name' => 'Courrier',
+                        'statut' => 'error',
+                        'message' => 'Agent destinataire interne introuvable.',
+                    ]);
+                    session()->flash('session', $content);
+                    return redirect()->route('regidoc.courriers.index');
+                }
+
+                // Créer le document avec l'agent destinataire comme responsable
+                $document = $this->createDocument($request, $destinataireAgent->id);
+
+                $courrier = new Courrier;
+                $courrier->type_id = $request->get('type');
+                $courrier->category_id = $request->get('categorie');
+                $courrier->traitement_id = $request->get('traitement_id');
+                $courrier->exped_interne_id = $request->get('exp_int');
+                $courrier->dest_interne_id = $destinataireAgent->id; // L'ID de l'agent est le destinataire interne
+                // Vous pouvez déduire le département/service de l'agent si nécessaire, ou le prendre de la requête
+                $courrier->departement_id = $destinataireAgent->departement_id ?? $request->get('service_init');
+                $courrier->service_id = $destinataireAgent->service_id ?? $request->get('service_init');
+                $courrier->service_traitant_id = $destinataireAgent->direction_id ?? null; // ID de la direction de l'agent si applicable
+                $courrier->title = $request->get('title');
+                $courrier->reference_courrier = $request->get('ref');
+                $courrier->reference_interne = $request->get('ref_interne');
+                $courrier->confidentiel = $request->get('confidentiel') ? '1' : '0';
+                $courrier->priorite_id = $request->get('priorite');
+                $courrier->created_by = Auth::user()->id;
+                $courrier->date_du_courrier = $request->get('date-doc');
+                $courrier->date_arrive = $request->get('date-arriv');
+                $courrier->date_fin = $request->get('date-limite');
+                $courrier->nature_id = $request->get('nature');
+                $courrier->objet = $request->get('objet');
+                $courrier->document_id = $document->id;
+                $courrier->is_intern = 1; // Toujours 1 pour courrier interne
+                $courrier->statut_id = 1; // Statut initial
+                $courrier->save();
+
+                // Attacher l'agent destinataire principal
+                $courrier->destinateurs()->attach($destinataireAgent->id);
+
+                // Gérer les copies (followers) qui restent basées sur les directions
+                $secretairesCopie = collect();
+                $responsablesCopie = collect();
+
+                if (is_array($copie) && count($copie)) {
+                    $directionsCopie = Direction::find($copie);
+                    foreach ($directionsCopie as $directionItem) {
+                        if ($directionItem?->secretaires->count()) {
+                            $secretairesCopie->push($directionItem->secretaires->pluck('responsable_id')->toArray());
+                        }
+                        if ($directionItem?->responsable_id) {
+                            $responsablesCopie->push($directionItem->responsable_id);
+                        }
+                    }
+                    $secretairesCopie = $secretairesCopie->flatten()->unique();
+                    $responsablesCopie = $responsablesCopie->unique();
+                }
+
+                if ($secretairesCopie->count()) {
+                    $courrier->followers()->attach($secretairesCopie->toArray());
+                }
+                if ($responsablesCopie->count()) {
+                    $courrier->followers()->attach($responsablesCopie->toArray());
+                }
+
+                $courrier->etapes()->attach(2); // Étape 2 (si applicable)
+
+                // Notification à l'agent destinataire principal
+                $notifyAgents = collect([$destinataireAgent])->where('id', '!=', Auth::user()->agent->id); // On notifie l'agent destinataire s'il n'est pas le créateur
+                if ($notifyAgents->count()) {
+                    event(new CourrierCreated($courrier, $notifyAgents, 'Un nouveau courrier interne vous a été envoyé !'));
+                }
+
+                // Notification aux followers (ceux en copie) qui ne sont pas déjà notifiés
+                // On exclut l'agent créateur et l'agent destinataire principal
+                $idsToExclude = collect([Auth::user()->agent->id, $destinataireAgent->id])->unique()->toArray();
+                $notifyFollowers = $courrier->followers->whereNotIn('id', $idsToExclude);
+
+                if ($notifyFollowers->count()) {
+                    event(new CourrierCreated($courrier, $notifyFollowers, 'Votre direction a été mise en copie d\'un nouveau courrier interne !'));
+                }
+
+                // Historique
+                Historique::create([
+                    "key" => "Numérisation du courrier interne",
+                    "historiquecable_id" => $courrier->id,
+                    "historiquecable_type" => Courrier::class,
+                    "description" => "A numérisé le courrier interne destiné à l'agent " . $destinataireAgent->nom_complet, // Exemple d'amélioration
+                    "user_id" => Auth::user()->id
+                ]);
+
+                $content = json_encode([
+                    'name' => 'Courriers',
+                    'statut' => 'success',
+                    'message' => 'Courrier interne numérisé et envoyé à l\'agent avec succès !',
+                ]);
+
+            }  else { // BLOC ELSE GÉNÉRAL : Pour tous les types non 1 ou 3
+                // Le message d'erreur par défaut défini au début sera utilisé.
+            }
+
+        } catch (\Throwable $th) {
+            Log::error("Erreur store courrier : " . $th->getMessage(), [
+                'file' => $th->getFile(),
+                'line' => $th->getLine(),
+                'trace' => $th->getTraceAsString(),
+            ]);
+
+            $content = json_encode([
+                'name' => 'Courrier',
+                'statut' => 'error',
+                'message' => 'Impossible de numériser le courrier, une erreur s\'est produite.',
+            ]);
+        }
+
+        session()->flash('session', $content);
+        return redirect()->route('regidoc.courriers.index');
     }
 
-    session()->flash('session', $content);
-    return redirect()->route('regidoc.courriers.index');
-}
+    /**
+     * Méthode helper pour créer un document.
+     * Vous devez la définir ou vous assurer qu'elle existe.
+     */
+    
 
     public function show($id)
     {
@@ -1553,8 +1679,6 @@ public function rejeter(Courrier $courrier)
         ], 500);
     }
 }
-
-
 
     public function scan(Request $request)
     {

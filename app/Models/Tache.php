@@ -23,8 +23,8 @@ class Tache extends Model
      * @var array
      */
     protected $casts = [
-        'date_debut' => 'date',
-        'date_fin' => 'date',
+        'date_debut' => 'datetime',
+        'date_fin' => 'datetime',
     ];
 
     public function commentaires()

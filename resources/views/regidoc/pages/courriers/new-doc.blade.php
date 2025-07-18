@@ -17,7 +17,7 @@
             'types' => $types,
             'natures' => $natures,
             'services' => $services,
-            // 'agents' => $agents,
+            'agents' => $agents,
             'newDoc' => isset($newDoc) ? true : false,
             'textSelected' => isset($textSelected) ? $textSelected : '',
             'fileName' => isset($fileName) ? $fileName : '',

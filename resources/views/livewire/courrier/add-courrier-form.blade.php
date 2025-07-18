@@ -17,7 +17,8 @@
                 <div class="form-group row g-3">
                     <div class="col-12">
                         <div class="row" wire:ignore>
-                            <label class="col-5 col-form-label">Type de courrier</label>
+                            <label class="col-5 col-form-label">Type de document</label>
+                            
                             <div class="col-7">
                                 <select class="form-select form-control select autreSelect2"
                                     aria-label="Default select example" name="type" id="type_id" required>
@@ -178,17 +179,20 @@
                             <div class="col-7">
                                 <select class="form-select form-control selectCopie"
                                     aria-label="Default select example" name="destination2" id="destination2">
-                                    <option value="" selected disabled>Sélectionnez</option>
-                                    @foreach ($directions as $direction)
-                                        <option value="{{ $direction->id }}" @selected($direction->id == Auth::user()->agent->direction->id)>
-                                            {{ $direction->titre }}
-                                        </option>
-                                    @endforeach
-                                    {{-- @foreach ($services as $service)
-                                        <option value="{{ $service->id }}" @selected($service->id == Auth::user()->agent->service->id)>
-                                            {{ $service->titre }}
-                                        </option>
-                                    @endforeach  --}}
+                                    <option value="">Selectionnez</option>
+                                    @foreach ($agents as $agent)
+            <option value="{{ $agent->id }}">
+                {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom }}
+                
+                {{-- Optionnel : Afficher la direction ou le service de l'agent pour plus de clarté --}}
+                @if ($agent->direction)
+                    ({{ $agent->direction->nom ?? $agent->direction->titre }}) 
+                @endif
+                @if ($agent->service)
+                    ({{ $agent->service->nom ?? $agent->service->titre }})
+                @endif
+            </option>
+        @endforeach
                                 </select>
                             </div>
                         </div>
