@@ -113,10 +113,10 @@
                                         </div>
                                     </div>
                                     <div class="form-group-content-right">
-                                        <div class="editorBox">
+                                        {{-- <div class="editorBox">
                                             <textarea name="description" id="textarea-edit" cols="30" rows="4"
                                                 class="form-control form-control-tache-annotation" placeholder="Saisisez votre annotation...">{{ old('description', $tache->description) }}</textarea>
-                                        </div>
+                                        </div> --}}
 
                                         <div class="row">
                                             <div class="col-12">
