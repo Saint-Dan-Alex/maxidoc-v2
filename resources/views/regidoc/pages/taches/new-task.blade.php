@@ -185,10 +185,15 @@
                                                     Ajouter une échéance</label>
                                             </div>
                                         </div>
-                                        <div class="col-lg-12 mb-2 echeance d-none">
+                                        {{-- <div class="col-lg-12 mb-2 echeance d-none">
                                             <label class="mb-2">Date de début</label>
                                             <input type="datetime-local" class="form-control" placeholder="Objectif assigné"
                                                 name="date_debut">
+                                        </div> --}}
+                                        <div class="col-lg-12 mb-2 echeance d-none">
+                                            <label class="mb-2">Date de début</label>
+                                            <input type="datetime-local" class="form-control" placeholder="Objectif assigné"
+                                                name="date_debut" id="date_debut" readonly>
                                         </div>
                                         <div class="col-lg-12 mb-2 echeance d-none">
                                             <label class="mb-2">Date d'échéance</label>
@@ -262,6 +267,24 @@
 @section('scripts')
     <script src="{{ asset('vendor/select2/dist/js/select2.min.js') }}"></script>
     <script src="{{ asset('vendor/jdikasaDropZone/dist/js/jdikasaDropZone.js') }}"></script>
+    <script>
+    // Fonction pour formater la date et heure actuelle au format yyyy-MM-ddTHH:mm
+    function getCurrentDateTime() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    // Insère la date dans le champ à l'ouverture de la page
+    document.addEventListener("DOMContentLoaded", function() {
+        const dateInput = document.getElementById("date_debut");
+        dateInput.value = getCurrentDateTime();
+    });
+</script>
     <script>
         $(document).ready(function() {
 
