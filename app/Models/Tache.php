@@ -131,7 +131,7 @@ class Tache extends Model
     {
         return $query->where('statut_id', 1);
     }
-
+    
     /**
      * Scope a query to only include encours
      *
