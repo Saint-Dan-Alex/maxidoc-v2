@@ -388,8 +388,8 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Date de réception</label>
                             <div class="col-7">
-                                <input type="date" class="form-control" id="inputPassword1" name="date-arriv"
-                                    max="{{ now()->format('Y-m-d') }}"
+                                <input type="datetime-local" class="form-control" id="date-arrivee" name="date-arriv"
+                                    value="{{ now()->format('Y-m-d\TH:i') }}" readonly
                                     @if ($type == [1]) required @endif>
                             </div>
                         </div>
