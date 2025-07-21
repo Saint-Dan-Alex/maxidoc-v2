@@ -688,6 +688,7 @@ use Illuminate\Support\Facades\Storage;
             <div class="all-comments" style="overflow: hidden; height: auto!important;">
                 @livewire('taches.objectif-check', ['tache' => $tache], key($tache->id))
             </div>
+            
         </div>
     </div>
     <div class="sidebar-tache right d-flex flex-column">

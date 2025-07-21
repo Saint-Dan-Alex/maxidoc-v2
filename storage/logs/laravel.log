@@ -26272,3 +26272,75 @@
 [2025-07-21 10:40:54] local.DEBUG: Objectif trouvé pour la tâche 8 {"created_at":"2025-07-16 15:10:38","updated_at":"2025-07-21 09:42:58","statut":"1"} 
 [2025-07-21 10:40:54] local.INFO: Temps de traitement calculé {"tache_id":8,"temps":"4j 18h","secondes":412340,"statut":"1"} 
 [2025-07-21 10:40:54] local.DEBUG: TraitementTime après calcul {"tache_id":8,"traitementTime":"4j 18h","objectifs_count":1,"objectif_statut":"1"} 
+[2025-07-21 10:46:09] local.DEBUG: Objectif trouvé pour la tâche 8 {"created_at":"2025-07-16 15:10:38","updated_at":"2025-07-21 09:42:58","statut":"1"} 
+[2025-07-21 10:46:09] local.INFO: Temps de traitement calculé {"tache_id":8,"temps":"4j 18h","secondes":412340,"statut":"1"} 
+[2025-07-21 10:46:09] local.DEBUG: TraitementTime après calcul {"tache_id":8,"traitementTime":"4j 18h","objectifs_count":1,"objectif_statut":"1"} 
+[2025-07-21 10:46:09] local.DEBUG: Objectif trouvé pour la tâche 8 {"created_at":"2025-07-16 15:10:38","updated_at":"2025-07-21 09:42:58","statut":"1"} 
+[2025-07-21 10:46:09] local.INFO: Temps de traitement calculé {"tache_id":8,"temps":"4j 18h","secondes":412340,"statut":"1"} 
+[2025-07-21 10:46:09] local.DEBUG: TraitementTime après calcul {"tache_id":8,"traitementTime":"4j 18h","objectifs_count":1,"objectif_statut":"1"} 
+[2025-07-21 10:48:20] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:48:20] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:48:20] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:48:21] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:48:21] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:48:21] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:48:50] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:48:50] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:48:50] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:48:50] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:48:50] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:48:50] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:49:18] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:49:18] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:49:18] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:49:18] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:49:18] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:49:18] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:50:10] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:50:10] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:50:10] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:50:10] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:50:10] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:50:10] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:50:21] local.DEBUG: Objectif trouvé pour la tâche 8 {"created_at":"2025-07-16 15:10:38","updated_at":"2025-07-21 09:42:58","statut":"1"} 
+[2025-07-21 10:50:21] local.INFO: Temps de traitement calculé {"tache_id":8,"temps":"4j 18h","secondes":412340,"statut":"1"} 
+[2025-07-21 10:50:21] local.DEBUG: TraitementTime après calcul {"tache_id":8,"traitementTime":"4j 18h","objectifs_count":1,"objectif_statut":"1"} 
+[2025-07-21 10:50:21] local.DEBUG: Objectif trouvé pour la tâche 8 {"created_at":"2025-07-16 15:10:38","updated_at":"2025-07-21 09:42:58","statut":"1"} 
+[2025-07-21 10:50:21] local.INFO: Temps de traitement calculé {"tache_id":8,"temps":"4j 18h","secondes":412340,"statut":"1"} 
+[2025-07-21 10:50:21] local.DEBUG: TraitementTime après calcul {"tache_id":8,"traitementTime":"4j 18h","objectifs_count":1,"objectif_statut":"1"} 
+[2025-07-21 10:51:52] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:51:52] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:51:52] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:51:52] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:51:52] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:51:52] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:52:20] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:52:20] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:52:20] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:52:20] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:52:20] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:52:20] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:52:57] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:52:57] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:52:57] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:52:57] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:52:57] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:52:57] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:53:29] local.DEBUG: Objectif trouvé pour la tâche 8 {"created_at":"2025-07-16 15:10:38","updated_at":"2025-07-21 09:42:58","statut":"1"} 
+[2025-07-21 10:53:29] local.INFO: Temps de traitement calculé {"tache_id":8,"temps":"4j 18h","secondes":412340,"statut":"1"} 
+[2025-07-21 10:53:29] local.DEBUG: TraitementTime après calcul {"tache_id":8,"traitementTime":"4j 18h","objectifs_count":1,"objectif_statut":"1"} 
+[2025-07-21 10:53:29] local.DEBUG: Objectif trouvé pour la tâche 8 {"created_at":"2025-07-16 15:10:38","updated_at":"2025-07-21 09:42:58","statut":"1"} 
+[2025-07-21 10:53:29] local.INFO: Temps de traitement calculé {"tache_id":8,"temps":"4j 18h","secondes":412340,"statut":"1"} 
+[2025-07-21 10:53:29] local.DEBUG: TraitementTime après calcul {"tache_id":8,"traitementTime":"4j 18h","objectifs_count":1,"objectif_statut":"1"} 
+[2025-07-21 10:55:46] local.DEBUG: Objectif trouvé pour la tâche 8 {"created_at":"2025-07-16 15:10:38","updated_at":"2025-07-21 09:42:58","statut":"1"} 
+[2025-07-21 10:55:46] local.INFO: Temps de traitement calculé {"tache_id":8,"temps":"4j 18h","secondes":412340,"statut":"1"} 
+[2025-07-21 10:55:46] local.DEBUG: TraitementTime après calcul {"tache_id":8,"traitementTime":"4j 18h","objectifs_count":1,"objectif_statut":"1"} 
+[2025-07-21 10:55:46] local.DEBUG: Objectif trouvé pour la tâche 8 {"created_at":"2025-07-16 15:10:38","updated_at":"2025-07-21 09:42:58","statut":"1"} 
+[2025-07-21 10:55:46] local.INFO: Temps de traitement calculé {"tache_id":8,"temps":"4j 18h","secondes":412340,"statut":"1"} 
+[2025-07-21 10:55:46] local.DEBUG: TraitementTime après calcul {"tache_id":8,"traitementTime":"4j 18h","objectifs_count":1,"objectif_statut":"1"} 
+[2025-07-21 10:56:31] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:56:31] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:56:31] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
+[2025-07-21 10:56:31] local.DEBUG: Objectif trouvé pour la tâche 7 {"created_at":"2025-07-16 13:17:19","updated_at":"2025-07-16 13:17:19","statut":"0"} 
+[2025-07-21 10:56:31] local.INFO: Objectif non terminé, pas de calcul de temps {"tache_id":7,"statut":"0"} 
+[2025-07-21 10:56:31] local.DEBUG: TraitementTime après calcul {"tache_id":7,"traitementTime":"En cours","objectifs_count":2,"objectif_statut":"0"} 
