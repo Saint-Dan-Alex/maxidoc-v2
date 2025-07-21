@@ -12,15 +12,25 @@
             padding: 20px;
         }
         .header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 30px;
             border-bottom: 2px solid #eee;
             padding-bottom: 15px;
+            gap: 20px;
+        }
+        .header-content {
+            text-align: center;
         }
         .header h1 {
             color: #2c3e50;
-            margin: 0;
+            margin: 0 0 5px 0;
             font-size: 24px;
+        }
+        .logo {
+            max-height: 60px;
+            width: auto;
         }
         .info-section {
             margin-bottom: 30px;
@@ -31,11 +41,15 @@
             padding-bottom: 5px;
             font-size: 18px;
         }
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        .details-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
             margin-top: 15px;
+        }
+        .details-column {
+            flex: 1;
+            min-width: 250px;
         }
         .info-item {
             margin-bottom: 10px;
@@ -74,36 +88,52 @@
 </head>
 <body>
     <div class="header">
-        <h1>HISTORIQUE DU COURRIER #{{ $courrier->id }}</h1>
-        <p>Généré le {{ now()->format('d/m/Y à H:i') }}</p>
+        @php
+            $logoPath = public_path('assets/images/logoDefault.png');
+            $imageData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+        @endphp
+        @if($imageData)
+            <img src="{{ $imageData }}" alt="Logo MaxiDoc" class="logo">
+        @endif
+        <div class="header-content">
+            <h1>HISTORIQUE DU COURRIER #{{ $courrier->id }}</h1>
+            <p>Généré le {{ now()->format('d/m/Y à H:i') }}</p>
+        </div>
     </div>
 
     <div class="info-section">
         <h2>Détails du courrier</h2>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Référence</div>
-                <div class="info-value">{{ $courrier->reference_interne ?? 'N/A' }}</div>
+        <div class="details-container">
+            <!-- Première colonne -->
+            <div class="details-column">
+                <div class="info-item">
+                    <div class="info-label">Référence</div>
+                    <div class="info-value">{{ $courrier->reference_interne ?? 'N/A' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Date de création</div>
+                    <div class="info-value">{{ $courrier->created_at->format('d/m/Y H:i') }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Type</div>
+                    <div class="info-value">{{ $courrier->type->titre ?? 'N/A' }}</div>
+                </div>
             </div>
-            <div class="info-item">
-                <div class="info-label">Date de création</div>
-                <div class="info-value">{{ $courrier->created_at->format('d/m/Y H:i') }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Type</div>
-                <div class="info-value">{{ $courrier->type->titre ?? 'N/A' }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Objet</div>
-                <div class="info-value">{{ $courrier->objet ?? 'N/A' }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Statut</div>
-                <div class="info-value">{{ $courrier->document->statut->titre ?? 'N/A' }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Priorité</div>
-                <div class="info-value">{{ $courrier->priorite->titre ?? 'N/A' }}</div>
+            
+            <!-- Deuxième colonne -->
+            <div class="details-column">
+                <div class="info-item">
+                    <div class="info-label">Objet</div>
+                    <div class="info-value">{{ $courrier->objet ?? 'N/A' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Statut</div>
+                    <div class="info-value">{{ $courrier->document->statut->titre ?? 'N/A' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Priorité</div>
+                    <div class="info-value">{{ $courrier->priorite->titre ?? 'N/A' }}</div>
+                </div>
             </div>
         </div>
     </div>
@@ -137,7 +167,7 @@
     </div>
 
     <div class="footer">
-        Document généré par MaxiDoc - {{ config('app.name') }}
+        Document généré par - {{ config('app.name') }}
     </div>
 </body>
 </html>
