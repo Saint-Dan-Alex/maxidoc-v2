@@ -842,7 +842,7 @@ use Illuminate\Support\Facades\Storage;
                                 </div>
                                 <div class="col-12">
                                     <p>
-                                        {{ $tache->date_fin ? 'Du' . $tache->date_debut?->format('d/m/Y') : $tache->date_debut?->format('d-m-Y') }}
+                                        {{ $tache->date_fin ? 'Du ' . $tache->date_debut?->format('d/m/Y') : $tache->date_debut?->format('d-m-Y') }}
                                         {{ $tache->date_fin ? 'Au ' . $tache->date_fin?->format('d/m/Y') : '' }}
                                     </p>
                                 </div>
