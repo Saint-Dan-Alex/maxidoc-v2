@@ -1,4 +1,59 @@
 <div class="row g-2 g-lg-3">
+    <!-- Débogage -->
+    {{-- <div class="col-12">
+        <div class="alert alert-info p-2 mb-2" style="font-size: 0.8rem;">
+            <strong>Débogage TacheInfo</strong><br>
+            Tâche ID: {{ $tache->id }}<br>
+            Nombre d'objectifs: {{ $tache->objectifs ? $tache->objectifs->count() : 0 }}
+            @if($tache->objectifs && $tache->objectifs->count() > 0)
+                <br>Statut: {{ $tache->objectifs->first()->statut ?? 'N/A' }}
+                <br>Créé le: {{ $tache->objectifs->first()->created_at ?? 'N/A' }}
+                <br>Mis à jour: {{ $tache->objectifs->first()->updated_at ?? 'N/A' }}
+            @endif
+        </div>
+    </div> --}}
+    <div class="col-12">
+    <div class="alert alert-info p-2 mb-2" style="font-size: 0.8rem;">
+        <strong>Débogage TacheInfo</strong><br>
+        Tâche ID: {{ $tache->id }}<br>
+        Nombre d'objectifs: {{ $tache->objectifs ? $tache->objectifs->count() : 0 }}
+
+        @if($tache->objectifs && $tache->objectifs->count() > 0)
+            @foreach($tache->objectifs as $objectif)
+                <hr>
+                Agent ID: {{ $objectif->agent_id ?? 'N/A' }}<br>
+                Statut: {{ $objectif->statut ?? 'N/A' }}<br>
+                Créé le: {{ $objectif->created_at }}<br>
+                Mis à jour: {{ $objectif->updated_at }}<br>
+
+                @php
+                    $tempsTraitement = 'Non traité';
+                    if ($objectif->created_at != $objectif->updated_at) {
+                        $diff = $objectif->created_at->diff($objectif->updated_at);
+
+                        if ($diff->y > 0) {
+                            $tempsTraitement = $diff->y . ' an' . ($diff->y > 1 ? 's' : '');
+                        } elseif ($diff->m > 0) {
+                            $tempsTraitement = $diff->m . ' mois';
+                        } elseif ($diff->d > 0) {
+                            $tempsTraitement = $diff->d . ' jour' . ($diff->d > 1 ? 's' : '');
+                        } elseif ($diff->h > 0) {
+                            $tempsTraitement = $diff->h . ' heure' . ($diff->h > 1 ? 's' : '');
+                        } elseif ($diff->i > 0) {
+                            $tempsTraitement = $diff->i . ' minute' . ($diff->i > 1 ? 's' : '');
+                        } elseif ($diff->s > 0) {
+                            $tempsTraitement = $diff->s . ' seconde' . ($diff->s > 1 ? 's' : '');
+                        }
+                    }
+                @endphp
+
+                Temps de traitement: {{ $tempsTraitement }}
+            @endforeach
+        @endif
+    </div>
+</div>
+
+    
     <div class="col-lg-12">
         <div class="items">
             <p class="mb-2 me-0"><i class="fi fi-rr-user me-1"></i> Créée par</p>
@@ -11,6 +66,13 @@
                     {{ $tache->user->agent->prenom . ' ' . $tache->user->agent->nom }}
                 </h6>
             </div>
+            @if($traitementTime)
+                <div class="mt-2 w-100">
+                    <div class="badge bg-light text-dark" style="font-size: 0.8rem;">
+                        <i class="fi fi-rr-time me-1"></i> Traitement: {{ $traitementTime }}
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
     <div class="col-lg-12">

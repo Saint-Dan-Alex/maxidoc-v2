@@ -687,7 +687,7 @@ class TacheController extends Controller
 
     public function show($id)
     {
-        $tache = Tache::with('documents')->find($id);
+        $tache = Tache::with(['documents', 'objectifs.agent'])->find($id);
         $documents = $tache->documents ?? collect();
         
         // Préparer les URLs des documents
