@@ -34,6 +34,7 @@ use App\Models\CourrierDestinateurExterne;
 use Illuminate\Support\Collection;
 
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CourrierController extends Controller
 {
@@ -1420,6 +1421,31 @@ public function createDocument($request, $destinateur, $doc = null)
         $courrier = Courrier::find($id);
         $courrier->delete();
         return redirect()->route('regidoc.courriers.index');
+    }
+
+    /**
+     * Exporte l'historique d'un courrier au format PDF
+     *
+     * @param int $id ID du courrier
+     * @return \Illuminate\Http\Response
+     */
+    public function exportHistoriquePdf($id)
+    {
+        $courrier = Courrier::with(['document', 'historiques' => function($query) {
+            $query->orderBy('created_at', 'desc');
+        }, 'historiques.user.agent'])->findOrFail($id);
+
+        $pdf = PDF::loadView('regidoc.pages.courriers.pdf.historique', compact('courrier'))
+                 ->setPaper('a4', 'portrait')
+                 ->setOptions([
+                     'isHtml5ParserEnabled' => true,
+                     'isRemoteEnabled' => true,
+                     'defaultFont' => 'Arial'
+                 ]);
+
+        $filename = 'historique-courrier-' . $courrier->id . '-' . now()->format('Y-m-d') . '.pdf';
+        
+        return $pdf->download($filename);
     }
 
     /**
