@@ -171,12 +171,10 @@
             <span>Powered by</span>
             @php
                 $logo1Path = public_path('assets/regidoc/logo2.png');
-                $logo2Path = public_path('assets/regidoc/white.png');
                 $logo1Data = file_exists($logo1Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo1Path)) : '';
-                $logo2Data = file_exists($logo2Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo2Path)) : '';
             @endphp
-            @if($logo1Data && $logo2Data)
-                <span style="display: inline-flex; align-items: center; gap: 10px;">
+            @if($logo1Data )
+                <span style="disp@lay: inline-flex; align-items: center; gap: 10px;">
                     <img src="{{ $logo1Data }}" alt="" style="height: 20px; width: auto;">
                 </span>
             @endif
