@@ -691,9 +691,20 @@ use Illuminate\Support\Facades\Storage;
             
         </div>
     </div>
+    <!-- Section pour les pièces jointes -->
     <div class="sidebar-tache right d-flex flex-column">
         <div class="header d-flex align-items-center">
-            <h5 class="mb-0">Détailles de la tâche</h5>
+            <h5 class="mb-0">Pièces jointes</h5>
+        </div>
+        <div class="body flex-grow-1 pt-0" style="overflow: hidden!important">
+            @livewire('taches.tache-pane', ['tache' => $tache, 'pan' => 3], key('tache-pane-'.$tache->id))
+        </div>
+    </div>
+
+    <!-- Section des détails de la tâche -->
+    <div class="sidebar-tache right d-flex flex-column">
+        <div class="header d-flex align-items-center">
+            <h5 class="mb-0">Détails de la tâche</h5>
         </div>
         <div class="body flex-grow-1 pt-0" style="overflow: hidden!important">
             <div class="block-moreInfo-doc h-100" style="background: var(--bgContent);">
