@@ -27,12 +27,22 @@ class Historique extends Model
     }
 
     /**
-     * Get the userResponsible that owns the Historique
+     * Get the user that owns the Historique
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Alias de la relation user pour la rétrocompatibilité
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function userResponsible()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->user();
     }
 }

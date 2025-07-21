@@ -14,7 +14,9 @@ use CyrildeWit\EloquentViewable\Support\Period;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use App\Models\Personel;
+use App\Models\Historique;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Courrier extends Model implements Viewable
 {
@@ -27,6 +29,16 @@ class Courrier extends Model implements Viewable
     protected $revisionCleanup = true; //Remove old revisions (works only when used with $historyLimit)
     protected $historyLimit = 500; //Maintain a maximum of 500 changes at any point of time, while cleaning up old revisions.
     protected $revisionCreationsEnabled = true;
+
+    /**
+     * Get all of the historiques for the Courrier
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
+    public function historiques()
+    {
+        return $this->morphMany(Historique::class, 'historiquecable');
+    }
 
     /**
      * The attributes that are mass assignable.

@@ -1413,13 +1413,22 @@
         </div>
     </div>
 
+
+
     @can('Suivi des courriers')
         <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasHisto" aria-labelledby="offcanvasRightLabel">
             <div class="offcanvas-header align-items-center">
                 <h5 class="offcanvas-title" id="offcanvasRightLabel">Historique des activités</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
-                    <i class="fi fi-rr-cross"></i>
-                </button>
+                <div class="d-flex align-items-center">
+                    
+                        <a href="{{ route('regidoc.courriers.export-historique', $courrier->id) }}" class="btn btn-sm btn-outline-primary me-2" target="_blank" title="Exporter l'historique en PDF">
+                            <i class="fi fi-rr-file-pdf"></i>
+                        </a>
+                    
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
+                        <i class="fi fi-rr-cross"></i>
+                    </button>
+                </div>
             </div>
             <div class="offcanvas-body">
                 <div class="block-activity">
