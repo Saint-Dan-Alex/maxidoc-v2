@@ -32,6 +32,14 @@ class Tache extends Model
         return $this->hasMany(Commentaire::class);
     }
 
+    /**
+     * Relation avec les objectifs de la tâche
+     */
+    public function objectifs()
+    {
+        return $this->hasMany(TacheObjectif::class);
+    }
+
     public function getTacheStatutIdAttribute($value)
     {
         if ($this->date_fin && $this->date_fin <= now() && $this->pourcentage < 100) {
@@ -63,11 +71,6 @@ class Tache extends Model
             $this->tache_statut_id = 3;
             $this->save();
         }
-    }
-
-    public function objectifs()
-    {
-        return $this->hasMany(TacheObjectif::class);
     }
 
     public function isForDirection() {
