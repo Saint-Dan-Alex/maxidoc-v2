@@ -807,73 +807,196 @@ class TacheController extends Controller
     return view('regidoc.pages.taches.edit-task', $data);
 }
 
-    public function update(Request $request, $id)
+    // public function update(Request $request, $id)
+    // {
+    //     $tache = Tache::find($id)->update([
+    //         'titre' => $request->titre,
+    //         'date_debut' => $request->date_debut,
+    //         'date_fin' => $request->date_fin,
+    //         'priorite_id' => $request->priorite_id,
+    //         'description' => $request->description,
+    //     ]);
+    //     if ($request->hasFile('documents')) {
+    //         $classer = Classeur::where('direction_id', Auth::user()->agent?->direction_id)->where('titre', 'Classeur Tâches ' . Auth::user()->agent?->direction->titre)->first();
+    //         if ($classer == null) {
+    //             # code...
+    //             $classer = Classeur::firstOrCreate(
+    //                 [
+    //                     'direction_id' => Auth::user()->agent?->direction_id,
+    //                     'titre' => 'Classeur Tâches ' . Auth::user()->agent?->direction->titre,
+    //                 ],
+    //                 [
+    //                     'reference' => Auth::user()->agent?->direction?->code,
+    //                     'description' => 'Ce Classeur contient tous les documents liés à vos tâches',
+    //                     'created_by' => Auth::user()->agent->id,
+    //                     'updated_by' => Auth::user()->agent->id,
+    //                 ]
+    //             );
+    //         }
+
+    //         $dossier = Dossier::firstOrCreate(
+    //             [
+    //                 'classeur_id' => $classer->id,
+    //                 'titre' => 'Taches',
+    //                 'reference' => 'DIR' . Str::padLeft(Dossier::count() + 1, 4, 0),
+    //             ],
+    //             [
+    //                 'description' => 'Dossier pour les documents de tâches',
+    //                 'confidentiel' => 0,
+    //                 'created_by' => Auth::user()->agent->id,
+    //                 'updated_by' => Auth::user()->agent->id,
+    //             ]
+    //         );
+
+    //         foreach ($request->file('documents') as $key => $doc) {
+
+    //             $document = Document::create([
+    //                 'dossier_id' => $dossier->id,
+    //                 'libelle' => Str::beforeLast($doc->getClientOriginalName(), '.'),
+    //                 'category_id' => 6,
+    //                 'reference' => 'DT/' . Auth::user()->agent?->matricule,
+    //                 'type' => 3,
+    //                 'document' => (new File)->handle($doc, 'document', 'documents'),
+    //                 'user_id' => Auth::user()->id,
+    //                 'statut_id' => 1,
+    //                 'created_by' => Auth::user()->agent->id,
+    //             ]);
+
+    //             ArchivePermission::create([
+    //                 'agent_id' => Auth::user()->agent->id,
+    //                 'permissionable_id' => $document->id,
+    //                 'permissionable_type' => 'App\Models\Document',
+    //                 'key' => 'view_document',
+    //             ]);
+
+    //             // $doc->move($path, $name . '.' . $ext);
+    //             $tache->documents()->attach($document->id);
+    //         }
+    //     }
+    //     if ($tache == 1) {
+    //         $content = json_encode([
+    //             'name' => 'Gestion de tâche',
+    //             'statut' => 'success',
+    //             'message' => 'Tâche modifiée avec succès !',
+    //         ]);
+    //     } else {
+    //         $content = json_encode([
+    //             'name' => 'Gestion de tâche',
+    //             'statut' => 'error',
+    //             'message' => "La modification de la tâche a échoué !",
+    //         ]);
+    //     }
+
+    //     session()->flash(
+    //         'session',
+    //         $content
+    //     );
+
+    //     return redirect()->route('regidoc.taches.index');
+    // }
+
+        public function update(Request $request, $id)
     {
-        $tache = Tache::find($id)->update([
+        $tache = Tache::find($id);
+
+        if (!$tache) {
+            session()->flash('session', json_encode([
+                'name' => 'Gestion de tâche',
+                'statut' => 'error',
+                'message' => "Tâche introuvable !",
+            ]));
+            return redirect()->route('regidoc.taches.index');
+        }
+
+        // Mettre à jour la tâche
+        $updated = $tache->update([
             'titre' => $request->titre,
             'date_debut' => $request->date_debut,
             'date_fin' => $request->date_fin,
             'priorite_id' => $request->priorite_id,
             'description' => $request->description,
         ]);
+
         if ($request->hasFile('documents')) {
-            $classer = Classeur::where('direction_id', Auth::user()->agent?->direction_id)->where('titre', 'Classeur Tâches ' . Auth::user()->agent?->direction->titre)->first();
+            $agent = Auth::user()->agent;
+
+            // Sécurité : vérifier que agent et direction existent
+            if (!$agent || !$agent->direction) {
+                session()->flash('session', json_encode([
+                    'name' => 'Gestion de tâche',
+                    'statut' => 'error',
+                    'message' => "Agent ou direction introuvable pour l'utilisateur connecté.",
+                ]));
+                return redirect()->route('regidoc.taches.index');
+            }
+
+            $directionId = $agent->direction_id;
+            $directionTitre = $agent->direction->titre;
+            $directionCode = $agent->direction->code ?? 'UNKNOWN_CODE';
+
+            // Récupérer ou créer le classeur
+            $classer = Classeur::where('direction_id', $directionId)
+                ->where('titre', 'Classeur Tâches ' . $directionTitre)
+                ->first();
+
             if ($classer == null) {
-                # code...
                 $classer = Classeur::firstOrCreate(
                     [
-                        'direction_id' => Auth::user()->agent?->direction_id,
-                        'titre' => 'Classeur Tâches ' . Auth::user()->agent?->direction->titre,
+                        'direction_id' => $directionId,
+                        'titre' => 'Classeur Tâches ' . $directionTitre,
                     ],
                     [
-                        'reference' => Auth::user()->agent?->direction?->code,
+                        'reference' => $directionCode,
                         'description' => 'Ce Classeur contient tous les documents liés à vos tâches',
-                        'created_by' => Auth::user()->agent->id,
-                        'updated_by' => Auth::user()->agent->id,
+                        'created_by' => $agent->id,
+                        'updated_by' => $agent->id,
                     ]
                 );
             }
 
+            // Récupérer ou créer le dossier
             $dossier = Dossier::firstOrCreate(
                 [
                     'classeur_id' => $classer->id,
                     'titre' => 'Taches',
-                    'reference' => 'DIR' . Str::padLeft(Dossier::count() + 1, 4, 0),
+                    // Si tu veux, on peut changer la référence en quelque chose de plus cohérent
+                    'reference' => 'DIR' . Str::padLeft(Dossier::count() + 1, 4, '0'),
                 ],
                 [
                     'description' => 'Dossier pour les documents de tâches',
                     'confidentiel' => 0,
-                    'created_by' => Auth::user()->agent->id,
-                    'updated_by' => Auth::user()->agent->id,
+                    'created_by' => $agent->id,
+                    'updated_by' => $agent->id,
                 ]
             );
 
-            foreach ($request->file('documents') as $key => $doc) {
-
+            // Parcourir les fichiers et les enregistrer
+            foreach ($request->file('documents') as $doc) {
                 $document = Document::create([
                     'dossier_id' => $dossier->id,
                     'libelle' => Str::beforeLast($doc->getClientOriginalName(), '.'),
                     'category_id' => 6,
-                    'reference' => 'DT/' . Auth::user()->agent?->matricule,
+                    'reference' => 'DT/' . $agent->matricule,
                     'type' => 3,
                     'document' => (new File)->handle($doc, 'document', 'documents'),
                     'user_id' => Auth::user()->id,
                     'statut_id' => 1,
-                    'created_by' => Auth::user()->agent->id,
+                    'created_by' => $agent->id,
                 ]);
 
                 ArchivePermission::create([
-                    'agent_id' => Auth::user()->agent->id,
+                    'agent_id' => $agent->id,
                     'permissionable_id' => $document->id,
                     'permissionable_type' => 'App\Models\Document',
                     'key' => 'view_document',
                 ]);
 
-                // $doc->move($path, $name . '.' . $ext);
+                // Attacher le document à la tâche (relation many-to-many)
                 $tache->documents()->attach($document->id);
             }
         }
-        if ($tache == 1) {
+
+        if ($updated) {
             $content = json_encode([
                 'name' => 'Gestion de tâche',
                 'statut' => 'success',
@@ -887,13 +1010,11 @@ class TacheController extends Controller
             ]);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
+        session()->flash('session', $content);
 
         return redirect()->route('regidoc.taches.index');
     }
+
 
     public function destroy($id)
     {
