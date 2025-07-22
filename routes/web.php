@@ -26,6 +26,7 @@ use App\Http\Controllers\RH\SecretariatController;
 use App\Http\Controllers\RH\SectionController;
 use App\Http\Controllers\RH\ServiceController;
 use App\Http\Controllers\Taches\TacheController;
+use App\Http\Controllers\TacheDocumentController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
@@ -180,7 +181,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::get('/taches/finish/{id}', [TacheController::class, 'finish'])->name('taches.finish');
             Route::get('/taches/remettre/encours/{id}', [TacheController::class, 'remettreEncours'])->name('taches.remettreEncours');
             Route::post('/taches/fichier/store', [TacheController::class, 'storefichier'])->name('fichier.store');
-
+            Route::post('/taches/{tache}/documents', [TacheDocumentController::class, 'store'])->name('taches.documents.store');
 
             // Courriers
             
@@ -269,6 +270,8 @@ Route::post('courriers/scan', [CourrierController::class, 'scan'])->name('courri
 Route::post('documents/save-pdf', [DocumentController::class, 'storeNew'])->name('documents.storeNew'); 
 Route::post('documents/save-as-doc', [DocumentController::class, 'saveDoc'])->name('documents.saveDoc');
 
+// Routes pour les documents des tâches
+Route::post('/taches/{tache}/documents', [TacheDocumentController::class, 'store'])->name('taches.documents.store');
 
 // Route::get('documents/pdf-preview', [DocumentController::class, 'showPDFPreview'])->name('regidoc.documents.previewPDF');
 
