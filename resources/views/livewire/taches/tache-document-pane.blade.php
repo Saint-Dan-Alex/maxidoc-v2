@@ -3,17 +3,17 @@
 </div>
 
 <div wire:ignore>
-    <form id="fileUploadForm" wire:submit.prevent="addFichier">
+    <form id="fileUploadForm" action="{{ route('taches.documents.store', $tache) }}" method="POST" enctype="multipart/form-data">
+        @csrf
         <div class="mb-3">
             <label for="documentFile" class="form-label">Sélectionner un document</label>
             <select class="form-select" id="documentFile" required>
                 <option value="" selected disabled>Sélectionnez un fichier...</option>
                 <option value="upload">Téléverser un fichier</option>
-                <!-- Add more options if needed -->
             </select>
             
             <div id="fileInputContainer" class="mt-3" style="display: none;">
-                <input type="file" id="fileInput" class="form-control" accept="image/*,.pdf" required>
+                <input type="file" name="file" id="fileInput" class="form-control" accept="image/*,.pdf" required>
                 <div class="form-text">Formats acceptés : images et PDF</div>
             </div>
         </div>
@@ -51,7 +51,7 @@
     </div>
 </div>
 
-@push('livewireScripts')
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const documentSelect = document.getElementById('documentFile');
@@ -59,6 +59,7 @@
         const fileInput = document.getElementById('fileInput');
         const submitBtn = document.getElementById('submitBtn');
         const confirmationModalElement = document.getElementById('confirmationModal');
+        const form = document.getElementById('fileUploadForm');
         let confirmationModal = null;
         
         // Initialize modal only if the element exists and Bootstrap is available
@@ -71,7 +72,6 @@
             // Ensure modal is in the body to prevent z-index issues
             document.body.appendChild(confirmationModalElement);
         }
-        let selectedFile = null;
 
         // Show file input when 'Téléverser un fichier' is selected
         documentSelect.addEventListener('change', function() {
@@ -87,19 +87,24 @@
         // Handle file selection
         fileInput.addEventListener('change', function(e) {
             if (this.files && this.files[0]) {
-                selectedFile = this.files[0];
                 submitBtn.disabled = false;
-                
-                // Use Imagick to process the file
-                processFileWithImagick(selectedFile);
+                // Display file preview if needed
+                if (this.files[0].type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // Handle image preview if needed
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
             } else {
                 submitBtn.disabled = true;
             }
         });
 
         // Handle form submission
-        document.getElementById('fileUploadForm').addEventListener('submit', function(e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
+            
             if (documentSelect.value === 'upload' && !fileInput.files.length) {
                 alert('Veuillez sélectionner un fichier à téléverser.');
                 return false;
@@ -111,79 +116,109 @@
             } else {
                 // Fallback if modal fails
                 if (confirm('Êtes-vous sûr de vouloir ajouter ce document ? Cette action est irréversible.')) {
-                    document.getElementById('confirmUpload').click();
+                    submitForm();
                 }
             }
         });
 
         // Handle confirmation
         const confirmButton = document.getElementById('confirmUpload');
-        if (!confirmButton) return;
+        if (confirmButton) {
+            confirmButton.addEventListener('click', submitForm);
+        }
         
-        confirmButton.addEventListener('click', function() {
-            // Show loading state
+        function submitForm() {
             const submitText = document.getElementById('submitText');
             const submitSpinner = document.getElementById('submitSpinner');
+            const formData = new FormData(form);
             
+            // Show loading state
             submitText.textContent = 'Traitement...';
             submitSpinner.classList.remove('d-none');
             submitBtn.disabled = true;
             
-            // Submit the form via Livewire with error handling
-            @this.call('addFichier', selectedFile, function() {
-                // This is a workaround to ensure proper 'this' context
-                return new Promise((resolve, reject) => {
-                    // This will be handled by Livewire's response
-                    window.livewire.resolveUpload = resolve;
-                    window.livewire.rejectUpload = reject;
-                    
-                    // Add a timeout to handle cases where the upload hangs
-                    window.uploadTimeout = setTimeout(() => {
-                        reject(new Error('Le téléversement a pris trop de temps. Veuillez réessayer.'));
-                    }, 30000); // 30 secondes timeout
-                });
+            // Submit the form via AJAX
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             })
-            .then(() => {
-                    // Reset form on success
-                    resetForm();
-                    if (confirmationModal) {
-                        confirmationModal.hide();
-                        // Force remove backdrop if still present
-                        const backdrops = document.querySelectorAll('.modal-backdrop');
-                        backdrops.forEach(backdrop => backdrop.remove());
-                        document.body.classList.remove('modal-open');
-                        document.body.style.overflow = '';
-                    }
-                    // Show success message
-                    const toast = document.createElement('div');
-                    toast.className = 'position-fixed bottom-0 end-0 p-3';
-                    toast.style.zIndex = '9999';
-                    toast.innerHTML = `
-                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                            <div class="toast-header bg-success text-white">
-                                <strong class="me-auto">Succès</strong>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Fermer"></button>
-                            </div>
-                            <div class="toast-body">
-                                Le fichier a été ajouté avec succès.
-                            </div>
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                // Show success message
+                const toast = document.createElement('div');
+                toast.className = 'position-fixed bottom-0 end-0 p-3';
+                toast.style.zIndex = '9999';
+                toast.innerHTML = `
+                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header bg-success text-white">
+                            <strong class="me-auto">Succès</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Fermer"></button>
                         </div>
-                    `;
-                    document.body.appendChild(toast);
-                    setTimeout(() => {
-                        toast.remove();
-                    }, 5000);
-                })
-                .catch(error => {
-                    console.error('Error uploading file:', error);
-                    alert('Une erreur est survenue lors du téléversement du fichier : ' + (error.message || 'Erreur inconnue'));
-                })
-                .finally(() => {
-                    if (submitText) submitText.textContent = 'Enregistrer';
-                    if (submitSpinner) submitSpinner.classList.add('d-none');
-                    if (submitBtn) submitBtn.disabled = false;
-                });
-        });
+                        <div class="toast-body">
+                            Le fichier a été ajouté avec succès.
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                // Reset form
+                form.reset();
+                fileInputContainer.style.display = 'none';
+                submitBtn.disabled = true;
+                documentSelect.value = '';
+                
+                // Hide modal if exists
+                if (confirmationModal) {
+                    confirmationModal.hide();
+                    // Force remove backdrop if still present
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                }
+                
+                // Emit an event to refresh the parent component if needed
+                window.dispatchEvent(new CustomEvent('document-uploaded', { detail: data }));
+                
+                // Remove toast after 5 seconds
+                setTimeout(() => {
+                    toast.remove();
+                }, 5000);
+            })
+            .catch(error => {
+                console.error('Erreur lors du téléversement:', error);
+                let errorMessage = 'Une erreur est survenue lors du téléversement du fichier';
+                
+                if (error.message) {
+                    errorMessage += ': ' + error.message;
+                } else if (error.errors && error.errors.file) {
+                    errorMessage = error.errors.file[0];
+                } else if (error.error) {
+                    errorMessage = error.error;
+                }
+                
+                alert(errorMessage);
+            })
+            .finally(() => {
+                // Reset button state
+                const submitText = document.getElementById('submitText');
+                const submitSpinner = document.getElementById('submitSpinner');
+                
+                if (submitText) submitText.textContent = 'Enregistrer';
+                if (submitSpinner) submitSpinner.classList.add('d-none');
+                if (submitBtn) submitBtn.disabled = false;
+            });
+        }
 
         // Process file with Imagick (client-side preview)
         function processFileWithImagick(file) {
@@ -203,11 +238,10 @@
 
         // Reset form
         function resetForm() {
-            documentSelect.value = '';
-            fileInput.value = '';
-            fileInputContainer.style.display = 'none';
-            submitBtn.disabled = true;
-            selectedFile = null;
+            if (documentSelect) documentSelect.value = '';
+            if (fileInput) fileInput.value = '';
+            if (fileInputContainer) fileInputContainer.style.display = 'none';
+            if (submitBtn) submitBtn.disabled = true;
         }
     });
 </script>
