@@ -20,35 +20,35 @@ class TacheInfo extends Component
     {
         $this->tache = $tache;
         $this->calculerTempsTraitement();
-        \Log::debug('TraitementTime après calcul', [
-            'tache_id' => $this->tache->id,
-            'traitementTime' => $this->traitementTime,
-            'objectifs_count' => $this->tache->objectifs ? $this->tache->objectifs->count() : 0,
-            'objectif_statut' => $this->tache->objectifs && $this->tache->objectifs->count() > 0 ? $this->tache->objectifs->first()->statut : 'N/A'
-        ]);
+        // \Log::debug('TraitementTime après calcul', [
+        //     'tache_id' => $this->tache->id,
+        //     'traitementTime' => $this->traitementTime,
+        //     'objectifs_count' => $this->tache->objectifs ? $this->tache->objectifs->count() : 0,
+        //     'objectif_statut' => $this->tache->objectifs && $this->tache->objectifs->count() > 0 ? $this->tache->objectifs->first()->statut : 'N/A'
+        // ]);
     }
 
     public function calculerTempsTraitement()
     {
         // Vérifier si la relation objectifs est chargée
         if (!$this->tache->relationLoaded('objectifs')) {
-            \Log::warning('La relation objectifs n\'est pas chargée pour la tâche ' . $this->tache->id);
+            // \Log::warning('La relation objectifs n\'est pas chargée pour la tâche ' . $this->tache->id);
             return;
         }
 
         $objectif = $this->tache->objectifs->first();
         
         if (!$objectif) {
-            \Log::info('Aucun objectif trouvé pour la tâche ' . $this->tache->id);
+            // \Log::info('Aucun objectif trouvé pour la tâche ' . $this->tache->id);
             return;
         }
 
         // Journaliser les dates pour le débogage
-        \Log::debug('Objectif trouvé pour la tâche ' . $this->tache->id, [
-            'created_at' => $objectif->created_at,
-            'updated_at' => $objectif->updated_at,
-            'statut' => $objectif->statut ?? 'non défini'
-        ]);
+        // \Log::debug('Objectif trouvé pour la tâche ' . $this->tache->id, [
+        //     'created_at' => $objectif->created_at,
+        //     'updated_at' => $objectif->updated_at,
+        //     'statut' => $objectif->statut ?? 'non défini'
+        // ]);
 
         try {
             // Utiliser created_at comme date de début (accusé de réception)
@@ -59,10 +59,10 @@ class TacheInfo extends Component
             // Vérifier si l'objectif est marqué comme terminé (statut = 1)
             if (isset($objectif->statut) && $objectif->statut == 1) {
                 if ($fin->lessThan($debut)) {
-                    \Log::warning('La date de mise à jour est antérieure à la date de création', [
-                        'debut' => $debut,
-                        'fin' => $fin
-                    ]);
+                    // \Log::warning('La date de mise à jour est antérieure à la date de création', [
+                    //     'debut' => $debut,
+                    //     'fin' => $fin
+                    // ]);
                     return;
                 }
                 
@@ -84,27 +84,27 @@ class TacheInfo extends Component
                     $this->traitementTime = $jours . 'j' . ($heures > 0 ? ' ' . $heures . 'h' : '');
                 }
                 
-                \Log::info('Temps de traitement calculé', [
-                    'tache_id' => $this->tache->id,
-                    'temps' => $this->traitementTime,
-                    'secondes' => $secondes,
-                    'statut' => $objectif->statut
-                ]);
+                // \Log::info('Temps de traitement calculé', [
+                //     'tache_id' => $this->tache->id,
+                //     'temps' => $this->traitementTime,
+                //     'secondes' => $secondes,
+                //     'statut' => $objectif->statut
+                // ]);
             } else {
                 // Si l'objectif n'est pas marqué comme terminé, on ne calcule pas le temps
                 $this->traitementTime = 'En cours';
-                \Log::info('Objectif non terminé, pas de calcul de temps', [
-                    'tache_id' => $this->tache->id,
-                    'statut' => $objectif->statut
-                ]);
+                // \Log::info('Objectif non terminé, pas de calcul de temps', [
+                //     'tache_id' => $this->tache->id,
+                //     'statut' => $objectif->statut
+                // ]);
             }
             
         } catch (\Exception $e) {
-            \Log::error('Erreur lors du calcul du temps de traitement', [
-                'tache_id' => $this->tache->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            // \Log::error('Erreur lors du calcul du temps de traitement', [
+            //     'tache_id' => $this->tache->id,
+            //     'error' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString()
+            // ]);
         }
     }
 
