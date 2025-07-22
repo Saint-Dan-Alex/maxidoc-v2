@@ -63,12 +63,21 @@ class TacheDocumentController extends Controller
             'confidentiel' => 0, // Non confidentiel par défaut
         ]);
 
-        // Associer le document à la tâche
-        $tache->documents()->attach($document->id);
+        // Associer le document à la tâche dans la table tache_documents
+        $tache->documents()->attach($document->id, [
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
 
         return response()->json([
             'success' => true,
             'document' => $document,
+            'tache_document' => [
+                'tache_id' => $tache->id,
+                'document_id' => $document->id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
         ]);
     }
 }

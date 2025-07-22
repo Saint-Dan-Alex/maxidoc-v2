@@ -172,13 +172,14 @@ class Tache extends Model
     }
 
     /**
-     * Get the document that owns the Tache
+     * Relation many-to-many avec les documents via la table pivot tache_documents
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function documents()
     {
-        return $this->belongsToMany(Document::class, TacheDocument::class, 'tache_id', 'document_id');
+        return $this->belongsToMany(Document::class, TacheDocument::class, 'tache_id', 'document_id')
+            ->withTimestamps();
     }
 
     /**
