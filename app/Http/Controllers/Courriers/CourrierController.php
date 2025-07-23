@@ -46,69 +46,255 @@ class CourrierController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    // public function uploadInitial(Request $request)
+    // {
+    //     try {
+    //         // Vérifier que l'utilisateur est authentifié
+    //         if (!Auth::check()) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Utilisateur non authentifié',
+    //             ], 401);
+    //         }
+
+    //         // Vérifier que l'utilisateur a un agent associé
+    //         if (!Auth::user()->agent) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Aucun agent associé à cet utilisateur',
+    //             ], 400);
+    //         }
+
+    //         // Valider la requête
+    //         $request->validate([
+    //             'document' => 'required|file|mimes:pdf|max:10240', // 10MB max
+    //             'type' => 'required|in:1', // Seulement pour les courriers entrants
+    //         ]);
+
+    //         // Récupérer les assistants du DG via la relation assistanats()
+    //         $assistantsDG = Direction::find(1)->assistanats->map(function($assistant) {
+    //             return $assistant->responsable; // Retourne l'objet Agent complet
+    //         })->filter(); // Filtrer les valeurs nulles
+
+    //         if ($assistantsDG->isEmpty()) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Aucun assistant du DG trouvé',
+    //             ], 400);
+    //         }
+
+    //         // Vérifier que le premier assistant a un ID valide
+    //         $premierAssistant = $assistantsDG->first();
+    //         if (!$premierAssistant || !$premierAssistant->id) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Assistant du DG invalide',
+    //             ], 400);
+    //         }
+
+    //         // Créer le document avec l'ID du premier assistant DG comme responsable
+    //         $document = $this->createDocument($request, $premierAssistant->id);
+
+    //         if (!$document) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Erreur lors de la création du document',
+    //             ], 500);
+    //         }
+
+    //         // Générer le numéro d'enregistrement
+    //         $lastCourrier = Courrier::whereNotNull('reference_interne')
+    //             ->where('reference_interne', 'like', 'DG-%')
+    //             ->orderBy('id', 'desc')
+    //             ->first();
+            
+    //         $nextNumber = 1;
+    //         if ($lastCourrier && preg_match('/DG-(\d+)-/', $lastCourrier->reference_interne, $matches)) {
+    //             $nextNumber = (int)$matches[1] + 1;
+    //         }
+            
+    //         $referenceInterne = sprintf('DG-%04d-ENT', $nextNumber);
+            
+    //         // Créer le courrier avec les informations complètes
+    //         $courrier = new Courrier([
+    //             'type_id' => 1, // Courrier entrant
+    //             'document_id' => $document->id,
+    //             'created_by' => Auth::user()->agent->id,
+    //             'statut_id' => 1, // Statut initial
+    //             'etape' => 'en_attente', // Première étape : en attente de saisie
+    //             'date_arrive' => now(), // Date de réception
+    //             'reference_interne' => $referenceInterne, // Numéro d'enregistrement
+    //             'is_intern' => 1, // Courrier interne par défaut
+    //         ]);
+    //         $courrier->save();
+
+    //         // Attacher les assistants DG comme destinataires (uniquement les IDs)
+    //         $courrier->destinateurs()->attach($assistantsDG->pluck('id')->toArray());
+
+    //         // Attacher l'étape initiale
+    //         $courrier->etapes()->attach(1); // Étape 1 : Document déposé
+
+    //         // Notification aux assistants DG
+    //         event(new CourrierCreated($courrier, $assistantsDG, 'Un nouveau document a été déposé et nécessite votre saisie'));
+
+    //         // Historique
+    //         Historique::create([
+    //             "key" => "Dépôt initial du document",
+    //             "historiquecable_id" => $courrier->id,
+    //             "historiquecable_type" => Courrier::class,
+    //             "description" => "A déposé un document pour numérisation",
+    //             "user_id" => Auth::user()->id,
+    //         ]);
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Document déposé avec succès',
+    //             'courrier_id' => $courrier->id,
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Erreur lors du dépôt du document: ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+    //     session()->flash('session', $content);
+    //     return redirect()->route('regidoc.courriers.index');
+    // }
     public function uploadInitial(Request $request)
-    {
-        try {
-            // Valider la requête
-            $request->validate([
-                'document' => 'required|file|mimes:pdf|max:10240', // 10MB max
-                'type' => 'required|in:1', // Seulement pour les courriers entrants
-            ]);
-
-            // Récupérer les assistants du DG via la relation assistanats()
-            $assistantsDG = Direction::find(1)->assistanats->pluck('responsable_id');
-
-            if ($assistantsDG->isEmpty()) {
-                return response()->json([
+{
+    try {
+        // Vérification de l'authentification
+        if (!Auth::check()) {
+            return $request->expectsJson()
+                ? response()->json([
                     'success' => false,
-                    'message' => 'Aucun assistant du DG trouvé',
-                ], 400);
-            }
+                    'message' => 'Utilisateur non authentifié',
+                ], 401)
+                : redirect()->route('login')->with('error', 'Utilisateur non authentifié');
+        }
 
-            // Créer le document avec le premier assistant DG comme responsable
-            $document = $this->createDocument($request, $assistantsDG->first());
+        $user = Auth::user();
 
-            // Créer un courrier minimal avec juste le document
-            $courrier = new Courrier([
-                'type_id' => 1, // Courrier entrant
-                'document_id' => $document->id,
-                'created_by' => Auth::user()->agent->id,
-                'statut_id' => 1, // Statut initial
-                'etape' => 'en_attente', // Première étape : en attente de saisie
-            ]);
-            $courrier->save();
+        // Vérifier que l'utilisateur a un agent associé
+        if (!$user->agent) {
+            return $request->expectsJson()
+                ? response()->json([
+                    'success' => false,
+                    'message' => 'Aucun agent associé à cet utilisateur',
+                ], 400)
+                : redirect()->back()->with('error', 'Aucun agent associé à cet utilisateur');
+        }
 
-            // Attacher les assistants DG comme destinataires
-            $courrier->destinateurs()->attach($assistantsDG);
+        // Validation de la requête
+        $request->validate([
+            'document' => 'required|file|mimes:pdf|max:10240', // 10MB max
+            'type' => 'required|in:1', // Uniquement type 1 pour courrier entrant
+        ]);
 
-            // Attacher l'étape initiale
-            $courrier->etapes()->attach(1); // Étape 1 : Document déposé
+        // Récupération des assistants du DG
+        $direction = Direction::find(1);
+        if (!$direction || !$direction->assistanats) {
+            $message = 'Aucune direction ou assistanats trouvés';
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'message' => $message], 400)
+                : redirect()->back()->with('error', $message);
+        }
 
-            // Notification aux assistants DG
-            event(new CourrierCreated($courrier, $assistantsDG, 'Un nouveau document a été déposé et nécessite votre saisie'));
+        $assistantsDG = $direction->assistanats->map(function ($assistant) {
+            return $assistant->responsable;
+        })->filter();
 
-            // Historique
-            Historique::create([
-                "key" => "Dépôt initial du document",
-                "historiquecable_id" => $courrier->id,
-                "historiquecable_type" => Courrier::class,
-                "description" => "A déposé un document pour numérisation",
-                "user_id" => Auth::user()->id,
-            ]);
+        if ($assistantsDG->isEmpty()) {
+            $message = 'Aucun assistant du DG trouvé';
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'message' => $message], 400)
+                : redirect()->back()->with('error', $message);
+        }
 
+        $premierAssistant = $assistantsDG->first();
+        if (!$premierAssistant || !$premierAssistant->id) {
+            $message = 'Assistant du DG invalide';
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'message' => $message], 400)
+                : redirect()->back()->with('error', $message);
+        }
+
+        // Création du document
+        $document = $this->createDocument($request, $premierAssistant->id);
+        if (!$document) {
+            $message = 'Erreur lors de la création du document';
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'message' => $message], 500)
+                : redirect()->back()->with('error', $message);
+        }
+
+        // Génération du numéro d'enregistrement
+        $lastCourrier = Courrier::whereNotNull('reference_interne')
+            ->where('reference_interne', 'like', 'DG-%')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $nextNumber = 1;
+        if ($lastCourrier && preg_match('/DG-(\d+)-/', $lastCourrier->reference_interne, $matches)) {
+            $nextNumber = (int)$matches[1] + 1;
+        }
+
+        $referenceInterne = sprintf('DG-%04d-ENT', $nextNumber);
+
+        // Création du courrier
+        $courrier = new Courrier([
+            'type_id' => 1,
+            'document_id' => $document->id,
+            'created_by' => $user->agent->id,
+            'statut_id' => 1,
+            'etape' => 'en_attente',
+            'date_arrive' => now(),
+            'reference_interne' => $referenceInterne,
+            'is_intern' => 1,
+        ]);
+        
+        $courrier->save();
+
+        // Attacher les destinataires
+        $courrier->destinateurs()->attach($assistantsDG->pluck('id')->toArray());
+
+        // Attacher l'étape initiale
+        $courrier->etapes()->attach(1);
+
+        // Notification
+        event(new CourrierCreated($courrier, $assistantsDG, 'Un nouveau document a été déposé et nécessite votre saisie'));
+
+        // Historique
+        Historique::create([
+            'key' => 'Dépôt initial du document',
+            'historiquecable_id' => $courrier->id,
+            'historiquecable_type' => Courrier::class,
+            'description' => 'A déposé un document pour numérisation',
+            'user_id' => $user->id,
+        ]);
+
+        // Réponse de succès conditionnelle
+        if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Document déposé avec succès',
                 'courrier_id' => $courrier->id,
             ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors du dépôt du document: ' . $e->getMessage(),
-            ], 500);
+        } else {
+            return redirect()->route('regidoc.courriers.index')
+                ->with('success', 'Document déposé avec succès');
         }
+
+    } catch (\Exception $e) {
+        $message = 'Erreur lors du dépôt du document: ' . $e->getMessage();
+
+        return $request->expectsJson()
+            ? response()->json(['success' => false, 'message' => $message], 500)
+            : redirect()->back()->with('error', $message);
     }
+}
+
 
     /**
      * Display the initial upload form for incoming mail.
@@ -911,8 +1097,7 @@ protected function createDocument($request, $responsibleId, $doc = null)
         $document->libelle = $originalName;
         $document->reference = 'DOC-' . strtoupper(Str::random(8));
         $document->document = $path;
-        $document->type = $extension;
-        $document->taille = $file->getSize();
+        $document->type = 1; // 1: Entrant, 2: Sortant, 3: Interne (selon la table document_types)
         $document->dossier_id = $dossier->id;
         $document->user_id = $responsibleId;
         $document->statut_id = 1; // Statut actif

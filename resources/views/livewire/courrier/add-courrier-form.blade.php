@@ -11,7 +11,7 @@
             <h4 class="ms-0 ms-2">Numérisation du courrier</h4>
         </div>
         {{--  --}}
-        <form action="{{ route('regidoc.courriers.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('regidoc.courriers.upload-initial') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="body-siderbar">
                 <div class="form-group row g-3">
@@ -99,41 +99,7 @@
                             wire:ignore />
                     @endif
 
-                    <div class="col-12 categorie_field" wire:ignore>
-                        <div class="row">
-                            <label class="col-5 col-form-label">Catégorie</label>
-                            <div class="col-7" wire:ignore>
-                                <select class="form-select form-control select2" aria-label="Default select example"
-                                    name="categorie" data-placeholder="Sélectionnez"
-                                    data-get-items-route="{{ route('regidoc.ajax.naturecourriers') }}"
-                                    data-route="{{ route('regidoc.ajax.naturecourriers.save') }}"
-                                    data-get-items-field="title" data-method="get" data-label="title"
-                                    data-related-model="CourrierCategory" data-tags="true" data-max-selection="1"
-                                    multiple @if ($type == [1]) required @endif>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="col-12" wire:ignore>
-                        <h5 class="mt-1 title-info">Destination du courrier</h5>
-                    </div>
-
-                    <div class="col-12 exped_extern" wire:ignore>
-                        <div class="row">
-                            <label class="col-5 col-form-label">Expéditeur</label>
-                            <div class="col-7" wire:ignore>
-                                <select class="form-select form-control sele" aria-label="Default select example"
-                                    name="exp" data-placeholder="Selectionnez"
-                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
-                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
-                                    data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="CourrierExpediteur" data-tags="true" data-max-selection="1"
-                                    data-relative-id="null" multiple @if ($type == [1]) required @endif>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
 
                     {{-- <div class="col-12 d-none exped_intern" wire:ignore>
                         <input type="hidden" name="exp_int" value="{{ Auth::user()->agent->id }}"> 
@@ -297,15 +263,7 @@
                         </div>
                     </div>
 
-                    <div class="col-12">
-                        <div class="row">
-                            <label class="col-5 col-form-label">Référence courrier</label>
-                            <div class="col-7">
-                                <input type="text" class="form-control" name="ref"
-                                    placeholder="Référence courrier" wire:model="ref">
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div class="col-12">
                         <div class="row">
@@ -317,32 +275,7 @@
                         </div>
                     </div>
 
-                    <div class="col-12">
-                        <div class="row">
-                            <label class="col-5 col-form-label">Titre</label>
-                            <div class="col-7">
-                                {{-- <input type="text" class="form-control" name="title" placeholder="Sujet"> --}}
-                                <textarea name="title" class="form-control" id="title" cols="30" rows="2"
-                                    placeholder="Titre / objet" required></textarea>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="col-12 nature_field" wire:ignore>
-                        <div class="row">
-                            <label class="col-5 col-form-label">Nature</label>
-                            <div class="col-7" wire:ignore>
-                                <select class="form-select form-control select2" aria-label="Default select example"
-                                    name="nature" data-placeholder="Sélectionnez"
-                                    data-get-items-route="{{ route('regidoc.ajax.naturecourriers') }}"
-                                    data-route="{{ route('regidoc.ajax.naturecourriers.save') }}"
-                                    data-get-items-field="titre" data-method="get" data-label="titre"
-                                    data-related-model="CourrierNature" data-tags="true"
-                                    @if ($type == [1, 3]) required @endif>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
 
                     @can('Definir le traitement')
                         <div class="col-12 d-none">
@@ -374,15 +307,7 @@
                         </div>
                     @endcan
 
-                    <div class="col-12">
-                        <div class="row">
-                            <label class="col-5 col-form-label">Date du courrier</label>
-                            <div class="col-7">
-                                <input type="date" class="form-control" id="inputPassword1" name="date-doc"
-                                    max="{{ now()->format('Y-m-d') }}" required>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div class="col-12 datearrive_field" wire:ignore>
                         <div class="row">

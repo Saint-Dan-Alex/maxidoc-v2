@@ -34,14 +34,22 @@ class SendCourrierCreatedNotification
     public function handle(CourrierCreated $event)
     {
  
-         Notification::send(
-             $event->agents, 
-             new CourrierNotification(
-                 $event->courrier, 
-                 Auth::user()->agent, 
-                 $event->message
-             )
-         );
+         // Récupérer les utilisateurs associés aux agents
+         $users = $event->agents->map(function($agent) {
+             return $agent->user;
+         })->filter(); // Filtrer pour ne garder que les utilisateurs non nuls
+
+         // Envoyer la notification uniquement aux utilisateurs valides
+         if ($users->isNotEmpty()) {
+             Notification::send(
+                 $users, 
+                 new CourrierNotification(
+                     $event->courrier, 
+                     Auth::user()->agent, 
+                     $event->message
+                 )
+             );
+         }
 
         // $webPush = new WebPush([
         //     'VAPID' => [
