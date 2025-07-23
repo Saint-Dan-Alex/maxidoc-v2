@@ -39,6 +39,87 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class CourrierController extends Controller
 {
     use SoftDeletes;
+
+    /**
+     * Handle the initial document upload for incoming mail
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function uploadInitial(Request $request)
+    {
+        try {
+            // Valider la requête
+            $request->validate([
+                'document' => 'required|file|mimes:pdf|max:10240', // 10MB max
+                'type' => 'required|in:1', // Seulement pour les courriers entrants
+            ]);
+
+            // Récupérer les assistants du DG via la relation assistanats()
+            $assistantsDG = Direction::find(1)->assistanats->pluck('responsable_id');
+
+            if ($assistantsDG->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucun assistant du DG trouvé',
+                ], 400);
+            }
+
+            // Créer le document avec le premier assistant DG comme responsable
+            $document = $this->createDocument($request, $assistantsDG->first());
+
+            // Créer un courrier minimal avec juste le document
+            $courrier = new Courrier([
+                'type_id' => 1, // Courrier entrant
+                'document_id' => $document->id,
+                'created_by' => Auth::user()->agent->id,
+                'statut_id' => 1, // Statut initial
+                'etape' => 'en_attente', // Première étape : en attente de saisie
+            ]);
+            $courrier->save();
+
+            // Attacher les assistants DG comme destinataires
+            $courrier->destinateurs()->attach($assistantsDG);
+
+            // Attacher l'étape initiale
+            $courrier->etapes()->attach(1); // Étape 1 : Document déposé
+
+            // Notification aux assistants DG
+            event(new CourrierCreated($courrier, $assistantsDG, 'Un nouveau document a été déposé et nécessite votre saisie'));
+
+            // Historique
+            Historique::create([
+                "key" => "Dépôt initial du document",
+                "historiquecable_id" => $courrier->id,
+                "historiquecable_type" => Courrier::class,
+                "description" => "A déposé un document pour numérisation",
+                "user_id" => Auth::user()->id,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Document déposé avec succès',
+                'courrier_id' => $courrier->id,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du dépôt du document: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Display the initial upload form for incoming mail.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showInitialUploadForm()
+    {
+        return view('regidoc.pages.courriers.initial-upload');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -781,98 +862,160 @@ public function traitement($courrier)
    
 
 
-public function createDocument($request, $destinateur, $doc = null) 
+/**
+ * Create a document from the uploaded file or scan
+ *
+ * @param  \Illuminate\Http\Request|array  $request
+ * @param  int  $responsibleId
+ * @param  \App\Models\Document|null  $doc
+ * @return \App\Models\Document|null
+ */
+protected function createDocument($request, $responsibleId, $doc = null)
 {
-    // 1. Création ou récupération du classeur
-    $classeur = Classeur::firstOrCreate(
-        ['titre' => Auth::user()->agent->direction?->lieu?->titre ?? 'Region inconnu'], 
-        [
-            'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
-            'direction_id' => Agent::find($destinateur)?->direction_id,
-            'created_by' => Auth::user()->agent->id
-        ]
-    );
+    // Déterminer si c'est un appel avec un objet Request ou un tableau
+    $isRequestObject = $request instanceof \Illuminate\Http\Request;
+    $isInitialUpload = !$isRequestObject && is_array($request);
+    
+    // Si c'est un appel avec un objet Request (nouveau workflow)
+    if ($isRequestObject && $request->hasFile('document')) {
+        // Créer un classeur pour les courriers entrants s'il n'existe pas
+        $classeur = Classeur::firstOrCreate(
+            ['titre' => 'Courriers Entrants'],
+            [
+                'reference' => 'CE-' . date('YmdHis'),
+                'created_by' => $responsibleId
+            ]
+        );
 
-    // 2. Création ou récupération du dossier 'Courriers'
-    $dossier = Dossier::firstOrCreate(
-        ['titre' => 'Courriers', 'classeur_id' => $classeur->id], 
-        [
-            'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
-            'created_by' => Auth::user()->agent->id,
-            'updated_by' => Auth::user()->agent->id,
-        ]
-    );
+        // Créer un dossier pour le mois en cours s'il n'existe pas
+        $dossier = Dossier::firstOrCreate(
+            [
+                'titre' => date('F Y'),
+                'classeur_id' => $classeur->id
+            ],
+            [
+                'reference' => 'D-' . date('Ym'),
+                'created_by' => $responsibleId
+            ]
+        );
 
-    // 3. Si pas de document existant passé en paramètre
-    if ($doc == null) {
+        // Gérer le fichier téléchargé
+        $file = $request->file('document');
+        $originalName = $file->getClientOriginalName();
+        $extension = $file->getClientOriginalExtension();
+        $filename = pathinfo($originalName, PATHINFO_FILENAME) . '_' . time() . '.' . $extension;
+        $path = $file->storeAs('documents/' . date('Y/m'), $filename, 'public');
 
-        // Cas où c’est un scan ou un document déjà sélectionné
-        if (($request?->is_scan ?? false) == "true" || ($request?->has('selected_doc') && !empty($request->selected_doc))) {
-
-            $document = new Document();
-            $document->dossier_id = $dossier->id;
-            $document->reference = is_array($request->get('ref')) ? implode(', ', $request->get('ref')) : $request->get('ref');
-            $document->category_id = $request->get('categorie');
-            $document->libelle = $request->get('title');
-            $document->type = $request->get('type');
-
-            if (($request->is_scan ?? false) == "true") {
-                // Stockage du fichier scanné (à adapter selon ta logique ScanFile)
-                $document->document = (new ScanFile())->handle('documents');
-            } else {
-                // Déplacer un fichier sélectionné déjà uploadé en temporaire
-                $document->document = $this->moveCreatedDoc($request->selected_doc);
-            }
-
-            $document->user_id = Auth::user()->id;
-            $document->statut_id = 1;
-            $document->created_by = Auth::user()->agent->id;
-            $document->save();
-
-            return $document;
-        }
-
-        // Cas d'un upload via formulaire (input file)
-        if ($request->hasFile('document') && (empty($request->document_id))) {
-
-            $document = new Document();
-            $document->dossier_id = $dossier->id;
-            $document->reference = $request->get('ref');
-            $document->category_id = $request->get('categorie');
-            $document->libelle = $request->get('title');
-            $document->type = $request->get('type');
-
-            // Utilisation de la classe File pour stocker le fichier
-            $document->document = (new File())->handle($request, 'document', 'documents');
-
-            $document->user_id = Auth::user()->id;
-            $document->statut_id = 1;
-            $document->created_by = Auth::user()->agent->id;
-            $document->save();
-
-            return $document;
-        } 
-        
-        // Cas où on utilise un document existant via son ID
-        elseif ($request->has('document_id') && !empty($request->document_id)) {
-            return Document::find($request->document_id);
-        }
-
-    } else {
-        // Cas où on crée un nouveau document à partir d’un autre objet $doc existant
-        $document = Document::create([
-            'dossier_id' => $dossier->id,
-            'reference' => is_array($doc->reference) ? implode(', ', $doc->reference) . '/R' : $doc->reference . '/R',
-            'category_id' => $doc->category_id,
-            'libelle' => $doc->libelle,
-            'type' => $doc->type,
-            'document' => $doc->document ?? (new File())->handle($request, 'document', 'documents'),
-            'user_id' => Auth::user()->id,
-            'statut_id' => 1,
-            'created_by' => Auth::user()->agent->id,
-        ]);
+        // Créer le document dans la base de données
+        $document = $doc ?? new Document();
+        $document->libelle = $originalName;
+        $document->reference = 'DOC-' . strtoupper(Str::random(8));
+        $document->document = $path;
+        $document->type = $extension;
+        $document->taille = $file->getSize();
+        $document->dossier_id = $dossier->id;
+        $document->user_id = $responsibleId;
+        $document->statut_id = 1; // Statut actif
+        $document->created_by = $responsibleId;
+        $document->save();
 
         return $document;
+    }
+    // Si c'est un appel avec un tableau (ancien workflow)
+    elseif ($isInitialUpload) {
+        $requestData = $request; // C'est déjà un tableau
+        $destinateur = $responsibleId; // Le second paramètre est le destinataire dans ce cas
+        
+        // 1. Création ou récupération du classeur
+        $classeur = Classeur::firstOrCreate(
+            ['titre' => Auth::user()->agent->direction?->lieu?->titre ?? 'Region inconnu'], 
+            [
+                'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
+                'direction_id' => Agent::find($destinateur)?->direction_id,
+                'created_by' => Auth::user()->agent->id
+            ]
+        );
+
+        // 2. Création ou récupération du dossier 'Courriers'
+        $dossier = Dossier::firstOrCreate(
+            ['titre' => 'Courriers', 'classeur_id' => $classeur->id], 
+            [
+                'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
+                'created_by' => Auth::user()->agent->id,
+                'updated_by' => Auth::user()->agent->id,
+            ]
+        );
+
+        // 3. Si pas de document existant passé en paramètre
+        if ($doc === null) {
+            // Cas où c'est un scan ou un document déjà sélectionné
+            if (($requestData['is_scan'] ?? false) == "true" || (isset($requestData['selected_doc']) && !empty($requestData['selected_doc']))) {
+                $document = new Document();
+                $document->dossier_id = $dossier->id;
+                $document->reference = is_array($requestData['ref'] ?? null) ? 
+                    implode(', ', $requestData['ref']) : ($requestData['ref'] ?? null);
+                $document->category_id = $requestData['categorie'] ?? null;
+                $document->libelle = $requestData['title'] ?? 'Document sans titre';
+                $document->type = $requestData['type'] ?? 'pdf';
+
+                if (($requestData['is_scan'] ?? false) == "true") {
+                    // Stockage du fichier scanné
+                    $document->document = (new ScanFile())->handle('documents');
+                } else {
+                    // Déplacer un fichier sélectionné déjà uploadé en temporaire
+                    $document->document = $this->moveCreatedDoc($requestData['selected_doc']);
+                }
+
+                $document->user_id = Auth::id();
+                $document->statut_id = 1;
+                $document->created_by = Auth::user()->agent->id;
+                $document->save();
+
+                return $document;
+            }
+
+            // Cas d'un upload via formulaire (input file)
+            if (isset($requestData['document']) && empty($requestData['document_id'])) {
+                $document = new Document();
+                $document->dossier_id = $dossier->id;
+                $document->reference = $requestData['ref'] ?? null;
+                $document->category_id = $requestData['categorie'] ?? null;
+                $document->libelle = $requestData['title'] ?? 'Document sans titre';
+                $document->type = $requestData['type'] ?? 'pdf';
+
+                // Utilisation de la classe File pour stocker le fichier
+                $document->document = (new File())->handle($request, 'document', 'documents');
+
+                $document->user_id = Auth::id();
+                $document->statut_id = 1;
+                $document->created_by = Auth::user()->agent->id;
+                $document->save();
+
+                return $document;
+            }
+            
+            // Cas où on utilise un document existant via son ID
+            if (!empty($requestData['document_id'])) {
+                return Document::find($requestData['document_id']);
+            }
+        } else {
+            // Cas où on crée un nouveau document à partir d'un autre objet $doc existant
+            $document = Document::create([
+                'dossier_id' => $dossier->id,
+                'reference' => is_array($doc->reference) ? 
+                    implode(', ', $doc->reference) . '/R' : 
+                    ($doc->reference ? $doc->reference . '/R' : 'DOC-' . strtoupper(Str::random(8))),
+                'category_id' => $doc->category_id ?? null,
+                'libelle' => $doc->libelle ?? 'Document copié',
+                'type' => $doc->type ?? 'pdf',
+                'document' => $doc->document ?? null,
+                'user_id' => Auth::id(),
+                'statut_id' => 1,
+                'created_by' => Auth::user()->agent->id,
+            ]);
+
+            return $document;
+        }
     }
 
     // Par défaut, rien à retourner si aucune condition remplie
@@ -1244,29 +1387,126 @@ public function createDocument($request, $destinateur, $doc = null)
     }
 
     /**
-     * Méthode helper pour créer un document.
-     * Vous devez la définir ou vous assurer qu'elle existe.
+     * Show the form for completing courrier information
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
      */
-    
-
-    public function show($id)
+    public function showCompleteForm($id)
     {
+        $courrier = Courrier::with(['document', 'type', 'nature', 'category'])->findOrFail($id);
+        
+        // Vérifier que le courrier est en attente de saisie
+        if ($courrier->etape !== 'en_attente') {
+            $content = json_encode([
+                'name' => 'Courrier',
+                'statut' => 'error',
+                'message' => 'Ce document a déjà été traité',
+            ]);
+            session()->flash('session', $content);
+            return redirect()->route('regidoc.courriers.index');
+        }
 
-        $courrier = Courrier::with('document', 'views')->where('id', $id)->first();
+        // Charger les données nécessaires pour le formulaire
+        $types = CourrierType::all();
+        $natures = CourrierNature::all();
+        $categories = CourrierCategory::all();
+        $services = Service::all();
+        $agents = Agent::actif()->get();
+        $priorites = Priorite::all();
+        $traitements = CourrierTypesTraitement::all();
 
-        $viewsForThisUser = $courrier->views->where('user_id', Auth::id())->count();
+        return view('regidoc.pages.courriers.complete-form', [
+            'courrier' => $courrier,
+            'types' => $types,
+            'natures' => $natures,
+            'categories' => $categories,
+            'services' => $services,
+            'agents' => $agents,
+            'priorites' => $priorites,
+            'traitements' => $traitements,
+        ]);
+    }
 
-        $this->authorize('view', $courrier);
+    /**
+     * Complete the courrier information
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function complete(Request $request, $id)
+    {
+        try {
+            $courrier = Courrier::findOrFail($id);
+            
+            // Vérifier que le courrier est en attente de saisie
+            if ($courrier->etape !== 'en_attente') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ce document a déjà été traité',
+                ], 400);
+            }
 
-        views($courrier)->once($viewsForThisUser > 0)->record();
+            // Valider les données du formulaire
+            $validatedData = $request->validate([
+                'title' => 'required|string|max:255',
+                'expediteur' => 'required|string|max:255',
+                'reference_courrier' => 'required|string|max:100',
+                'date_du_courrier' => 'required|date',
+                'date_arrive' => 'required|date',
+                'objet' => 'required|string',
+                'nature_id' => 'required|exists:courrier_natures,id',
+                'categorie_id' => 'required|exists:courrier_categories,id',
+                'priorite_id' => 'nullable|exists:priorites,id',
+                'traitement_id' => 'nullable|exists:courrier_types_traitements,id',
+                'confidentiel' => 'boolean',
+            ]);
 
-        $classeurs = Classeur::all();
-        $dossiers = Dossier::all();
-        $directions = Direction::all();
-        $traitements = Auth::user()->agent->isDG()|| Auth::user()->agent->isDGA()  ? CourrierTypesTraitement::select('id', 'titre')->get() : CourrierTypesTraitement::select('id', 'titre')->where('id','!=',3)->get();
-        $priorites = Priorite::select('id', 'titre')->get();
+            // Mettre à jour le courrier avec les informations fournies
+            $courrier->update([
+                'title' => $validatedData['title'],
+                'exped_externe' => $validatedData['expediteur'],
+                'reference_courrier' => $validatedData['reference_courrier'],
+                'date_du_courrier' => $validatedData['date_du_courrier'],
+                'date_arrive' => $validatedData['date_arrive'],
+                'objet' => $validatedData['objet'],
+                'nature_id' => $validatedData['nature_id'],
+                'category_id' => $validatedData['categorie_id'],
+                'priorite_id' => $validatedData['priorite_id'] ?? null,
+                'traitement_id' => $validatedData['traitement_id'] ?? null,
+                'confidentiel' => $request->has('confidentiel') ? 1 : 0,
+                'etape' => 'termine', // Marquer comme terminé
+                'statut_id' => 2, // Marquer comme traité
+            ]);
 
-        return view('regidoc.pages.courriers.show-courrier', compact('directions', 'courrier', 'classeurs', 'dossiers','traitements','priorites'));
+            // Ajouter une entrée d'historique
+            Historique::create([
+                "key" => "Saisie des informations",
+                "historiquecable_id" => $courrier->id,
+                "historiquecable_type" => Courrier::class,
+                "description" => "A complété les informations du courrier",
+                "user_id" => Auth::id(),
+            ]);
+
+            // Notifier les utilisateurs concernés
+            // (À implémenter selon vos besoins)
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Informations enregistrées avec succès',
+                'redirect' => route('regidoc.courriers.show', $courrier->id)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la complétion du courrier: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de l\'enregistrement des informations',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
  
@@ -1718,6 +1958,15 @@ public function rejeter(Courrier $courrier)
         }
     }
 
+
+
+    /**
+     * Generate a unique filename
+     *
+     * @param  mixed  $file
+     * @param  string  $path
+     * @return string
+     */
     public function generateFileName($file, $path)
     {
         $filename = Str::random(20);
@@ -1736,6 +1985,12 @@ public function rejeter(Courrier $courrier)
         return $filename;
     }
 
+    /**
+     * Move a created document to its final location
+     *
+     * @param  string  $fileName
+     * @return string
+     */
     public function moveCreatedDoc($fileName)
     {
         $filesPath = [];

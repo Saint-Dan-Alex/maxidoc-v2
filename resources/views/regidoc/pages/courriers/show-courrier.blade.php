@@ -401,8 +401,37 @@
                     }
                 @endphp
                 <ul class="lists">
-                    @if ($courrier->type_id != 2)
-                        {{-- <li class="assistant-trait @if (!($hasSeen && (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) && $courrier->author->id != Auth::user()->agent->id && !$aTraite)) d-none @endif"> --}}
+                    @if ($courrier->type_id == 1)
+                        {{-- Bouton "Ajouter infos" - visible uniquement pour les courriers entrants en attente de saisie --}}
+                        @if (Auth::user()->agent->isAssistant() && $courrier->etape === 'en_attente')
+                            <li>
+                                <a href="{{ route('regidoc.courriers.complete-form', $courrier) }}" class="dropdown-item">
+                                    <span class="d-flex align-items-center">
+                                        <i class="fi fi-rr-edit"></i>
+                                    </span>
+                                    <span class="title">
+                                        Ajouter les informations
+                                    </span>
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- Bouton "Traiter" - visible uniquement pour les courriers entrants avec saisie terminée --}}
+                        @if ($courrier->etape === 'termine' && !$aTraite)
+                            <li class="assistant-trait">
+                                <a data-bs-toggle="modal" data-bs-target="#traitement-modal" href="javascript:void(0)"
+                                    class="dropdown-item">
+                                    <span class="d-flex align-items-center">
+                                        <i class="fi fi-rr-hourglass-end"></i>
+                                    </span>
+                                    <span class="title">
+                                        Traiter
+                                    </span>
+                                </a>
+                            </li>
+                        @endif
+                    @elseif ($courrier->type_id != 2)
+                        {{-- Ancienne logique pour les autres types de courriers --}}
                         @php
                             $dgaSecretaires = \App\Models\Direction::find(1)
                                 ->dgaSecretaires->pluck('responsable_id')
@@ -412,28 +441,28 @@
                                 ->toArray();
                         @endphp
                         @if (
-    !in_array(Auth::user()->agent->id, $dgaSecretaires) &&
-    !in_array(Auth::user()->agent->id, $dgaAssistants) &&
-    $courrier->type_id != 3
-)
-    <li class="assistant-trait @if (
-        !(
-            $hasSeen &&
-            (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) &&
-            $courrier->author->id != Auth::user()->agent->id &&
-            !$aTraite
-        )) d-none @endif">
-        <a data-bs-toggle="modal" data-bs-target="#traitement-modal" href="javascript:void(0)"
-            class="dropdown-item">
-            <span class="d-flex align-items-center">
-                <i class="fi fi-rr-hourglass-end"></i>
-            </span>
-            <span class="title">
-                Traiter
-            </span>
-        </a>
-    </li>
-@endif
+                            !in_array(Auth::user()->agent->id, $dgaSecretaires) &&
+                            !in_array(Auth::user()->agent->id, $dgaAssistants) &&
+                            $courrier->type_id != 3
+                        )
+                            <li class="assistant-trait @if (
+                                !(
+                                    $hasSeen &&
+                                    (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) &&
+                                    $courrier->author->id != Auth::user()->agent->id &&
+                                    !$aTraite
+                                )) d-none @endif">
+                                <a data-bs-toggle="modal" data-bs-target="#traitement-modal" href="javascript:void(0)"
+                                    class="dropdown-item">
+                                    <span class="d-flex align-items-center">
+                                        <i class="fi fi-rr-hourglass-end"></i>
+                                    </span>
+                                    <span class="title">
+                                        Traiter
+                                    </span>
+                                </a>
+                            </li>
+                        @endif
 
                     @endif
 

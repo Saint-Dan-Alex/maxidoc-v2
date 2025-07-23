@@ -197,7 +197,18 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 Route::post('partages', [CourrierController::class, 'partages'])->name('courriers.partages');
                 Route::get('receptions', [CourrierController::class, 'receivedMails'])->name('courriers.received');
                 Route::get('envoyes', [CourrierController::class, 'sendMails'])->name('courriers.sent');
+                
+                // Nouvelle route pour le dépôt initial des documents (sans informations détaillées)
+                Route::get('depot-initial', [CourrierController::class, 'showInitialUploadForm'])->name('courriers.initial-upload');
+                Route::post('upload-initial', [CourrierController::class, 'uploadInitial'])->name('courriers.upload-initial');
+                
+                // Route existante pour la création complète (à conserver pour compatibilité)
                 Route::get('nouveau', [CourrierController::class, 'create'])->name('courriers.add');
+                
+                // Route pour le formulaire de complétion des informations par l'assistant
+                Route::get('{courrier}/completer', [CourrierController::class, 'showCompleteForm'])->name('courriers.complete-form');
+                Route::post('{courrier}/completer', [CourrierController::class, 'complete'])->name('courriers.complete');
+                
                 Route::post('save/signature', [CourrierController::class, 'saveSignature'])->name('courriers.saveSignature');
                 
                 // Routes avec ID
