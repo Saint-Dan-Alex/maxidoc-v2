@@ -722,90 +722,90 @@ class TacheController extends Controller
 
     // }
     public function edit(Request $request, $id)
-{
-    // Charger la tâche AVEC les agents liés (avec pivots)
-    $tache = Tache::with('agents')->findOrFail($id);
+    {
+        // Charger la tâche AVEC les agents liés (avec pivots)
+        $tache = Tache::with('agents')->findOrFail($id);
 
-    // Vérification d'autorisation
-    if ($tache->user_id != Auth::user()->id) {
-        session()->flash('session', json_encode([
-            'name' => 'Gestion de tâches',
-            'statut' => 'error',
-            'message' => 'Accès non autorisé !',
-        ]));
-        return back();
-    }
+        // Vérification d'autorisation
+        if ($tache->user_id != Auth::user()->id) {
+            session()->flash('session', json_encode([
+                'name' => 'Gestion de tâches',
+                'statut' => 'error',
+                'message' => 'Accès non autorisé !',
+            ]));
+            return back();
+        }
 
-    // Initialisation du tableau de données avec valeurs par défaut
-    $data = [
-        'tache' => $tache,
-        'agents' => collect(),
-        'directions' => collect(),
-        'services' => collect(),
-        'sections' => collect(),
-        'priorites' => Priorite::select('id', 'titre')->get(),
-        'to' => null,
-        'isNewdoc' => false,
-        'document' => null,
-        'isSubTask' => false,
-    ];
+        // Initialisation du tableau de données avec valeurs par défaut
+        $data = [
+            'tache' => $tache,
+            'agents' => collect(),
+            'directions' => collect(),
+            'services' => collect(),
+            'sections' => collect(),
+            'priorites' => Priorite::select('id', 'titre')->get(),
+            'to' => null,
+            'isNewdoc' => false,
+            'document' => null,
+            'isSubTask' => false,
+        ];
 
-    // Cas Directeur Général
-    if (Auth::user()->agent->isDG()) {
-        if ($request->to === "direction") {
-            $data['directions'] = Direction::where('id', '!=', Auth::user()->agent->direction_id)->get();
-            $data['to'] = 'direction';
-        } elseif ($request->to === "agent") {
+        // Cas Directeur Général
+        if (Auth::user()->agent->isDG()) {
+            if ($request->to === "direction") {
+                $data['directions'] = Direction::where('id', '!=', Auth::user()->agent->direction_id)->get();
+                $data['to'] = 'direction';
+            } elseif ($request->to === "agent") {
+                $data['agents'] = Agent::select('id', 'nom', 'prenom')
+                    ->where('id', '!=', Auth::id())
+                    ->get();
+                $data['to'] = 'agent';
+            } else {
+                $data['directions'] = Direction::where('id', '!=', Auth::user()->agent->direction_id)->get();
+            }
+        } else {
+            // Cas utilisateur normal
             $data['agents'] = Agent::select('id', 'nom', 'prenom')
                 ->where('id', '!=', Auth::id())
+                ->where('direction_id', Auth::user()->agent->direction_id)
                 ->get();
-            $data['to'] = 'agent';
-        } else {
-            $data['directions'] = Direction::where('id', '!=', Auth::user()->agent->direction_id)->get();
         }
-    } else {
-        // Cas utilisateur normal
-        $data['agents'] = Agent::select('id', 'nom', 'prenom')
-            ->where('id', '!=', Auth::id())
-            ->where('direction_id', Auth::user()->agent->direction_id)
-            ->get();
+
+        // Récupération des services et sections si nécessaires
+        $data['services'] = Service::all();
+        $data['sections'] = Section::all();
+
+        // Cas nouveau document attaché temporairement
+        if ($request->newdoc == 1 && $request->textSelected && $request->fileName) {
+            $fileName = $request->fileName;
+            $text = $request->textSelected;
+            $name = $text . date('_dmYHi') . '.pdf';
+
+            $data['isNewdoc'] = true;
+            $data['docname'] = $name;
+            $data['filename'] = $fileName;
+            $data['dossiername'] = $text;
+        }
+
+        // Cas document lié existant
+        if ($request->doc != null) {
+            $document = Document::findOrFail((int) $request->doc);
+            $data['document'] = $document;
+        }
+
+        // Cas sous-tâche
+        if ($request->parent_id != null) {
+            $data['isSubTask'] = true;
+            $data['tacheParent'] = Tache::findOrFail($request->parent_id);
+        }
+
+        // Cas courrier lié
+        if ($request->courrier_id != null) {
+            $data['courrier_id'] = $request->courrier_id;
+        }
+
+        return view('regidoc.pages.taches.edit-task', $data);
     }
-
-    // Récupération des services et sections si nécessaires
-    $data['services'] = Service::all();
-    $data['sections'] = Section::all();
-
-    // Cas nouveau document attaché temporairement
-    if ($request->newdoc == 1 && $request->textSelected && $request->fileName) {
-        $fileName = $request->fileName;
-        $text = $request->textSelected;
-        $name = $text . date('_dmYHi') . '.pdf';
-
-        $data['isNewdoc'] = true;
-        $data['docname'] = $name;
-        $data['filename'] = $fileName;
-        $data['dossiername'] = $text;
-    }
-
-    // Cas document lié existant
-    if ($request->doc != null) {
-        $document = Document::findOrFail((int) $request->doc);
-        $data['document'] = $document;
-    }
-
-    // Cas sous-tâche
-    if ($request->parent_id != null) {
-        $data['isSubTask'] = true;
-        $data['tacheParent'] = Tache::findOrFail($request->parent_id);
-    }
-
-    // Cas courrier lié
-    if ($request->courrier_id != null) {
-        $data['courrier_id'] = $request->courrier_id;
-    }
-
-    return view('regidoc.pages.taches.edit-task', $data);
-}
 
     // public function update(Request $request, $id)
     // {
