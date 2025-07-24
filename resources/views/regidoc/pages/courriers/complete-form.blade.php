@@ -1,5 +1,49 @@
 @extends('regidoc.layouts.layout-doc')
 
+@section('style')
+<style>
+    #createMailPage {
+        display: flex;
+        height: calc(100vh - 60px); /* Ajuster selon la hauteur de votre en-tête */
+        width: 100%;
+        overflow: hidden;
+    }
+    .sidebar-doc {
+        width: 500px;
+        height: 100%;
+        background: #fff;
+        border-right: 1px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .content-scanner {
+        flex: 1;
+        height: 100%;
+        overflow: hidden;
+        background: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .content-scanner iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    .body-siderbar {
+        padding: 15px;
+        flex: 1;
+        overflow-y: auto;
+    }
+    .footer-sidebar {
+        padding: 15px;
+        border-top: 1px solid #e0e0e0;
+        background: #fff;
+    }
+</style>
+@endsection
+
 @section('content')
 <div id="createMailPage">
     <div class="sidebar-doc">
@@ -469,7 +513,6 @@
     </div>
     <div class="content-scanner">
         <div class="container-fluid d-none d-lg-block" wire:ignore>
-            {{-- @dd(Storage::disk('local')->url('tmp/'.$fileName.'.pdf')) --}}
             <iframe
                 src="@if ($selectedDoc) {{ asset('storage/tmp/' . $fileName . '.pdf') }}#toolbar=0 @endif "
                 frameborder="0" class="w-100 @if (!$selectedDoc) d-none @endif"></iframe>
