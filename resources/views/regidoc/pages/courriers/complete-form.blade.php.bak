@@ -73,10 +73,7 @@
         {{--  --}}
         <form id="completeCourrierForm" action="{{ route('regidoc.courriers.complete', $courrier->id) }}" method="POST">
             @csrf
-            @if(isset($courrier))
-                @method('PUT')
-                <input type="hidden" name="courrier_id" value="{{ $courrier->id }}">
-            @endif
+            <input type="hidden" name="courrier_id" value="{{ $courrier->id }}">
             <div class="body-siderbar">
                 <div class="form-group row g-3">
                     <div class="col-12">
@@ -366,8 +363,9 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Référence courrier</label>
                             <div class="col-7">
-                                <input type="text" class="form-control" name="ref" value="{{ $courrier->reference_courrier ?? '' }}"
-                                    placeholder="Référence courrier" wire:model="ref">
+                                <input type="text" class="form-control" name="reference_courrier" value="{{ $courrier->reference_courrier ?? '' }}"
+                                    placeholder="Référence courrier" required>
+                                <input type="hidden" name="expediteur" value="{{ $courrier->expediteur->id ?? '' }}" id="expediteur_id">
                             </div>
                         </div>
                     </div>
@@ -389,6 +387,16 @@
                                 {{-- <input type="text" class="form-control" name="title" placeholder="Sujet"> --}}
                                 <textarea name="title" class="form-control" id="title" cols="30" rows="2"
                                     placeholder="Titre / objet" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Objet détaillé</label>
+                            <div class="col-7">
+                                <textarea name="objet" class="form-control" id="objet" cols="30" rows="3"
+                                    placeholder="Objet détaillé du courrier" required></textarea>
                             </div>
                         </div>
                     </div>
@@ -443,7 +451,7 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Date du courrier</label>
                             <div class="col-7">
-                                <input type="date" class="form-control" id="inputPassword1" name="date-doc" value="{{ isset($courrier->date_du_courrier) ? $courrier->date_du_courrier->format('Y-m-d') : '' }}"
+                                <input type="date" class="form-control" id="inputPassword1" name="date_du_courrier" value="{{ isset($courrier->date_du_courrier) ? $courrier->date_du_courrier->format('Y-m-d') : '' }}"
                                     max="{{ now()->format('Y-m-d') }}" required>
                             </div>
                         </div>
@@ -453,9 +461,8 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Date de réception</label>
                             <div class="col-7">
-                                <input type="date" class="form-control" id="inputPassword1" name="date-arriv"
-                                    max="{{ now()->format('Y-m-d') }}"
-                                    @if ($type == [1]) required @endif>
+                                <input type="date" class="form-control" id="inputPassword2" name="date_arrive" value="{{ isset($courrier->date_arrive) ? $courrier->date_arrive->format('Y-m-d') : '' }}"
+                                    max="{{ now()->format('Y-m-d') }}" required>
                             </div>
                         </div>
                     </div>
@@ -886,9 +893,10 @@
                 if (data.id == '') {
                     // "None" was selected. Clear all selected options
                     $('select[name="exp"]').val([]).trigger('change');
+                    $('#expediteur_id').val(''); // Clear expediteur_id when no selection
                 } else {
-                    $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected',
-                        'selected');
+                    $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected', 'selected');
+                    $('#expediteur_id').val(data.id); // Update expediteur_id with selected value
                 }
             });
 

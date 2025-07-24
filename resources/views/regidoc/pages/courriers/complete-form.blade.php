@@ -185,13 +185,14 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Expéditeur</label>
                             <div class="col-7" wire:ignore>
-                                <select class="form-select form-control select2" aria-label="Default select example"
-                                    name="exp" data-placeholder="Sélectionnez"
+                                <input type="hidden" name="exped_externe" id="expediteur_id" value="{{ isset($courrier) && $courrier->expediteur ? $courrier->expediteur->id : '' }}">
+                                <select class="form-select form-control select2" aria-label="Sélectionnez un expéditeur"
+                                    id="expediteur_select" data-placeholder="Sélectionnez un expéditeur"
                                     data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
                                     data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
                                     data-get-items-field="nom" data-method="get" data-label="nom"
                                     data-related-model="CourrierExpediteur" data-tags="true" data-max-selection="1"
-                                    data-relative-id="{{ isset($courrier) ? $courrier->categorie_id ?? 'null' : 'null' }}" multiple @if ($type == [1]) required @endif>
+                                    data-relative-id="{{ isset($courrier) ? $courrier->categorie_id ?? 'null' : 'null' }}" @if ($type == [1]) required @endif>
                                     @if(isset($courrier) && $courrier->expediteur)
                                         <option value="{{ $courrier->expediteur->id }}" selected>{{ $courrier->expediteur->nom }}</option>
                                     @endif
@@ -366,8 +367,8 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Référence courrier</label>
                             <div class="col-7">
-                                <input type="text" class="form-control" name="ref" value="{{ $courrier->reference_courrier ?? '' }}"
-                                    placeholder="Référence courrier" wire:model="ref">
+                                <input type="text" class="form-control" name="reference_courrier" value="{{ $courrier->reference_courrier ?? '' }}"
+                                    placeholder="Référence courrier" required>
                             </div>
                         </div>
                     </div>
@@ -376,7 +377,7 @@
                         <div class="row">
                             <label class="col-5 col-form-label">N° d'enregistrement</label>
                             <div class="col-7">
-                                <input type="text" class="form-control" name="ref_interne" wire:model='num'
+                                <input type="text" class="form-control" name="reference_interne" wire:model='num'
                                     placeholder="N° d'enregistrement" readonly value="{{$courrier->reference_interne ?? ''}}">
                             </div>
                         </div>
@@ -389,6 +390,16 @@
                                 {{-- <input type="text" class="form-control" name="title" placeholder="Sujet"> --}}
                                 <textarea name="title" class="form-control" id="title" cols="30" rows="2"
                                     placeholder="Titre / objet" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Objet</label>
+                            <div class="col-7">
+                                <textarea name="objet" class="form-control" id="objet" cols="30" rows="3"
+                                    placeholder="Objet du courrier" required></textarea>
                             </div>
                         </div>
                     </div>
@@ -443,8 +454,8 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Date du courrier</label>
                             <div class="col-7">
-                                <input type="date" class="form-control" id="inputPassword1" name="date-doc" value="{{ isset($courrier->date_du_courrier) ? $courrier->date_du_courrier->format('Y-m-d ') : '' }}"
-                                    max="{{ now()->format('Y-m-d') }}" required>
+                                <input type="date" class="form-control" name="date_du_courrier" value=""
+                                    placeholder="Date du courrier" required>
                             </div>
                         </div>
                     </div>
@@ -482,7 +493,20 @@
                         </div>
                     @endcan
 
+                        <div class="col-12">
+                            <div class="row">
+                                <label class="col-5 col-form-label">Courrier confidentiel</label>
+                                <div class="col-7">
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="confidentiel" name="confidentiel" value="1">
+                                        <label class="form-check-label" for="confidentiel">Marquer comme confidentiel</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     @can('Definir le traitement')
+                        
+                    
                         <div class="col-12">
                             <div class="row">
                                 <label class="col-5 col-form-label">Remarques</label>
@@ -599,6 +623,16 @@
                 
                 // Récupérer les données du formulaire
                 var formData = new FormData(this);
+                
+                // Log de débogage
+                console.log('Valeur de exped_externe avant soumission:', $('input[name="exped_externe"]').val());
+                console.log('Valeur de expediteur_id avant soumission:', $('#expediteur_id').val());
+                
+                // Ajouter manuellement exped_externe au FormData si nécessaire
+                if (!$('input[name="exped_externe"]').val() && $('#expediteur_id').val()) {
+                    formData.append('exped_externe', $('#expediteur_id').val());
+                    console.log('Ajout manuel de exped_externe:', $('#expediteur_id').val());
+                }
                 
                 // Envoyer la requête AJAX
                 $.ajax({
@@ -898,39 +932,111 @@
                     false);
             });
 
-            $('select[name="exp"]').on('select2:selecting', function(e) {
-
-                if (!$('select[name="exp"]').data('tags')) {
-                    return;
-                }
-                var $el = $('select[name="exp"]');
-                var route = $el.data('route');
-                var label = $el.data('label');
-                var relativeId = $el.data('relative-id');
-                var errorMessage = $el.data('error-message');
-                var newTag = e.params.args.data.newTag;
-
-                if (!newTag) return;
-
-                $el.select2('close');
-
-                $.post(route, {
-                    [label]: e.params.args.data.text,
-                    relative_id: relativeId,
-                    _tagging: true,
-                }).done(function(data) {
-                    console.log(data);
-                    var newOption = new Option(e.params.args.data.text, data.results.id,
-                        false, true);
-                    $el.append(newOption).trigger('change');
-                }).fail(function(error) {
-                    // toastr.error(errorMessage);
-                    console.log(errorMessage);
-                });
-
-                return false;
+            // Gestion de la sélection de l'expéditeur (gestionnaire délégué)
+            $(document).on('select2:select', '#expediteur_select', function(e) {
+                var selectedId = e.params.data.id;
+                console.log('Sélection de l\'expéditeur:', selectedId);
+                $('#expediteur_id').val(selectedId);
+                // Mettre à jour le champ exped_externe
+                $('input[name="exped_externe"]').val(selectedId);
+                console.log('Valeur de exped_externe après sélection:', $('input[name="exped_externe"]').val());
             });
 
+            // Réinitialisation du champ caché si l'utilisateur efface la sélection (gestionnaire délégué)
+            $(document).on('select2:unselect', '#expediteur_select', function() {
+                console.log('Désélection de l\'expéditeur');
+                $('#expediteur_id').val('');
+                $('input[name="exped_externe"]').val('');
+            });
+
+            // Initialisation de la valeur si elle existe déjà
+            @if(isset($courrier) && $courrier->expediteur)
+                $(function() {
+                    var expediteurId = '{{ $courrier->expediteur->id }}';
+                    console.log('Initialisation de l\'expéditeur:', expediteurId);
+                    $('#expediteur_id').val(expediteurId);
+                    $('input[name="exped_externe"]').val(expediteurId);
+                    
+                    // S'assurer que le Select2 est initialisé avec la valeur
+                    if ($('#expediteur_select').length) {
+                        var option = new Option('{{ $courrier->expediteur->nom }}', expediteurId, true, true);
+                        $('#expediteur_select').append(option).trigger('change');
+                        console.log('Valeur de exped_externe après initialisation:', $('input[name="exped_externe"]').val());
+                    }
+                });
+            @endif
+
+            // Initialisation du sélecteur d'expéditeur avec Select2
+            $('#expediteur_select').select2({
+                placeholder: 'Sélectionnez un expéditeur',
+                allowClear: true,
+                tags: $('#expediteur_select').data('tags') ? true : false,
+                multiple: $('#expediteur_select').data('multiple') ? true : false,
+                maximumSelectionLength: $('#expediteur_select').data('max-selection') || null,
+                width: '100%',
+                ajax: {
+                    url: $('#expediteur_select').data('get-items-route'),
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function (data, params) {
+                        params.page = params.page || 1;
+                        return {
+                            results: data.data,
+                            pagination: {
+                                more: (params.page * 10) < data.total
+                            }
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: formatExpediteur,
+                templateSelection: formatExpediteurSelection
+            });
+
+            // Fonction pour formater l'affichage des résultats
+            function formatExpediteur(expediteur) {
+                if (expediteur.loading) {
+                    return expediteur.text;
+                }
+                var $container = $( '<div class="select2-result-expediteur">' +
+                    '<div class="expediteur-nom">' + expediteur.text + '</div>' +
+                    '</div>'
+                );
+                return $container;
+            }
+
+            // Fonction pour formater la sélection
+            function formatExpediteurSelection(expediteur) {
+                return expediteur.text || expediteur.nom;
+            }
+
+            // Gestion de la sélection de l'expéditeur
+            $('#expediteur_select').on('select2:select', function(e) {
+                var selectedId = e.params.data.id;
+                $('#expediteur_id').val(selectedId);
+                // Mettre à jour le champ exped_externe
+                $('input[name="exped_externe"]').val(selectedId);
+            });
+
+            // Réinitialisation du champ caché si l'utilisateur efface la sélection
+            $('#expediteur_select').on('select2:unselect', function() {
+                $('#expediteur_id').val('');
+                $('input[name="exped_externe"]').val('');
+            });
+
+            // Initialisation de la valeur si elle existe déjà
+            @if(isset($courrier) && $courrier->expediteur)
+                var expediteur = { id: '{{ $courrier->expediteur->id }}', text: '{{ $courrier->expediteur->nom }}' };
+                var $option = new Option(expediteur.text, expediteur.id, true, true);
+                $('#expediteur_select').append($option).trigger('change');
+                $('#expediteur_id').val('{{ $courrier->expediteur->id }}');
+            @endif
 
             // Fonction pour vérifier la validité du formulaire
             function updateFormValidity() {

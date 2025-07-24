@@ -147,18 +147,18 @@
                                     aria-label="Default select example" name="destination2" id="destination2">
                                     <option value="">Selectionnez</option>
                                     @foreach ($agents as $agent)
-            <option value="{{ $agent->id }}">
-                {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom }}
-                
-                {{-- Optionnel : Afficher la direction ou le service de l'agent pour plus de clarté --}}
-                @if ($agent->direction)
-                    ({{ $agent->direction->nom ?? $agent->direction->titre }}) 
-                @endif
-                @if ($agent->service)
-                    ({{ $agent->service->nom ?? $agent->service->titre }})
-                @endif
-            </option>
-        @endforeach
+                                        <option value="{{ $agent->id }}">
+                                            {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom }}
+                                            
+                                            {{-- Optionnel : Afficher la direction ou le service de l'agent pour plus de clarté --}}
+                                            @if ($agent->direction)
+                                                ({{ $agent->direction->nom ?? $agent->direction->titre }}) 
+                                            @endif
+                                            @if ($agent->service)
+                                                ({{ $agent->service->nom ?? $agent->service->titre }})
+                                            @endif
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>

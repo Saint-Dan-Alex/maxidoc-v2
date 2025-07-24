@@ -1597,11 +1597,13 @@ protected function createDocument($request, $responsibleId, $doc = null)
                     'message' => 'Ce document a déjà été traité',
                 ], 400);
             }
+            dd( $request);
+
 
             // Valider les données du formulaire
             $validatedData = $request->validate([
                 'title' => 'required|string|max:255',
-                'expediteur' => 'required|string|max:255',
+                'exped_externe' => 'required|string|max:255',
                 'reference_courrier' => 'required|string|max:100',
                 'date_du_courrier' => 'required|date',
                 'date_arrive' => 'required|date',
@@ -1616,7 +1618,7 @@ protected function createDocument($request, $responsibleId, $doc = null)
             // Mettre à jour le courrier avec les informations fournies
             $courrier->update([
                 'title' => $validatedData['title'],
-                'exped_externe' => $validatedData['expediteur'],
+                'exped_externe' => $validatedData['exped_externe'],
                 'reference_courrier' => $validatedData['reference_courrier'],
                 'date_du_courrier' => $validatedData['date_du_courrier'],
                 'date_arrive' => $validatedData['date_arrive'],
