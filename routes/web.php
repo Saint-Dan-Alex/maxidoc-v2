@@ -209,6 +209,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 Route::get('{courrier}/completer', [CourrierController::class, 'showCompleteForm'])->name('courriers.complete-form');
                 Route::post('{courrier}/completer', [CourrierController::class, 'complete'])->name('courriers.complete');
                 
+                // Route pour le changement de référence via AJAX
+                Route::post('change-num-ref', [CourrierController::class, 'changeNumRefAjax'])->name('courriers.change-num-ref');
+                
                 Route::post('save/signature', [CourrierController::class, 'saveSignature'])->name('courriers.saveSignature');
                 
                 // Routes avec ID

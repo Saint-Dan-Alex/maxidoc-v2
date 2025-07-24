@@ -35,9 +35,13 @@ class SendCourrierCreatedNotification
     {
  
          // Récupérer les utilisateurs associés aux agents
-         $users = $event->agents->map(function($agent) {
-             return $agent->user;
-         })->filter(); // Filtrer pour ne garder que les utilisateurs non nuls
+         $agents = is_iterable($event->agents) ? $event->agents : [$event->agents];
+         $users = collect($agents)
+             ->map(function($agent) {
+                 return $agent->user ?? null;
+             })
+             ->filter()
+             ->values(); // Réindexer le tableau
 
          // Envoyer la notification uniquement aux utilisateurs valides
          if ($users->isNotEmpty()) {

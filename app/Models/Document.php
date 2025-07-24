@@ -162,4 +162,20 @@ class Document extends Model
 
         // return $array;
     }
+    
+    /**
+     * Get the URL of the document file
+     *
+     * @return string
+     */
+    public function getUrl()
+    {
+        // Vérifie si le document a un fichier associé
+        if (!empty($this->document)) {
+            // Retourne l'URL complète du document stocké dans le stockage public
+            return asset('storage/' . $this->document);
+        }
+        
+        return null;
+    }
 }

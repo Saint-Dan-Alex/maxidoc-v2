@@ -14,6 +14,7 @@ use App\Models\CourriersAnnotation;
 use App\Models\CourrierTraitement;
 use App\Models\CourrierType;
 use App\Models\CourrierTypesTraitement;
+use App\Models\CourrierCategory;
 use App\Models\Departement;
 use App\Models\Direction;
 use App\Models\Document;
@@ -46,121 +47,7 @@ class CourrierController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    // public function uploadInitial(Request $request)
-    // {
-    //     try {
-    //         // Vérifier que l'utilisateur est authentifié
-    //         if (!Auth::check()) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Utilisateur non authentifié',
-    //             ], 401);
-    //         }
-
-    //         // Vérifier que l'utilisateur a un agent associé
-    //         if (!Auth::user()->agent) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Aucun agent associé à cet utilisateur',
-    //             ], 400);
-    //         }
-
-    //         // Valider la requête
-    //         $request->validate([
-    //             'document' => 'required|file|mimes:pdf|max:10240', // 10MB max
-    //             'type' => 'required|in:1', // Seulement pour les courriers entrants
-    //         ]);
-
-    //         // Récupérer les assistants du DG via la relation assistanats()
-    //         $assistantsDG = Direction::find(1)->assistanats->map(function($assistant) {
-    //             return $assistant->responsable; // Retourne l'objet Agent complet
-    //         })->filter(); // Filtrer les valeurs nulles
-
-    //         if ($assistantsDG->isEmpty()) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Aucun assistant du DG trouvé',
-    //             ], 400);
-    //         }
-
-    //         // Vérifier que le premier assistant a un ID valide
-    //         $premierAssistant = $assistantsDG->first();
-    //         if (!$premierAssistant || !$premierAssistant->id) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Assistant du DG invalide',
-    //             ], 400);
-    //         }
-
-    //         // Créer le document avec l'ID du premier assistant DG comme responsable
-    //         $document = $this->createDocument($request, $premierAssistant->id);
-
-    //         if (!$document) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Erreur lors de la création du document',
-    //             ], 500);
-    //         }
-
-    //         // Générer le numéro d'enregistrement
-    //         $lastCourrier = Courrier::whereNotNull('reference_interne')
-    //             ->where('reference_interne', 'like', 'DG-%')
-    //             ->orderBy('id', 'desc')
-    //             ->first();
-            
-    //         $nextNumber = 1;
-    //         if ($lastCourrier && preg_match('/DG-(\d+)-/', $lastCourrier->reference_interne, $matches)) {
-    //             $nextNumber = (int)$matches[1] + 1;
-    //         }
-            
-    //         $referenceInterne = sprintf('DG-%04d-ENT', $nextNumber);
-            
-    //         // Créer le courrier avec les informations complètes
-    //         $courrier = new Courrier([
-    //             'type_id' => 1, // Courrier entrant
-    //             'document_id' => $document->id,
-    //             'created_by' => Auth::user()->agent->id,
-    //             'statut_id' => 1, // Statut initial
-    //             'etape' => 'en_attente', // Première étape : en attente de saisie
-    //             'date_arrive' => now(), // Date de réception
-    //             'reference_interne' => $referenceInterne, // Numéro d'enregistrement
-    //             'is_intern' => 1, // Courrier interne par défaut
-    //         ]);
-    //         $courrier->save();
-
-    //         // Attacher les assistants DG comme destinataires (uniquement les IDs)
-    //         $courrier->destinateurs()->attach($assistantsDG->pluck('id')->toArray());
-
-    //         // Attacher l'étape initiale
-    //         $courrier->etapes()->attach(1); // Étape 1 : Document déposé
-
-    //         // Notification aux assistants DG
-    //         event(new CourrierCreated($courrier, $assistantsDG, 'Un nouveau document a été déposé et nécessite votre saisie'));
-
-    //         // Historique
-    //         Historique::create([
-    //             "key" => "Dépôt initial du document",
-    //             "historiquecable_id" => $courrier->id,
-    //             "historiquecable_type" => Courrier::class,
-    //             "description" => "A déposé un document pour numérisation",
-    //             "user_id" => Auth::user()->id,
-    //         ]);
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Document déposé avec succès',
-    //             'courrier_id' => $courrier->id,
-    //         ]);
-
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Erreur lors du dépôt du document: ' . $e->getMessage(),
-    //         ], 500);
-    //     }
-    //     session()->flash('session', $content);
-    //     return redirect()->route('regidoc.courriers.index');
-    // }
+ 
     public function uploadInitial(Request $request)
 {
     try {
@@ -306,6 +193,75 @@ class CourrierController extends Controller
         return view('regidoc.pages.courriers.initial-upload');
     }
 
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        try {
+            // Vérifier que l'utilisateur est authentifié
+            if (!Auth::check()) {
+                return redirect()->route('login')->with('error', 'Veuillez vous connecter pour accéder à cette page.');
+            }
+
+            // Vérifier que l'utilisateur a un agent associé
+            if (!Auth::user()->agent) {
+                return redirect()->back()->with('error', 'Aucun agent associé à votre compte.');
+            }
+
+            // Récupérer le courrier avec ses relations
+            $courrier = Courrier::with(['document', 'views'])->findOrFail($id);
+
+            // Vérifier les autorisations
+            $this->authorize('view', $courrier);
+
+            // Compter les vues de l'utilisateur actuel
+            $viewsForThisUser = $courrier->views->where('user_id', Auth::id())->count();
+
+            // Enregistrer la vue si nécessaire
+            views($courrier)->once($viewsForThisUser > 0)->record();
+
+            // Charger les données nécessaires pour la vue
+            $classeurs = Classeur::all();
+            $dossiers = Dossier::all();
+            $directions = Direction::all();
+            
+            // Déterminer les traitements disponibles en fonction du rôle de l'utilisateur
+            $isDGorDGA = Auth::user()->agent->isDG() || Auth::user()->agent->isDGA();
+            $traitements = $isDGorDGA 
+                ? CourrierTypesTraitement::select('id', 'titre')->get() 
+                : CourrierTypesTraitement::select('id', 'titre')->where('id', '!=', 3)->get();
+                
+            $priorites = Priorite::select('id', 'titre')->get();
+
+            return view('regidoc.pages.courriers.show-courrier', compact(
+                'directions', 
+                'courrier', 
+                'classeurs', 
+                'dossiers',
+                'traitements',
+                'priorites'
+            ));
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Gérer le cas où le courrier n'est pas trouvé
+            return redirect()->route('regidoc.courriers.index')
+                ->with('error', 'Le courrier demandé est introuvable.');
+                
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            // Gérer les erreurs d'autorisation
+            return redirect()->route('regidoc.courriers.index')
+                ->with('error', 'Vous n\'êtes pas autorisé à accéder à ce courrier.');
+                
+        } catch (\Exception $e) {
+            // Gérer toutes les autres exceptions
+            return redirect()->route('regidoc.courriers.index')
+                ->with('error', 'Une erreur est survenue lors du chargement du courrier.');
+        }
+    }
     /**
      * Display a listing of the resource.
      *
@@ -1579,7 +1535,18 @@ protected function createDocument($request, $responsibleId, $doc = null)
      */
     public function showCompleteForm($id)
     {
-        $courrier = Courrier::with(['document', 'type', 'nature', 'category'])->findOrFail($id);
+        $courrier = Courrier::with([
+            'document', 
+            'type', 
+            'nature', 
+            'categorie',
+            'expediteur',
+            'externExpediteur',
+            'externDestinateur',
+            'priorite',
+            'service',
+            'destinateurs'
+        ])->findOrFail($id);
         
         // Vérifier que le courrier est en attente de saisie
         if ($courrier->etape !== 'en_attente') {
@@ -1597,29 +1564,26 @@ protected function createDocument($request, $responsibleId, $doc = null)
         $natures = CourrierNature::all();
         $categories = CourrierCategory::all();
         $services = Service::all();
+        $directions = Direction::all();
         $agents = Agent::actif()->get();
         $priorites = Priorite::all();
         $traitements = CourrierTypesTraitement::all();
+        $selectedDoc = false; // Initialisation de la variable
+        $isFormValid = true; // Initialisation de la variable pour la validation du formulaire
 
         return view('regidoc.pages.courriers.complete-form', [
             'courrier' => $courrier,
             'types' => $types,
             'natures' => $natures,
+            'directions' => $directions,
             'categories' => $categories,
             'services' => $services,
             'agents' => $agents,
             'priorites' => $priorites,
             'traitements' => $traitements,
-        ]);
-    }
-
-    /**
-     * Complete the courrier information
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+            'selectedDoc' => $selectedDoc,
+            'isFormValid' => $isFormValid,]);
+        }
     public function complete(Request $request, $id)
     {
         try {
@@ -2192,5 +2156,31 @@ public function rejeter(Courrier $courrier)
         ]);
 
         return json_encode($filesPath);
+    }
+    
+    /**
+     * Gère la requête AJAX pour le changement de référence
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function changeNumRefAjax(Request $request)
+    {
+        try {
+            $typeId = $request->input('type_id');
+            $reference = $this->changeNumRef($typeId);
+            
+            return response()->json([
+                'success' => true,
+                'reference' => $reference
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de la génération de la référence: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la génération de la référence.'
+            ], 500);
+        }
     }
 }

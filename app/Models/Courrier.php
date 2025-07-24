@@ -96,6 +96,14 @@ class Courrier extends Model implements Viewable
         return $this->belongsTo(Classeur::class, 'classeur_id');
     }
 
+    /**
+     * Get the external recipient associated with the courrier.
+     */
+    public function externDestinateur()
+    {
+        return $this->belongsTo(CourrierDestinateurExterne::class, 'dest_externe_id');
+    }
+
     public function personnel()
     {
         return $this->belongsTo(User::class, 'user_send_id');
@@ -196,15 +204,6 @@ class Courrier extends Model implements Viewable
         return $this->belongsToMany(Agent::class, CourrierDestinateur::class, 'courrier_id', 'agent_id');
     }
 
-    /**
-     * The agent that belong to the Courrier
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function externDestinateur()
-    {
-        return $this->belongsTo(CourrierDestinateurExterne::class, 'dest_externe_id');
-    }
 
     /**
      * The agent that belong to the Courrier
