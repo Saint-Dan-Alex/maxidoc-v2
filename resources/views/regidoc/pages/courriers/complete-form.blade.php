@@ -71,7 +71,7 @@
             <h4 class="ms-0 ms-2">Numérisation du courrier</h4>
         </div>
         {{--  --}}
-        <form action="{{ route('regidoc.courriers.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="completeCourrierForm" action="{{ route('regidoc.courriers.complete', $courrier->id) }}" method="POST">
             @csrf
             @if(isset($courrier))
                 @method('PUT')
@@ -185,8 +185,8 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Expéditeur</label>
                             <div class="col-7" wire:ignore>
-                                <select class="form-select form-control sele" aria-label="Default select example"
-                                    name="exp" data-placeholder="Selectionnez"
+                                <select class="form-select form-control select2" aria-label="Default select example"
+                                    name="exp" data-placeholder="Sélectionnez"
                                     data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
                                     data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
                                     data-get-items-field="nom" data-method="get" data-label="nom"
@@ -520,7 +520,7 @@
             <div class="footer-sidebar">
                 <a href="{{ route('regidoc.courriers.index') }}" class="btn btn-concel">Annuler</a>
                 {{-- <a href="{{ route('regidoc.courriers.store') }}" class="btn btn-valid" @disabled(!$isFormValid)>Numériser</a> --}}
-                <button class="btn btn-valid" @disabled(!$isFormValid)>Numériser</button>
+                <button type="submit" class="btn btn-valid" id="submitBtn">Enregistrer</button>
             </div>
         </form>
     </div>
@@ -585,6 +585,64 @@
     <script src="{{ asset('vendor/scannerjs/scanner.js') }}"></script>
 
     <script>
+        // Gestion de la soumission du formulaire
+        $(document).ready(function() {
+            $('#completeCourrierForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                var form = $(this);
+                var submitBtn = $('#submitBtn');
+                var originalBtnText = submitBtn.html();
+                
+                // Désactiver le bouton pendant la soumission
+                submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enregistrement...');
+                
+                // Récupérer les données du formulaire
+                var formData = new FormData(this);
+                
+                // Envoyer la requête AJAX
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            // Afficher un message de succès
+                            toastr.success(response.message);
+                            // Rediriger vers la page de détail du courrier
+                            setTimeout(function() {
+                                window.location.href = response.redirect;
+                            }, 1500);
+                        } else {
+                            // Afficher les erreurs de validation
+                            if (response.errors) {
+                                var errors = '';
+                                $.each(response.errors, function(key, value) {
+                                    errors += '<li>' + value[0] + '</li>';
+                                });
+                                toastr.error('<ul class="mb-0">' + errors + '</ul>', 'Erreur de validation');
+                            } else {
+                                toastr.error(response.message || 'Une erreur est survenue');
+                            }
+                            // Réactiver le bouton
+                            submitBtn.prop('disabled', false).html(originalBtnText);
+                        }
+                    },
+                    error: function(xhr) {
+                        var errorMessage = 'Une erreur est survenue lors de l\'enregistrement';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        toastr.error(errorMessage);
+                        // Réactiver le bouton
+                        submitBtn.prop('disabled', false).html(originalBtnText);
+                    }
+                });
+            });
+        });
+        
         //https://github.com/Asprise/scannerjs.javascript-scanner-access-in-browsers-chrome-ie.scanner.js/blob/master/demo-04-scan-pdf-upload-directly.htm
         function scanToPdf() {
             scanner.scan(displayServerResponse, {
