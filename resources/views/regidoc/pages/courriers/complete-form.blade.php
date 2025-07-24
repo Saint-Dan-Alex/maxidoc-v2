@@ -16,6 +16,7 @@
         display: flex;
         flex-direction: column;
         overflow-y: auto;
+        position: relative;
     }
     .content-scanner {
         flex: 1;
@@ -24,12 +25,24 @@
         background: #f8f9fa;
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start;
+        padding: 20px;
     }
     .content-scanner iframe {
         width: 100%;
         height: 100%;
         border: none;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .block-no-file {
+        text-align: center;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        max-width: 80%;
+        margin: 0 auto;
     }
     .body-siderbar {
         padding: 15px;
