@@ -511,21 +511,44 @@
             </div>
         </form>
     </div>
+    @php
+        $docUrl = $courrier->document?->getUrl();
+        $docName = $courrier->document?->libelle ?? 'Document';
+    @endphp
+
     <div class="content-scanner">
         <div class="container-fluid d-none d-lg-block" wire:ignore>
-            <iframe
-                src="@if ($selectedDoc) {{ asset('storage/tmp/' . $fileName . '.pdf') }}#toolbar=0 @endif "
-                frameborder="0" class="w-100 @if (!$selectedDoc) d-none @endif"></iframe>
-            <div class="block-no-file  @if ($selectedDoc) d-none @endif">
-                <div class="content-scanner-iconFileBox">
-                    <img class="content-scanner-iconFileBox-image"
-                        src="{{ asset('assets/images/icons/maxidoc.png') }}" alt="file icon" class="me-2">
+            @if($docUrl && file_exists(public_path(parse_url($docUrl, PHP_URL_PATH))))
+                <iframe
+                    src="{{ $docUrl }}#toolbar=0"
+                    frameborder="0" class="w-100" style="height: 100%; min-height: 600px;"></iframe>
+            @else
+                <div class="block-no-file">
+                    <div class="content-scanner-iconFileBox">
+                        <img class="content-scanner-iconFileBox-image"
+                            src="{{ asset('assets/images/icons/maxidoc.png') }}" alt="file icon" class="me-2">
+                    </div>
+                    <h4 class="content-scanner-title">Document non disponible</h4>
+                    <p class="content-scanner-subtitle">
+                        @if($courrier->document?->document)
+                            Le document "{{ $docName }}" est introuvable à l'emplacement : <br>
+                            <small>{{ $courrier->document->document }}</small>
+                        @else
+                            Aucun document n'est associé à ce courrier.
+                        @endif
+                    </p>
+                    @if(isset($courrier->document) && !file_exists(public_path(parse_url($docUrl, PHP_URL_PATH))))
+                        <div class="alert alert-warning mt-3">
+                            <p class="mb-1">Le fichier est introuvable. Vérifiez que :</p>
+                            <ul class="mb-0">
+                                <li>Le lien symbolique public/storage est correctement configuré</li>
+                                <li>Le fichier existe dans le dossier storage/app/public</li>
+                                <li>Les permissions sur les dossiers sont correctes</li>
+                            </ul>
+                        </div>
+                    @endif
                 </div>
-                {{-- <i class="bi bi-file file"></i>
-                <i class="fi fi-rr-file file"></i> --}}
-                <h4 class="content-scanner-title">Pas encore de document importé</h4>
-                <p class="content-scanner-subtitle">Le document numérisé apparaîtra ici.</p>
-            </div>
+            @endif
         </div>
     </div>
     <div id="images"></div>
