@@ -98,7 +98,7 @@
                         </div>
                     </div>
 
-                    {{-- @if (!$selectedDoc)
+                    @if (!$selectedDoc)
                         <div class="col-12 select_doc" onclick="scanToPdf();" wire:ignore>
                             <div class="block-file block-import-doc">
                                 <label for="is_scan">
@@ -156,7 +156,7 @@
                         </div>
                     @else
                         <input type="hidden" name="selected_doc" value="{{ $fileName }}" id="" wire:ignore />
-                    @endif --}}
+                    @endif
 
                     <div class="col-12 categorie_field" wire:ignore>
                         <div class="row">
@@ -377,7 +377,7 @@
                             <label class="col-5 col-form-label">N° d'enregistrement</label>
                             <div class="col-7">
                                 <input type="text" class="form-control" name="ref_interne" wire:model='num'
-                                    placeholder="N° d'enregistrement" readonly value="{{$courrier->reference_interne ?? ''}}">
+                                    placeholder="N° d'enregistrement" readonly>
                             </div>
                         </div>
                     </div>
@@ -443,7 +443,7 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Date du courrier</label>
                             <div class="col-7">
-                                <input type="date" class="form-control" id="inputPassword1" name="date-doc" value="{{ isset($courrier->date_du_courrier) ? $courrier->date_du_courrier->format('Y-m-d ') : '' }}"
+                                <input type="date" class="form-control" id="inputPassword1" name="date-doc" value="{{ isset($courrier->date_du_courrier) ? $courrier->date_du_courrier->format('Y-m-d') : '' }}"
                                     max="{{ now()->format('Y-m-d') }}" required>
                             </div>
                         </div>
@@ -453,7 +453,7 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Date de réception</label>
                             <div class="col-7">
-                                <input type="datelocal-time" class="form-control" id="inputPassword1" disabled name="date-arriv" value="{{ isset($courrier->date_arrive) ? $courrier->date_arrive : '' }}"
+                                <input type="date" class="form-control" id="inputPassword1" name="date-arriv"
                                     max="{{ now()->format('Y-m-d') }}"
                                     @if ($type == [1]) required @endif>
                             </div>

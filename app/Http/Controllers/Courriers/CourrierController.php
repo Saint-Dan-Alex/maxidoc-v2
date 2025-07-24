@@ -77,6 +77,7 @@ class CourrierController extends Controller
         $request->validate([
             'document' => 'required|file|mimes:pdf|max:10240', // 10MB max
             'type' => 'required|in:1', // Uniquement type 1 pour courrier entrant
+
         ]);
 
         // Récupération des assistants du DG
@@ -136,7 +137,7 @@ class CourrierController extends Controller
             'created_by' => $user->agent->id,
             'statut_id' => 1,
             'etape' => 'en_attente',
-            'date_arrive' => now(),
+            'date_arrive' => $request->date_arrive,
             'reference_interne' => $referenceInterne,
             'is_intern' => 1,
         ]);
