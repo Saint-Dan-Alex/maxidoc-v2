@@ -49,139 +49,139 @@ class CourrierController extends Controller
      */
  
     public function uploadInitial(Request $request)
-{
-    try {
-        // Vérification de l'authentification
-        if (!Auth::check()) {
-            return $request->expectsJson()
-                ? response()->json([
-                    'success' => false,
-                    'message' => 'Utilisateur non authentifié',
-                ], 401)
-                : redirect()->route('login')->with('error', 'Utilisateur non authentifié');
-        }
+    {
+        try {
+            // Vérification de l'authentification
+            if (!Auth::check()) {
+                return $request->expectsJson()
+                    ? response()->json([
+                        'success' => false,
+                        'message' => 'Utilisateur non authentifié',
+                    ], 401)
+                    : redirect()->route('login')->with('error', 'Utilisateur non authentifié');
+            }
 
-        $user = Auth::user();
+            $user = Auth::user();
 
-        // Vérifier que l'utilisateur a un agent associé
-        if (!$user->agent) {
-            return $request->expectsJson()
-                ? response()->json([
-                    'success' => false,
-                    'message' => 'Aucun agent associé à cet utilisateur',
-                ], 400)
-                : redirect()->back()->with('error', 'Aucun agent associé à cet utilisateur');
-        }
+            // Vérifier que l'utilisateur a un agent associé
+            if (!$user->agent) {
+                return $request->expectsJson()
+                    ? response()->json([
+                        'success' => false,
+                        'message' => 'Aucun agent associé à cet utilisateur',
+                    ], 400)
+                    : redirect()->back()->with('error', 'Aucun agent associé à cet utilisateur');
+            }
 
-        // Validation de la requête
-        $request->validate([
-            'document' => 'required|file|mimes:pdf|max:10240', // 10MB max
-            'type' => 'required|in:1', // Uniquement type 1 pour courrier entrant
+            // Validation de la requête
+            $request->validate([
+                'document' => 'required|file|mimes:pdf|max:10240', // 10MB max
+                'type' => 'required|in:1', // Uniquement type 1 pour courrier entrant
 
-        ]);
+            ]);
 
-        // Récupération des assistants du DG
-        $direction = Direction::find(1);
-        if (!$direction || !$direction->assistanats) {
-            $message = 'Aucune direction ou assistanats trouvés';
-            return $request->expectsJson()
-                ? response()->json(['success' => false, 'message' => $message], 400)
-                : redirect()->back()->with('error', $message);
-        }
+            // Récupération des assistants du DG
+            $direction = Direction::find(1);
+            if (!$direction || !$direction->assistanats) {
+                $message = 'Aucune direction ou assistanats trouvés';
+                return $request->expectsJson()
+                    ? response()->json(['success' => false, 'message' => $message], 400)
+                    : redirect()->back()->with('error', $message);
+            }
 
-        $assistantsDG = $direction->assistanats->map(function ($assistant) {
-            return $assistant->responsable;
-        })->filter();
+            $assistantsDG = $direction->assistanats->map(function ($assistant) {
+                return $assistant->responsable;
+            })->filter();
 
-        if ($assistantsDG->isEmpty()) {
-            $message = 'Aucun assistant du DG trouvé';
-            return $request->expectsJson()
-                ? response()->json(['success' => false, 'message' => $message], 400)
-                : redirect()->back()->with('error', $message);
-        }
+            if ($assistantsDG->isEmpty()) {
+                $message = 'Aucun assistant du DG trouvé';
+                return $request->expectsJson()
+                    ? response()->json(['success' => false, 'message' => $message], 400)
+                    : redirect()->back()->with('error', $message);
+            }
 
-        $premierAssistant = $assistantsDG->first();
-        if (!$premierAssistant || !$premierAssistant->id) {
-            $message = 'Assistant du DG invalide';
-            return $request->expectsJson()
-                ? response()->json(['success' => false, 'message' => $message], 400)
-                : redirect()->back()->with('error', $message);
-        }
+            $premierAssistant = $assistantsDG->first();
+            if (!$premierAssistant || !$premierAssistant->id) {
+                $message = 'Assistant du DG invalide';
+                return $request->expectsJson()
+                    ? response()->json(['success' => false, 'message' => $message], 400)
+                    : redirect()->back()->with('error', $message);
+            }
 
-        // Création du document
-        $document = $this->createDocument($request, $premierAssistant->id);
-        if (!$document) {
-            $message = 'Erreur lors de la création du document';
+            // Création du document
+            $document = $this->createDocument($request, $premierAssistant->id);
+            if (!$document) {
+                $message = 'Erreur lors de la création du document';
+                return $request->expectsJson()
+                    ? response()->json(['success' => false, 'message' => $message], 500)
+                    : redirect()->back()->with('error', $message);
+            }
+
+            // Génération du numéro d'enregistrement
+            $lastCourrier = Courrier::whereNotNull('reference_interne')
+                ->where('reference_interne', 'like', 'DG-%')
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $nextNumber = 1;
+            if ($lastCourrier && preg_match('/DG-(\d+)-/', $lastCourrier->reference_interne, $matches)) {
+                $nextNumber = (int)$matches[1] + 1;
+            }
+
+            $referenceInterne = sprintf('DG-%04d-ENT', $nextNumber);
+
+            // Création du courrier
+            $courrier = new Courrier([
+                'type_id' => 1,
+                'document_id' => $document->id,
+                'created_by' => $user->agent->id,
+                'statut_id' => 1,
+                'etape' => 'en_attente',
+                'date_arrive' => $request->date_arrive,
+                'reference_interne' => $referenceInterne,
+                'is_intern' => 1,
+            ]);
+            
+            $courrier->save();
+
+            // Attacher les destinataires
+            $courrier->destinateurs()->attach($assistantsDG->pluck('id')->toArray());
+
+            // Attacher l'étape initiale
+            $courrier->etapes()->attach(1);
+
+            // Notification
+            event(new CourrierCreated($courrier, $assistantsDG, 'Un nouveau document a été déposé et nécessite votre saisie'));
+
+            // Historique
+            Historique::create([
+                'key' => 'Dépôt initial du document',
+                'historiquecable_id' => $courrier->id,
+                'historiquecable_type' => Courrier::class,
+                'description' => 'A déposé un document pour numérisation',
+                'user_id' => $user->id,
+            ]);
+
+            // Réponse de succès conditionnelle
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Document déposé avec succès',
+                    'courrier_id' => $courrier->id,
+                ]);
+            } else {
+                return redirect()->route('regidoc.courriers.index')
+                    ->with('success', 'Document déposé avec succès');
+            }
+
+        } catch (\Exception $e) {
+            $message = 'Erreur lors du dépôt du document: ' . $e->getMessage();
+
             return $request->expectsJson()
                 ? response()->json(['success' => false, 'message' => $message], 500)
                 : redirect()->back()->with('error', $message);
         }
-
-        // Génération du numéro d'enregistrement
-        $lastCourrier = Courrier::whereNotNull('reference_interne')
-            ->where('reference_interne', 'like', 'DG-%')
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $nextNumber = 1;
-        if ($lastCourrier && preg_match('/DG-(\d+)-/', $lastCourrier->reference_interne, $matches)) {
-            $nextNumber = (int)$matches[1] + 1;
-        }
-
-        $referenceInterne = sprintf('DG-%04d-ENT', $nextNumber);
-
-        // Création du courrier
-        $courrier = new Courrier([
-            'type_id' => 1,
-            'document_id' => $document->id,
-            'created_by' => $user->agent->id,
-            'statut_id' => 1,
-            'etape' => 'en_attente',
-            'date_arrive' => $request->date_arrive,
-            'reference_interne' => $referenceInterne,
-            'is_intern' => 1,
-        ]);
-        
-        $courrier->save();
-
-        // Attacher les destinataires
-        $courrier->destinateurs()->attach($assistantsDG->pluck('id')->toArray());
-
-        // Attacher l'étape initiale
-        $courrier->etapes()->attach(1);
-
-        // Notification
-        event(new CourrierCreated($courrier, $assistantsDG, 'Un nouveau document a été déposé et nécessite votre saisie'));
-
-        // Historique
-        Historique::create([
-            'key' => 'Dépôt initial du document',
-            'historiquecable_id' => $courrier->id,
-            'historiquecable_type' => Courrier::class,
-            'description' => 'A déposé un document pour numérisation',
-            'user_id' => $user->id,
-        ]);
-
-        // Réponse de succès conditionnelle
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Document déposé avec succès',
-                'courrier_id' => $courrier->id,
-            ]);
-        } else {
-            return redirect()->route('regidoc.courriers.index')
-                ->with('success', 'Document déposé avec succès');
-        }
-
-    } catch (\Exception $e) {
-        $message = 'Erreur lors du dépôt du document: ' . $e->getMessage();
-
-        return $request->expectsJson()
-            ? response()->json(['success' => false, 'message' => $message], 500)
-            : redirect()->back()->with('error', $message);
     }
-}
 
 
     /**
@@ -314,9 +314,6 @@ class CourrierController extends Controller
         }
 
     }
-
-    
-
 
     public function relance(Courrier $courrier)
     {
@@ -473,167 +470,167 @@ class CourrierController extends Controller
     }
 
     
-public function traitement($courrier)
-{
-    try {
-        \Log::info('🟢 Début du traitement');
+    public function traitement($courrier)
+    {
+        try {
+            \Log::info('🟢 Début du traitement');
 
-        // Récupération du courrier s'il s'agit d'un ID
-        $courrier = $courrier instanceof Courrier ? $courrier : Courrier::find($courrier);
-        \Log::info('📩 Courrier chargé', ['courrier_id' => optional($courrier)->id]);
+            // Récupération du courrier s'il s'agit d'un ID
+            $courrier = $courrier instanceof Courrier ? $courrier : Courrier::find($courrier);
+            \Log::info('📩 Courrier chargé', ['courrier_id' => optional($courrier)->id]);
 
-        if (!$courrier) {
-            throw new \Exception('Courrier introuvable.');
-        }
-
-        // 📥 Courrier entrant
-        if ($courrier->type_id == 1) {
-            \Log::info('➡️ Traitement du courrier entrant');
-
-            $courrier->mark_as_done = 1;
-            $courrier->save();
-            \Log::info('✅ Courrier marqué comme traité');
-
-            if ($courrier->document) {
-                $courrier->document->statut_id = 5; // 5 = "Traité"
-                $courrier->document->save();
-                \Log::info('🗂️ Document marqué comme traité', ['document_id' => $courrier->document->id]);
+            if (!$courrier) {
+                throw new \Exception('Courrier introuvable.');
             }
 
-            $agentId = Auth::user()->agent->id;
-            \Log::info('👤 Agent identifié', ['agent_id' => $agentId]);
+            // 📥 Courrier entrant
+            if ($courrier->type_id == 1) {
+                \Log::info('➡️ Traitement du courrier entrant');
 
-            $traitement = new CourrierTraitement();
-            $traitement->agent_id = $agentId;
-            $traitement->note = 'Document traité';
-            $traitement->save();
-            \Log::info('📝 Traitement enregistré', ['traitement_id' => $traitement->id]);
+                $courrier->mark_as_done = 1;
+                $courrier->save();
+                \Log::info('✅ Courrier marqué comme traité');
 
-            $courrier->traitements()->attach($traitement);
-            $courrier->etapes()->attach(3); // Étape assistant
-            \Log::info('🔁 Traitement et étape ajoutés');
+                if ($courrier->document) {
+                    $courrier->document->statut_id = 5; // 5 = "Traité"
+                    $courrier->document->save();
+                    \Log::info('🗂️ Document marqué comme traité', ['document_id' => $courrier->document->id]);
+                }
 
-            // 📤 Création du courrier sortant
-            $oldata = $courrier->getAttributes();
-            unset($oldata['id'], $oldata['updated_at'], $oldata['created_at']);
+                $agentId = Auth::user()->agent->id;
+                \Log::info('👤 Agent identifié', ['agent_id' => $agentId]);
 
-            $nomExp = optional($courrier->externExpediteur)->nom;
-            if (!$nomExp) {
-                throw new \Exception('Nom de l’expéditeur externe non disponible.');
+                $traitement = new CourrierTraitement();
+                $traitement->agent_id = $agentId;
+                $traitement->note = 'Document traité';
+                $traitement->save();
+                \Log::info('📝 Traitement enregistré', ['traitement_id' => $traitement->id]);
+
+                $courrier->traitements()->attach($traitement);
+                $courrier->etapes()->attach(3); // Étape assistant
+                \Log::info('🔁 Traitement et étape ajoutés');
+
+                // 📤 Création du courrier sortant
+                $oldata = $courrier->getAttributes();
+                unset($oldata['id'], $oldata['updated_at'], $oldata['created_at']);
+
+                $nomExp = optional($courrier->externExpediteur)->nom;
+                if (!$nomExp) {
+                    throw new \Exception('Nom de l’expéditeur externe non disponible.');
+                }
+
+                $nouveau_destinataire = CourrierDestinateurExterne::where('nom', $nomExp)->first();
+                $extern_destinataire = $nouveau_destinataire ?: new CourrierDestinateurExterne(['nom' => $nomExp]);
+
+                if (!$nouveau_destinataire) {
+                    $extern_destinataire->save();
+                    \Log::info('📦 Nouveau destinataire externe créé', ['dest_id' => $extern_destinataire->id]);
+                }
+
+                $oldata['type_id'] = 2; // Sortant
+                $oldata['created_by'] = Auth::user()->id;
+                $oldata['exped_externe'] = null;
+                $oldata['exped_interne_id'] = $agentId;
+                $oldata['parent_id'] = $courrier->id;
+                $oldata['traitement_id'] = null;
+                $oldata['mark_as_done'] = null;
+                $oldata['reference_interne'] = $this->changeNumRef(2);
+                $oldata['dest_externe_id'] = $extern_destinataire->id;
+
+                $newCourrier = $this->saveCourrierSortant(new Courrier($oldata));
+                \Log::info('📨 Courrier sortant créé', ['new_courrier_id' => $newCourrier->id]);
+
+                foreach ($courrier->traitements as $t) {
+                    $newCourrier->traitements()->attach($t);
+                }
+
+                $dgResponsables = Auth::user()->agent->direction->dgAssistanats->pluck('responsable_id');
+                if ($dgResponsables->count()) {
+                    $newCourrier->destinateurs()->attach($dgResponsables);
+                    \Log::info('👥 Responsables attachés', ['ids' => $dgResponsables]);
+                }
+
+                $newCourrier->etapes()->attach(3);
+
+                $notifyAgents = $newCourrier->destinateurs->where('id', '!=', $agentId);
+
+                // Correction ici : on transforme followers en collection avant count()
+                $followers = collect($newCourrier->followers);
+                if ($followers->count() > 0) {
+                    $notifyAgents = $notifyAgents->merge($followers)->flatten();
+                }
+
+                if ($notifyAgents->count() > 0) {
+                    event(new CourrierCreated($courrier, $notifyAgents, 'Un nouveau courrier traité vous a été transmis !'));
+                    \Log::info('📢 Notification envoyée', ['agents' => $notifyAgents->pluck('id')]);
+                }
+
+                $courrier->statut_id = 3;
+                $courrier->save();
+                \Log::info('🟩 Statut du courrier entrant mis à jour');
             }
 
-            $nouveau_destinataire = CourrierDestinateurExterne::where('nom', $nomExp)->first();
-            $extern_destinataire = $nouveau_destinataire ?: new CourrierDestinateurExterne(['nom' => $nomExp]);
+            // 📨 Courrier interne
+            elseif ($courrier->type_id == 3) {
+                \Log::info('➡️ Traitement du courrier interne');
 
-            if (!$nouveau_destinataire) {
-                $extern_destinataire->save();
-                \Log::info('📦 Nouveau destinataire externe créé', ['dest_id' => $extern_destinataire->id]);
+                $courrier->mark_as_done = 1;
+                $courrier->save();
+
+                if ($courrier->document) {
+                    $courrier->document->statut_id = 5;
+                    $courrier->document->save();
+                    \Log::info('🗂️ Document interne marqué comme traité');
+                }
+
+                $traitement = new CourrierTraitement();
+                $traitement->agent_id = Auth::user()->agent->id;
+                $traitement->note = 'Document traité';
+                $traitement->save();
+
+                $courrier->traitements()->attach($traitement);
+                $courrier->statut_id = 3;
+                $courrier->save();
+                \Log::info('🟩 Courrier interne mis à jour avec traitement');
             }
 
-            $oldata['type_id'] = 2; // Sortant
-            $oldata['created_by'] = Auth::user()->id;
-            $oldata['exped_externe'] = null;
-            $oldata['exped_interne_id'] = $agentId;
-            $oldata['parent_id'] = $courrier->id;
-            $oldata['traitement_id'] = null;
-            $oldata['mark_as_done'] = null;
-            $oldata['reference_interne'] = $this->changeNumRef(2);
-            $oldata['dest_externe_id'] = $extern_destinataire->id;
+            $response = [
+                'name' => 'Courrier',
+                'statut' => 'success',
+                'message' => 'Le courrier a été marqué comme traité',
+            ];
 
-            $newCourrier = $this->saveCourrierSortant(new Courrier($oldata));
-            \Log::info('📨 Courrier sortant créé', ['new_courrier_id' => $newCourrier->id]);
+            \Log::info('✅ Fin du traitement avec succès');
 
-            foreach ($courrier->traitements as $t) {
-                $newCourrier->traitements()->attach($t);
+            if (request()->ajax()) {
+                return response()->json($response, 200, ['Content-Type' => 'application/json']);
+            } else {
+                session()->flash('session', json_encode($response));
+                return redirect()->back();
             }
 
-            $dgResponsables = Auth::user()->agent->direction->dgAssistanats->pluck('responsable_id');
-            if ($dgResponsables->count()) {
-                $newCourrier->destinateurs()->attach($dgResponsables);
-                \Log::info('👥 Responsables attachés', ['ids' => $dgResponsables]);
+        } catch (\Throwable $th) {
+            \Log::error('❌ Erreur lors du traitement du courrier', [
+                'message' => $th->getMessage(),
+                'file' => $th->getFile(),
+                'line' => $th->getLine(),
+                'stack' => $th->getTraceAsString(),
+            ]);
+
+            $response = [
+                'name' => 'Courrier',
+                'statut' => 'error',
+                'message' => 'Impossible de marquer le courrier comme traité, une erreur est survenue',
+            ];
+
+            if (request()->ajax()) {
+                return response()->json($response, 500, ['Content-Type' => 'application/json']);
+            } else {
+                session()->flash('session', json_encode($response));
+                return redirect()->back();
             }
-
-            $newCourrier->etapes()->attach(3);
-
-            $notifyAgents = $newCourrier->destinateurs->where('id', '!=', $agentId);
-
-            // Correction ici : on transforme followers en collection avant count()
-            $followers = collect($newCourrier->followers);
-            if ($followers->count() > 0) {
-                $notifyAgents = $notifyAgents->merge($followers)->flatten();
-            }
-
-            if ($notifyAgents->count() > 0) {
-                event(new CourrierCreated($courrier, $notifyAgents, 'Un nouveau courrier traité vous a été transmis !'));
-                \Log::info('📢 Notification envoyée', ['agents' => $notifyAgents->pluck('id')]);
-            }
-
-            $courrier->statut_id = 3;
-            $courrier->save();
-            \Log::info('🟩 Statut du courrier entrant mis à jour');
-        }
-
-        // 📨 Courrier interne
-        elseif ($courrier->type_id == 3) {
-            \Log::info('➡️ Traitement du courrier interne');
-
-            $courrier->mark_as_done = 1;
-            $courrier->save();
-
-            if ($courrier->document) {
-                $courrier->document->statut_id = 5;
-                $courrier->document->save();
-                \Log::info('🗂️ Document interne marqué comme traité');
-            }
-
-            $traitement = new CourrierTraitement();
-            $traitement->agent_id = Auth::user()->agent->id;
-            $traitement->note = 'Document traité';
-            $traitement->save();
-
-            $courrier->traitements()->attach($traitement);
-            $courrier->statut_id = 3;
-            $courrier->save();
-            \Log::info('🟩 Courrier interne mis à jour avec traitement');
-        }
-
-        $response = [
-            'name' => 'Courrier',
-            'statut' => 'success',
-            'message' => 'Le courrier a été marqué comme traité',
-        ];
-
-        \Log::info('✅ Fin du traitement avec succès');
-
-        if (request()->ajax()) {
-            return response()->json($response, 200, ['Content-Type' => 'application/json']);
-        } else {
-            session()->flash('session', json_encode($response));
-            return redirect()->back();
-        }
-
-    } catch (\Throwable $th) {
-        \Log::error('❌ Erreur lors du traitement du courrier', [
-            'message' => $th->getMessage(),
-            'file' => $th->getFile(),
-            'line' => $th->getLine(),
-            'stack' => $th->getTraceAsString(),
-        ]);
-
-        $response = [
-            'name' => 'Courrier',
-            'statut' => 'error',
-            'message' => 'Impossible de marquer le courrier comme traité, une erreur est survenue',
-        ];
-
-        if (request()->ajax()) {
-            return response()->json($response, 500, ['Content-Type' => 'application/json']);
-        } else {
-            session()->flash('session', json_encode($response));
-            return redirect()->back();
         }
     }
-}
     
     // public function saveTraitement(Request $request)
     // {
@@ -1534,57 +1531,132 @@ protected function createDocument($request, $responsibleId, $doc = null)
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    // public function showCompleteForm($id)
+    // {
+    //     $courrier = Courrier::with([
+    //         'document', 
+    //         'type', 
+    //         'nature', 
+    //         'categorie',
+    //         'expediteur',
+    //         'externExpediteur',
+    //         'externDestinateur',
+    //         'priorite',
+    //         'service',
+    //         'destinateurs'
+    //     ])->findOrFail($id);
+        
+    //     // Vérifier que le courrier est en attente de saisie
+    //     if ($courrier->etape !== 'en_attente') {
+    //         $content = json_encode([
+    //             'name' => 'Courrier',
+    //             'statut' => 'error',
+    //             'message' => 'Ce document a déjà été traité',
+    //         ]);
+    //         session()->flash('session', $content);
+    //         return redirect()->route('regidoc.courriers.index');
+    //     }
+
+    //     // Charger les données nécessaires pour le formulaire
+    //     $types = CourrierType::all();
+    //     $natures = CourrierNature::all();
+    //     $categories = CourrierCategory::all();
+    //     $services = Service::all();
+    //     $directions = Direction::all();
+    //     $agents = Agent::actif()->get();
+    //     $priorites = Priorite::all();
+    //     $traitements = CourrierTypesTraitement::all();
+    //     $selectedDoc = false; // Initialisation de la variable
+    //     $isFormValid = true; // Initialisation de la variable pour la validation du formulaire
+
+    //     return view('regidoc.pages.courriers.complete-form', [
+    //         'courrier' => $courrier,
+    //         'types' => $types,
+    //         'natures' => $natures,
+    //         'directions' => $directions,
+    //         'categories' => $categories,
+    //         'services' => $services,
+    //         'agents' => $agents,
+    //         'priorites' => $priorites,
+    //         'traitements' => $traitements,
+    //         'selectedDoc' => $selectedDoc,
+    //         'isFormValid' => $isFormValid,]);
+    // }
+
     public function showCompleteForm($id)
     {
-        $courrier = Courrier::with([
-            'document', 
-            'type', 
-            'nature', 
-            'categorie',
-            'expediteur',
-            'externExpediteur',
-            'externDestinateur',
-            'priorite',
-            'service',
-            'destinateurs'
-        ])->findOrFail($id);
-        
-        // Vérifier que le courrier est en attente de saisie
-        if ($courrier->etape !== 'en_attente') {
+        try {
+            $courrier = Courrier::with([
+                'document', 
+                'type', 
+                'nature', 
+                'categorie',
+                'expediteur',
+                'externExpediteur',
+                'externDestinateur',
+                'priorite',
+                'service',
+                'destinateurs'
+            ])->findOrFail($id);
+            
+            // Vérifier que le courrier est bien à l'étape "en attente"
+            if ($courrier->etape !== 'en_attente') {
+                $content = json_encode([
+                    'name' => 'Courrier',
+                    'statut' => 'error',
+                    'message' => 'Ce document a déjà été traité',
+                ]);
+                session()->flash('session', $content);
+                return redirect()->route('regidoc.courriers.index');
+            }
+
+            // Chargement des données nécessaires pour le formulaire
+            $types = CourrierType::select('id', 'titre')->get();
+            $natures = CourrierNature::select('id', 'titre')->get();
+            $categories = CourrierCategory::select('id', 'title')->get();
+            $services = Service::select('id', 'titre', 'responsable_id')->get();
+            $directions = Direction::select('id', 'titre')->get();
+            $agents = Agent::actif()->select('id', 'user_id', 'direction_id', 'nom', 'post_nom', 'prenom', 'division_id', 'service_id', 'fonction_id')->get();
+            $priorites = Priorite::select('id', 'titre')->get();
+            $traitements = CourrierTypesTraitement::select('id', 'titre')->get();
+            
+            // Définir le type de courrier (1 pour entrant, 2 pour sortant, 3 pour interne, etc.)
+            $type = [$courrier->type_id];
+
+            return view('regidoc.pages.courriers.complete-form')->with([
+                'courrier' => $courrier,
+                'types' => $types,
+                'natures' => $natures,
+                'categories' => $categories,
+                'services' => $services,
+                'directions' => $directions,
+                'agents' => $agents,
+                'priorites' => $priorites,
+                'traitements' => $traitements,
+                'type' => $type,
+                'selectedDoc' => false,
+                'isFormValid' => true,
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Erreur dans showCompleteForm: ' . $e->getMessage());
             $content = json_encode([
-                'name' => 'Courrier',
+                'name' => 'Erreur',
                 'statut' => 'error',
-                'message' => 'Ce document a déjà été traité',
+                'message' => 'Une erreur est survenue lors du chargement du formulaire',
             ]);
             session()->flash('session', $content);
             return redirect()->route('regidoc.courriers.index');
         }
-
-        // Charger les données nécessaires pour le formulaire
-        $types = CourrierType::all();
-        $natures = CourrierNature::all();
-        $categories = CourrierCategory::all();
-        $services = Service::all();
-        $directions = Direction::all();
-        $agents = Agent::actif()->get();
-        $priorites = Priorite::all();
-        $traitements = CourrierTypesTraitement::all();
-        $selectedDoc = false; // Initialisation de la variable
-        $isFormValid = true; // Initialisation de la variable pour la validation du formulaire
-
-        return view('regidoc.pages.courriers.complete-form', [
-            'courrier' => $courrier,
-            'types' => $types,
-            'natures' => $natures,
-            'directions' => $directions,
-            'categories' => $categories,
-            'services' => $services,
-            'agents' => $agents,
-            'priorites' => $priorites,
-            'traitements' => $traitements,
-            'selectedDoc' => $selectedDoc,
-            'isFormValid' => $isFormValid,]);
-        }
+    }
+    
+    /**
+     * Compléter les informations d'un courrier
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function complete(Request $request, $id)
     {
         try {
@@ -1597,8 +1669,6 @@ protected function createDocument($request, $responsibleId, $doc = null)
                     'message' => 'Ce document a déjà été traité',
                 ], 400);
             }
-            dd( $request);
-
 
             // Valider les données du formulaire
             $validatedData = $request->validate([
