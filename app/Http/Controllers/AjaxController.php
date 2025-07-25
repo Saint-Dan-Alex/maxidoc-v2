@@ -79,7 +79,18 @@ class AjaxController extends Controller
 
     public function expediteurcourriers(Request $request)
     {
-        return $this->relation($request, 'courrier-expediteur');
+        // Debug: Afficher les données de la requête
+        \Log::info('Requête expediteurcourriers:', $request->all());
+        
+        // Si une catégorie est spécifiée, on l'ajoute aux données de la requête
+        if ($request->has('category_id') && $request->category_id) {
+            $request->merge(['relative_id' => $request->category_id]);
+        }
+        
+        $result = $this->relation($request, 'courrier-expediteur');
+        \Log::info('Résultat de la relation:', (array) $result);
+        
+        return $result;
     }
 
     public function expediteurCourriersSave(Request $request)
@@ -600,50 +611,94 @@ class AjaxController extends Controller
 
     public function relation(Request $request, $slug)
     {
-        // dd($request);
-        // $routeName = explode('.', $request->route()->getName())[1];
-        // $slug = $routeName == 'clients' ? 'customers' : $routeName;
+        // Debug: Log des paramètres de la requête
+        \Log::info('Méthode relation appelée avec les paramètres:', [
+            'slug' => $slug,
+            'request_all' => $request->all(),
+            'route' => $request->route() ? $request->route()->getName() : null
+        ]);
 
-        //$slug = $this->getSlug($request);
-        $page = $request->input('page');
+        $page = $request->input('page', 1);
         $on_page = 50;
         $search = $request->input('search', false);
-
         $method = $request->input('method', 'add');
 
-        $model = app('\App\Models\\' . Str::ucfirst(Str::camel(Str::singular($slug))));
+        // Debug: Log du modèle cible
+        $modelClass = '\App\Models\\' . Str::ucfirst(Str::camel(Str::singular($slug)));
+        \Log::info('Modèle ciblé:', ['class' => $modelClass]);
+
+        try {
+            $model = app($modelClass);
+            \Log::info('Modèle instancié avec succès');
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de l\'instanciation du modèle', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['results' => [], 'pagination' => ['more' => false]]);
+        }
 
         if ($method != 'add') {
             $model = $model->find($request->input('id'));
         }
 
-        $model = app('\App\Models\\' . Str::ucfirst(Str::camel(Str::singular($request->input('model')))));
-        $skip = $on_page * ($page - 1);
+        // Si un modèle spécifique est fourni dans la requête
+        if ($request->has('model')) {
+            try {
+                $model = app('\App\Models\\' . Str::ucfirst(Str::camel(Str::singular($request->input('model')))));
+                \Log::info('Modèle remplacé par celui de la requête');
+            } catch (\Exception $e) {
+                \Log::error('Erreur lors du chargement du modèle spécifié', [
+                    'model' => $request->input('model'),
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
 
+        $skip = $on_page * ($page - 1);
         $additional_attributes = $model->additional_attributes ?? [];
 
-        // If search query, use LIKE to filter results depending on field label
+        // Debug: Log des paramètres de requête
+        \Log::info('Paramètres de la requête SQL:', [
+            'search' => $search,
+            'page' => $page,
+            'skip' => $skip,
+            'relative_id' => $request->input('relative_id'),
+            'category_id' => $request->input('category_id')
+        ]);
+
+        // Si recherche par texte
         if ($search) {
-            if ($slug == 'courrier-expediteur') {
-                $total_count = $model->where($request->input('label'), 'LIKE', '%' . $search . '%')->where('category_id', $request->input('relative_id'))->count();
-                $relationshipOptions = $model->take($on_page)->skip($skip)
-                    ->where('category_id', $request->input('relative_id'))
-                    ->where($request->input('label'), 'LIKE', '%' . $search . '%')
-                    ->get();
-            } else {
-                $total_count = $model->where($request->input('label'), 'LIKE', '%' . $search . '%')->count();
-                $relationshipOptions = $model->take($on_page)->skip($skip)
-                    ->where($request->input('label'), 'LIKE', '%' . $search . '%')
-                    ->get();
+            $query = $model->where($request->input('label', 'nom'), 'LIKE', '%' . $search . '%');
+            
+            if ($slug == 'courrier-expediteur' && $request->has('relative_id')) {
+                $query->where('category_id', $request->input('relative_id'));
+                \Log::info('Filtrage par relative_id:', ['relative_id' => $request->input('relative_id')]);
+            } elseif ($slug == 'courrier-expediteur' && $request->has('category_id')) {
+                $query->where('category_id', $request->input('category_id'));
+                \Log::info('Filtrage par category_id:', ['category_id' => $request->input('category_id')]);
             }
+            
+            $total_count = $query->count();
+            $relationshipOptions = $query->take($on_page)->skip($skip)->get();
         } else {
+            // Sans recherche
+            $query = $model->newQuery();
+            
             if ($slug == 'courrier-expediteur') {
-                $total_count = $model->where('category_id', $request->input('relative_id'))->count();
-                $relationshipOptions = $model->take($on_page)->skip($skip)->where('category_id', $request->input('relative_id'))->get();
-            } else {
-                $total_count = $model->count();
-                $relationshipOptions = $model->take($on_page)->skip($skip)->get();
+                if ($request->has('relative_id')) {
+                    $query->where('category_id', $request->input('relative_id'));
+                    \Log::info('Filtrage sans recherche par relative_id:', ['relative_id' => $request->input('relative_id')]);
+                } elseif ($request->has('category_id')) {
+                    $query->where('category_id', $request->input('category_id'));
+                    \Log::info('Filtrage sans recherche par category_id:', ['category_id' => $request->input('category_id')]);
+                } else {
+                    \Log::warning('Aucun filtre de catégorie fourni pour les expéditeurs');
+                }
             }
+            
+            $total_count = $query->count();
+            $relationshipOptions = $query->take($on_page)->skip($skip)->get();
         }
 
         $results = [];

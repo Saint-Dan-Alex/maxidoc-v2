@@ -967,36 +967,53 @@
             @endif
 
             // Initialisation du sélecteur d'expéditeur avec Select2
-            $('#expediteur_select').select2({
-                placeholder: 'Sélectionnez un expéditeur',
-                allowClear: true,
-                tags: $('#expediteur_select').data('tags') ? true : false,
-                multiple: $('#expediteur_select').data('multiple') ? true : false,
-                maximumSelectionLength: $('#expediteur_select').data('max-selection') || null,
-                width: '100%',
-                ajax: {
-                    url: $('#expediteur_select').data('get-items-route'),
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            search: params.term,
-                            page: params.page || 1
-                        };
+            function initExpediteurSelect() {
+                $('#expediteur_select').select2({
+                    placeholder: 'Sélectionnez un expéditeur',
+                    allowClear: true,
+                    tags: $('#expediteur_select').data('tags') ? true : false,
+                    multiple: $('#expediteur_select').data('multiple') ? true : false,
+                    maximumSelectionLength: $('#expediteur_select').data('max-selection') || null,
+                    width: '100%',
+                    ajax: {
+                        url: $('#expediteur_select').data('get-items-route'),
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            var categorieId = $('select[name="categorie"]').val();
+                            return {
+                                search: params.term,
+                                page: params.page || 1,
+                                category_id: categorieId ? categorieId[0] : null
+                            };
+                        },
+                        processResults: function (data, params) {
+                            params.page = params.page || 1;
+                            return {
+                                results: data.data,
+                                pagination: {
+                                    more: (params.page * 10) < data.total
+                                }
+                            };
+                        },
+                        cache: true
                     },
-                    processResults: function (data, params) {
-                        params.page = params.page || 1;
-                        return {
-                            results: data.data,
-                            pagination: {
-                                more: (params.page * 10) < data.total
-                            }
-                        };
-                    },
-                    cache: true
-                },
-                templateResult: formatExpediteur,
-                templateSelection: formatExpediteurSelection
+                    templateResult: formatExpediteur,
+                    templateSelection: formatExpediteurSelection
+                });
+            }
+
+            // Initialiser le sélecteur d'expéditeur
+            initExpediteurSelect();
+
+            // Rafraîchir les expéditeurs quand la catégorie change
+            $('select[name="categorie"]').on('change', function() {
+                // Réinitialiser le sélecteur d'expéditeur
+                $('#expediteur_select').val(null).trigger('change');
+                // Détruire l'instance actuelle de Select2
+                $('#expediteur_select').select2('destroy');
+                // Réinitialiser le sélecteur
+                initExpediteurSelect();
             });
 
             // Fonction pour formater l'affichage des résultats
