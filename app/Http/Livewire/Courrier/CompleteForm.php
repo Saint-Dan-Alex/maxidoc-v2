@@ -33,8 +33,38 @@ class CompleteForm extends Component
     public $type = [];
     public $isConfidentiel = false;
     public $isFormValid = true;
+    public $selectedCategorieId = null;
+    public $expediteurs = [];
 
-    protected $listeners = ['documentSelected' => 'handleDocumentSelected'];
+    protected $listeners = [
+        'documentSelected' => 'handleDocumentSelected',
+        'categorieSelected' => 'loadExpediteursByCategorie'
+    ];
+
+    public function loadExpediteursByCategorie($categorieId)
+    {
+        $this->selectedCategorieId = $categorieId;
+        
+        // Si aucune catégorie n'est sélectionnée, on réinitialise la liste des expéditeurs
+        if (empty($categorieId)) {
+            $this->expediteurs = [];
+            $this->emit('expediteursUpdated', []);
+            return;
+        }
+
+        // Chargement des expéditeurs en fonction de la catégorie sélectionnée
+        $this->expediteurs = \App\Models\CourrierExpediteur::where('category_id', $categorieId)
+            ->get()
+            ->map(function($expediteur) {
+                return [
+                    'id' => $expediteur->id,
+                    'text' => $expediteur->nom,
+                    'category_id' => $expediteur->category_id
+                ];
+            })->toArray();
+            
+        $this->emit('expediteursUpdated', $this->expediteurs);
+    }
 
     public function mount($courrier, $types, $natures, $categories, $services, $directions, $agents, $priorites, $traitements, $newDoc = false, $textSelected = '', $fileName = '', $type = null)
     {

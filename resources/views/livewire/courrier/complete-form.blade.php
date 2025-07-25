@@ -203,30 +203,35 @@
                     </div>
 
                     <!-- Champ Catégorie -->
-                    <div class="col-12 categorie_field">
+                    <div class="col-12 categorie_field" wire:ignore>
                         <div class="row">
                             <label class="col-5 col-form-label">Catégorie</label>
-                            <div class="col-7">
-                                <select class="form-select form-control select2" name="categorie" required
-                                    data-placeholder="Sélectionnez une catégorie"
+                            <div class="col-7" wire:ignore>
+                                <select class="form-select form-control select2" aria-label="Default select example"
+                                    name="categorie" data-placeholder="Sélectionnez"
                                     data-get-items-route="{{ route('regidoc.ajax.naturecourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.naturecourriers.save') }}"
                                     data-get-items-field="title" data-method="get" data-label="title"
-                                    data-related-model="CourrierCategory">
+                                    data-related-model="CourrierCategory" data-tags="true" data-max-selection="1"
+                                    multiple @if ($type == [1]) required @endif>
                                 </select>
                             </div>
                         </div>
                     </div>
 
+
                     <!-- Champ Expéditeur -->
-                    <div class="col-12 exped_extern">
+                    <div class="col-12 exped_extern" wire:ignore>
                         <div class="row">
                             <label class="col-5 col-form-label">Expéditeur</label>
-                            <div class="col-7">
-                                <select class="form-select form-control select2" name="exp" required
-                                    data-placeholder="Sélectionnez un expéditeur"
+                            <div class="col-7" wire:ignore>
+                                <select class="form-select form-control select2" aria-label="Default select example"
+                                    name="exp" data-placeholder="Selectionnez"
                                     data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
                                     data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="CourrierExpediteur">
+                                    data-related-model="CourrierExpediteur" data-tags="true" data-max-selection="1"
+                                    data-relative-id="null" multiple @if ($type == [1]) required @endif>
                                 </select>
                             </div>
                         </div>
@@ -455,6 +460,111 @@
     
     <script>
         // Fonction pour mettre à jour les champs cachés
+        
+        // Écouteur d'événement pour la mise à jour des expéditeurs
+        document.addEventListener('expediteursUpdated', event => {
+            const expediteurs = event.detail;
+            const selectExp = $('select[name="exp"]');
+            
+            // Sauvegarder la valeur sélectionnée
+            const selectedValue = selectExp.val();
+            
+            // Vider et réinitialiser le select
+            selectExp.empty().trigger('change');
+            
+            // Ajouter l'option par défaut
+            selectExp.append(new Option('Sélectionnez un expéditeur', '', true, true));
+            
+            // Ajouter les expéditeurs filtrés
+            if (expediteurs && expediteurs.length > 0) {
+                expediteurs.forEach(expediteur => {
+                    const option = new Option(expediteur.text, expediteur.id, false, false);
+                    selectExp.append(option);
+                });
+                
+                // Restaurer la valeur sélectionnée si elle existe toujours dans la nouvelle liste
+                if (selectedValue && expediteurs.some(e => e.id == selectedValue)) {
+                    selectExp.val(selectedValue).trigger('change');
+                }
+            }
+            
+            // Mettre à jour le plugin Select2
+            selectExp.trigger('change');
+        });
+        
+        // Initialisation du sélecteur de catégorie avec gestionnaire d'événement
+        function initCategorieSelect() {
+            $('select[name="categorie"]').select2({
+                placeholder: 'Sélectionnez une catégorie',
+                allowClear: true,
+                width: '100%',
+                ajax: {
+                    url: $('select[name="categorie"]').data('get-items-route'),
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term,
+                            field: $('select[name="categorie"]').data('get-items-field'),
+                            model: $('select[name="categorie"]').data('related-model')
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                }
+            }).on('change', function(e) {
+                const categorieId = $(this).val();
+                // Mettre à jour le champ caché
+                $('#categorie_hidden').val(categorieId);
+                // Émettre l'événement pour charger les expéditeurs
+                @this.emit('categorieSelected', categorieId);
+            });
+        }
+        
+        // Initialisation du sélecteur d'expéditeur
+        function initExpediteurSelect() {
+            $('select[name="exp"]').select2({
+                placeholder: 'Sélectionnez un expéditeur',
+                allowClear: true,
+                width: '100%',
+                ajax: {
+                    url: $('select[name="exp"]').data('get-items-route'),
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        const categorieId = $('select[name="categorie"]').val();
+                        // Debug: Afficher la valeur de la catégorie sélectionnée
+                        console.log('Catégorie sélectionnée:', categorieId);
+                        
+                        const data = {
+                            q: params.term,
+                            field: $('select[name="exp"]').data('get-items-field'),
+                            model: $('select[name="exp"]').data('related-model'),
+                            category_id: categorieId || '',
+                            relative_id: categorieId || ''
+                        };
+                        
+                        // Debug: Afficher les données envoyées
+                        console.log('Données envoyées au serveur:', data);
+                        
+                        return data;
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                }
+            }).on('change', function(e) {
+                // Mettre à jour le champ caché
+                $('#exp_hidden').val($(this).val());
+            });
+        }
         function updateHiddenFields() {
             // Mettre à jour le champ caché de la catégorie
             const categorieSelect = document.querySelector('select[name="categorie"]');
@@ -580,7 +690,10 @@
             }
         });
         $(document).ready(function() {
-
+            // Initialiser les sélecteurs
+            initCategorieSelect();
+            initExpediteurSelect();
+            
             setEntrat($('#type_id').val());
 
             $('#type_id').on('change', function(e) {
