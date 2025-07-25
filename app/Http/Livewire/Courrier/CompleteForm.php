@@ -36,18 +36,27 @@ class CompleteForm extends Component
 
     protected $listeners = ['documentSelected' => 'handleDocumentSelected'];
 
-    public function mount($types, $natures, $services, $agents, $newDoc = false, $textSelected = '', $fileName = '', $type = null)
+    public function mount($courrier, $types, $natures, $categories, $services, $directions, $agents, $priorites, $traitements, $newDoc = false, $textSelected = '', $fileName = '', $type = null)
     {
+        $this->courrier = $courrier;
+        $this->courrierId = $courrier->id;
         $this->types = $types;
         $this->natures = $natures;
+        $this->categories = $categories;
         $this->services = $services;
+        $this->directions = $directions;
         $this->agents = $agents;
+        $this->priorites = $priorites;
+        $this->traitements = $traitements;
         $this->newDoc = $newDoc;
         $this->textSelected = $textSelected;
         $this->fileName = $fileName;
         $this->type = $type ?? [];
         
-        // Initialisation des autres propriétés si nécessaire
+        // Initialisation des valeurs par défaut depuis le courrier
+        if ($this->courrier) {
+            $this->isConfidentiel = $this->courrier->confidentiel ?? false;
+        }
         $this->categories = CourrierCategory::all();
         $this->directions = Direction::all();
         $this->priorites = Priorite::all();
@@ -63,6 +72,23 @@ class CompleteForm extends Component
 
     public function render()
     {
-        return view('livewire.courrier.complete-form');
+        // Récupérer les données nécessaires pour les sélecteurs
+        $followers = Agent::actif()
+            ->where('id', '!=', auth()->user()->agent->id ?? null)
+            ->get()
+            ->map(function($agent) {
+                return [
+                    'id' => $agent->id,
+                    'titre' => $agent->prenom . ' ' . $agent->nom . ($agent->service ? ' (' . $agent->service->titre . ')' : '')
+                ];
+            });
+
+        return view('livewire.courrier.complete-form', [
+            'courrier' => $this->courrier,
+            'followers' => $followers,
+            'isConfidentiel' => $this->isConfidentiel,
+            'isFormValid' => $this->isFormValid,
+            'type' => $this->type,
+        ]);
     }
 }

@@ -11,7 +11,7 @@
             <h4 class="ms-0 ms-2">Numérisation du courrier</h4>
         </div>
         {{--  --}}
-        <form action="{{ route('regidoc.courriers.upload-initial') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('regidoc.courriers.complete', $courrier->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <!-- Champs cachés obligatoires -->
@@ -200,6 +200,84 @@
 
                     <div class="col-12">
                         <h5 class="mb-3 title-info">Détails du Courrier</h5>
+                    </div>
+
+                    <!-- Champ Catégorie -->
+                    <div class="col-12 categorie_field">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Catégorie</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="categorie" required
+                                    data-placeholder="Sélectionnez une catégorie"
+                                    data-get-items-route="{{ route('regidoc.ajax.naturecourriers') }}"
+                                    data-get-items-field="title" data-method="get" data-label="title"
+                                    data-related-model="CourrierCategory">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Champ Expéditeur -->
+                    <div class="col-12 exped_extern">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Expéditeur</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="exp" required
+                                    data-placeholder="Sélectionnez un expéditeur"
+                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="CourrierExpediteur">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Champ Référence -->
+                    <div class="col-12">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Référence</label>
+                            <div class="col-7">
+                                <input type="text" class="form-control" name="ref" value="{{$courrier->reference_interne}}"
+                                    placeholder="Référence du courrier" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Champ Titre/Objet -->
+                    <div class="col-12">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Titre/Objet</label>
+                            <div class="col-7">
+                                <input type="text" class="form-control" name="title" 
+                                    placeholder="Titre ou objet du courrier" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Champ Nature -->
+                    <div class="col-12 nature_field">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Nature</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="nature" required
+                                    data-placeholder="Sélectionnez une nature"
+                                    data-get-items-route="{{ route('regidoc.ajax.naturecourriers') }}"
+                                    data-get-items-field="titre" data-method="get" data-label="titre"
+                                    data-related-model="CourrierNature">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Champ Date du document -->
+                    <div class="col-12">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Date du document</label>
+                            <div class="col-7">
+                                <input type="date" class="form-control" name="date-doc" 
+                                    max="{{ now()->format('Y-m-d') }}" required>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col-12 d-none block_initiateur" wire:ignore>

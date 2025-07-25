@@ -14,10 +14,15 @@
 @section('content')
     <div class="block-scanner">
         @livewire('courrier.complete-form', [
+            'courrier' => $courrier,
             'types' => $types,
             'natures' => $natures,
+            'categories' => $categories,
             'services' => $services,
+            'directions' => $directions,
             'agents' => $agents,
+            'priorites' => $priorites,
+            'traitements' => $traitements,
             'newDoc' => isset($newDoc) ? true : false,
             'textSelected' => isset($textSelected) ? $textSelected : '',
             'fileName' => isset($fileName) ? $fileName : '',
