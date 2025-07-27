@@ -57,39 +57,75 @@ class CourrierController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    // public function create(Request $request)
+    // {
+
+    //     if ($request->has('newdoc')) {
+    //         $types = CourrierType::all();
+    //         $services = Service::all();
+    //         $agents = Agent::actif()->select('id','user_id','direction_id','nom','post_nom','prenom','division_id','service_id','fonction_id')->get();
+    //         $natures = CourrierNature::select('id', 'titre')->get();
+    //         $sec = Direction::find(1)->dgSecretaires->pluck('responsable_id');
+    //         $isDestinateur = $sec->contains(auth()->id());
+    //         $newDoc = $request->newdoc;
+    //         $textSelected = $request->textSelected;
+    //         $fileName = $request->fileName;
+
+    //         return view('regidoc.pages.courriers.new-doc')->with([
+    //             'types' => $types,
+    //             'services' => $services,
+    //             'agents' => $agents,
+    //             'natures' => $natures,
+    //             'newDoc' => $newDoc,
+    //             'textSelected' => $textSelected,
+    //             'fileName' => $fileName,
+    //             'sec'=> $sec,
+    //             'isDestinateur' => $isDestinateur,
+    //         ]);
+
+    //     } else {
+    //         $agents = Agent::actif()->select('id','user_id','direction_id','nom','post_nom','prenom','division_id','service_id','fonction_id')->get();
+
+    //         $types = CourrierType::select('id', 'titre')->get();
+    //         $services = Service::select('id', 'titre','responsable_id')->get();
+    //         $natures = CourrierNature::select('id', 'titre')->get();
+    //         $sec = Direction::find(1)->dgSecretaires->pluck('responsable_id');
+    //         $isDestinateur = $sec->contains(auth()->id());
+
+
+    //         return view('regidoc.pages.courriers.new-doc', compact('types', 'services', 'natures','agents','sec','isDestinateur'));
+    //     }
+
+    // }
     public function create(Request $request)
-    {
+{
+    $types = CourrierType::all();
+    $services = Service::all();
+    $agents = Agent::actif()->select('id','user_id','direction_id','nom','post_nom','prenom','division_id','service_id','fonction_id')->get();
+    $natures = CourrierNature::select('id', 'titre')->get();
+    $sec = Direction::find(1)->dgSecretaires->pluck('responsable_id');
+    $isDestinateur = $sec->contains(auth()->id());
 
-        if ($request->has('newdoc')) {
-            $types = CourrierType::all();
-            $services = Service::all();
-            $agents = Agent::actif()->select('id','user_id','direction_id','nom','post_nom','prenom','division_id','service_id','fonction_id')->get();
-            $natures = CourrierNature::select('id', 'titre')->get();
+    // Variables communes
+    $viewData = [
+        'types' => $types,
+        'services' => $services,
+        'agents' => $agents,
+        'natures' => $natures,
+        'sec' => $sec,
+        'isDestinateur' => $isDestinateur,
+    ];
 
-            $newDoc = $request->newdoc;
-            $textSelected = $request->textSelected;
-            $fileName = $request->fileName;
-
-            return view('regidoc.pages.courriers.new-doc')->with([
-                'types' => $types,
-                'services' => $services,
-                'agents' => $agents,
-                'natures' => $natures,
-                'newDoc' => $newDoc,
-                'textSelected' => $textSelected,
-                'fileName' => $fileName,
-            ]);
-
-        } else {
-            $agents = Agent::actif()->select('id','user_id','direction_id','nom','post_nom','prenom','division_id','service_id','fonction_id')->get();
-
-            $types = CourrierType::select('id', 'titre')->get();
-            $services = Service::select('id', 'titre','responsable_id')->get();
-            $natures = CourrierNature::select('id', 'titre')->get();
-            return view('regidoc.pages.courriers.new-doc', compact('types', 'services', 'natures','agents'));
-        }
-
+    // Si newdoc est présent, ajoute les champs supplémentaires
+    if ($request->has('newdoc')) {
+        $viewData['newDoc'] = $request->newdoc;
+        $viewData['textSelected'] = $request->textSelected;
+        $viewData['fileName'] = $request->fileName;
     }
+
+    return view('regidoc.pages.courriers.new-doc', $viewData);
+}
+
 
     
 
@@ -1042,6 +1078,7 @@ public function createDocument($request, $destinateur, $doc = null)
 
     public function store(Request $request)
     {
+        // dd($request);
         // Initialiser $content pour s'assurer qu'il est toujours défini.
         $content = json_encode([
             'name' => 'Courrier',
