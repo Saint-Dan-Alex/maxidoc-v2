@@ -134,43 +134,49 @@
                                 @forelse ($allcourriers as $courrier)
                                     @if ($courrier->statut_id != 3)
                                         <tr @class(['', 'tr-no-read' => !$courrier->isViewed()])>
-                                            @if ($courrier->type->titre === 'Sortant')
+                                            @if($courrier->type)
+                                                @if ($courrier->type->titre === 'Sortant')
+                                                    <td class="text-truncate title-file-box-table-data">
+                                                        <span class="mail-out-icon">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="1em"
+                                                                height="1em" viewBox="0 0 24 24">
+                                                                <path fill="currentColor"
+                                                                    d="m12 4l-.707-.707l.707-.707l.707.707zm1 15a1 1 0 1 1-2 0zM5.293 9.293l6-6l1.414 1.414l-6 6zm7.414-6l6 6l-1.414 1.414l-6-6zM13 4v15h-2V4z" />
+                                                            </svg>
+                                                        </span>
+                                                        {{ $courrier->title }}
+                                                    </td>
+                                                @elseif ($courrier->type->titre === 'Entrant')
+                                                    <td class="text-truncate title-file-box-table-data">
+                                                        <span class="mail-entry-icon">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="1em"
+                                                                height="1em" viewBox="0 0 24 24">
+                                                                <path fill="currentColor"
+                                                                    d="M11 4h2v12l5.5-5.5l1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5L11 16z" />
+                                                            </svg>
+                                                        </span>
+                                                        {{ $courrier->title }}
+                                                    </td>
+                                                @elseif ($courrier->type->titre === 'Interne')
+                                                    <td class="text-truncate title-file-box-table-data">
+                                                        <span class="mail-internal-icon">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="1em"
+                                                                height="1em" viewBox="0 0 24 24">
+                                                                <path fill="none" stroke="currentColor"
+                                                                    stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M8 3L4 7l4 4M4 7h16m-4 14l4-4l-4-4m4 4H4" />
+                                                            </svg>
+                                                        </span>
+                                                        {{ $courrier->title ?? 'Non définie' }}
+                                                    </td>
+                                                @else
+                                                    <td class="text-truncate title-file-box-table-data">
+                                                        {{ $courrier->title ?? 'Non définie' }}
+                                                    </td>
+                                                @endif
+                                            @else
                                                 <td class="text-truncate title-file-box-table-data">
-                                                    <span class="mail-out-icon">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em"
-                                                            height="1em" viewBox="0 0 24 24">
-                                                            <path fill="currentColor"
-                                                                d="m12 4l-.707-.707l.707-.707l.707.707zm1 15a1 1 0 1 1-2 0zM5.293 9.293l6-6l1.414 1.414l-6 6zm7.414-6l6 6l-1.414 1.414l-6-6zM13 4v15h-2V4z" />
-                                                        </svg>
-                                                    </span>
-                                                    {{ $courrier->title }}
-                                                </td>
-                                            @endif
-
-                                            @if ($courrier->type->titre === 'Entrant')
-                                                <td class="text-truncate title-file-box-table-data">
-                                                    <span class="mail-entry-icon">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em"
-                                                            height="1em" viewBox="0 0 24 24">
-                                                            <path fill="currentColor"
-                                                                d="M11 4h2v12l5.5-5.5l1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5L11 16z" />
-                                                        </svg>
-                                                    </span>
-                                                    {{ $courrier->title }}
-                                                </td>
-                                            @endif
-
-                                            @if ($courrier->type->titre === 'Interne')
-                                                <td class="text-truncate title-file-box-table-data">
-                                                    <span class="mail-internal-icon">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em"
-                                                            height="1em" viewBox="0 0 24 24">
-                                                            <path fill="none" stroke="currentColor"
-                                                                stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M8 3L4 7l4 4M4 7h16m-4 14l4-4l-4-4m4 4H4" />
-                                                        </svg>
-                                                    </span>
                                                     {{ $courrier->title ?? 'Non définie' }}
                                                 </td>
                                             @endif
@@ -252,7 +258,7 @@
                                                 @endif
                                             </td>
                                             <td>{{ $courrier->created_at->format('d/m/Y') }}</td>
-                                            <td>{{ $courrier->type->titre }}</td>
+                                            <td>{{ $courrier->type ? $courrier->type->titre : 'Inconnu' }}</td>
                                             <td>
                                                 <div @class([
                                                     'badge',
