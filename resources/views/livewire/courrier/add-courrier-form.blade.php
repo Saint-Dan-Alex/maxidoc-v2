@@ -20,10 +20,13 @@
             {{-- DÉBUT DE LA CONDITION PRINCIPALE --}}
             {{-- =================================================================== --}}
 
-            @if ($this->isDestinateur &&$type == 1 )
+            @if ($this->isDestinateur  )
+                @if ($type ==1 )
+                    
+                @endif
                 {{-- AFFICHAGE POUR LE DESTINATEUR : UNIQUEMENT SCAN/UPLOAD --}}
-                <input type="text" value="1" name="type">
-
+                <input type="hidden" value="1" name="type">
+                
 
                 <div class="col-12 select_doc" onclick="scanToPdf();" wire:ignore>
                     <div class="block-file block-import-doc">
@@ -77,6 +80,27 @@
                         <a href="#" style="font-size: 12px; font-weight: 500; color: var(--primaryColor)"
                            data-bs-toggle="offcanvas" data-bs-target="#offcanvasNotif"
                            aria-controls="offcanvasRight">Voir le document</a>
+                    </div>
+                    
+                </div>
+                
+                <div class="col-12">
+                    <div class="row">
+                        <label class="col-5 col-form-label">N° d'enregistrement</label>
+                        <div class="col-7">
+                            <input type="text" class="form-control" name="ref_interne" wire:model='num'
+                                placeholder="N° d'enregistrement" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 datearrive_field" wire:ignore>
+                    <div class="row">
+                        <label class="col-5 col-form-label">Date de réception</label>
+                        <div class="col-7">
+                            <input type="datetime-local" class="form-control" id="date-arrivee" name="date-arriv"
+                                value="{{ now()->format('Y-m-d\TH:i') }}" readonly
+                                @if ($type == [1]) required @endif>
+                        </div>
                     </div>
                 </div>
 

@@ -236,32 +236,49 @@
                         <h5 class="mb-3 title-info">Détails du Courrier</h5>
                     </div>
 
-                    <div class="col-12 exped_extern" wire:ignore>
+                    @if($courrier->type_id == 3) {{-- Courrier interne --}}
+                    <div class="col-12 exped_intern">
                         <div class="row">
-                            <label class="col-5 col-form-label">Expéditeur</label>
-                            <div class="col-7">
-                                <input type="text" class="form-control" id="inputPassword" name="exp"
-                                    placeholder="Expéditeur" value="{{ $courrier->exped_externe }}">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 @if ($courrier->type_id != 3) d-none @endif exped_intern" wire:ignore>
-                        <div class="row">
-                            <label class="col-5 col-form-label">Expéditeur</label>
+                            <label class="col-5 col-form-label">Expéditeur Interne</label>
                             <div class="col-7">
                                 <select class="form-select form-control text-capitalize"
-                                    aria-label="Default select example" name="exp_int">
-                                    <option value="" selected disabled>Selectionnez</option>
-                                    @foreach ($agents as $agent)
+                                    aria-label="Sélectionner l'expéditeur interne" name="exp_int" required>
+                                    <option value="" disabled>Sélectionnez un expéditeur</option>
+                                    @foreach($agents as $agent)
                                         <option value="{{ $agent->id }}" @selected($courrier->exped_interne_id == $agent->id)>
                                             {{ $agent->prenom }} {{ $agent->nom }}
+                                            @if($agent->fonctions->isNotEmpty())
+                                                ({{ $agent->fonctions->first()->titre }})
+                                            @endif
                                         </option>
                                     @endforeach
                                 </select>
+                                @error('exp_int')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                     </div>
+                    @else {{-- Courrier externe --}}
+                    <div class="col-12 exped_extern">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Expéditeur Externe</label>
+                            <div class="col-7">
+                                <input type="text" class="form-control" id="expediteur_externe" 
+                                    name="exped_externe" placeholder="Nom de l'expéditeur externe" 
+                                    value="{{ old('exped_externe', $courrier->exped_externe) }}" required>
+                                @error('exped_externe')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                                
+                                {{-- Champ caché pour stocker l'ID de l'expéditeur externe si existant --}}
+                                @if($courrier->externExpediteur)
+                                    <input type="hidden" name="exped_externe_id" value="{{ $courrier->externExpediteur->id }}">
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="col-12">
                         <div class="row">
