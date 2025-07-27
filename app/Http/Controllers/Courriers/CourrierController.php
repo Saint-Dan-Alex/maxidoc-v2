@@ -973,17 +973,50 @@ public function createDocument($request, $destinateur, $doc = null)
 
     }
 
+    /**
+     * Génère une référence unique pour un nouveau courrier
+     * 
+     * @param int $type 1=Entrant, 2=Sortant, 3=Interne
+     * @return string
+     */
     public function changeNumRef($type)
     {
-        $lastNum = Courrier::whereIn('service_id', Auth::user()->agent->direction?->services->pluck('id')->toArray())
-            ->orWhereNull('service_id')
-            ->where('reference_interne', 'LIKE', '%' . $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre).'-%')
-            ->count();
-        $num = (int) $lastNum;
-        $num += 1;
-        $num = Str::padLeft($num, 4, '0');
-        $num = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre) . '-' . $num . '-' . Str::limit($type == 1 ? 'ENTRANT' : ($type == 2 ? "SORTANT" : "INTERNE"), 3, '');
-        return $num;
+        // Récupérer l'abréviation de la direction
+        $abbreviation = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre);
+        $typeText = Str::limit($type == 1 ? 'ENTRANT' : ($type == 2 ? "SORTANT" : "INTERNE"), 3, '');
+        
+        // Démarrer une transaction pour éviter les accès concurrentiels
+        return \DB::transaction(function () use ($abbreviation, $typeText) {
+            // Essayer de récupérer le dernier numéro utilisé pour cette direction et ce type
+            $lastRef = Courrier::where('reference_interne', 'LIKE', $abbreviation . '-%')
+                ->orderBy('id', 'desc')
+                ->value('reference_interne');
+            
+            $nextNum = 1; // Valeur par défaut si aucun enregistrement trouvé
+            
+            if ($lastRef) {
+                // Extraire le numéro de la dernière référence
+                if (preg_match('/-([0-9]+)-[A-Z]+$/', $lastRef, $matches)) {
+                    $nextNum = (int)$matches[1] + 1;
+                }
+            }
+            
+            // Formater le numéro avec 4 chiffres
+            $formattedNum = str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+            
+            // Créer la nouvelle référence
+            $newRef = "{$abbreviation}-{$formattedNum}-{$typeText}";
+            
+            // Vérifier que la référence n'existe pas déjà (double sécurité)
+            $exists = Courrier::where('reference_interne', $newRef)->exists();
+            
+            if ($exists) {
+                // Si la référence existe déjà (cas très rare), on incrémente à nouveau
+                return $this->changeNumRef($type);
+            }
+            
+            return $newRef;
+        });
     }
 
     public function abbreviateTitle($title)
