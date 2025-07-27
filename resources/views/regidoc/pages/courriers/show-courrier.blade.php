@@ -453,6 +453,34 @@
                         </a>
                     </li>
 
+                    {{-- Bouton Modifier les infos --}}
+                    @if($courrier->etape === 'en_attente' && (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()))
+                        <li>
+                            <a href="{{ route('regidoc.courriers.edit', $courrier) }}" class="dropdown-item">
+                                <span class="d-flex align-items-center">
+                                    <i class="fi fi-rr-edit"></i>
+                                </span>
+                                <span class="title">
+                                    Modifier les infos
+                                </span>
+                            </a>
+                        </li>
+                    @endif
+
+                    {{-- Bouton Traiter --}}
+                    @if($courrier->etape === 'termine' && (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()))
+                        <li>
+                            <a href="javascript:void(0)" class="dropdown-item btn-traiter" data-courrier-id="{{ $courrier->id }}">
+                                <span class="d-flex align-items-center">
+                                    <i class="fi fi-rr-check"></i>
+                                </span>
+                                <span class="title">
+                                    Traiter
+                                </span>
+                            </a>
+                        </li>
+                    @endif
+
                     @can('Suivi des courriers')
                         <li>
                             <a class="dropdown-item" href="javascrip:void(0)" data-bs-toggle="offcanvas"
@@ -2428,6 +2456,43 @@
     </script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js?v=1"></script>
     <script src="{{ asset('assets/js/showPDF.js') }}"></script>
+    
+    <script>
+        // Gestion du clic sur le bouton Traiter
+        $(document).on('click', '.btn-traiter', function() {
+            const courrierId = $(this).data('courrier-id');
+            
+            // Afficher un indicateur de chargement
+            const $button = $(this);
+            const $icon = $button.find('i');
+            const originalIcon = $icon.attr('class');
+            
+            $icon.removeClass().addClass('spinner-border spinner-border-sm');
+            $button.prop('disabled', true);
+            
+            // Envoyer la requête AJAX
+            $.ajax({
+                url: `/regidoc/courriers/${courrierId}/traiter`,
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    _method: 'PUT'
+                },
+                success: function(response) {
+                    // Recharger la page pour voir les changements
+                    window.location.reload();
+                },
+                error: function(xhr) {
+                    // Afficher un message d'erreur
+                    alert('Une erreur est survenue lors du traitement du courrier');
+                    
+                    // Réinitialiser le bouton
+                    $icon.removeClass().addClass(originalIcon);
+                    $button.prop('disabled', false);
+                }
+            });
+        });
+    </script>
 
     <script>
         window.addEventListener('alert', event => {
