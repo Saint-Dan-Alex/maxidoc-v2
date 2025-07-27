@@ -1419,6 +1419,8 @@ public function createDocument($request, $destinateur, $doc = null)
             $courrier->objet = $request->get('objet');
             $courrier->traitement_id = $request->get('traitement_id');
             $courrier->document_id = $document?->id;
+            // Mettre à jour l'étape à 'termine' après modification
+            $courrier->etape = 'termine';
             $courrier->save();
 
             if (count($copie)) {
@@ -1458,6 +1460,42 @@ public function createDocument($request, $destinateur, $doc = null)
         $courrier = Courrier::find($id);
         $courrier->delete();
         return redirect()->route('regidoc.courriers.index');
+    }
+
+    /**
+     * Traiter un courrier (changer son état à 'en_saisie')
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function traiter($id)
+    {
+        try {
+            $courrier = Courrier::findOrFail($id);
+            
+            // Vérifier que le courrier est bien à l'état 'termine'
+            if ($courrier->etape !== 'termine') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le courrier n\'est pas dans un état permettant d\'être traité.'
+                ], 422);
+            }
+            
+            // Mettre à jour l'état à 'en_saisie'
+            $courrier->etape = 'en_saisie';
+            $courrier->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Le courrier a été marqué comme étant en traitement.'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors du traitement du courrier: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

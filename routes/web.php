@@ -209,6 +209,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                     Route::get('nonconfidentiel', [CourrierController::class, 'nonconfidentiel'])->name('courriers.nonconfidentiel');
                     Route::post('valider', [CourrierController::class, 'valider'])->name('courriers.valider');
                     Route::post('rejeter', [CourrierController::class, 'rejeter'])->name('courriers.rejeter');
+                    Route::post('traiter', [CourrierController::class, 'traiter'])->name('courriers.traiter');
                     Route::get('export-historique', [CourrierController::class, 'exportHistoriquePdf'])->name('courriers.export-historique');
 
 

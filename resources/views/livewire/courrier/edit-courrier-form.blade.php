@@ -190,7 +190,7 @@
                                         Sélectionnez
                                     </option>
                                     @foreach ($agents as $agent)
-                                        <option value="{{ $agent->id }}" @selected(($isConfidentiel && $agent->id == $dg->id) || $agent->id == $dg->id || $agent->id == $courrier->dest_interne_id)>
+                                        <option value="{{ $agent->id }}" @selected(($isConfidentiel && $dg && $agent->id == $dg->id) || ($dg && $agent->id == $dg->id) || $agent->id == $courrier->dest_interne_id)>
                                             {{ $agent->prenom }} {{ $agent->nom }}
                                         </option>
                                     @endforeach
