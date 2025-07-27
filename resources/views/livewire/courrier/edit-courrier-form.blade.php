@@ -23,7 +23,7 @@
                                     data-get-items-field="titre"
                                     data-method="get"
                                     data-label="titre"
-                                    data-related-model="CourrierType" --}}>
+                                    data-related-model="CourrierType" --}} disabled>
                                     <option value="" selected disabled>Sélectionnez</option>
                                     @foreach ($types as $type)
                                         <option value="{{ $type->id }}" @selected($courrier->type->id == $type->id)>
@@ -56,17 +56,7 @@
                         </div>
                     </div>
 
-                    <div class="col-12">
-                        <div class="block-file ">
-                            <input type="file" id="file-upload" name="document" accept=".pdf"
-                                @disabled($selectedDoc != null)>
-                            <label for="file-upload">
-                                <i class="fi fi-sr-file"></i>
-                                <p>Cliquez pour importer un document scanné</p>
-                                <i class="bi bi-plus-lg"></i>
-                            </label>
-                        </div>
-                    </div>
+                    
 
                     @if ($courrier->document && !$selectedDoc)
                         {{-- wire:ignore --}}
@@ -83,7 +73,7 @@
                                                 <i class="bi bi-check-lg" style="font-size: 20px; color: #07c451"></i>
                                             </p>
                                         </div>
-                                        <small>Référence : {{ $courrier->document->reference }}</small>
+                                        <small>Référence : {{ $courrier->document->reference_interne }}</small>
                                     </div>
                                 </li>
                             </ul>
@@ -139,9 +129,9 @@
                         </div>
                     @endif
 
-                    <div class="col-12">
+                    {{-- <div class="col-12">
                         <h5 class="mt-1 title-info">Destination</h5>
-                    </div>
+                    </div> --}}
 
                     {{-- <div class="col-12">
                         <div class="row">
@@ -179,7 +169,7 @@
                         </div>
                     </div> --}}
 
-                    <div class="col-12">
+                    {{-- <div class="col-12">
                         <div class="row">
                             <label class="col-5 col-form-label">Destinataire</label>
                             <div class="col-7">
@@ -230,7 +220,7 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <div class="col-12">
                         <h5 class="mb-3 title-info">Détails du Courrier</h5>
