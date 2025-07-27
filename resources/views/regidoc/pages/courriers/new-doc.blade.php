@@ -18,6 +18,8 @@
             'natures' => $natures,
             'services' => $services,
             'agents' => $agents,
+            'sec'=> $sec,
+            'isDestinateur'=> $isDestinateur,
             'newDoc' => isset($newDoc) ? true : false,
             'textSelected' => isset($textSelected) ? $textSelected : '',
             'fileName' => isset($fileName) ? $fileName : '',

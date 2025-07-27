@@ -44,6 +44,8 @@ class AddCourrierForm extends Component
     public $type = 1;
     public $num;
     public $isFormValid = false;
+    public $isDestinateur;
+
 
     protected $listeners = ['selectDoc'];
 
