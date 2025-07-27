@@ -250,21 +250,24 @@
                         </div>
                     </div>
                     @else {{-- Courrier externe --}}
-                    <div class="col-12 exped_extern">
+                    <div class="col-12 exped_extern" wire:ignore>
                         <div class="row">
-                            <label class="col-5 col-form-label">Expéditeur Externe</label>
-                            <div class="col-7">
-                                <input type="text" class="form-control" id="expediteur_externe" 
-                                    name="exped_externe" placeholder="Nom de l'expéditeur externe" 
-                                    value="{{ old('exped_externe', $courrier->exped_externe) }}" required>
-                                @error('exped_externe')
-                                    <div class="text-danger small">{{ $message }}</div>
-                                @enderror
-                                
-                                {{-- Champ caché pour stocker l'ID de l'expéditeur externe si existant --}}
-                                @if($courrier->externExpediteur)
-                                    <input type="hidden" name="exped_externe_id" value="{{ $courrier->externExpediteur->id }}">
-                                @endif
+                            <label class="col-5 col-form-label">Expéditeur</label>
+                            <div class="col-7" wire:ignore>
+                                <select class="form-select form-control sele" aria-label="Default select example"
+                                    name="exp" data-placeholder="Sélectionnez un expéditeur"
+                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true" data-max-selection="1"
+                                    data-relative-id="{{ $courrier->categorie ? $courrier->categorie->id : '' }}" 
+                                    @if ($type == [1]) required @endif>
+                                    @if($courrier->exped_externe && $courrier->externExpediteur)
+                                        <option value="{{ $courrier->exped_externe }}" selected>
+                                            {{ $courrier->externExpediteur->nom }}
+                                        </option>
+                                    @endif
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -540,6 +543,73 @@
                 maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') :
                     null,
             });
+
+            // Écouteur pour le changement de catégorie
+            $('select[name="categorie"]').on('change', function(e) {
+                $('select[name=exp]').data('relative-id', e.target.value);
+                $('select[name=exp]').attr('data-relative-id', e.target.value);
+                $('select[name=exp]').val(null).trigger('change');
+            });
+            
+            // Initialisation de la catégorie actuelle
+            var initialCategory = $('select[name="categorie"]').val();
+            if (initialCategory) {
+                $('select[name=exp]').data('relative-id', initialCategory);
+                $('select[name=exp]').attr('data-relative-id', initialCategory);
+            }
+            
+            // Initialisation du sélecteur d'expéditeurs avec Select2
+            $('select[name="exp"]').select2({
+                tags: $('select[name="exp"]').data('tags') ? $('select[name="exp"]').data('tags') : false,
+                placeholder: $('select[name="exp"]').data('placeholder'),
+                language: "fr",
+                createTag: function(params) {
+                    var term = $.trim(params.term);
+
+                    if (term === '') {
+                        return null;
+                    }
+
+                    return {
+                        id: term,
+                        text: term,
+                        newTag: true
+                    }
+                },
+                ajax: {
+                    url: $('select[name="exp"]').data('get-items-route'),
+                    data: function(params) {
+                        var query = {
+                            search: params.term,
+                            type: $('select[name="exp"]').data('get-items-field'),
+                            method: $('select[name="exp"]').data('method'),
+                            id: $('select[name="exp"]').data('id'),
+                            page: params.page || 1,
+                            model: $('select[name="exp"]').data('related-model'),
+                            label: $('select[name="exp"]').data('label'),
+                            relative_id: $('select[name="exp"]').data('relative-id'),
+                        }
+                        return query;
+                    }
+                },
+                width: '100%',
+                minimumInputLength: 0,
+                allowClear: true,
+                maximumSelectionLength: $('select[name="exp"]').data('max-selection') ? $('select[name="exp"]').data('max-selection') : null,
+                templateResult: formatExp,
+                templateSelection: formatExpSelection
+            });
+
+            function formatExp(exp) {
+                if (!exp.id) {
+                    return exp.text;
+                }
+                return $('<span>').text(exp.text);
+            }
+
+            function formatExpSelection(exp) {
+                return exp.text;
+            }
 
             // code jl to open scanner device to importe a file
 
