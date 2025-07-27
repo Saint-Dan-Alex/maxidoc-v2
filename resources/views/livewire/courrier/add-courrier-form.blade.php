@@ -20,7 +20,7 @@
             {{-- DÉBUT DE LA CONDITION PRINCIPALE --}}
             {{-- =================================================================== --}}
 
-            @if ($this->isDestinateur)
+            @if ($this->isDestinateur &&$type == 1 )
                 {{-- AFFICHAGE POUR LE DESTINATEUR : UNIQUEMENT SCAN/UPLOAD --}}
                 <input type="text" value="1" name="type">
 
