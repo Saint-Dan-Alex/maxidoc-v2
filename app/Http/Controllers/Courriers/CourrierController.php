@@ -1434,7 +1434,7 @@ public function createDocument($request, $destinateur, $doc = null)
             }
 
             $courrier = Courrier::find($id);
-            $courrier->type_id = $request->get('type');
+            // $courrier->type_id = $request->get('type');
             $courrier->category_id = $request->get('categorie');
             $courrier->traitement_id = $request->get('traitement_id');
             $courrier->exped_interne_id = $request->get('exp_int');
