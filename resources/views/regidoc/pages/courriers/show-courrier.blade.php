@@ -913,12 +913,13 @@
     </div>
     <div id="pdf-main-container" class="d-flex flex-column" data-docid="{{ $docToShowId }}"
         data-url="{{ $docToShow }}" data-name="{{ $nameDocToShow }}" data-courrier="{{ $courrier->id }}"
-        @if ($courrier->confidentiel) data-code="{{ $courrier->document?->password }}" @endif>
+        @if ($courrier->confidentiel && $courrier->document) data-code="{{ $courrier->document->password }}" @endif>
         <div id="pdf-meta" class="nav-tools-page">
             <div class="row w-100 ms-0 align-items-center g-3 g-lg-4">
                 <div class="col-lg-4">
                     <div class="d-flex align-items-center justify-content-between justify-content-sm-start">
                         {{-- <a href="{{ route('regidoc.courriers.index') }}" class="mb-0 back me-3">
+{{ ... }}
                             <i class="fi fi-rr-angle-left"></i>
                             <div class="tooltip-indicator">
                                 Retour
@@ -1986,10 +1987,14 @@
                     </div>
                     <div class="row g-lg-3 g-2">
                         <div class="col-6">
-                            <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) }}"
+                            <a href="{{ $courrier->document ? route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) : '#' }}"
                                 id="download"
-                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if ($courrier->confidentiel) disabled @endif"
-                                @if ($courrier->confidentiel) title="Coursier confidentiel" @endif>
+                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if ($courrier->confidentiel || !$courrier->document) disabled @endif"
+                                @if ($courrier->confidentiel) 
+                                    title="Courrier confidentiel"
+                                @elseif(!$courrier->document)
+                                    title="Document non disponible"
+                                @endif>
                                 <svg viewBox="0 0 24 24" width="512" height="512" class="mx-auto mb-2">
                                     <path
                                         d="M19,4h-1.1c-.46-2.28-2.48-4-4.9-4h-2c-2.41,0-4.43,1.72-4.9,4h-1.1C2.24,4,0,6.24,0,9v10c0,2.76,2.24,5,5,5h14c2.76,0,5-2.24,5-5V9c0-2.76-2.24-5-5-5ZM11,2h2c1.3,0,2.42,.84,2.83,2h-7.66c.41-1.16,1.52-2,2.83-2Zm11,17c0,1.65-1.35,3-3,3H5c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3h14c1.65,0,3,1.35,3,3v10Zm-4.85-7.1c.54,.54,.85,1.3,.85,2.1s-.31,1.55-.88,2.12l-2.39,2.56c-.2,.21-.46,.32-.73,.32-.24,0-.49-.09-.68-.27-.4-.38-.43-1.01-.05-1.41l2.16-2.32H7c-.55,0-1-.45-1-1s.45-1,1-1H15.43l-2.16-2.32c-.38-.4-.35-1.04,.05-1.41,.4-.38,1.04-.35,1.41,.05l2.41,2.59Z" />
@@ -1998,8 +2003,10 @@
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'agent', 'courrier_id' => $courrier->id]) }}"
-                                id="download" class="btn btn-action-doc d-flex flex-column h-100 w-100">
+                            <a href="{{ $courrier->document ? route('regidoc.taches.create', ['doc' => $courrier->document->id ?? null, 'to' => 'agent', 'courrier_id' => $courrier->id]) : '#' }}"
+                                id="download" 
+                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if(!$courrier->document) disabled @endif"
+                                @if(!$courrier->document) title="Document non disponible" @endif>
                                 <svg viewBox="0 0 24 24" width="512" height="512" class="mx-auto mb-2">
                                     <path
                                         d="M15,6c0-3.309-2.691-6-6-6S3,2.691,3,6s2.691,6,6,6,6-2.691,6-6Zm-6,4c-2.206,0-4-1.794-4-4s1.794-4,4-4,4,1.794,4,4-1.794,4-4,4Zm-.008,4.938c.068,.548-.32,1.047-.869,1.116-3.491,.436-6.124,3.421-6.124,6.946,0,.552-.448,1-1,1s-1-.448-1-1c0-4.531,3.386-8.37,7.876-8.93,.542-.069,1.047,.32,1.116,.869Zm13.704,4.195l-.974-.562c.166-.497,.278-1.019,.278-1.572s-.111-1.075-.278-1.572l.974-.562c.478-.276,.642-.888,.366-1.366-.277-.479-.887-.644-1.366-.366l-.973,.562c-.705-.794-1.644-1.375-2.723-1.594v-1.101c0-.552-.448-1-1-1s-1,.448-1,1v1.101c-1.079,.22-2.018,.801-2.723,1.594l-.973-.562c-.48-.277-1.09-.113-1.366,.366-.276,.479-.112,1.09,.366,1.366l.974,.562c-.166,.497-.278,1.019-.278,1.572s.111,1.075,.278,1.572l-.974,.562c-.478,.276-.642,.888-.366,1.366,.186,.321,.521,.5,.867,.5,.169,0,.341-.043,.499-.134l.973-.562c.705,.794,1.644,1.375,2.723,1.594v1.101c0,.552,.448,1,1,1s1-.448,1-1v-1.101c1.079-.22,2.018-.801,2.723-1.594l.973,.562c.158,.091,.33,.134,.499,.134,.346,0,.682-.179,.867-.5,.276-.479,.112-1.09-.366-1.366Zm-5.696,.866c-1.654,0-3-1.346-3-3s1.346-3,3-3,3,1.346,3,3-1.346,3-3,3Z" />
@@ -2035,30 +2042,37 @@
                         <div class="col-12">
                             {{-- <a href="{{ route('regidoc.courriers.signer', $courrier) }}?is_paraphe=1"
                                 class="flex-row gap-3 btn btn-action-doc d-flex justify-content-center align-items-center w-100"> --}}
-                            <a href="{{ route('regidoc.documents.sign', ['doc_id' => $courrier->document?->id, 'is_original' => true, 'courrier_id' => $courrier->id]) }}"
-                                class="flex-row gap-3 btn btn-action-doc d-flex justify-content-center align-items-center w-100">
+                            <a href="{{ $courrier->document ? route('regidoc.documents.sign', ['doc_id' => $courrier->document->id ?? null, 'is_original' => true, 'courrier_id' => $courrier->id]) : '#' }}"
+                                class="flex-row gap-3 btn btn-action-doc d-flex justify-content-center align-items-center w-100 @if(!$courrier->document) disabled @endif"
+                                @if(!$courrier->document) title="Document non disponible" @endif>
                                 <svg viewBox="0 0 24 24" width="512" height="512">
                                     <path
-                                        d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1,.45,1,1Z" />
+                                        d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1-.45,1-1Z" />
                                 </svg>
                                 Signer
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) }}"
+                            <a href="{{ $courrier->document ? route('regidoc.taches.create', ['doc' => $courrier->document->id ?? null, 'to' => 'direction', 'courrier_id' => $courrier->id]) : '#' }}"
                                 id="download"
-                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if ($courrier->confidentiel) disabled @endif"
-                                @if ($courrier->confidentiel) title="Coursier confidentiel" @endif>
+                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if ($courrier->confidentiel || !$courrier->document) disabled @endif"
+                                @if ($courrier->confidentiel) 
+                                    title="Courrier confidentiel"
+                                @elseif(!$courrier->document)
+                                    title="Document non disponible"
+                                @endif>
                                 <svg viewBox="0 0 24 24" width="512" height="512" class="mx-auto mb-2">
                                     <path
-                                        d="M19,4h-1.1c-.46-2.28-2.48-4-4.9-4h-2c-2.41,0-4.43,1.72-4.9,4h-1.1C2.24,4,0,6.24,0,9v10c0,2.76,2.24,5,5,5h14c2.76,0,5-2.24,5-5V9c0-2.76-2.24-5-5-5ZM11,2h2c1.3,0,2.42,.84,2.83,2h-7.66c.41-1.16,1.52-2,2.83-2Zm11,17c0,1.65-1.35,3-3,3H5c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3h14c1.65,0,3,1.35,3,3v10Zm-4.85-7.1c.54,.54,.85,1.3,.85,2.1s-.31,1.55-.88,2.12l-2.39,2.56c-.2,.21-.46,.32-.73,.32-.24,0-.49-.09-.68-.27-.4-.38-.43-1.01-.05-1.41l2.16-2.32H7c-.55,0-1-.45-1-1s.45-1,1-1H15.43l-2.16-2.32c-.38-.4-.35-1.04,.05-1.41,.4-.38,1.04-.35,1.41,.05l2.41,2.59Z" />
+                                        d="M15,6c0-3.309-2.691-6-6-6S3,2.691,3,6s2.691,6,6,6,6-2.691,6-6Zm-6,4c-2.206,0-4-1.794-4-4s1.794-4,4-4,4,1.794,4,4-1.794,4-4,4Zm-.008,4.938c.068,.548-.32,1.047-.869,1.116-3.491,.436-6.124,3.421-6.124,6.946,0,.552-.448,1-1,1s-1-.448-1-1c0-4.531,3.386-8.37,7.876-8.93,.542-.069,1.047,.32,1.116,.869Zm13.704,4.195l-.974-.562c.166-.497,.278-1.019,.278-1.572s-.111-1.075-.278-1.572l.974-.562c.478-.276,.642-.888,.366-1.366-.277-.479-.887-.644-1.366-.366l-.973,.562c-.705-.794-1.644-1.375-2.723-1.594v-1.101c0-.552-.448-1-1-1s-1,.448-1,1v1.101c-1.079,.22-2.018,.801-2.723,1.594l-.973-.562c-.48-.277-1.09-.113-1.366,.366-.276,.479-.112,1.09,.366,1.366l.974,.562c-.166,.497-.278,1.019-.278,1.572s.111,1.075,.278,1.572l-.974,.562c-.478,.276-.642,.888-.366,1.366,.186,.321,.521,.5,.867,.5,.169,0,.341-.043,.499-.134l.973-.562c.705,.794,1.644,1.375,2.723,1.594v1.101c0,.552,.448,1,1,1s1-.448,1-1v-1.101c1.079-.22,2.018-.801,2.723-1.594l.973,.562c.158,.091,.33,.134,.499,.134,.346,0,.682-.179,.867-.5,.276-.479,.112-1.09-.366-1.366Zm-5.696,.866c-1.654,0-3-1.346-3-3s1.346-3,3-3,3,1.346,3,3-1.346,3-3,3Z" />
                                 </svg>
                                 Assigner à une direction
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'agent', 'courrier_id' => $courrier->id]) }}"
-                                id="download" class="btn btn-action-doc d-flex flex-column h-100 w-100">
+                            <a href="{{ $courrier->document ? route('regidoc.taches.create', ['doc' => $courrier->document->id ?? null, 'to' => 'agent', 'courrier_id' => $courrier->id]) : '#' }}"
+                                id="download" 
+                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if(!$courrier->document) disabled @endif"
+                                @if(!$courrier->document) title="Document non disponible" @endif>
                                 <svg viewBox="0 0 24 24" width="512" height="512" class="mx-auto mb-2">
                                     <path
                                         d="M15,6c0-3.309-2.691-6-6-6S3,2.691,3,6s2.691,6,6,6,6-2.691,6-6Zm-6,4c-2.206,0-4-1.794-4-4s1.794-4,4-4,4,1.794,4,4-1.794,4-4,4Zm-.008,4.938c.068,.548-.32,1.047-.869,1.116-3.491,.436-6.124,3.421-6.124,6.946,0,.552-.448,1-1,1s-1-.448-1-1c0-4.531,3.386-8.37,7.876-8.93,.542-.069,1.047,.32,1.116,.869Zm13.704,4.195l-.974-.562c.166-.497,.278-1.019,.278-1.572s-.111-1.075-.278-1.572l.974-.562c.478-.276,.642-.888,.366-1.366-.277-.479-.887-.644-1.366-.366l-.973,.562c-.705-.794-1.644-1.375-2.723-1.594v-1.101c0-.552-.448-1-1-1s-1,.448-1,1v1.101c-1.079,.22-2.018,.801-2.723,1.594l-.973-.562c-.48-.277-1.09-.113-1.366,.366-.276,.479-.112,1.09,.366,1.366l.974,.562c-.166,.497-.278,1.019-.278,1.572s.111,1.075,.278,1.572l-.974,.562c-.478,.276-.642,.888-.366,1.366,.186,.321,.521,.5,.867,.5,.169,0,.341-.043,.499-.134l.973-.562c.705,.794,1.644,1.375,2.723,1.594v1.101c0,.552,.448,1,1,1s1-.448,1-1v-1.101c1.079-.22,2.018-.801,2.723-1.594l.973,.562c.158,.091,.33,.134,.499,.134,.346,0,.682-.179,.867-.5,.276-.479,.112-1.09-.366-1.366Zm-5.696,.866c-1.654,0-3-1.346-3-3s1.346-3,3-3,3,1.346,3,3-1.346,3-3,3Z" />
