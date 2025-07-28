@@ -419,39 +419,36 @@
                                     $courrier->author->id != Auth::user()->agent->id &&
                                     !$aTraite
                                 )) d-none @endif">
-                                <a 
-                                    data-bs-toggle="{{ $courrier->etape === 'en_attente' ? '' : 'modal' }}"  
-                                    data-bs-target="{{ $courrier->etape === 'en_attente' ? '' : '#traitement-modal' }}" 
-                                    href="javascript:void(0)" 
-                                    class="dropdown-item d-flex align-items-center"
-                                    @if ($courrier->etape === 'termine') 
-                                        onclick="return false;" 
-                                        aria-disabled="true" 
-                                        style="color: gray; pointer-events: none; text-decoration: none;" 
-                                    @endif
-                                >
-                                    <i class="fi fi-rr-hourglass-end me-2"></i>
-                                    <span class="title">Traiter</span>
+
+                                @if ($courrier->etape === "termine")
+                                    <a data-bs-toggle="modal" data-bs-target="#traitement-modal" href="javascript:void(0)"
+                                    class="dropdown-item">
+                                    <span class="d-flex align-items-center">
+                                        <i class="fi fi-rr-hourglass-end"></i>
+                                    </span>
+                                    <span class="title">
+                                        Traiter
+                                    </span>
                                 </a>
+                                   
+                                @else
+                                    <a href="{{route('regidoc.courriers.edit',$courrier->id)}}" class="dropdown-item d-flex align-items-center">
+                                        <i class="fi fi-rr-edit me-2"></i>
+                                        <span class="title">Modifier les infos</span>
+                                    </a>  
+                                    
+                                @endif
+
+                               
+
+                                
 
 
 
                             </li>
                         @endif
                     @endif
-                    <li>
-                        <a href="{{ $courrier->etape === 'termine' ? '#' : route('regidoc.courriers.edit', $courrier) }}" 
-                        @if ($courrier->etape === 'termine') 
-                            onclick="return false;" 
-                            style="color: gray; pointer-events: none; text-decoration: none;" 
-                        @endif
-                        class="dropdown-item d-flex align-items-center">
-                            <i class="fi fi-rr-edit me-2"></i>
-                            <span class="title">Modifier les infos</span>
-                        </a>
-                    </li>
-
-                    
+                                      
 
 
                     <li>
