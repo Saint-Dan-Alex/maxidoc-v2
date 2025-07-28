@@ -1353,136 +1353,305 @@ public function createDocument($request, $destinateur, $doc = null)
         return view('regidoc.pages.courriers.edit-doc', compact('courrier', 'types', 'services', 'agents', 'natures'));
     }
  
-    public function update(Request $request, $id)
-    {
-        try {
+    // public function update(Request $request, $id)
+    // {
+    //     try {
 
-            $destinateur = $request->get('destination');
+    //         $destinateur = $request->get('destination');
+    //         $isConfidentiel = ($request->confidentiel == 'on' || $request->confidentiel == 1) ? 1 : 0;
+    //         $copie = $request->get('copie');
+
+    //         if ($isConfidentiel) {
+    //             $destinateur = 1;
+    //             $copie = [1];
+    //         }
+
+    //         if (!$request->has('copie')) {
+    //             $copie = [1];
+    //         }
+
+    //         $document = null;
+
+    //         if ($request->hasFile('document') && ($request->document_id == null || $request->document_id == '')) {
+
+    //             $classeur = Classeur::firstOrCreate([
+    //                 'titre' => Auth::user()->agent->direction?->lieu?->titre ?? 'Region inconnu',
+    //             ],[
+    //                 'reference' => 'DIR'.Str::padLeft(Classeur::count() + 1,4,0),
+    //                 'direction_id' => Agent::find($destinateur)?->direction_id,
+    //                 'created_by' => Auth::user()->agent->id
+    //             ]);
+
+    //             $dossier = Dossier::firstOrCreate([
+    //                 'titre' => 'Courriers',
+    //                 'classeur_id' => $classeur->id,
+    //             ],[
+    //                 'reference' => 'DIR'.Str::padLeft(Classeur::count() + 1,4,0),
+    //                 'created_by' => Auth::user()->agent->id,
+    //                 'updated_by' => Auth::user()->agent->id,
+    //             ]);
+
+    //             // $dossier = Dossier::where('titre', 'Courriers')->first();
+    //             // $classeur = null;
+
+    //             // if ($dossier != null) {
+    //             //     if ($dossier->classeur) {
+    //             //         $classeur = $dossier->classeur;
+    //             //     } else {
+    //             //         $classeur = Classeur::create(['titre' => 'Courriers']);
+    //             //     }
+    //             // } else {
+    //             //     $classeur = Classeur::create([
+    //             //         'titre' => 'Courriers',
+    //             //         'reference' => $request->get('ref'),
+    //             //         'direction_id' => Auth::user()->agent->direction_id,
+    //             //         'created_by' => Auth::user()->agent?->id,
+    //             //         'updated_by' => Auth::user()->agent?->id,
+    //             //     ]);
+
+    //             //     $dossier = Dossier::create([
+    //             //         'titre' => 'Courriers',
+    //             //         'reference' => $request->get('ref'),
+    //             //         'classeur_id' => $classeur?->id,
+    //             //         'created_by' => Auth::user()->agent?->id,
+    //             //         'updated_by' => Auth::user()->agent?->id,
+    //             //     ]);
+    //             // }
+
+    //             $document = new Document();
+    //             $document->dossier_id = $dossier?->id;
+    //             $document->reference = $request->get('ref');
+    //             $document->category_id = $request->get('categorie');
+    //             $document->libelle = $request->get('title');
+    //             $document->type = $request->get('type');
+    //             $document->document = (new File())->handle($request, 'document', 'documents');
+    //             $document->user_id = Auth::user()?->id;
+    //             $document->statut_id = 1;
+    //             $document->created_by = Auth::user()->agent?->id;
+    //             $document->save();
+    //         } elseif ($request->has('document_id') && ($request->document_id != null || $request->document_id != '')) {
+    //             $document = Document::find($request->document_id);
+    //         }
+
+    //         $courrier = Courrier::find($id);
+    //         // $courrier->type_id = $request->get('type');
+    //         $courrier->category_id = $request->get('categorie');
+    //         $courrier->traitement_id = $request->get('traitement_id');
+    //         $courrier->exped_interne_id = $request->get('exp_int');
+    //         $courrier->exped_externe = $request->get('exp');
+    //         $courrier->dest_interne_id = $destinateur;
+    //         $courrier->departement_id = $request->get('service');
+    //         $courrier->service_id = $request->get('service');
+    //         $courrier->service_traitant_id = $request->get('service_traitant');
+    //         $courrier->title = $request->get('title');
+    //         $courrier->reference_courrier = $request->get('ref');
+    //         $courrier->confidentiel = $request->get('confidentiel') == true ? '1' : '0';
+    //         $courrier->priorite_id = $request->get('priorite');
+    //         $courrier->created_by = Auth::user()->id;
+    //         $courrier->date_du_courrier = $request->get('date-doc');
+    //         $courrier->date_arrive = $request->get('date-arriv');
+    //         $courrier->date_fin = $request->get('date-limite');
+    //         $courrier->nature_id = $request->get('nature');
+    //         $courrier->objet = $request->get('objet');
+    //         $courrier->traitement_id = $request->get('traitement_id');
+    //         $courrier->document_id = $document?->id;
+    //         // Mettre à jour l'étape à 'termine' après modification
+    //         $courrier->etape = 'termine';
+    //         $courrier->save();
+
+    //         if (count($copie)) {
+    //             $courrier->followers()->attach($copie);
+    //         }
+
+    //         $content = json_encode([
+    //             'name' => 'Courriers',
+    //             'statut' => 'success',
+    //             'message' => 'Courrier modifié avec succès !',
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         // dd($th);
+    //         $content = json_encode([
+    //             'name' => 'Courrier',
+    //             'statut' => 'error',
+    //             'message' => 'Impossible de modifier le courrier, une erreur s\'est produite',
+    //         ]);
+    //     }
+
+    //     session()->flash(
+    //         'session',
+    //         $content
+    //     );
+
+    //     return redirect()->route('regidoc.courriers.index')->with('success', 'le courrier a étè créee avec succès !');
+    // }
+
+     public function update(Request $request, $id)
+    {
+        // Message par défaut en cas d'erreur.
+        $content = json_encode([
+            'name' => 'Courrier',
+            'statut' => 'error',
+            'message' => 'Impossible de modifier le courrier, une erreur s\'est produite.',
+        ]);
+
+        try {
+            // 1. Trouver le courrier à mettre à jour
+            $courrier = Courrier::find($id);
+            if (!$courrier) {
+                $content = json_encode([
+                    'name' => 'Courrier',
+                    'statut' => 'error',
+                    'message' => 'Courrier introuvable pour la modification.',
+                ]);
+                session()->flash('session', $content);
+                return redirect()->route('regidoc.courriers.index');
+            }
+
+            // 2. Préparer les données
+            $destinateur = $request->get('destination'); // Destinataire principal
+            // Gérer le statut confidentiel et ses implications sur destinataire/copie
             $isConfidentiel = ($request->confidentiel == 'on' || $request->confidentiel == 1) ? 1 : 0;
-            $copie = $request->get('copie');
+            $copie = $request->get('copie', []); // Initialise à un tableau vide si 'copie' n'est pas présent
 
             if ($isConfidentiel) {
-                $destinateur = 1;
-                $copie = [1];
+                // Si confidentiel, le destinataire principal et les copies sont écrasés pour pointer vers l'assistant du DG (ID 1 par ex.)
+                $destinateur = 1; // Ou l'ID réel de l'assistant du DG
+                $copie = [1];    // Ou l'ID réel de l'assistant du DG
             }
 
-            if (!$request->has('copie')) {
-                $copie = [1];
+            // Si la case 'copie' n'a pas été cochée du tout, et que ce n'est pas confidentiel,
+            // on s'assure que le tableau de copie est vide pour ne pas conserver d'anciennes copies.
+            if (!$request->has('copie') && !$isConfidentiel) {
+                $copie = [];
             }
 
-            $document = null;
+            $document = null; // Variable pour stocker le document lié au courrier
 
-            if ($request->hasFile('document') && ($request->document_id == null || $request->document_id == '')) {
+            // 3. Gestion du document associé au courrier
+            // Cas 1: Un nouveau fichier de document est uploadé
+            if ($request->hasFile('document')) {
+                // Utiliser createDocument pour gérer le nouvel upload et la création du record Document.
+                // On passe l'ID du destinataire du courrier comme responsable pour le document.
+                $document = $this->createDocument($request, $courrier->dest_interne_id ?? $destinateur);
 
-                $classeur = Classeur::firstOrCreate([
-                    'titre' => Auth::user()->agent->direction?->lieu?->titre ?? 'Region inconnu',
-                ],[
-                    'reference' => 'DIR'.Str::padLeft(Classeur::count() + 1,4,0),
-                    'direction_id' => Agent::find($destinateur)?->direction_id,
-                    'created_by' => Auth::user()->agent->id
-                ]);
-
-                $dossier = Dossier::firstOrCreate([
-                    'titre' => 'Courriers',
-                    'classeur_id' => $classeur->id,
-                ],[
-                    'reference' => 'DIR'.Str::padLeft(Classeur::count() + 1,4,0),
-                    'created_by' => Auth::user()->agent->id,
-                    'updated_by' => Auth::user()->agent->id,
-                ]);
-
-                // $dossier = Dossier::where('titre', 'Courriers')->first();
-                // $classeur = null;
-
-                // if ($dossier != null) {
-                //     if ($dossier->classeur) {
-                //         $classeur = $dossier->classeur;
-                //     } else {
-                //         $classeur = Classeur::create(['titre' => 'Courriers']);
-                //     }
-                // } else {
-                //     $classeur = Classeur::create([
-                //         'titre' => 'Courriers',
-                //         'reference' => $request->get('ref'),
-                //         'direction_id' => Auth::user()->agent->direction_id,
-                //         'created_by' => Auth::user()->agent?->id,
-                //         'updated_by' => Auth::user()->agent?->id,
-                //     ]);
-
-                //     $dossier = Dossier::create([
-                //         'titre' => 'Courriers',
-                //         'reference' => $request->get('ref'),
-                //         'classeur_id' => $classeur?->id,
-                //         'created_by' => Auth::user()->agent?->id,
-                //         'updated_by' => Auth::user()->agent?->id,
-                //     ]);
-                // }
-
-                $document = new Document();
-                $document->dossier_id = $dossier?->id;
-                $document->reference = $request->get('ref');
-                $document->category_id = $request->get('categorie');
-                $document->libelle = $request->get('title');
-                $document->type = $request->get('type');
-                $document->document = (new File())->handle($request, 'document', 'documents');
-                $document->user_id = Auth::user()?->id;
-                $document->statut_id = 1;
-                $document->created_by = Auth::user()->agent?->id;
-                $document->save();
-            } elseif ($request->has('document_id') && ($request->document_id != null || $request->document_id != '')) {
+                // Optionnel: Si un ancien document était attaché, le supprimer (fichier et record DB)
+                if ($courrier->document_id && $document) { // Supprimer l'ancien seulement si un nouveau a été créé avec succès
+                    $oldDocument = Document::find($courrier->document_id);
+                    if ($oldDocument) {
+                        // Supprimer le fichier physique si l'ancien document avait un chemin
+                        if ($oldDocument->document && Storage::disk('documents')->exists($oldDocument->document)) {
+                            Storage::disk('documents')->delete($oldDocument->document);
+                        }
+                        $oldDocument->delete(); // Supprimer le record de la base de données
+                    }
+                }
+            }
+            // Cas 2: Un document_id existant est explicitement fourni (ex: l'utilisateur a sélectionné un document déjà uploadé)
+            elseif ($request->has('document_id') && ($request->document_id != null || $request->document_id != '')) {
                 $document = Document::find($request->document_id);
             }
+            // Cas 3: Ni nouveau fichier, ni document_id existant fourni. On conserve le document existant du courrier.
+            else {
+                $document = $courrier->document; // Conserver le document déjà attaché au courrier
+            }
 
-            $courrier = Courrier::find($id);
-            // $courrier->type_id = $request->get('type');
+            // 4. Mise à jour des champs du courrier
+            // Note: type_id n'est généralement pas modifié après la création.
             $courrier->category_id = $request->get('categorie');
             $courrier->traitement_id = $request->get('traitement_id');
             $courrier->exped_interne_id = $request->get('exp_int');
             $courrier->exped_externe = $request->get('exp');
-            $courrier->dest_interne_id = $destinateur;
-            $courrier->departement_id = $request->get('service');
-            $courrier->service_id = $request->get('service');
-            $courrier->service_traitant_id = $request->get('service_traitant');
+            $courrier->dest_interne_id = $destinateur; // L'ID de l'agent est le destinataire interne
+
+            // Ajuster le département/service en fonction du destinataire si c'est un courrier interne (type 3)
+            if ($courrier->type_id == 3 && $destinateur) {
+                $destinataireAgent = Agent::find($destinateur);
+                $courrier->departement_id = $destinataireAgent->departement_id ?? null;
+                $courrier->service_id = $destinataireAgent->service_id ?? null;
+                $courrier->service_traitant_id = $destinataireAgent->direction_id ?? null; // ID de la direction de l'agent si applicable
+            } else {
+                // Pour les autres types (ex: type 1), prendre les valeurs directement de la requête
+                $courrier->departement_id = $request->get('service');
+                $courrier->service_id = $request->get('service');
+                $courrier->service_traitant_id = $request->get('service_traitant');
+            }
+
             $courrier->title = $request->get('title');
             $courrier->reference_courrier = $request->get('ref');
-            $courrier->confidentiel = $request->get('confidentiel') == true ? '1' : '0';
+            $courrier->reference_interne = $request->get('ref_interne'); // Assurez-vous que c'est géré pour les types appropriés
+            $courrier->confidentiel = $isConfidentiel ? '1' : '0';
             $courrier->priorite_id = $request->get('priorite');
-            $courrier->created_by = Auth::user()->id;
+            // $courrier->created_by = Auth::user()->id; // Ne pas modifier 'created_by' lors d'une mise à jour
             $courrier->date_du_courrier = $request->get('date-doc');
             $courrier->date_arrive = $request->get('date-arriv');
             $courrier->date_fin = $request->get('date-limite');
             $courrier->nature_id = $request->get('nature');
             $courrier->objet = $request->get('objet');
             $courrier->traitement_id = $request->get('traitement_id');
-            $courrier->document_id = $document?->id;
-            // Mettre à jour l'étape à 'termine' après modification
+            $courrier->document_id = $document?->id; // Attacher le nouvel ID de document ou conserver l'ancien
+
+            // Mise à jour de l'étape à 'termine' après modification
+            // ATTENTION : Cette ligne implique que toute modification d'un courrier le marque comme 'termine'.
+            // Assurez-vous que c'est le comportement désiré dans tous les scénarios de mise à jour.
             $courrier->etape = 'termine';
             $courrier->save();
 
-            if (count($copie)) {
-                $courrier->followers()->attach($copie);
+            // 5. Gestion des Destinataires et Copie (Followers)
+            // Synchronisation des destinataires principaux
+            if ($courrier->type_id == 1 && $destinateur) {
+                // Si type 1 et un destinataire est spécifié (ex: par confidentiel)
+                $courrier->destinateurs()->sync([$destinateur]);
+            } elseif ($courrier->type_id == 3 && $destinateur) {
+                // Pour un courrier interne (type 3), synchroniser l'agent destinataire unique.
+                $courrier->destinateurs()->sync([$destinateur]);
+            }
+            // Il pourrait être nécessaire d'ajouter une logique ici si les destinataires d'un courrier de type 1
+            // peuvent changer et ne sont pas toujours l'assistant du DG.
+
+            // Synchronisation des followers (personnes/directions en copie)
+            // Utiliser 'sync' pour s'assurer que seules les copies actuelles sont conservées
+            // et que les anciennes sont supprimées si elles ne sont plus dans la liste.
+            if (!empty($copie)) {
+                $courrier->followers()->sync($copie);
+            } else {
+                // Si aucune copie n'est fournie (et non confidentiel), détacher toutes les copies existantes.
+                $courrier->followers()->detach();
             }
 
+            // 6. Enregistrement de l'historique de modification
+            Historique::create([
+                "key" => "Modification du courrier",
+                "historiquecable_id" => $courrier->id,
+                "historiquecable_type" => Courrier::class,
+                "description" => "A modifié le courrier.",
+                "user_id" => Auth::user()->id,
+            ]);
+
+            // Message de succès
             $content = json_encode([
                 'name' => 'Courriers',
                 'statut' => 'success',
                 'message' => 'Courrier modifié avec succès !',
             ]);
+
         } catch (\Throwable $th) {
-            // dd($th);
+            // Loguer l'erreur et préparer un message d'échec
+            Log::error("Erreur update courrier : " . $th->getMessage(), [
+                'file' => $th->getFile(),
+                'line' => $th->getLine(),
+                'trace' => $th->getTraceAsString(),
+            ]);
+
             $content = json_encode([
                 'name' => 'Courrier',
                 'statut' => 'error',
-                'message' => 'Impossible de modifier le courrier, une erreur s\'est produite',
+                'message' => 'Impossible de modifier le courrier, une erreur s\'est produite.',
             ]);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
-
-        return redirect()->route('regidoc.courriers.index')->with('success', 'le courrier a étè créee avec succès !');
+        // Flash le message de session et redirige
+        session()->flash('session', $content);
+        return redirect()->route('regidoc.courriers.index');
     }
 
     /**

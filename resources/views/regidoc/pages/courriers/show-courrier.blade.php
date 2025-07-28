@@ -357,22 +357,32 @@
         $docToShow = '';
         $nameDocToShow = '';
         $docToShowId = '';
-        if ($courrier->traitements->count()) {
-            if ($courrier->traitements->last()->document_url) {
-                $docToShow = str_replace('\\', '/', files($courrier->traitements->last()->document_url)->link);
-                $nameDocToShow = files($courrier->traitements->last()->document_url)->name;
-                // $docToShowId = $tache->documents->last()->id;
-            } else {
-                $docToShow = str_replace('\\', '/', files($courrier->document?->document)->link);
-                $nameDocToShow = files($courrier->document?->document)->name;
-                $docToShowId = $courrier->document?->id;
-            }
-        } else {
-            $docToShow = str_replace('\\', '/', files($courrier->document?->document)->link);
-            $nameDocToShow = files($courrier->document?->document)->name;
-            $docToShowId = $courrier->document?->id;
+        
+        // Debug: Afficher les informations sur le document
+        $debugInfo = [
+            'has_traitements' => $courrier->traitements->count() > 0,
+            'document_exists' => $courrier->document ? 'Oui' : 'Non',
+            'document_path' => $courrier->document?->document ?? 'N/A'
+        ];
+        
+        if ($courrier->traitements->count() && $courrier->traitements->last()->document_url) {
+            $docToShow = str_replace('\\', '/', files($courrier->traitements->last()->document_url)->link);
+            $nameDocToShow = files($courrier->traitements->last()->document_url)->name;
+        } elseif ($courrier->document?->document) {
+            $docToShow = str_replace('\\', '/', files($courrier->document->document)->link);
+            $nameDocToShow = files($courrier->document->document)->name;
+            $docToShowId = $courrier->document->id;
         }
+        
+        // Debug: Afficher l'URL finale
+        $debugInfo['final_doc_url'] = $docToShow;
     @endphp
+    
+    {{-- Debug --}}
+    <div class="d-none">
+        <pre>@php print_r($debugInfo) @endphp</pre>
+        <p>URL du document: {{ $docToShow }}</p>
+    </div>
 
     <div class="sidebar">
         <div class="px-3 py-3 logo text-start d-flex align-items-center justify-content-between">
@@ -1023,23 +1033,69 @@
                             </div>
                         @endif
 
-                        <div id="pdf-contents" class="mt-3" style="width: 100%!important">
-                            {{-- <div id="pdf-loader">Loading document ...</div> --}}
-                            @if ($courrier->confidentiel)
-                                <div class="p-5 text-center bg-white confidentiel-doc position-relative mx-auto">
-                                    <i class="fi fi-rr-lock"></i>
-                                    <h5>Ce document est crypté</h5>
-                                    <div class="w-50 mx-auto mt-3">
-                                        <p>Veuillez saisir le code secret</p>
-                                        <input type="text" class="form-control code-confident"
-                                            placeholder="Code confidentiel">
-                                        <small class="text-danger code-error-label d-none">Mot de pass incorect</small>
-                                        <button
-                                            class="btn btn-primary mt-3 text-white w-100 validate-code">Valider</button>
-                                    </div>
+                        @if ($courrier->confidentiel)
+                            <div class="p-5 text-center bg-white confidentiel-doc position-relative mx-auto">
+                                <i class="fi fi-rr-lock"></i>
+                                <h5>Ce document est crypté</h5>
+                                <div class="w-50 mx-auto mt-3">
+                                    <p>Veuillez saisir le code secret</p>
+                                    <input type="text" class="form-control code-confident"
+                                        placeholder="Code confidentiel">
+                                    <small class="text-danger code-error-label d-none">Mot de passe incorrect</small>
+                                    <button class="btn btn-primary mt-3 text-white w-100 validate-code">Valider</button>
                                 </div>
-                            @endif
-                        </div>
+                            </div>
+                        @else
+                            <div id="pdf-contents" style="width: 100%; height: 100%; min-height: 80vh;">
+                                @php
+                                    // Debug: Afficher les informations du document
+                                    $documentPath = $courrier->document?->document;
+                                    $storagePath = $documentPath ? storage_path('app/' . $documentPath) : null;
+                                    $publicPath = $documentPath ? 'storage/' . $documentPath : null;
+                                    $fileExists = $storagePath && file_exists($storagePath);
+                                    
+                                    $debugInfo = [
+                                        'document_exists' => $courrier->document ? 'Oui' : 'Non',
+                                        'document_path' => $documentPath ?? 'N/A',
+                                        'storage_path' => $storagePath ?? 'N/A',
+                                        'public_path' => $publicPath ?? 'N/A',
+                                        'file_exists' => $fileExists ? 'Oui' : 'Non',
+                                        'is_readable' => $fileExists ? (is_readable($storagePath) ? 'Oui' : 'Non') : 'N/A',
+                                        'file_size' => $fileExists ? filesize($storagePath) . ' bytes' : 'N/A'
+                                    ];
+                                @endphp
+                                <div class="alert alert-info">
+                                    <h4>Informations de débogage du document</h4>
+                                    <pre>@php print_r($debugInfo) @endphp</pre>
+                                </div>
+
+                                @if($courrier->document && $courrier->document->document)
+                                    @if($fileExists)
+                                        @php
+                                            // Construction de l'URL directe vers le fichier
+                                            $documentUrl = asset($publicPath);
+                                        @endphp
+                                        <div class="alert alert-success">
+                                            <p>Document trouvé : {{ basename($documentPath) }}</p>
+                                            <p>Taille : {{ number_format(filesize($storagePath) / 1024, 2) }} KB</p>
+                                            <p><a href="{{ $documentUrl }}" target="_blank">Ouvrir le document dans un nouvel onglet</a></p>
+                                        </div>
+                                        <iframe src="{{ $documentUrl }}" frameborder="0" style="width: 100%; height: 100%; min-height: 80vh;"></iframe>
+                                    @else
+                                        <div class="alert alert-danger">
+                                            <h4>Erreur : Fichier introuvable</h4>
+                                            <p>Le fichier n'a pas été trouvé à l'emplacement suivant :</p>
+                                            <pre>{{ $storagePath }}</pre>
+                                            <p>Vérifiez que le fichier existe bien à cet emplacement et que les permissions sont correctes.</p>
+                                        </div>
+                                    @endif
+                                @else
+                                    <div class="alert alert-warning">
+                                        Aucun document à afficher
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
                         @include('components.pdf-tools')
 
                     </div>
