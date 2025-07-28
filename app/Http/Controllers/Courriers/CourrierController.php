@@ -1321,7 +1321,11 @@ public function createDocument($request, $destinateur, $doc = null)
 
     public function show($id)
     {
-        $courrier = Courrier::with(['document', 'views', 'type'])->where('id', $id)->first();
+        $courrier = Courrier::with(['document', 'views', 'type'])->where('id', $id)->firstOrFail();
+        
+        if (!$courrier) {
+            abort(404, 'Courrier non trouvé');
+        }
 
         $viewsForThisUser = $courrier->views->where('user_id', Auth::id())->count();
 
