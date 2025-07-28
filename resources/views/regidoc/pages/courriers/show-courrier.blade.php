@@ -402,56 +402,56 @@
                 @endphp
                 <ul class="lists">
                     @if ($courrier->type_id != 2)
+                        {{-- <li class="assistant-trait @if (!($hasSeen && (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) && $courrier->author->id != Auth::user()->agent->id && !$aTraite)) d-none @endif"> --}}
                         @php
                             $dgaSecretaires = \App\Models\Direction::find(1)
                                 ->dgaSecretaires->pluck('responsable_id')
                                 ->toArray();
-
                             $dgaAssistants = \App\Models\Direction::find(1)
                                 ->dgaAssistanats->pluck('responsable_id')
                                 ->toArray();
                         @endphp
-
-                        {{-- Bouton Modifier les infos (visible uniquement si l'étape est "en_attente") --}}
-                        @if (
-                            $courrier->etape === 'en_attente' &&
-                            (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire())
-                        )
-                            <li>
-                                <a href="{{ route('regidoc.courriers.edit', $courrier) }}" class="dropdown-item">
-                                    <span class="d-flex align-items-center">
-                                        <i class="fi fi-rr-edit"></i>
-                                    </span>
-                                    <span class="title">
-                                        Modifier les infos
-                                    </span>
+                        @if (!in_array(Auth::user()->agent->id, $dgaSecretaires) && !in_array(Auth::user()->agent->id, $dgaAssistants))
+                            <li class="assistant-trait @if (
+                                !(
+                                    $hasSeen &&
+                                    (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) &&
+                                    $courrier->author->id != Auth::user()->agent->id &&
+                                    !$aTraite
+                                )) d-none @endif">
+                                <a 
+                                    data-bs-toggle="{{ $courrier->etape === 'en_attente' ? '' : 'modal' }}"  
+                                    data-bs-target="{{ $courrier->etape === 'en_attente' ? '' : '#traitement-modal' }}" 
+                                    href="javascript:void(0)" 
+                                    class="dropdown-item d-flex align-items-center"
+                                    @if ($courrier->etape === 'termine') 
+                                        onclick="return false;" 
+                                        aria-disabled="true" 
+                                        style="color: gray; pointer-events: none; text-decoration: none;" 
+                                    @endif
+                                >
+                                    <i class="fi fi-rr-hourglass-end me-2"></i>
+                                    <span class="title">Traiter</span>
                                 </a>
-                            </li>
-                        @endif
 
-                        {{-- Bouton Traiter (visible uniquement après modification si l'étape est "termine") --}}
-                        @if (
-                            $courrier->etape === 'termine' &&
-                            $hasSeen &&
-                            (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) &&
-                            $courrier->author->id != Auth::user()->agent->id &&
-                            !$aTraite &&
-                            !in_array(Auth::user()->agent->id, $dgaSecretaires) &&
-                            !in_array(Auth::user()->agent->id, $dgaAssistants)
-                        )
-                            <li class="assistant-trait">
-                                <a data-bs-toggle="modal" data-bs-target="#traitement-modal" href="javascript:void(0)"
-                                    class="dropdown-item">
-                                    <span class="d-flex align-items-center">
-                                        <i class="fi fi-rr-hourglass-end"></i>
-                                    </span>
-                                    <span class="title">
-                                        Traiter
-                                    </span>
-                                </a>
+
+
                             </li>
                         @endif
                     @endif
+                    <li>
+                        <a href="{{ $courrier->etape === 'termine' ? '#' : route('regidoc.courriers.edit', $courrier) }}" 
+                        @if ($courrier->etape === 'termine') 
+                            onclick="return false;" 
+                            style="color: gray; pointer-events: none; text-decoration: none;" 
+                        @endif
+                        class="dropdown-item d-flex align-items-center">
+                            <i class="fi fi-rr-edit me-2"></i>
+                            <span class="title">Modifier les infos</span>
+                        </a>
+                    </li>
+
+                    
 
 
                     <li>
