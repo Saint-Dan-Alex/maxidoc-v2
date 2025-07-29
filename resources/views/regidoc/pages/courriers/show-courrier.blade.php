@@ -1048,51 +1048,17 @@
                         @else
                             <div id="pdf-contents" style="width: 100%; height: 100%; min-height: 80vh;">
                                 @php
-                                    // Debug: Afficher les informations du document
                                     $documentPath = $courrier->document?->document;
                                     $storagePath = $documentPath ? storage_path('app/' . $documentPath) : null;
                                     $publicPath = $documentPath ? 'storage/' . $documentPath : null;
                                     $fileExists = $storagePath && file_exists($storagePath);
-                                    
-                                    $debugInfo = [
-                                        'document_exists' => $courrier->document ? 'Oui' : 'Non',
-                                        'document_path' => $documentPath ?? 'N/A',
-                                        'storage_path' => $storagePath ?? 'N/A',
-                                        'public_path' => $publicPath ?? 'N/A',
-                                        'file_exists' => $fileExists ? 'Oui' : 'Non',
-                                        'is_readable' => $fileExists ? (is_readable($storagePath) ? 'Oui' : 'Non') : 'N/A',
-                                        'file_size' => $fileExists ? filesize($storagePath) . ' bytes' : 'N/A'
-                                    ];
                                 @endphp
-                                <div class="alert alert-info">
-                                    <h4>Informations de débogage du document</h4>
-                                    <pre>@php print_r($debugInfo) @endphp</pre>
-                                </div>
 
-                                @if($courrier->document && $courrier->document->document)
-                                    @if($fileExists)
-                                        @php
-                                            // Construction de l'URL directe vers le fichier
-                                            $documentUrl = asset($publicPath);
-                                        @endphp
-                                        <div class="alert alert-success">
-                                            <p>Document trouvé : {{ basename($documentPath) }}</p>
-                                            <p>Taille : {{ number_format(filesize($storagePath) / 1024, 2) }} KB</p>
-                                            <p><a href="{{ $documentUrl }}" target="_blank">Ouvrir le document dans un nouvel onglet</a></p>
-                                        </div>
-                                        <iframe src="{{ $documentUrl }}" frameborder="0" style="width: 100%; height: 100%; min-height: 80vh;"></iframe>
-                                    @else
-                                        <div class="alert alert-danger">
-                                            <h4>Erreur : Fichier introuvable</h4>
-                                            <p>Le fichier n'a pas été trouvé à l'emplacement suivant :</p>
-                                            <pre>{{ $storagePath }}</pre>
-                                            <p>Vérifiez que le fichier existe bien à cet emplacement et que les permissions sont correctes.</p>
-                                        </div>
-                                    @endif
-                                @else
-                                    <div class="alert alert-warning">
-                                        Aucun document à afficher
-                                    </div>
+                                @if($courrier->document && $courrier->document->document && $fileExists)
+                                    @php
+                                        $documentUrl = asset($publicPath);
+                                    @endphp
+                                    <iframe src="{{ $documentUrl }}" frameborder="0" style="width: 100%; height: 100%; min-height: 80vh;"></iframe>
                                 @endif
                             </div>
                         @endif
