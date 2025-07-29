@@ -55,9 +55,55 @@
                             </div>
                         </div>
                     </div>
+                     @if($courrier->type_id == 3) {{-- Courrier interne --}}
+                    <div class="col-12 exped_intern">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Expéditeur Interne</label>
+                            <div class="col-7">
+                                <select class="form-select form-control text-capitalize"
+                                    aria-label="Sélectionner l'expéditeur interne" name="exp_int" required>
+                                    <option value="" disabled>Sélectionnez un expéditeur</option>
+                                    @foreach($agents as $agent)
+                                        <option value="{{ $agent->id }}" @selected($courrier->exped_interne_id == $agent->id)>
+                                            {{ $agent->prenom }} {{ $agent->nom }}
+                                            @if($agent->fonctions->isNotEmpty())
+                                                ({{ $agent->fonctions->first()->titre }})
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('exp_int')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                    @else {{-- Courrier externe --}}
+                    <div class="col-12 exped_extern" wire:ignore>
+                        <div class="row">
+                            <label class="col-5 col-form-label">Expéditeur</label>
+                            <div class="col-7" wire:ignore>
+                                <select class="form-select form-control sele" aria-label="Default select example"
+                                    name="exp" data-placeholder="Sélectionnez un expéditeur"
+                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true" data-max-selection="1"
+                                    data-relative-id="{{ $courrier->categorie ? $courrier->categorie->id : '' }}" 
+                                    @if ($type == [1]) required @endif>
+                                    @if($courrier->exped_externe && $courrier->externExpediteur)
+                                        <option value="{{ $courrier->exped_externe }}" selected>
+                                            {{ $courrier->externExpediteur->nom }}
+                                        </option>
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                     <div class="col-12">
                         <div class="row">
-                            <label class="col-5 col-form-label">Référence </label>
+                            <label class="col-5 col-form-label">N° d'enregistrement </label>
                             <div class="col-7">
                                 <input type="text" class="form-control" name="ref" placeholder="Référence"
                                     value=" {{ $courrier->reference_interne }}" disabled>
@@ -73,7 +119,7 @@
                             {{-- <input type="hidden" name="document_id" id="" value="{{ $selectedDoc ? $selectedDoc->id : $courrier->document->id }}"> --}}
                             <ul class="list-file">
                                 <li class="d-flex align-items-center">
-                                    <i class="bi bi-file-earmark"></i>
+                                    <i class="bi-paperclip"></i>
                                     <div class="block-detail">
                                         <div class="names mb-0">
                                             <p class="name-file">{{ $courrier->document->libelle }} <span
@@ -235,52 +281,7 @@
                         <h5 class="mb-3 title-info">Détails du Courrier</h5>
                     </div>
 
-                    @if($courrier->type_id == 3) {{-- Courrier interne --}}
-                    <div class="col-12 exped_intern">
-                        <div class="row">
-                            <label class="col-5 col-form-label">Expéditeur Interne</label>
-                            <div class="col-7">
-                                <select class="form-select form-control text-capitalize"
-                                    aria-label="Sélectionner l'expéditeur interne" name="exp_int" required>
-                                    <option value="" disabled>Sélectionnez un expéditeur</option>
-                                    @foreach($agents as $agent)
-                                        <option value="{{ $agent->id }}" @selected($courrier->exped_interne_id == $agent->id)>
-                                            {{ $agent->prenom }} {{ $agent->nom }}
-                                            @if($agent->fonctions->isNotEmpty())
-                                                ({{ $agent->fonctions->first()->titre }})
-                                            @endif
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('exp_int')
-                                    <div class="text-danger small">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                    @else {{-- Courrier externe --}}
-                    <div class="col-12 exped_extern" wire:ignore>
-                        <div class="row">
-                            <label class="col-5 col-form-label">Expéditeur</label>
-                            <div class="col-7" wire:ignore>
-                                <select class="form-select form-control sele" aria-label="Default select example"
-                                    name="exp" data-placeholder="Sélectionnez un expéditeur"
-                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
-                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
-                                    data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="CourrierExpediteur" data-tags="true" data-max-selection="1"
-                                    data-relative-id="{{ $courrier->categorie ? $courrier->categorie->id : '' }}" 
-                                    @if ($type == [1]) required @endif>
-                                    @if($courrier->exped_externe && $courrier->externExpediteur)
-                                        <option value="{{ $courrier->exped_externe }}" selected>
-                                            {{ $courrier->externExpediteur->nom }}
-                                        </option>
-                                    @endif
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
+                   
 
                     <div class="col-12">
                         <div class="row">
@@ -296,7 +297,7 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Titre</label>
                             <div class="col-7">
-                                <input type="text" class="form-control" name="title" placeholder="Titre"
+                                <input type="text" class="form-control" name="title" placeholder="Titre/objet"
                                     value="{{ $courrier->title }}">
                             </div>
                         </div>
@@ -374,7 +375,7 @@
                     </div>
                     <div class="col-12 datearrive_field" wire:ignore>
                         <div class="row">
-                            <label class="col-5 col-form-label">Date d'arrivée</label>
+                            <label class="col-5 col-form-label">Date de reception</label>
                             <div class="col-7">
                                 <input type="datetime-local" class="form-control" id="inputPassword1" name="date-arriv"
                                     value="{{ $courrier->date_arrive ? $courrier->date_arrive->format('Y-m-d\TH:i') : '' }}" disabled>
@@ -424,10 +425,10 @@
 
                     <div class="col-12">
                         <div class="row">
-                            <label class="col-5 col-form-label">Objet</label>
+                            <label class="col-5 col-form-label">Remarques</label>
                             <div class="col-7">
                                 <textarea name="objet" id="" cols="30" rows="3" class="form-control" style="resize: none"
-                                    placeholder="Objet">{{ $courrier->objet }}</textarea>
+                                    placeholder="Remarques">{{ $courrier->objet }}</textarea>
                             </div>
                         </div>
                     </div>
