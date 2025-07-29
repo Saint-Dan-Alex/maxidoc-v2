@@ -1496,7 +1496,7 @@
                 <div class="d-flex align-items-center">
                     
                         <a href="{{ route('regidoc.courriers.export-historique', $courrier->id) }}" class="btn btn-sm btn-outline-primary me-2" target="_blank" title="Exporter l'historique en PDF">
-                            <i class="fi fi-rr-file-pdf"></i>
+                            <i class="fi fi-rr-print"></i>
                         </a>
                     
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
