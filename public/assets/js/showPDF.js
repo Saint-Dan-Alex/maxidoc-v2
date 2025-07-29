@@ -139,7 +139,7 @@ function showPDF(pdf_url) {
             console.error('Erreur lors du chargement du PDF:', error);
             
             // Message d'erreur plus détaillé
-            let errorMessage = 'Impossible de charger le document PDF. ';
+            let errorMessage = 'Ce fichier n\'est pas un pdf  ';
             
             if (error.name === 'MissingPDFException') {
                 errorMessage += 'Le fichier PDF est introuvable à l\'emplacement spécifié. ';
@@ -153,20 +153,77 @@ function showPDF(pdf_url) {
                 errorMessage += 'Erreur : ' + (error.message || 'Erreur inconnue');
             }
             
+            // Fonction pour obtenir l'icône et le type de fichier à partir de l'URL
+            function getFileInfo(url) {
+                if (!url) return { icon: 'file.png', type: 'fichier', extension: '' };
+                
+                const extension = url.split('.').pop().toLowerCase();
+                const fileTypes = {
+                    // Images
+                    'jpg': { icon: 'Fichier-image.png', type: 'Image', extension: 'JPG' },
+                    'jpeg': { icon: 'Fichier-image.png', type: 'Image', extension: 'JPEG' },
+                    'png': { icon: 'Fichier-image.png', type: 'Image', extension: 'PNG' },
+                    'gif': { icon: 'Fichier-image.png', type: 'Image', extension: 'GIF' },
+                    'bmp': { icon: 'Fichier-image.png', type: 'Image', extension: 'BMP' },
+                    'svg': { icon: 'Fichier-image.png', type: 'Image', extension: 'SVG' },
+                    // Documents
+                    'pdf': { icon: 'Fichier-pdf.png', type: 'Document', extension: 'PDF' },
+                    'doc': { icon: 'Fichier-word.png', type: 'Document', extension: 'DOC' },
+                    'docx': { icon: 'Fichier-word.png', type: 'Document', extension: 'DOCX' },
+                    'xls': { icon: 'Fichier-excel.png', type: 'Feuille de calcul', extension: 'XLS' },
+                    'xlsx': { icon: 'Fichier-excel.png', type: 'Feuille de calcul', extension: 'XLSX' },
+                    'ppt': { icon: 'Fichier-pptx.png', type: 'Présentation', extension: 'PPT' },
+                    'pptx': { icon: 'Fichier-pptx.png', type: 'Présentation', extension: 'PPTX' },
+                    // Archives
+                    'zip': { icon: 'Fichier-zip.png', type: 'Archive', extension: 'ZIP' },
+                    'rar': { icon: 'Fichier-zip.png', type: 'Archive', extension: 'RAR' },
+                    '7z': { icon: 'Fichier-zip.png', type: 'Archive', extension: '7Z' }
+                };
+                
+                if (fileTypes[extension]) {
+                    return fileTypes[extension];
+                } else {
+                    return { 
+                        icon: 'file.png', 
+                        type: 'Fichier', 
+                        extension: extension.toUpperCase() 
+                    };
+                }
+            }
+            
+            // Obtenir les informations sur le fichier
+            const fileInfo = getFileInfo(pdf_url);
+            const fileName = pdf_url.split('/').pop() || 'document';
+            
             // Afficher l'interface de téléversement de fichier en cas d'erreur
             const errorHtml = `
                 <div class="d-flex flex-column align-items-center justify-content-center p-5" style="height: 100%; min-height: 400px;">
-                    <div class="block-file block-import-doc text-center" style="max-width: 400px; width: 100%;">
+                    <div class="block-file block-import-doc text-center" style="max-width: 500px; width: 100%; background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 2rem;">
+                        <!-- Logo MaxiDoc en haut -->
                         <div class="mb-4">
-                            <img src="/assets/regidoc/logo-white.png" alt="MaxiDoc Logo" style="height: 80px; width: auto;">
+                            <img src="/assets/images/icons/maxidoc.png" alt="MaxiDoc" style="height: 45px; width: auto; margin-bottom: 1.5rem;">
                         </div>
-                        <h5 class="mb-3">Document non disponible</h5>
-                        <p class="text-muted mb-4">${errorMessage}</p>
-                        <div class="d-flex flex-column gap-2">
-                            <button onclick="window.location.reload()" class="btn btn-primary">
-                                <i class="fi fi-rr-refresh me-2"></i>Réessayer
-                            </button>
-                            <small class="text-muted">URL : ${pdf_url}</small>
+                        
+                        <div class="content-wrapper" style="padding: 0 1.5rem;">
+                            <!-- 1. Message d'erreur principal -->
+                            <p class="mb-4" style="font-size: 1.1rem; color: #333; line-height: 1.6;">
+                                Le fichier fourni n’est pas un document PDF. Veuillez cliquer sur le bouton de téléchargement pour y accéder. 
+                            </p>
+                            
+                            <!-- 2. Format du fichier -->
+                            <div class="file-format mb-4" style="background: #f8f9fa; padding: 12px 15px; border-radius: 6px; border-left: 3px solid #4361ee;">
+                                <span style="color: #6c757d; font-size: 0.95rem;">Format du fichier : </span>
+                                <strong style="color: #2b2d42; font-size: 1rem;">${fileInfo.extension}</strong>
+                            </div>
+                            
+                            <!-- 3. Icône du type de fichier -->
+                            <div class="file-icon-container" style="margin: 2rem auto; width: 120px; height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 8px; padding: 1.5rem;">
+                                <img src="/assets/img/icons/${fileInfo.icon}" alt="${fileInfo.type}" style="width: 64px; height: 64px; margin-bottom: 12px;">
+                                <div class="file-extension" style="font-size: 0.9rem; color: #6c757d; background: #e9ecef; padding: 3px 10px; border-radius: 12px; margin-top: 8px;">
+                                    .${fileInfo.extension.toLowerCase()}
+                                </div>
+                            </div>
+                        </div>
                         </div>
                     </div>
                 </div>`;
