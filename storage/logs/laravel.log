@@ -90,3 +90,6 @@
 [2025-07-29 11:24:15] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
 [2025-07-29 11:24:17] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
 [2025-07-29 11:24:17] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":6,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 
+[2025-07-29 12:24:13] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-07-29 12:24:15] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-07-29 12:24:15] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":7,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 

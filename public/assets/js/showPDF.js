@@ -153,13 +153,22 @@ function showPDF(pdf_url) {
                 errorMessage += 'Erreur : ' + (error.message || 'Erreur inconnue');
             }
             
-            // Afficher l'erreur dans l'interface
+            // Afficher l'interface de téléversement de fichier en cas d'erreur
             const errorHtml = `
-                <div class="alert alert-danger m-3">
-                    <h5>Erreur de chargement du document</h5>
-                    <p>${errorMessage}</p>
-                    <p><small>URL tentée : ${pdf_url}</small></p>
-                    <button onclick="window.location.reload()" class="btn btn-sm btn-primary mt-2">Réessayer</button>
+                <div class="d-flex flex-column align-items-center justify-content-center p-5" style="height: 100%; min-height: 400px;">
+                    <div class="block-file block-import-doc text-center" style="max-width: 400px; width: 100%;">
+                        <div class="mb-4">
+                            <img src="/assets/regidoc/logo-white.png" alt="MaxiDoc Logo" style="height: 80px; width: auto;">
+                        </div>
+                        <h5 class="mb-3">Document non disponible</h5>
+                        <p class="text-muted mb-4">${errorMessage}</p>
+                        <div class="d-flex flex-column gap-2">
+                            <button onclick="window.location.reload()" class="btn btn-primary">
+                                <i class="fi fi-rr-refresh me-2"></i>Réessayer
+                            </button>
+                            <small class="text-muted">URL : ${pdf_url}</small>
+                        </div>
+                    </div>
                 </div>`;
                 
             $("#pdf-contents").html(errorHtml);
