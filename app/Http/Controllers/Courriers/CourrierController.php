@@ -1651,7 +1651,7 @@ public function createDocument($request, $destinateur, $doc = null)
 
         // Flash le message de session et redirige
         session()->flash('session', $content);
-        return redirect()->route('regidoc.courriers.show');
+        return redirect()->route('regidoc.courriers.show',$courrier->id);
     }
 
     /**
