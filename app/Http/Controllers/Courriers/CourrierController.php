@@ -1578,7 +1578,6 @@ public function createDocument($request, $destinateur, $doc = null)
 
             $courrier->title = $request->get('title');
             $courrier->reference_courrier = $request->get('ref');
-            $courrier->reference_interne = $request->get('ref_interne'); // Assurez-vous que c'est géré pour les types appropriés
             $courrier->confidentiel = $isConfidentiel ? '1' : '0';
             $courrier->priorite_id = $request->get('priorite');
             // $courrier->created_by = Auth::user()->id; // Ne pas modifier 'created_by' lors d'une mise à jour

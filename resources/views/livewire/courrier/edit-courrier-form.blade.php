@@ -105,7 +105,7 @@
                         <div class="row">
                             <label class="col-5 col-form-label">N° d'enregistrement </label>
                             <div class="col-7">
-                                <input type="text" class="form-control" name="ref" placeholder="Référence"
+                                <input type="text" class="form-control" name="ref2" placeholder="Référence"
                                     value=" {{ $courrier->reference_interne }}" disabled>
                             </div>
                         </div>
