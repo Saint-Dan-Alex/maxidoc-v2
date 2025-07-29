@@ -88,8 +88,7 @@
                     <div class="row">
                         <label class="col-5 col-form-label">N° d'enregistrement</label>
                         <div class="col-7">
-                            <input type="text" class="form-control" name="ref_interne" wire:model='num'
-                                placeholder="N° d'enregistrement" readonly>
+                            <input type="text" class="form-control" name="ref_interne2" value="{{ $num }}" placeholder="N° d'enregistrement" readonly>
                         </div>
                     </div>
                 </div>

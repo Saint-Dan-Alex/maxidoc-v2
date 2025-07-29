@@ -66,3 +66,15 @@
 #63 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\wamp64\\\\www\\\\m...')
 #64 {main}
 "} 
+[2025-07-29 10:27:19] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-07-29 10:27:19] local.INFO: mount - Résultat du comptage: {"lastNum":6,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?"} 
+[2025-07-29 10:27:21] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":null,"prefix":"K"} 
+[2025-07-29 10:27:21] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":0,"type":null,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` is null and `reference_interne` LIKE ?"} 
+[2025-07-29 10:31:19] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-07-29 10:31:19] local.INFO: mount - Résultat du comptage: {"lastNum":6,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?"} 
+[2025-07-29 10:31:22] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-07-29 10:31:22] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":6,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 
+[2025-07-29 10:31:31] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-07-29 10:31:31] local.INFO: mount - Résultat du comptage: {"lastNum":6,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?"} 
+[2025-07-29 10:31:33] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":"1","prefix":"K"} 
+[2025-07-29 10:31:33] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":6,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,"1","K-%"]} 
