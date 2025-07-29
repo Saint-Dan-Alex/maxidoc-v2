@@ -1349,7 +1349,7 @@ public function createDocument($request, $destinateur, $doc = null)
         $services = Service::all();
         $agents = Agent::all();
         $natures = CourrierNature::select('id', 'titre')->get();
-
+        
         return view('regidoc.pages.courriers.edit-doc', compact('courrier', 'types', 'services', 'agents', 'natures'));
     }
  

@@ -55,6 +55,15 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-12">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Référence </label>
+                            <div class="col-7">
+                                <input type="text" class="form-control" name="ref" placeholder="Référence"
+                                    value=" {{ $courrier->reference_interne }}" disabled>
+                            </div>
+                        </div>
+                    </div>
 
                     
 
@@ -73,7 +82,7 @@
                                                 <i class="bi bi-check-lg" style="font-size: 20px; color: #07c451"></i>
                                             </p>
                                         </div>
-                                        <small>Référence : {{ $courrier->document->reference_interne }}</small>
+                                        {{-- <small>Référence : {{ $courrier->document->reference_interne }}</small> --}}
                                     </div>
                                 </li>
                             </ul>
@@ -275,7 +284,7 @@
 
                     <div class="col-12">
                         <div class="row">
-                            <label class="col-5 col-form-label">Référence</label>
+                            <label class="col-5 col-form-label">Référence du courrier</label>
                             <div class="col-7">
                                 <input type="text" class="form-control" name="ref" placeholder="Référence"
                                     value="{{ $courrier->reference }}">
@@ -357,7 +366,9 @@
                             <label class="col-5 col-form-label">Date du courrier</label>
                             <div class="col-7">
                                 <input type="date" class="form-control" id="inputPassword1" name="date-doc"
-                                    value="{{ $courrier->date_du_courrier?->toDateString() }}">
+                                    value="{{ $courrier->date_du_courrier?->toDateString() }}"
+                                    max="{{ now()->toDateString() }}">
+
                             </div>
                         </div>
                     </div>
@@ -365,8 +376,9 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Date d'arrivée</label>
                             <div class="col-7">
-                                <input type="date" class="form-control" id="inputPassword1" name="date-arriv"
-                                    value="{{ $courrier->date_arrive?->toDateString() }}">
+                                <input type="datetime-local" class="form-control" id="inputPassword1" name="date-arriv"
+                                    value="{{ $courrier->date_arrive ? $courrier->date_arrive->format('Y-m-d\TH:i') : '' }}" disabled>
+
                             </div>
                         </div>
                     </div>
