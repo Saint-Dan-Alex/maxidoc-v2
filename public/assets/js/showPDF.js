@@ -207,7 +207,7 @@ function showPDF(pdf_url) {
                         <div class="content-wrapper" style="padding: 0 1.5rem;">
                             <!-- 1. Message d'erreur principal -->
                             <p class="mb-4" style="font-size: 1.1rem; color: #333; line-height: 1.6;">
-                                Le fichier fourni n’est pas un document PDF. Veuillez cliquer sur le bouton de téléchargement pour y accéder. 
+                                Le fichier fourni n’est pas un document PDF. Veuillez cliquer sur le bouton de téléchargement pour le visualiser. 
                             </p>
                             
                             <!-- 2. Format du fichier -->
