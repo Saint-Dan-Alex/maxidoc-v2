@@ -444,7 +444,7 @@
                                 @else
                                     <a href="{{route('regidoc.courriers.edit',$courrier->id)}}" class="dropdown-item d-flex align-items-center">
                                         <i class="fi fi-rr-edit me-2"></i>
-                                        <span class="title">Modifier les infos</span>
+                                        <span class="title">Compléter les infos</span>
                                     </a>  
                                     
                                 @endif
