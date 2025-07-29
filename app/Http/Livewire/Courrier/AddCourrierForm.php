@@ -70,17 +70,7 @@ class AddCourrierForm extends Component
             ->count();
             
         // Log du résultat du comptage
-        \Log::info('mount - Résultat du comptage:', [
-            'lastNum' => $lastNum,
-            'type' => $this->type,
-            'requete_sql' => Courrier::where(function($query) use ($services) {
-                $query->whereIn('service_id', $services)
-                      ->orWhereNull('service_id');
-            })
-            ->where('type_id', '=', $this->type)
-            ->where('reference_interne', 'LIKE', $prefix . '-%')
-            ->toSql()
-        ]);
+
             
         $this->num = (int) $lastNum;
         $this->num += 1;

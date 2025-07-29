@@ -5,7 +5,7 @@
                 style="font-size: 14px; color: var(--colorTitle)">
                 <i class="bi bi-arrow-left"></i>
             </a>
-            <h4 class="ms-0 ms-2">Modification</h4>
+            <h4 class="ms-0 ms-2">Complément d’informations</h4>
         </div>
         <form action="{{ route('regidoc.courriers.update', $courrier) }}" method="POST" enctype="multipart/form-data">
             @csrf
@@ -269,7 +269,7 @@
                                     @endif
                                 </select>
                             </div>
-                        </div
+                        </div>
                     </div>
                     @endif
 
