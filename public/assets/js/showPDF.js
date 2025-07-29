@@ -30,10 +30,7 @@ function showPDF(pdf_url) {
     
     console.log('Tentative de chargement du PDF depuis :', pdf_url);
     
-    // Afficher le loader
     const pdfContents = $("#pdf-contents");
-    pdfContents.html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement...</span></div><p class="mt-2">Chargement du document en cours...</p></div>');
-    
     $(".pdf-tools #download").attr("href", pdf_url);
     $(".pdf-tools #download").attr("download", pdf_url);
 
@@ -88,15 +85,7 @@ function showPDF(pdf_url) {
                     annotationLayer.classList.add("annotationLayer");
                     $(pdfPage).append(annotationLayer);
 
-                    var loader = document.createElement("div");
-                    loader.classList.add("page-loader");
-                    loader.classList.add("page-" + i);
-
-                    var loaderIcon = document.createElement("img");
-                    loaderIcon.src = "/assets/images/loader.svg";
-                    $(loader).append(loaderIcon);
-
-                    $(pdfPage).append(loader);
+                    // Suppression du loader de page
 
                     $("#pdf-contents").append(pdfPage);
 
