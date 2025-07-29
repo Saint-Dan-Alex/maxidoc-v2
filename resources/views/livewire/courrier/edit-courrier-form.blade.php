@@ -269,7 +269,7 @@
                                     @endif
                                 </select>
                             </div>
-                        </div>
+                        </div
                     </div>
                     @endif
 
