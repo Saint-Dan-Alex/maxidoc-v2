@@ -32,6 +32,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Support\Facades\Log;
 use App\Models\Historique;
+use Carbon\Carbon;
+use setasign\Fpdi\Fpdi;
 
 
 class DocumentController extends Controller
@@ -729,6 +731,7 @@ class DocumentController extends Controller
     {
         $document = Document::find($request->document_id);
         $document->statut_id = 6;
+        $document-> archived_at = Carbon::now();
         $document->save();
 
         $content = json_encode([
@@ -745,28 +748,8 @@ class DocumentController extends Controller
         return redirect()->route('regidoc.documents.index', $document->dossier);
     }
 
-    // public function desarchiver(Request $request)
-    // {
-    //     $document = Document::find($request->document_id);
-    //     $document->statut_id = 2;
-    //     $document->save();
-
-    //     $content = json_encode([
-    //         'name' => 'Document',
-    //         'statut' => 'success',
-    //         'message' => 'Document desarchivé avec succès !',
-    //     ]);
-
-    //     session()->flash(
-    //         'session',
-    //         $content
-    //     );
-
-    //     return redirect()->route('regidoc.dossiers.show', $document->dossier);
-    // }
-   
-
-        public function desarchiver(Request $request)
+    
+public function desarchiver(Request $request)
 {
     try {
         $ancienDocument = Document::findOrFail($request->document_id);
@@ -774,7 +757,7 @@ class DocumentController extends Controller
         // Décoder le JSON stocké dans la colonne document
         $documentData = json_decode($ancienDocument->document, true);
 
-        // Le champ document semble être un tableau d'objets, on prend le premier élément
+        // Le champ document est un tableau, on prend le premier élément
         if (!$documentData || !is_array($documentData) || count($documentData) === 0) {
             throw new \Exception("Le contenu JSON est vide ou invalide");
         }
@@ -798,16 +781,59 @@ class DocumentController extends Controller
         Storage::disk('public')->makeDirectory($dossierDestination);
         Storage::disk('public')->copy($ancienChemin, $nouveauChemin);
 
-        // Création du nouveau document avec la nouvelle référence
+        // --- Modification PDF pour ajouter pied de page avec dates ---
+
+        $source = storage_path("app/public/" . $ancienChemin);
+        $destinationPath = storage_path("app/public/" . $nouveauChemin);
+
+        $pdf = new \setasign\Fpdi\Fpdi();
+
+        $pageCount = $pdf->setSourceFile($source);
+
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $tplIdx = $pdf->importPage($pageNo);
+
+            // Taille standard A4
+            $width = 210;  // largeur en mm
+            $height = 297; // hauteur en mm
+
+            $pdf->AddPage('P', [$width, $height]); // Page portrait
+
+            $pdf->useTemplate($tplIdx, 0, 0, $width, $height);
+
+            $pdf->SetFont('Helvetica', '', 10);
+            $pdf->SetTextColor(0, 0, 255);  // texte bleu, comme tu voulais
+
+            $marginLeft = 10;   // 10 mm du bord gauche
+            $marginBottom = 15; // 15 mm du bas
+
+            $posY = $height - $marginBottom;
+
+            $pdf->SetXY($marginLeft, $posY);
+
+            $dateArchive = $ancienDocument->created_at->format('d/m/Y');
+            $dateDesarchive = now()->format('d/m/Y');
+
+            $texte = "Archivé le : {$dateArchive} | Désarchivé le : {$dateDesarchive}";
+
+            $pdf->Cell(0, 10, $texte, 0, 0, 'L');
+        }
+
+
+
+        // Enregistrer le PDF modifié (remplace la copie simple)
+        $pdf->Output($destinationPath, 'F');
+
+        // --- Création du nouveau document en base ---
+
         $nouveauDocument = new Document();
         $nouveauDocument->dossier_id = $ancienDocument->dossier_id;
         $nouveauDocument->category_id = $ancienDocument->category_id;
-        $nouveauDocument->reference = $ancienDocument->reference . '/R'; // ajout "/R" pour la désarchivage ?
+        $nouveauDocument->reference = $ancienDocument->reference . '/R'; // modifiable
         $nouveauDocument->libelle = $ancienDocument->libelle;
         $nouveauDocument->type = $ancienDocument->type;
         $nouveauDocument->description = $ancienDocument->description;
 
-        // Stocker la structure JSON avec le nouveau chemin
         $nouveauDocument->document = json_encode([
             [
                 'download_link' => $nouveauChemin,
@@ -856,6 +882,8 @@ class DocumentController extends Controller
 
     return redirect()->route('regidoc.documents.index', $ancienDocument->dossier_id);
 }
+
+
 
 
 
