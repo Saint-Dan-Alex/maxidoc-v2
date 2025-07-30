@@ -18,7 +18,7 @@
                             <label class="col-5 col-form-label">Type de courrier</label>
                             <div class="col-7">
                                 <select class="form-select form-control select" aria-label="Default select example"
-                                    name="type" id="type_id" {{-- data-placeholder="Selectionner"
+                                    name="type2" id="type_id" {{-- data-placeholder="Selectionner"
                                     data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
                                     data-get-items-field="titre"
                                     data-method="get"
@@ -34,6 +34,7 @@
                             </div>
                         </div>
                     </div>
+                    <input type="hidden" name="type" value="1">
 
                     <div class="col-12 categorie_field" wire:ignore>
                         <div class="row">
