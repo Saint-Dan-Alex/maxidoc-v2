@@ -789,6 +789,12 @@ public function desarchiver(Request $request)
         $pdf = new \setasign\Fpdi\Fpdi();
 
         $pageCount = $pdf->setSourceFile($source);
+        $dateArchive = $ancienDocument->created_at->format('d/m/Y');
+        $dateDesarchive = now()->format('d/m/Y');
+        
+        // Texte d'en-tête simplifié
+        $texte = "DOCUMENT DESARCHIVE - Archive: {$dateArchive} | Desarchive: {$dateDesarchive}";
+        $fontSize = 8; // Taille de police réduite
 
         for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
             $tplIdx = $pdf->importPage($pageNo);
@@ -797,26 +803,18 @@ public function desarchiver(Request $request)
             $width = 210;  // largeur en mm
             $height = 297; // hauteur en mm
 
-            $pdf->AddPage('P', [$width, $height]); // Page portrait
-
-            $pdf->useTemplate($tplIdx, 0, 0, $width, $height);
-
-            $pdf->SetFont('Helvetica', '', 10);
-            $pdf->SetTextColor(0, 0, 255);  // texte bleu, comme tu voulais
-
-            $marginLeft = 10;   // 10 mm du bord gauche
-            $marginBottom = 15; // 15 mm du bas
-
-            $posY = $height - $marginBottom;
-
-            $pdf->SetXY($marginLeft, $posY);
-
-            $dateArchive = $ancienDocument->created_at->format('d/m/Y');
-            $dateDesarchive = now()->format('d/m/Y');
-
-            $texte = "Archivé le : {$dateArchive} | Désarchivé le : {$dateDesarchive}";
-
-            $pdf->Cell(0, 10, $texte, 0, 0, 'L');
+            // Ajouter une nouvelle page
+            $pdf->AddPage('P', [$width, $height]);
+            
+            // Utiliser le template de la page existante
+            $pdf->useTemplate($tplIdx, 10, 20, $width - 20, $height - 30);
+            
+            // Ajouter l'en-tête manuellement
+            $pdf->SetFont('Arial', '', $fontSize);
+            $pdf->SetTextColor(0, 0, 200);
+            $pdf->SetXY(10, 10);
+            $pdf->Cell(0, 10, $texte, 0, 0, 'C');
+            $pdf->Line(10, 20, $width - 10, 20);
         }
 
 
