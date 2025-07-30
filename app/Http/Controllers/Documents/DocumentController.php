@@ -30,6 +30,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\Snappy\Facades\SnappyPdf;
+use Illuminate\Support\Facades\Log;
+use App\Models\Historique;
+
 
 class DocumentController extends Controller
 {
@@ -742,25 +745,119 @@ class DocumentController extends Controller
         return redirect()->route('regidoc.documents.index', $document->dossier);
     }
 
-    public function desarchiver(Request $request)
-    {
-        $document = Document::find($request->document_id);
-        $document->statut_id = 2;
-        $document->save();
+    // public function desarchiver(Request $request)
+    // {
+    //     $document = Document::find($request->document_id);
+    //     $document->statut_id = 2;
+    //     $document->save();
+
+    //     $content = json_encode([
+    //         'name' => 'Document',
+    //         'statut' => 'success',
+    //         'message' => 'Document desarchivé avec succès !',
+    //     ]);
+
+    //     session()->flash(
+    //         'session',
+    //         $content
+    //     );
+
+    //     return redirect()->route('regidoc.dossiers.show', $document->dossier);
+    // }
+   
+
+        public function desarchiver(Request $request)
+{
+    try {
+        $ancienDocument = Document::findOrFail($request->document_id);
+
+        // Décoder le JSON stocké dans la colonne document
+        $documentData = json_decode($ancienDocument->document, true);
+
+        // Le champ document semble être un tableau d'objets, on prend le premier élément
+        if (!$documentData || !is_array($documentData) || count($documentData) === 0) {
+            throw new \Exception("Le contenu JSON est vide ou invalide");
+        }
+
+        $premierDocument = $documentData[0];
+
+        if (!isset($premierDocument['download_link'])) {
+            throw new \Exception("Le chemin du fichier n'a pas été trouvé dans la donnée JSON");
+        }
+
+        $ancienChemin = str_replace('\\', '/', $premierDocument['download_link']);
+
+        if (!Storage::disk('public')->exists($ancienChemin)) {
+            throw new \Exception("Fichier original introuvable : $ancienChemin");
+        }
+
+        $nouveauNomFichier = uniqid() . '_' . basename($ancienChemin);
+        $dossierDestination = 'documents/' . date('FY'); // ex July2025
+        $nouveauChemin = $dossierDestination . '/' . $nouveauNomFichier;
+
+        Storage::disk('public')->makeDirectory($dossierDestination);
+        Storage::disk('public')->copy($ancienChemin, $nouveauChemin);
+
+        // Création du nouveau document avec la nouvelle référence
+        $nouveauDocument = new Document();
+        $nouveauDocument->dossier_id = $ancienDocument->dossier_id;
+        $nouveauDocument->category_id = $ancienDocument->category_id;
+        $nouveauDocument->reference = $ancienDocument->reference . '/R'; // ajout "/R" pour la désarchivage ?
+        $nouveauDocument->libelle = $ancienDocument->libelle;
+        $nouveauDocument->type = $ancienDocument->type;
+        $nouveauDocument->description = $ancienDocument->description;
+
+        // Stocker la structure JSON avec le nouveau chemin
+        $nouveauDocument->document = json_encode([
+            [
+                'download_link' => $nouveauChemin,
+                'original_name' => $premierDocument['original_name'] ?? basename($ancienChemin),
+            ]
+        ]);
+
+        $nouveauDocument->user_id = Auth::id();
+        $nouveauDocument->statut_id = 1;
+        $nouveauDocument->created_by = Auth::user()->agent->id;
+        $nouveauDocument->desarchive_by = Auth::user()->agent->id;
+        $nouveauDocument->reference_document_id = $ancienDocument->id;
+        $nouveauDocument->save();
+
+        ArchivePermission::create([
+            'agent_id' => Auth::user()->agent->id,
+            'permissionable_id' => $nouveauDocument->id,
+            'permissionable_type' => Document::class,
+            'key' => 'view_document',
+        ]);
+
+        Historique::create([
+            "key" => "Désarchivage du document",
+            "historiquecable_id" => $nouveauDocument->id,
+            "historiquecable_type" => Document::class,
+            "description" => "Document désarchivé et recréé à partir du document #{$ancienDocument->id} par l'utilisateur #" . Auth::id(),
+            "user_id" => Auth::id(),
+        ]);
+
+        event(new DocumentCreated($nouveauDocument, 'Un document a été désarchivé et recréé.'));
 
         $content = json_encode([
             'name' => 'Document',
             'statut' => 'success',
-            'message' => 'Document desarchivé avec succès !',
+            'message' => 'Document désarchivé et recréé avec succès !',
         ]);
-
-        session()->flash(
-            'session',
-            $content
-        );
-
-        return redirect()->route('regidoc.dossiers.show', $document->dossier);
+    } catch (\Throwable $th) {
+        $content = json_encode([
+            'name' => 'Document',
+            'statut' => 'error',
+            'message' => 'Échec du désarchivage du document : ' . $th->getMessage(),
+        ]);
     }
+
+    session()->flash('session', $content);
+
+    return redirect()->route('regidoc.documents.index', $ancienDocument->dossier_id);
+}
+
+
 
     public function saveNew(Request $request)
     {
