@@ -981,13 +981,19 @@ public function createDocument($request, $destinateur, $doc = null)
      */
     public function changeNumRef($type)
     {
+        // Vérifier que le type est valide
+        if (!in_array($type, [1, 2, 3])) {
+            \Log::error('Type de courrier invalide:', ['type' => $type]);
+            throw new \InvalidArgumentException('Type de courrier invalide. Doit être 1, 2 ou 3.');
+        }
+        
         // Récupérer l'abréviation de la direction
         $abbreviation = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre);
         $typeText = Str::limit($type == 1 ? 'ENTRANT' : ($type == 2 ? "SORTANT" : "INTERNE"), 3, '');
         
         // Démarrer une transaction pour éviter les accès concurrentiels
-        return \DB::transaction(function () use ($abbreviation, $typeText) {
-            // Essayer de récupérer le dernier numéro utilisé pour cette direction et ce type
+        return \DB::transaction(function () use ($abbreviation, $typeText, $type) {
+            // Récupérer le dernier numéro utilisé pour cette direction et ce type
             $lastRef = Courrier::where('reference_interne', 'LIKE', $abbreviation . '-%')
                 ->orderBy('id', 'desc')
                 ->value('reference_interne');
@@ -1001,21 +1007,34 @@ public function createDocument($request, $destinateur, $doc = null)
                 }
             }
             
-            // Formater le numéro avec 4 chiffres
-            $formattedNum = str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+            // Essayer jusqu'à 100 fois de trouver une référence unique
+            $maxAttempts = 100;
+            $attempt = 0;
             
-            // Créer la nouvelle référence
-            $newRef = "{$abbreviation}-{$formattedNum}-{$typeText}";
+            do {
+                // Formater le numéro avec 4 chiffres
+                $formattedNum = str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+                
+                // Créer la nouvelle référence
+                $newRef = "{$abbreviation}-{$formattedNum}-{$typeText}";
+                
+                // Vérifier si la référence existe déjà
+                $exists = Courrier::where('reference_interne', $newRef)->exists();
+                
+                if (!$exists) {
+                    return $newRef; // Référence unique trouvée
+                }
+                
+                $nextNum++;
+                $attempt++;
+                
+            } while ($attempt < $maxAttempts);
             
-            // Vérifier que la référence n'existe pas déjà (double sécurité)
-            $exists = Courrier::where('reference_interne', $newRef)->exists();
-            
-            if ($exists) {
-                // Si la référence existe déjà (cas très rare), on incrémente à nouveau
-                return $this->changeNumRef($type);
-            }
-            
-            return $newRef;
+            // Si on arrive ici, on n'a pas trouvé de référence unique après plusieurs tentatives
+            throw new \RuntimeException(
+                'Impossible de générer une référence unique après ' . $maxAttempts . ' tentatives. '
+                . 'Dernière référence essayée : ' . $newRef
+            );
         });
     }
 
@@ -1625,6 +1644,7 @@ public function update(Request $request, $id)
             $oldata['parent_id'] = $courrier->id;
             $oldata['traitement_id'] = null;
             $oldata['mark_as_done'] = null;
+            // Use type_id 2 for outgoing mail (Sortant)
             $oldata['reference_interne'] = $this->changeNumRef(2);
             $oldata['dest_externe_id'] = $extern_destinataire->id;
 
