@@ -316,44 +316,41 @@ class AccuserReception extends Component
 
     } elseif (Auth::user()->agent->isAssistant()) {
 
-        $traitement = new CourrierTraitement();
-        $traitement->agent_id = Auth::user()->agent->id;
-        $traitement->save();
+        $this->courrier->statut_id = 3;
+        $this->courrier->save();
 
-        $this->courrier->traitements()->attach($traitement);
-        $this->courrier->etapes()->attach(2);
+        $this->validerTraitementSecretaire();
 
-        $this->courrier->destinateurs()->attach(Auth::user()->agent->direction->secretaire);
+        // Pour l'assistant du DG, on marque le courrier comme terminé
+        $this->courrier->etapes()->detach();
+        $this->courrier->etapes()->attach(1, ['view_by' => Auth::user()->id]);
+        
+        $this->courrier->statut_id = 3; // Statut "Traité"
+        $this->courrier->mark_as_done = 1;
+        $this->courrier->save();
+
+        if ($this->courrier->document) {
+            $this->courrier->document->statut_id = 5;
+            $this->courrier->document->save();
+        }
 
         Historique::create([
-            "key" => "Accusé de reception",
+            "key" => "Traitement terminé",
             "historiquecable_id" => $this->courrier->id,
             "historiquecable_type" => Courrier::class,
-            "description" => "A effectué des traitements sur ce courrier",
+            "description" => "Le traitement du courrier sortant est terminé par l'assistant du DG",
             "user_id" => Auth::user()->id,
         ]);
 
-        $destinateurToNotify = $this->courrier->destinateurs
-            ->where('id', '!=', Auth::user()->agent->id)
-            ->where('id', '!=', Auth::user()->agent->direction->responsable->id);
-
-        if (count($destinateurToNotify)) {
-            event(new CourrierCreated(
-                $this->courrier,
-                $destinateurToNotify,
-                'Vous a transmi un courrier sortant !'
-            ));
-        }
-
-        $this->emit('assistantSeen');
+        $this->emit('alert', 'success', 'Le courrier a été marqué comme traité avec succès.');
 
     } else {
         $courrier = Courrier::find($this->courrier->id);
         $courrier->statut_id = 3;
         $courrier->save();
     }
-}
-else {
+    }
+    else {
 
         $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
         $this->courrier->etapes->last()->pivot->save();
