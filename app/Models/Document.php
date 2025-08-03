@@ -146,6 +146,16 @@ class Document extends Model
     }
 
     /**
+     * Get the user who unarchived the document
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function desarchiveBy()
+    {
+        return $this->belongsTo(User::class, 'desarchive_by');
+    }
+
+    /**
      * Get the indexable data array for the model.
      *
      * @return array
