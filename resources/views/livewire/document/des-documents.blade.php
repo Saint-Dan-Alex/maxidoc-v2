@@ -22,7 +22,7 @@
                             <button class="nav-link {{ $active_tab == 3 ? 'active' : '' }}" id="archives-tab"
                                 data-bs-toggle="tab" data-bs-target="#archives" type="button" role="tab"
                                 aria-controls="archives" aria-selected="{{ $active_tab == 3 }}"
-                                wire:click='changeTab(3)'>Archives</button>
+                                wire:click='changeTab(3)'>Documents désarchivés</button>
                         </li>
                     </ul>
                 </div>
@@ -434,7 +434,7 @@
                 </div>
             </div>
 
-            <!-- Onglet des documents archivés -->
+            <!-- Onglet des documents désarchivés -->
             <div class="tab-pane {{ $active_tab == 3 ? 'show active' : '' }}" id="archives" role="tabpanel" aria-labelledby="archives-tab">
                 <div class="col-lg-12">
                     <div class="card card-table" style="overflow: inherit; border-radius: 12px;">
@@ -449,7 +449,7 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-lg-6 col-sm-6 col-xl-8">
-                                <h4>Documents archivés</h4>
+                                <h4>Documents désarchivés</h4>
                             </div>
                         </div>
                         <div class="row g-3 align-items-center mt-1">
@@ -498,27 +498,37 @@
                             <table class="table table-hover" wire:loading.remove>
                                 <thead>
                                     <tr>
-                                        <th scope="col">Nom</th>
-                                        <th scope="col">Référence</th>
-                                        <th scope="col">Type</th>
+                                        <th scope="col">Document</th>
                                         <th scope="col">Date d'archivage</th>
+                                        <th scope="col">Date de désarchivage</th>
+                                        <th scope="col">Désarchivé par</th>
                                         <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($archives as $document)
                                         <tr>
-                                            <td>{{ $document->libelle ?? 'N/A' }}</td>
-                                            <td>{{ $document->reference ?? 'N/A' }}</td>
-                                            <td>{{ $document->type ?? 'N/A' }}</td>
+                                            <td class="text-nowrap">
+                                                <div class="d-flex align-items-center">
+                                                    <svg width="15px" height="auto" viewBox="0 0 384 512" class="me-2">
+                                                        <path fill="red" d="M181.9 256.1c-5-16-4.9-46.9-2-46.9 8.4 0 1.4 35.5 1.5 54.1 0 20.1.4 12.5-3.5 12.5-3.4 0-3.1-12.2-6.6-19.7zM377 105L279 7c-4.5-4.5-10.6-7-17-7h-6v128h128v-6.1c0-6.3-2.5-12.4-7-16.9zM128.4 336c-7.9 0-13.9 8-11.4 17.8 15.2 60.3 69.3 98.3 134.2 98.3 73.9 0 133.8-59.9 133.8-133.8 0-64.9-38-119.1-98.3-134.2-9.8-2.5-17.8 3.5-17.8 11.4v5.9c0 33.4 24.3 63.3 57.5 66 18.4 1.5 33.8-13.5 33.8-31.9v-19.6c0-9.6 11.8-14.8 19.3-8.2 30.3 26.9 49.7 66.2 49.7 109.6 0 82.3-63.5 150.6-144 156.8V480c0 8.8-7.2 16-16 16h-32c-8.8 0-16-7.2-16-16v-67.2c-80.5-6.2-144-74.5-144-156.8 0-43.4 19.4-82.7 49.7-109.6 7.5-6.6 19.3-1.4 19.3 8.2v19.6c0 18.4 15.4 33.3 33.8 31.9 33.2-2.7 57.5-32.6 57.5-66v-5.9c0-7.9-7.7-13.9-15.6-11.4-65.1 20.1-112.8 80.1-112.8 150.7 0 4.4.3 8.7.8 13.1.7 6.2-4.3 11.7-10.5 11.7h-7.8c-5.7 0-10.4-4.3-10.9-9.9-.7-6.6-1-13.4-1-20.2 0-84.6 51.1-157.4 123.6-188.3-4.2-1.2-8.5-2.3-12.9-3.3V88c0-4.4.6-8.8 1.7-13 .5-1.9.4-3.9-.5-5.7-.9-1.8-2.4-3.2-4.2-4.1L128.1 60.4c-8.5-3.4-17.5 4.4-14.6 13.4l24.2 72.5c1.7 5.1 6.6 8.3 11.9 7.8 5.1-.5 9.3-4.2 10.5-9.2l7.9-29.6c1.5.5 2.9 1.1 4.3 1.8l-7.8 29.2c-2.3 8.7 3.1 17.5 11.9 19.8 1.1.3 2.2.4 3.3.4 7.5 0 14.3-5.3 15.8-13.1l24.4-73.2c2.7-8.2-3.5-16.8-12-18.2z"></path>
+                                                    </svg>
+                                                    <div>
+                                                        <div class="fw-bold">{{ $document->libelle ?? 'N/A' }}</div>
+                                                        <div class="text-muted small">{{ $document->reference ?? 'N/A' }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ $document->created_at->format('d/m/Y H:i') }}</td>
                                             <td>{{ $document->updated_at->format('d/m/Y H:i') }}</td>
+                                            <td>{{ $document->desarchiveBy->name ?? 'N/A' }}</td>
                                             <td>
-                                                <div class="d-flex">
-                                                    <a href="#" class="btn btn-sm btn-icon btn-light me-2" title="Voir">
+                                                <div class="d-flex align-items-center">
+                                                    <!-- Bouton Voir -->
+                                                    <a href="{{ route('regidoc.documents.show', $document) }}" 
+                                                       class="btn">
                                                         <i class="fi fi-rr-eye"></i>
-                                                    </a>
-                                                    <a href="#" class="btn btn-sm btn-icon btn-light" title="Télécharger">
-                                                        <i class="fi fi-rr-download"></i>
+                                                        <div class="tooltip-btn">Voir détails</div>
                                                     </a>
                                                 </div>
                                             </td>
