@@ -119,30 +119,39 @@ class DesDocuments extends Component
     {
         // Filtrer par recherche
         if (!empty($this->search)) {
-            $query->where('libelle', 'like', '%' . $this->search . '%');
+            // Si la recherche est numérique, chercher par ID
+            if (is_numeric($this->search)) {
+                $query->where('id', $this->search);
+            } else if (preg_match('/^[A-Za-z]{2}-\d+\/[A-Za-z]?$/', $this->search)) {
+                // Si la recherche est au format de référence (ex: DG-00001/R)
+                $query->where('reference', 'like', '%' . $this->search . '%');
+            } else {
+                // Sinon chercher dans le libellé
+                $query->where('libelle', 'like', '%' . $this->search . '%');
+            }
         }
         
         if (!empty($this->lieu_query)) {
             $query->whereHas('author', function($subQuery){
-                $subQuery->where('lieu_id',$this->lieu_query);
+                $subQuery->where('lieu_id', $this->lieu_query);
             }); 
         } 
 
         if (!empty($this->direction_query)) {
             $query->whereHas('author', function($subQuery){
-                $subQuery->where('direction_id',$this->direction_query);
+                $subQuery->where('direction_id', $this->direction_query);
             });
         } 
 
         if (!empty($this->division_query)) {
             $query->whereHas('author', function($subQuery){
-                $subQuery->where('division_id',$this->division_query);
+                $subQuery->where('division_id', $this->division_query);
             });
         }
 
         if (!empty($this->agent_query)) {
             $query->whereHas('author', function($subQuery){
-                $subQuery->where('id',$this->agent_query);
+                $subQuery->where('id', $this->agent_query);
             });
         }
 
@@ -240,9 +249,25 @@ public function render()
 
     $shareds = $sharedQuery->orderBy('id','desc')->paginate(10);
 
+    // Pour les documents désarchivés (reference_document_id et desarchive_by non null)
+    $archivesQuery = Document::query()
+                           ->whereNotNull('reference_document_id')
+                           ->whereNotNull('desarchive_by');
+    
+    // Créer une nouvelle instance pour appliquer les filtres
+    $filteredArchivesQuery = clone $archivesQuery;
+    $filteredArchivesQuery = $this->applyFilters($filteredArchivesQuery);
+    
+    // Appliquer le filtre d'autorisation
+    $archives = $filteredArchivesQuery->orderBy('id','desc')->paginate(10);
+    $archives->getCollection()->transform(function ($document) {
+        return Gate::allows('view', $document) ? $document : null;
+    })->filter();
+
     return view('livewire.document.des-documents', [
         'documents' => $documentsPaginated,
         'shareds' => $shareds,
+        'archives' => $archives,
     ]);
 }
 

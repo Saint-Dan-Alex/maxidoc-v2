@@ -18,6 +18,12 @@
                                 aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
                                 wire:click='changeTab(2)'>Documents partagés</button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {{ $active_tab == 3 ? 'active' : '' }}" id="archives-tab"
+                                data-bs-toggle="tab" data-bs-target="#archives" type="button" role="tab"
+                                aria-controls="archives" aria-selected="{{ $active_tab == 3 }}"
+                                wire:click='changeTab(3)'>Archives</button>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -423,6 +429,112 @@
                         </div>
                         @if (count($shareds))
                             {{ $shareds->links() }}
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet des documents archivés -->
+            <div class="tab-pane {{ $active_tab == 3 ? 'show active' : '' }}" id="archives" role="tabpanel" aria-labelledby="archives-tab">
+                <div class="col-lg-12">
+                    <div class="card card-table" style="overflow: inherit; border-radius: 12px;">
+                        <div class="d-none position-absolute loader-card d-flex justify-content-center m-0"
+                            style="z-index: 2; left:5px; right:5px; top:5px; bottom:5px; background-color: rgba(255,255,255,0.95)"
+                            wire:loading wire:target="filter, changeFilter" wire:loading.class.remove="d-none">
+                            <div class="text-center m-auto">
+                                <div class="spinner-border" role="status" style="color: var(--primaryColor)">
+                                    <span class="sr-only"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-lg-6 col-sm-6 col-xl-8">
+                                <h4>Documents archivés</h4>
+                            </div>
+                        </div>
+                        <div class="row g-3 align-items-center mt-1">
+                            <div class="col-lg-4">
+                                <div class="col-lg-12">
+                                    <div class="d-flex align-items-center">
+                                        <input type="text" class="form-control me-2 input-search-card"
+                                            placeholder="Recherche" style="border:none;" wire:model='search'>
+                                        <div class="dropdown">
+                                            <button class="btn btn-filter me-2" id="dropdownMenuButton1"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                <svg data-name="Layer 1" viewBox="0 0 24 24" width="512"
+                                                    height="512">
+                                                    <path
+                                                        d="M24,3c0,.55-.45,1-1,1H1c-.55,0-1-.45-1-1s.45-1,1-1H23c.55,0,1,.45,1,1ZM15,20h-6c-.55,0-1,.45-1,1s.45,1,1,1h6c.55,0,1-.45,1-1s-.45-1-1-1Zm4-9H5c-.55,0-1,.45-1,1s.45,1,1,1h14c.55,0,1-.45,1-1s-.45-1-1-1Z" />
+                                                </svg>
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                <li><a class="dropdown-item" href="javascript:void(0)"
+                                                        wire:click='changeFilter(null)'>Par défaut</a></li>
+                                                <li><a class="dropdown-item" href="javascript:void(0)"
+                                                        wire:click='changeFilter("AtoZ")'>A - Z</a></li>
+                                                <li><a class="dropdown-item" href="javascript:void(0)"
+                                                        wire:click='changeFilter("ZtoA")'>Z - A</a></li>
+                                                <li><a class="dropdown-item" href="javascript:void(0)"
+                                                        wire:click='changeFilter("dateAdded")'>Date d'ajout</a>
+                                                </li>
+                                                <li><a class="dropdown-item" href="javascript:void(0)"
+                                                        wire:click='changeFilter("dateModified")'>Date de
+                                                        modification</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="mt-3 mb-0">
+                        <div class="table-responsive">
+                            <div class="card card-table w-100" style="height: 250px" wire:loading>
+                                <div class="d-flex justify-content-center h-100 align-items-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="sr-only"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="table table-hover" wire:loading.remove>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Nom</th>
+                                        <th scope="col">Référence</th>
+                                        <th scope="col">Type</th>
+                                        <th scope="col">Date d'archivage</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($archives as $document)
+                                        <tr>
+                                            <td>{{ $document->libelle ?? 'N/A' }}</td>
+                                            <td>{{ $document->reference ?? 'N/A' }}</td>
+                                            <td>{{ $document->type ?? 'N/A' }}</td>
+                                            <td>{{ $document->updated_at->format('d/m/Y H:i') }}</td>
+                                            <td>
+                                                <div class="d-flex">
+                                                    <a href="#" class="btn btn-sm btn-icon btn-light me-2" title="Voir">
+                                                        <i class="fi fi-rr-eye"></i>
+                                                    </a>
+                                                    <a href="#" class="btn btn-sm btn-icon btn-light" title="Télécharger">
+                                                        <i class="fi fi-rr-download"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center">Aucun document archivé trouvé</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        @if($archives->hasPages())
+                            <div class="mt-3">
+                                {{ $archives->links() }}
+                            </div>
                         @endif
                     </div>
                 </div>
