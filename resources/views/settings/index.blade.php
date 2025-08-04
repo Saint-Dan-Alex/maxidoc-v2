@@ -1,49 +1,169 @@
 @extends('layouts.app-settings')
 
 @section('content')
-<div class="flex-1 overflow-auto">
-    <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h3 class="text-lg font-medium text-gray-900">
-                    {{ __('Tableau de bord des paramètres') }}
-                </h3>
-                <p class="mt-1 text-sm text-gray-500">
-                    {{ __('Gérez les différents paramètres de votre application') }}
-                </p>
-            </div>
-        </div>
+<div class="settings-dashboard">
+    <div class="settings-header">
+        <h1 class="settings-title">
+            <i class="fi fi-rr-settings mr-2"></i>
+            {{ __('Tableau de bord des paramètres') }}
+        </h1>
+        <p class="settings-subtitle">
+            {{ __('Gérez les différents paramètres de votre application') }}
+        </p>
+    </div>
 
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach($menuItems as $item)
-                        <a href="{{ $item->url }}" 
-                           class="group relative bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-500 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center">
-                                <span class="rounded-lg inline-flex p-3 bg-blue-50 text-blue-600 ring-4 ring-white">
-                                    <i class="{{ $item->icon_regular }} w-6 h-6"></i>
-                                </span>
-                                <div class="ml-4">
-                                    <h3 class="text-lg font-medium text-gray-900">
-                                        {{ $item->title }}
-                                        <span class="absolute inset-0" aria-hidden="true"></span>
-                                    </h3>
-                                    <p class="mt-1 text-sm text-gray-500">
-                                        {{ $item->description ?? 'Gérer les ' . strtolower($item->title) }}
-                                    </p>
-                                </div>
-                            </div>
-                            <span class="pointer-events-none absolute top-6 right-6 text-gray-300 group-hover:text-blue-400" aria-hidden="true">
-                                <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M20 4h1a1 1 0 00-1-1v1zm-1 12a1 1 0 102 0h-2zM8 3a1 1 0 000 2V3zM3.293 19.293a1 1 0 101.414 1.414l-1.414-1.414zM19 4v12h2V4h-2zm1-1H8v2h12V3zm-.707.293l-16 16 1.414 1.414 16-16-1.414-1.414z" />
-                                </svg>
-                            </span>
-                        </a>
-                    @endforeach
+    <div class="settings-grid">
+        @foreach($menuItems as $item)
+            <a href="{{ $item->url }}" class="settings-card">
+                <div class="settings-card-icon">
+                    <i class="{{ $item->icon_regular }}"></i>
                 </div>
-            </div>
-        </div>
+                <div class="settings-card-content">
+                    <h3 class="settings-card-title">
+                        {{ $item->title }}
+                    </h3>
+                    <p class="settings-card-description">
+                        {{ $item->description ?? 'Gérer les ' . strtolower($item->title) }}
+                    </p>
+                </div>
+                <div class="settings-card-arrow">
+                    <i class="fi fi-rr-angle-right"></i>
+                </div>
+            </a>
+        @endforeach
     </div>
 </div>
+
+<style>
+    .settings-dashboard {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .settings-header {
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .settings-title {
+        color: var(--colorTitre);
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0 0 10px 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .settings-title i {
+        font-size: 22px;
+        margin-right: 10px;
+        color: var(--primaryColor);
+    }
+    
+    .settings-subtitle {
+        color: var(--colorParagraph);
+        font-size: 14px;
+        margin: 0;
+        opacity: 0.8;
+    }
+    
+    .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .settings-card {
+        background: var(--bg-card);
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        align-items: flex-start;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .settings-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        border-color: var(--primaryColor);
+    }
+    
+    .settings-card-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--lightBlue);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    
+    .settings-card-icon i {
+        font-size: 22px;
+        color: var(--primaryColor);
+    }
+    
+    .settings-card-content {
+        flex: 1;
+    }
+    
+    .settings-card-title {
+        color: var(--colorTitre);
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0 0 5px 0;
+    }
+    
+    .settings-card-description {
+        color: var(--colorParagraph);
+        font-size: 13px;
+        margin: 0;
+        opacity: 0.8;
+        line-height: 1.4;
+    }
+    
+    .settings-card-arrow {
+        color: var(--colorParagraph);
+        opacity: 0.3;
+        transition: all 0.3s ease;
+        margin-left: 10px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .settings-card:hover .settings-card-arrow {
+        opacity: 1;
+        color: var(--primaryColor);
+        transform: translateX(3px);
+    }
+    
+    @media (max-width: 1024px) {
+        .settings-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .settings-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .settings-header {
+            margin-bottom: 20px;
+        }
+        
+        .settings-title {
+            font-size: 20px;
+        }
+    }
+</style>
 @endsection

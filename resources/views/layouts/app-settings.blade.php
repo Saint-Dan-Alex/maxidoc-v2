@@ -22,64 +22,111 @@
         .settings-nav-item {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: #4a5568;
+            padding: 10px 20px;
+            color: var(--colorParagraph);
             text-decoration: none;
-            transition: all 0.2s;
-            border-radius: 0.375rem;
-            margin-bottom: 0.25rem;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 400;
         }
         
         .settings-nav-item:hover {
-            background-color: #f7fafc;
-            color: #1a56db;
+            background-color: var(--lightBlue);
+            color: var(--primaryColor);
         }
         
         .settings-nav-item.active {
-            background-color: #ebf4ff;
-            color: #1a56db;
+            background-color: var(--lightBlue);
+            color: var(--primaryColor);
             font-weight: 500;
         }
         
         .settings-nav-item i {
-            margin-right: 0.75rem;
-            width: 1.25rem;
+            margin-right: 12px;
+            width: 20px;
             text-align: center;
+            color: inherit;
         }
         
         .settings-sidebar {
             width: 280px;
-            background: white;
-            border-right: 1px solid #e2e8f0;
+            background: var(--bg-card);
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
             height: 100vh;
             position: fixed;
             left: 0;
             top: 0;
             overflow-y: auto;
-            padding: 1.5rem 0;
+            padding: 20px 0;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.03);
+        }
+        
+        .settings-sidebar-header {
+            padding: 0 20px 15px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .settings-sidebar-header h3 {
+            color: var(--colorTitre);
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
         }
         
         .settings-content {
             margin-left: 280px;
-            padding: 2rem;
+            padding: 30px;
             min-height: 100vh;
-            background-color: #f8fafc;
+            background-color: var(--bgContent);
+        }
+        
+        .settings-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .settings-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .settings-card-title {
+            color: var(--colorTitre);
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
         }
         
         @media (max-width: 1024px) {
             .settings-sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease-in-out;
-                z-index: 40;
+                z-index: 1000;
+                width: 280px;
             }
             
             .settings-sidebar.open {
                 transform: translateX(0);
+                box-shadow: 5px 0 25px rgba(0, 0, 0, 0.1);
             }
             
             .settings-content {
                 margin-left: 0;
-                padding: 1rem;
+                padding: 20px 15px;
+            }
+            
+            .settings-card {
+                padding: 20px 15px;
             }
         }
     </style>
@@ -87,17 +134,21 @@
     @stack('styles')
 </head>
 <body class="bg-gray-50">
-    <div class="flex h-screen">
+    <div class="global-div">
         <!-- Settings Sidebar -->
         <div class="settings-sidebar">
+            <div class="settings-sidebar-header">
+                <h3>Paramètres</h3>
+            </div>
             @include('components.settings.sidebar')
         </div>
 
         <!-- Main Content -->
-        <div class="settings-content flex-1 overflow-auto">
+        <div class="settings-content">
             @if (session('status'))
-                <div class="p-4 mb-6 text-sm text-green-700 bg-green-100 rounded-lg">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('status') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
             
@@ -110,9 +161,35 @@
     @stack('scripts')
     
     <script>
-        // Script pour gérer le menu mobile si nécessaire
+        // Script pour gérer le menu mobile
         document.addEventListener('DOMContentLoaded', function() {
             // Ajouter ici tout script nécessaire pour la gestion du menu mobile
+            const menuToggle = document.createElement('button');
+            menuToggle.className = 'btn btn-sm btn-primary d-lg-none position-fixed';
+            menuToggle.style.bottom = '20px';
+            menuToggle.style.right = '20px';
+            menuToggle.style.zIndex = '1000';
+            menuToggle.style.borderRadius = '50%';
+            menuToggle.style.width = '50px';
+            menuToggle.style.height = '50px';
+            menuToggle.style.display = 'flex';
+            menuToggle.style.alignItems = 'center';
+            menuToggle.style.justifyContent = 'center';
+            menuToggle.innerHTML = '<i class="fi fi-rr-menu-burger"></i>';
+            
+            menuToggle.addEventListener('click', function() {
+                document.querySelector('.settings-sidebar').classList.toggle('open');
+            });
+            
+            document.body.appendChild(menuToggle);
+            
+            // Fermer le menu au clic en dehors
+            document.addEventListener('click', function(e) {
+                const sidebar = document.querySelector('.settings-sidebar');
+                if (!sidebar.contains(e.target) && e.target !== menuToggle) {
+                    sidebar.classList.remove('open');
+                }
+            });
         });
     </script>
 </body>
