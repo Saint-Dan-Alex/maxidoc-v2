@@ -25,6 +25,7 @@ use App\Http\Controllers\RH\PersonnelController;
 use App\Http\Controllers\RH\SecretariatController;
 use App\Http\Controllers\RH\SectionController;
 use App\Http\Controllers\RH\ServiceController;
+use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Taches\TacheController;
 use App\Http\Controllers\TacheDocumentController;
 use App\Http\Controllers\UploadController;
@@ -60,6 +61,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::middleware('isFirstUse')->group(function () {
         Route::group(['as' => 'regidoc.'], function () {
             Route::get('/', HomeController::class)->name('home');
+
+            // Paramètres
+            Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
             // Documents
             Route::resource('documents', DocumentController::class);
