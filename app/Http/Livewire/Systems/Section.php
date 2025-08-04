@@ -27,7 +27,7 @@ class Section extends Component
 
     public function mount()
     {
-        $this->services = Service::with('division')->orderBy('libelle', 'asc')->get();
+        $this->services = Service::with('division')->orderBy('titre', 'asc')->get();
         $this->statuts = Statut::select('libelle', 'id')->orderBy('libelle', 'asc')->get();
         $this->filterText = "Filtre";
     }
