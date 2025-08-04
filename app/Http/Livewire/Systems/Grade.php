@@ -5,64 +5,78 @@ namespace App\Http\Livewire\Systems;
 use App\Models\Grade as Model;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Grade extends Component
 {
-    public $grades;
+    use WithPagination;
+    
     public $filter;
     public $filterText;
     public $search;
 
+    protected $listeners = ['reloadGrade' => '$refresh'];
+    protected $paginationTheme = 'bootstrap-5';
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'page' => ['except' => 1],
+    ];
+
     public function mount()
     {
-        $this->grades = Model::all();
         $this->filterText = "Filtre";
     }
 
     public function render()
     {
+        $query = Model::query();
 
+        // Gestion de la recherche
         if ($this->search) {
-            $this->grades = $this->grades->filter(function ($grade) {
-                return Str::contains(Str::lower($grade->titre), Str::lower($this->search)) || Str::contains(Str::lower($grade->description), Str::lower($this->search));
+            $query->where(function($q) {
+                $q->where('titre', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%');
             });
-        } else {
-            $this->grades = Model::all();
         }
 
+        // Gestion du filtrage
         switch ($this->filter) {
             case 1:
                 $this->filterText = 'Filtre';
-                $this->grades = $this->grades->sortByDesc('created_at');
+                $query->orderBy('created_at', 'desc');
                 break;
             case 2:
                 $this->filterText = 'A - Z';
-                $this->grades = $this->grades->sortBy('titre');
+                $query->orderBy('titre', 'asc');
                 break;
             case 3:
                 $this->filterText = 'Z - A';
-                $this->grades = $this->grades->sortByDesc('titre');
+                $query->orderBy('titre', 'desc');
                 break;
             case 4:
                 $this->filterText = "Date d'ajout";
-                $this->grades = $this->grades->sortByDesc('created_at');
+                $query->orderBy('created_at', 'desc');
                 break;
             case 5:
                 $this->filterText = 'Date de modification';
-                $this->grades = $this->grades->sortByDesc('updated_at');
+                $query->orderBy('updated_at', 'desc');
                 break;
             default:
-                # code...
-                break;
+                $query->orderBy('created_at', 'desc');
         }
 
-        return view('livewire.systems.grade');
-
+        // Pagination avec 10 éléments par page
+        $grades = $query->paginate(10);
+        
+        return view('livewire.systems.grade', [
+            'grades' => $grades
+        ]);
     }
 
     public function changeFilter($value)
     {
         $this->filter = $value;
+        $this->resetPage(); // Réinitialise la pagination lors du changement de filtre
     }
 
 }

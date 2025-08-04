@@ -3,7 +3,6 @@
 namespace App\Http\Livewire\Systems;
 
 use App\Models\LieuAffectation as Model;
-use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -15,6 +14,7 @@ class Lieu extends Component
     public $filterText;
     public $search;
 
+    protected $listeners = ['reloadLieu' => '$refresh'];
     protected $paginationTheme = 'bootstrap-5';
     protected $queryString = [
         'search' => ['except' => ''],
@@ -28,50 +28,51 @@ class Lieu extends Component
 
     public function render()
     {
-        $lieus = Model::select('id','titre');
+        $query = Model::query();
 
+        // Gestion de la recherche
         if ($this->search) {
-            $lieus = $lieus->where('titre', 'LIKE', '%'.$this->search.'%');
-            // filter(function ($lieu) {
-            //     return Str::contains(Str::lower($lieu->titre), Str::lower($this->search));
-            // });
+            $query->where('titre', 'LIKE', '%' . $this->search . '%');
         }
 
+        // Gestion du filtrage
         switch ($this->filter) {
             case 1:
                 $this->filterText = 'Filtre';
-                $lieus = $lieus->orderBy('created_at', 'desc');
+                $query->orderBy('created_at', 'desc');
                 break;
             case 2:
                 $this->filterText = 'A - Z';
-                $lieus = $this->lieus->orderBy('titre');
+                $query->orderBy('titre', 'asc');
                 break;
             case 3:
                 $this->filterText = 'Z - A';
-                $lieus = $lieus->orderBy('titre', 'desc');
+                $query->orderBy('titre', 'desc');
                 break;
             case 4:
                 $this->filterText = "Date d'ajout";
-                $lieus = $lieus->whereDate('created_at', now());
+                $query->orderBy('created_at', 'desc');
                 break;
             case 5:
                 $this->filterText = 'Date de modification';
-                $lieus = $lieus->orderBy('updated_at');
+                $query->orderBy('updated_at', 'desc');
                 break;
             default:
-                $lieus = $lieus->orderBy('titre');
-                break;
+                $query->orderBy('titre', 'asc');
         }
 
-        return view('livewire.systems.lieu')->with([
-            'lieus' => $lieus->paginate(10)
+        // Pagination avec 10 éléments par page
+        $lieus = $query->paginate(10);
+        
+        return view('livewire.systems.lieu', [
+            'lieus' => $lieus
         ]);
-
     }
 
     public function changeFilter($value)
     {
         $this->filter = $value;
+        $this->resetPage(); // Réinitialise la pagination lors du changement de filtre
     }
 
 }

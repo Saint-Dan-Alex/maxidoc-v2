@@ -51,33 +51,38 @@
                 <tbody>
                     @forelse ($logs as $log)
                         <tr>    
-                            <td> {{ $log->authenticatable->name }} </td>
+                            <td> {{ $log->authenticatable->name ?? 'Utilisateur inconnu' }} </td>
                             <td> {{ $log->ip_address }} </td>
                             <td>
                                 <div class="badge">
-                                    {{ $log->login_at }}
+                                    {{ $log->login_at ? $log->login_at->format('d/m/Y H:i') : 'N/A' }}
                                 </div>
                             </td>
                             <td>
-                                <div class="badge badge-red">
-                                    {{ $log->logout_at }}
+                                <div class="badge {{ $log->logout_at ? 'badge-red' : 'badge-success' }}">
+                                    {{ $log->logout_at ? $log->logout_at->format('d/m/Y H:i') : 'En cours...' }}
                                 </div>
                             </td>
                         </tr>
                     @empty
-
                         <tr>
-                            <td colspan="5">
-                                <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucun log trouvé</p>
+                            <td colspan="4" class="text-center">
+                                <div class="py-4">
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p class="mt-2 mb-0">Aucun log trouvé</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            @if($logs->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $logs->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </div>

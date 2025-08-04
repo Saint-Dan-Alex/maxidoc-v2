@@ -125,19 +125,24 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">
+                            <td colspan="7" class="text-center">
                                 <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucune direction trouvé</p>
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p>Aucune direction trouvée</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            @if($directions->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $directions->links() }}
+                </div>
+            @endif
         </div>
-        {!! $directions->links() !!}
     </div>
 
 

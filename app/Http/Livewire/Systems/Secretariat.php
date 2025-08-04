@@ -16,6 +16,7 @@ class Secretariat extends Component
     public $directions;
     public $search;
 
+    protected $listeners = ['reloadSecretariat' => '$refresh'];
     protected $paginationTheme = 'bootstrap-5';
     protected $queryString = [
         'search' => ['except' => ''],
@@ -24,54 +25,59 @@ class Secretariat extends Component
 
     public function mount()
     {
-        // $this->secretariats = Model::all();
         $this->filterText = "Filtre";
+        $this->directions = Direction::select('id','titre')->get();
     }
 
     public function render()
     {
-        $secretariats = Model::with('responsable', 'direction')->select('id','titre','direction_id','responsable_id', 'for_dg', 'for_dga');
-        $this->directions = Direction::select('id','titre')->get();
+        $query = Model::with('responsable', 'direction')
+            ->select('id', 'titre', 'direction_id', 'responsable_id', 'for_dg', 'for_dga');
 
+        // Gestion de la recherche
         if ($this->search) {
-            $secretariats = $secretariats->where('titre', 'LIKE', '%'.$this->search.'%');
+            $query->where('titre', 'LIKE', '%' . $this->search . '%');
         }
 
+        // Gestion du filtrage
         switch ($this->filter) {
             case 1:
                 $this->filterText = 'Filtre';
-                $secretariats = $secretariats->orderBy('created_at', 'desc');
+                $query->orderBy('created_at', 'desc');
                 break;
             case 2:
                 $this->filterText = 'A - Z';
-                $secretariats = $this->secretariats->orderBy('titre');
+                $query->orderBy('titre', 'asc');
                 break;
             case 3:
                 $this->filterText = 'Z - A';
-                $secretariats = $secretariats->orderBy('titre', 'desc');
+                $query->orderBy('titre', 'desc');
                 break;
             case 4:
                 $this->filterText = "Date d'ajout";
-                $secretariats = $secretariats->whereDate('created_at', now());
+                $query->orderBy('created_at', 'desc');
                 break;
             case 5:
                 $this->filterText = 'Date de modification';
-                $secretariats = $secretariats->orderBy('updated_at');
+                $query->orderBy('updated_at', 'desc');
                 break;
             default:
-                $secretariats = $secretariats->orderBy('titre');
-                break;
+                $query->orderBy('titre', 'asc');
         }
 
-        return view('livewire.systems.secretariat')->with([
-            'secretariats' => $secretariats->paginate(10)
+        // Pagination avec 10 éléments par page
+        $secretariats = $query->paginate(10);
+        
+        return view('livewire.systems.secretariat', [
+            'secretariats' => $secretariats,
+            'directions' => $this->directions
         ]);
-
     }
 
     public function changeFilter($value)
     {
         $this->filter = $value;
+        $this->resetPage(); // Réinitialise la pagination lors du changement de filtre
     }
 
 }
