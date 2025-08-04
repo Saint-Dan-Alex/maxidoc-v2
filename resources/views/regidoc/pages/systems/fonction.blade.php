@@ -1,4 +1,5 @@
-@extends('regidoc.layouts.master')
+@extends('layouts.app-settings')
+
 
 @section('content')
     <div class="card card-lg">
