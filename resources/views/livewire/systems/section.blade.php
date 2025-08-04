@@ -69,14 +69,16 @@
                             <td> {{ $section->agents->count() }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
-                                    {{-- <a href="#" class="btn btn-primary  p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-show-departement-{{ $departement->id }}"><i
-                                            class="fi fi-rr-eye"></i>
-                                        Voir</a> --}}
-                                    <a href="#" class="btn btn-success  p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-edit-section-{{ $section->id }}"><i
-                                            class="fi fi-rr-pencil"></i>
-                                        Editer</a>
+                                    {{-- <a href="#" class="btn btn-primary me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-show-departement-{{ $departement->id }}">
+                                        <i class="fi fi-rr-eye"></i>
+                                        <span class="btn-text">Voir</span>
+                                    </a> --}}
+                                    <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-edit-section-{{ $section->id }}">
+                                        <i class="fi fi-rr-pencil"></i>
+                                        <span class="btn-text">Éditer</span>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
