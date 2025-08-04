@@ -73,21 +73,19 @@
                                 {{ $assistant->responsable->prenom ?? '' }}</td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
-                                    {{-- <a href="#" class="btn btn-primary " data-bs-toggle="modal"
-                                        data-bs-target="#modal-show-assistant-{{ $assistant->id }}"><i
-                                            class="fi fi-rr-eye"></i>
-                                        Voir</a> --}}
-                                    <a href="#" class="btn btn-success " data-bs-toggle="modal"
-                                        data-bs-target="#modal-edit-assistant-{{ $assistant->id }}"><i
-                                            class="fi fi-rr-pencil"></i>
-                                        Editer</a>
-                                    <form action="{{ route('regidoc.assistants.destroy', $assistant) }}" method="POST">
+                                    <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-edit-assistant-{{ $assistant->id }}">
+                                        <i class="fi fi-rr-pencil"></i>
+                                        <span class="btn-text">Éditer</span>
+                                    </a>
+                                    <form action="{{ route('regidoc.assistants.destroy', $assistant) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger "><i class="fi fi-rr-trash"></i>
-                                            Supprimer</button>
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet assistant ?')">
+                                            <i class="fi fi-rr-trash"></i>
+                                            <span class="btn-text">Supprimer</span>
+                                        </button>
                                     </form>
-
                                 </div>
                             </td>
                         </tr>
