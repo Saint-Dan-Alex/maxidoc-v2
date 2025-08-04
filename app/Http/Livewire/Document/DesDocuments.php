@@ -261,7 +261,7 @@ public function render()
     // Appliquer le filtre d'autorisation
     $archives = $filteredArchivesQuery->orderBy('id','desc')->paginate(10);
     $archives->getCollection()->transform(function ($document) {
-        return Gate::allows('view', $document) ? $document : null;
+        return  $document ;
     })->filter();
 
     return view('livewire.document.des-documents', [

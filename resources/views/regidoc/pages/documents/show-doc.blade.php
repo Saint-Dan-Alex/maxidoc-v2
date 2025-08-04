@@ -130,6 +130,43 @@
                             </div>
                         </div>
 
+                        @if($find_document->archived_at)
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Date d'archivage</label>
+                                <div class="col-7">
+                                    <p class="items">
+                                        {{ $find_document->archived_at ? \Carbon\Carbon::parse($find_document->archived_at)->isoFormat('LL [à] HH:mm') : '' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($find_document->desarchive_by)
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Date de désarchivage</label>
+                                <div class="col-7">
+                                    <p class="items">
+                                        {{ $find_document->updated_at ? \Carbon\Carbon::parse($find_document->updated_at)->isoFormat('LL [à] HH:mm') : '' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Désarchivé par</label>
+                                <div class="col-7">
+                                    <p class="items">
+                                        {{ $find_document->desarchiveBy?->name?? '' }} {{ $find_document->desarchiveBy?->nom ?? '' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
                     </div>
 
                 </div>
