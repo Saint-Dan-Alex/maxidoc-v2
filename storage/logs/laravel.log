@@ -71484,3 +71484,22 @@ Did you mean one of these?
 #67 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\wamp64\\\\www\\\\m...')
 #68 {main}
 "} 
+[2025-08-04 11:11:53] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-04 11:11:57] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-04 11:11:57] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":25,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 
+[2025-08-04 11:26:42] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-04 11:26:48] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-04 11:26:48] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":26,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 
+[2025-08-04 11:26:55] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-04 11:27:01] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":"1","prefix":"K"} 
+[2025-08-04 11:27:01] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":26,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,"1","K-%"]} 
+[2025-08-04 11:27:03] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":"3","prefix":"K"} 
+[2025-08-04 11:27:03] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":0,"type":"3","requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,"3","K-%"]} 
+[2025-08-04 11:28:50] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-04 11:28:53] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":"1","prefix":"K"} 
+[2025-08-04 11:28:53] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":26,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,"1","K-%"]} 
+[2025-08-04 11:28:56] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":"3","prefix":"K"} 
+[2025-08-04 11:28:56] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":0,"type":"3","requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,"3","K-%"]} 
+[2025-08-04 12:01:01] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-04 12:01:04] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":"1","prefix":"K"} 
+[2025-08-04 12:01:04] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":26,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,"1","K-%"]} 

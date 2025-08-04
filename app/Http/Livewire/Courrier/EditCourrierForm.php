@@ -27,6 +27,7 @@ class EditCourrierForm extends Component
     public $selectedDoc = null;
     public $courrier;
     public $dga = null;
+    public $isFormValid = false;
 
     protected $listeners = ['selectDoc'];
 
