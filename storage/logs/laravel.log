@@ -76177,3 +76177,6 @@ Did you mean one of these?
 #80 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\wamp64\\\\www\\\\m...')
 #81 {main}
 "} 
+[2025-08-04 19:27:36] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-04 19:27:41] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-04 19:27:41] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":26,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 

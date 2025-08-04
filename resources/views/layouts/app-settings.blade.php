@@ -1,8 +1,17 @@
-<!DOCTYPE html>
+<!Doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<!--
+    # Project developed by Newtech Consulting SARL
+    # Contact : Tél: +(243) 977 776 901
+                Email: contact@newtech-rdc.net
+                Adresse: 374 avenue Colonel Mondjiba C/Ngaliema, Q/Basoko, Réf/Galerie St.Pierre
+                Kinshasa - RDC
+-->
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>MaxiDoc | Paramètres</title>
     
@@ -16,8 +25,10 @@
     
     <!-- Styles -->
     @include('regidoc.layouts.partials.head.styles')
+    @yield('styles')
+    @livewireStyles()
+    @livewireScripts()
     
-    <!-- Custom styles for settings -->
     <style>
         .settings-nav-item {
             display: flex;
@@ -61,6 +72,7 @@
             overflow-y: auto;
             padding: 20px 0;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.03);
+            z-index: 100;
         }
         
         .settings-sidebar-header {
@@ -81,6 +93,7 @@
             padding: 30px;
             min-height: 100vh;
             background-color: var(--bgContent);
+            transition: margin 0.3s ease;
         }
         
         .settings-card {
@@ -130,10 +143,9 @@
             }
         }
     </style>
-    
-    @stack('styles')
 </head>
-<body class="bg-gray-50">
+
+<body>
     <div class="global-div">
         <!-- Settings Sidebar -->
         <div class="settings-sidebar">
@@ -145,15 +157,23 @@
 
         <!-- Main Content -->
         <div class="settings-content">
-            @if (session('status'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('status') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+            @include('regidoc.layouts.partials.header.navbar')
             
-            @yield('content')
+            <div class="content">
+                @if (session('status'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('status') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+                
+                @yield('content')
+            </div>
+            
+            @include('regidoc.layouts.partials.footer.footer')
         </div>
+        
+        <div class="backdropFilter"></div>
     </div>
 
     <!-- Scripts -->
@@ -161,9 +181,8 @@
     @stack('scripts')
     
     <script>
-        // Script pour gérer le menu mobile
         document.addEventListener('DOMContentLoaded', function() {
-            // Ajouter ici tout script nécessaire pour la gestion du menu mobile
+            // Mobile menu toggle
             const menuToggle = document.createElement('button');
             menuToggle.className = 'btn btn-sm btn-primary d-lg-none position-fixed';
             menuToggle.style.bottom = '20px';
@@ -179,18 +198,94 @@
             
             menuToggle.addEventListener('click', function() {
                 document.querySelector('.settings-sidebar').classList.toggle('open');
+                document.querySelector('.backdropFilter').classList.toggle('show');
+                document.body.classList.toggle('overflow-hidden');
             });
             
             document.body.appendChild(menuToggle);
             
-            // Fermer le menu au clic en dehors
+            // Close sidebar when clicking outside
             document.addEventListener('click', function(e) {
                 const sidebar = document.querySelector('.settings-sidebar');
+                const backdrop = document.querySelector('.backdropFilter');
                 if (!sidebar.contains(e.target) && e.target !== menuToggle) {
                     sidebar.classList.remove('open');
+                    backdrop.classList.remove('show');
+                    document.body.classList.remove('overflow-hidden');
+                }
+            });
+            
+            // Close sidebar when clicking on backdrop
+            document.querySelector('.backdropFilter').addEventListener('click', function() {
+                document.querySelector('.settings-sidebar').classList.remove('open');
+                this.classList.remove('show');
+                document.body.classList.remove('overflow-hidden');
+            });
+            
+            // Add active class to current nav item
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.settings-nav-item').forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
                 }
             });
         });
+    </script>
+    
+    @if ($errors->any())
+        <div class="message-flash error">
+            <div class="content-text d-flex">
+                <div class="icon">
+                    <i data-feather="x-circle"></i>
+                </div>
+                <div class="content">
+                    <h6>Erreur</h6>
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            <button class="btn-close"><i data-feather="x"></i></button>
+        </div>
+    @endif
+    
+    @if(session('success'))
+        <div class="message-flash success">
+            <div class="content-text d-flex">
+                <div class="icon">
+                    <i data-feather="check-circle"></i>
+                </div>
+                <div class="content">
+                    <h6>Succès</h6>
+                    <p class="mb-0">{{ session('success') }}</p>
+                </div>
+            </div>
+            <button class="btn-close"><i data-feather="x"></i></button>
+        </div>
+    @endif
+    
+    <script>
+        // Close flash messages
+        document.querySelectorAll('.message-flash .btn-close').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.message-flash').classList.add('fadeOut');
+                setTimeout(() => {
+                    this.closest('.message-flash').remove();
+                }, 300);
+            });
+        });
+        
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(() => {
+            document.querySelectorAll('.message-flash').forEach(flash => {
+                flash.classList.add('fadeOut');
+                setTimeout(() => {
+                    flash.remove();
+                }, 300);
+            });
+        }, 5000);
     </script>
 </body>
 </html>
