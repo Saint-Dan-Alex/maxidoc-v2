@@ -15,78 +15,80 @@ class Direction extends Component
     public $filter;
     public $filterText;
     public $lieus;
-    protected $directions;
     public $users;
     public $search;
 
+    protected $listeners = ['reloadDirection' => '$refresh'];
     protected $paginationTheme = 'bootstrap-5';
     protected $queryString = [
         'search' => ['except' => ''],
         'page' => ['except' => 1],
     ];
 
-    public function mount($directions)
+    public function mount()
     {
-        $this->directions = $directions;
-        // $this->lieus = $lieus;
+        $this->lieus = LieuAffectation::select('id', 'titre')->get();
+        $this->users = User::select('name', 'id')->limit(50)->get();
         $this->filterText = "Filtre";
     }
 
     public function render()
     {
-        $directions = $this->directions;
-        // $this->lieus = LieuAffectation::select('id','titre')->get();
-        // $this->users = User::select('name', 'id')->limit(50)->get();
+        $query = Model::with('lieu', 'responsable', 'adjoint')
+            ->select('id', 'titre', 'lieu_id', 'responsable_id', 'code', 'adjoint_id');
 
-        if ($directions == null) {
-            $directions = Model::with('lieu','responsable')->select('id','titre','lieu_id','responsable_id','code', 'adjoint_id');
-        }
-
+        // Gestion de la recherche
         if ($this->search) {
-            $directions = $directions->where('titre', 'LIKE', '%'.$this->search.'%');
-            // filter(function ($lieu) {
-            //     return Str::contains(Str::lower($lieu->titre), Str::lower($this->search));
-            // });
+            $query->where('titre', 'LIKE', '%' . $this->search . '%')
+                  ->orWhere('code', 'LIKE', '%' . $this->search . '%');
         }
 
+        // Gestion du filtrage
         switch ($this->filter) {
             case 1:
                 $this->filterText = 'Filtre';
-                $directions = $directions->orderBy('created_at', 'desc');
+                $query->orderBy('created_at', 'desc');
                 break;
             case 2:
                 $this->filterText = 'A - Z';
-                $directions = $this->directions->orderBy('titre');
+                $query->orderBy('titre', 'asc');
                 break;
             case 3:
                 $this->filterText = 'Z - A';
-                $directions = $directions->orderBy('titre', 'desc');
+                $query->orderBy('titre', 'desc');
                 break;
             case 4:
                 $this->filterText = "Date d'ajout";
-                $directions = $directions->whereDate('created_at', now());
+                $query->orderBy('created_at', 'desc');
                 break;
             case 5:
                 $this->filterText = 'Date de modification';
-                $directions = $directions->orderBy('updated_at');
+                $query->orderBy('updated_at', 'desc');
                 break;
             case 6:
                 $this->filterText = "Lieu d'Affectation";
-                $directions = $directions->orderBy('lieu_id');
+                $query->with(['lieu' => function($q) {
+                    $q->orderBy('titre', 'asc');
+                }]);
                 break;
             default:
-                $directions = $directions->orderBy('titre');
-                break;
+                $query->orderBy('titre', 'asc');
         }
 
-        return view('livewire.systems.direction')->with([
-            'directions' => $directions->paginate(10)
+        // Pagination avec 10 éléments par page
+        $directions = $query->paginate(10);
+        
+        return view('livewire.systems.direction', [
+            'directions' => $directions,
+            'lieus' => $this->lieus,
+            'users' => $this->users
         ]);
     }
 
     public function changeFilter($value)
     {
         $this->filter = $value;
+        $this->resetPage(); // Réinitialise la pagination lors du changement de filtre
     }
 
 }

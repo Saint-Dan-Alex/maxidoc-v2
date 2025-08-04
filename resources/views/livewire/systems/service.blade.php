@@ -93,19 +93,24 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">
-                                <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucun service trouvé</p>
+                            <td colspan="6" class="text-center">
+                                <div class="py-4">
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p class="mt-2 mb-0">Aucun service trouvé</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            @if($services->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $services->links() }}
+                </div>
+            @endif
         </div>
-        {!! $services->links() !!}
     </div>
 
     <div class="modal fade" id="modal-new-service" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

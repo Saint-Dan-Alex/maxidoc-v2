@@ -90,21 +90,25 @@
                             </td>
                         </tr>
                     @empty
-
                         <tr>
-                            <td colspan="5">
-                                <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucun departement trouvé</p>
+                            <td colspan="4" class="text-center">
+                                <div class="py-4">
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p class="mt-2 mb-0">Aucun assistant trouvé</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            @if($assistants->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $assistants->links() }}
+                </div>
+            @endif
         </div>
-        {!! $assistants->links() !!}
     </div>
 
     <div class="modal fade" id="modal-new-assistant" tabindex="-1" aria-labelledby="exampleModalLabel"

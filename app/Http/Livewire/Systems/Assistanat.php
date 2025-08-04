@@ -6,17 +6,17 @@ use App\Models\Assistanat as Model;
 use App\Models\Direction;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Str;
 
 class Assistanat extends Component
 {
     use WithPagination;
-    // public $assistants;
+    
     public $directions;
     public $filter;
     public $filterText;
     public $search;
 
+    protected $listeners = ['reloadAssistanat' => '$refresh'];
     protected $paginationTheme = 'bootstrap-5';
     protected $queryString = [
         'search' => ['except' => ''],
@@ -25,89 +25,74 @@ class Assistanat extends Component
 
     public function mount()
     {
-        // $this->assistants = Model::all();
+        $this->loadDirections();
         $this->filterText = "Filtre";
+    }
+
+    protected function loadDirections()
+    {
+        $this->directions = Direction::select('id', 'titre')
+            ->orderBy('titre', 'asc')
+            ->get();
     }
 
     public function render()
     {
+        $query = Model::with([
+                'responsable',
+                'direction',
+            ])
+            ->select('id', 'titre', 'direction_id', 'responsable_id', 'for_dg', 'for_dga', 'created_at', 'updated_at');
 
-        $assistants = Model::with('responsable','direction')->select('id','titre','direction_id','responsable_id', 'for_dg', 'for_dga');
-        $this->directions = Direction::select('id','titre')->get();
-
+        // Gestion de la recherche
         if ($this->search) {
-            $assistants = $assistants->where('titre', 'LIKE', '%'.$this->search.'%');
+            $query->where(function($q) {
+                $q->where('titre', 'LIKE', '%' . $this->search . '%')
+                  ->orWhereHas('direction', function($q) {
+                      $q->where('titre', 'LIKE', '%' . $this->search . '%');
+                  });
+            });
         }
 
+        // Gestion du filtrage
         switch ($this->filter) {
             case 1:
                 $this->filterText = 'Filtre';
-                $assistants = $assistants->orderBy('created_at', 'desc');
+                $query->orderBy('created_at', 'desc');
                 break;
             case 2:
                 $this->filterText = 'A - Z';
-                $assistants = $this->assistants->orderBy('titre');
+                $query->orderBy('titre', 'asc');
                 break;
             case 3:
                 $this->filterText = 'Z - A';
-                $assistants = $assistants->orderBy('titre', 'desc');
+                $query->orderBy('titre', 'desc');
                 break;
             case 4:
                 $this->filterText = "Date d'ajout";
-                $assistants = $assistants->whereDate('created_at', now());
+                $query->orderBy('created_at', 'desc');
                 break;
             case 5:
                 $this->filterText = 'Date de modification';
-                $assistants = $assistants->orderBy('updated_at');
+                $query->orderBy('updated_at', 'desc');
                 break;
             default:
-                $assistants = $assistants->orderBy('titre');
-                break;
+                $query->orderBy('titre', 'asc');
         }
 
-        // if ($this->search) {
-        //     $this->assistants = $this->assistants->filter(function ($assistant) {
-        //         return Str::contains(Str::lower($assistant->libelle), Str::lower($this->search));
-        //     });
-        // } else {
-        //     $this->assistants = Model::all();
-        // }
-
-        // switch ($this->filter) {
-        //     case 1:
-        //         $this->filterText = 'Filtre';
-        //         $this->assistants = $this->assistants->sortByDesc('created_at');
-        //         break;
-        //     case 2:
-        //         $this->filterText = 'A - Z';
-        //         $this->assistants = $this->assistants->sortBy('libelle');
-        //         break;
-        //     case 3:
-        //         $this->filterText = 'Z - A';
-        //         $this->assistants = $this->assistants->sortByDesc('libelle');
-        //         break;
-        //     case 4:
-        //         $this->filterText = "Date d'ajout";
-        //         $this->assistants = $this->assistants->sortByDesc('created_at');
-        //         break;
-        //     case 5:
-        //         $this->filterText = 'Date de modification';
-        //         $this->assistants = $this->assistants->sortByDesc('updated_at');
-        //         break;
-        //     default:
-        //         # code...
-        //         break;
-        // }
-
-        return view('livewire.systems.assistanat')->with([
-            'assistants' => $assistants->paginate(10)
+        // Pagination avec 10 éléments par page
+        $assistants = $query->paginate(10);
+        
+        return view('livewire.systems.assistanat', [
+            'assistants' => $assistants,
+            'allDirections' => $this->directions
         ]);
-
     }
 
     public function changeFilter($value)
     {
         $this->filter = $value;
+        $this->resetPage(); // Réinitialise la pagination lors du changement de filtre
     }
 
 }

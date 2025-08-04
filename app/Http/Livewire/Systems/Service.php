@@ -7,7 +7,6 @@ use App\Models\Division;
 use App\Models\Service as Model;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Str;
 
 class Service extends Component
 {
@@ -19,6 +18,7 @@ class Service extends Component
     public $filterText;
     public $search;
 
+    protected $listeners = ['reloadService' => '$refresh'];
     protected $paginationTheme = 'bootstrap-5';
     protected $queryString = [
         'search' => ['except' => ''],
@@ -27,90 +27,85 @@ class Service extends Component
 
     public function mount()
     {
-        // $this->services = Model::all();
+        $this->loadData();
         $this->filterText = "Filtre";
+    }
+
+    protected function loadData()
+    {
+        $this->divisions = Division::select('id', 'libelle')
+            ->orderBy('libelle', 'asc')
+            ->get();
+            
+        $this->directions = Direction::select('id', 'titre')
+            ->orderBy('titre', 'asc')
+            ->get();
     }
 
     public function render()
     {
-        $services = Model::with('responsable','direction', 'division', 'direction')->select('id', 'direction_id', 'division_id','responsable_id','titre');
-        $this->divisions = Division::select('id','libelle')->get();
-        $this->directions = Direction::select('id','titre')->get();
-        // $this->directions = Direction::select('id','titre')->get();
+        $query = Model::with([
+                'responsable',
+                'direction', 
+                'division',
+                'sections',
+                'agents'
+            ])
+            ->select('id', 'direction_id', 'division_id', 'responsable_id', 'titre', 'created_at', 'updated_at');
 
+        // Gestion de la recherche
         if ($this->search) {
-            $services = $services->where('titre', 'LIKE', '%'.$this->search.'%');
+            $query->where(function($q) {
+                $q->where('titre', 'LIKE', '%' . $this->search . '%')
+                  ->orWhereHas('direction', function($q) {
+                      $q->where('titre', 'LIKE', '%' . $this->search . '%');
+                  })
+                  ->orWhereHas('division', function($q) {
+                      $q->where('libelle', 'LIKE', '%' . $this->search . '%');
+                  });
+            });
         }
 
+        // Gestion du filtrage
         switch ($this->filter) {
             case 1:
                 $this->filterText = 'Filtre';
-                $services = $services->orderBy('created_at', 'desc');
+                $query->orderBy('created_at', 'desc');
                 break;
             case 2:
                 $this->filterText = 'A - Z';
-                $services = $this->services->orderBy('titre');
+                $query->orderBy('titre', 'asc');
                 break;
             case 3:
                 $this->filterText = 'Z - A';
-                $services = $services->orderBy('titre', 'desc');
+                $query->orderBy('titre', 'desc');
                 break;
             case 4:
                 $this->filterText = "Date d'ajout";
-                $services = $services->whereDate('created_at', now());
+                $query->orderBy('created_at', 'desc');
                 break;
             case 5:
                 $this->filterText = 'Date de modification';
-                $services = $services->orderBy('updated_at');
+                $query->orderBy('updated_at', 'desc');
                 break;
             default:
-                $services = $services->orderBy('titre');
-                break;
+                $query->orderBy('titre', 'asc');
         }
 
-        // if ($this->search) {
-        //     $this->services = $this->services->filter(function ($service) {
-        //         return Str::contains(Str::lower($service->titre), Str::lower($this->search)) || Str::contains(Str::lower($service->description), Str::lower($this->search));
-        //     });
-        // } else {
-        //     $this->services = Model::all();
-        // }
-
-        // switch ($this->filter) {
-        //     case 1:
-        //         $this->filterText = 'Filtre';
-        //         $this->services = $this->services->sortByDesc('created_at');
-        //         break;
-        //     case 2:
-        //         $this->filterText = 'A - Z';
-        //         $this->services = $this->services->sortBy('titre');
-        //         break;
-        //     case 3:
-        //         $this->filterText = 'Z - A';
-        //         $this->services = $this->services->sortByDesc('titre');
-        //         break;
-        //     case 4:
-        //         $this->filterText = "Date d'ajout";
-        //         $this->services = $this->services->sortByDesc('created_at');
-        //         break;
-        //     case 5:
-        //         $this->filterText = 'Date de modification';
-        //         $this->services = $this->services->sortByDesc('updated_at');
-        //         break;
-        //     default:
-        //         # code...
-        //         break;
-        // }
-
-        return view('livewire.systems.service')->with([
-            'services' => $services->paginate(10)
+        // Pagination avec 10 éléments par page
+        $services = $query->paginate(10);
+        
+        return view('livewire.systems.service', [
+            'services' => $services,
+            'allDivisions' => $this->divisions,
+            'allDirections' => $this->directions
         ]);
-
     }
 
     public function changeFilter($value)
     {
         $this->filter = $value;
+        $this->resetPage(); // Réinitialise la pagination lors du changement de filtre
     }
 
 }
