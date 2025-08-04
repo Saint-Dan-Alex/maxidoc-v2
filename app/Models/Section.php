@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Statut;
 
 class Section extends Model
 {
@@ -16,6 +17,15 @@ class Section extends Model
      * @var array
      */
     protected $fillable = ['division_id', 'service_id', 'responsable_id', 'titre', 'description', 'statut_id'];
+    
+    /**
+     * The model's default values for attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'statut_id' => 1, // Valeur par défaut pour statut_id
+    ];
 
     public function agents()
     {
@@ -40,5 +50,15 @@ class Section extends Model
     public function responsable(): BelongsTo
     {
         return $this->belongsTo(Agent::class, 'responsable_id');
+    }
+    
+    /**
+     * Get the statut that owns the Section
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function statut(): BelongsTo
+    {
+        return $this->belongsTo(Statut::class, 'statut_id');
     }
 }
