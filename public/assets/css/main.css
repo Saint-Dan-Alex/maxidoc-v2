@@ -10682,6 +10682,71 @@ textarea {
     max-width: 84%;
   }
 }
+/* Styles pour les boutons d'action dans les tableaux */
+.btns-action-table .btn {
+    position: relative;
+    padding: 0.5rem;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btns-action-table .btn i {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btns-action-table .btn .btn-text {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    margin-bottom: 5px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+}
+
+.btns-action-table .btn .btn-text::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.btns-action-table .btn:hover .btn-text {
+    display: block;
+    opacity: 1;
+}
+
+/* Ajustements pour les petits écrans */
+@media (max-width: 768px) {
+    .btns-action-table .btn {
+        padding: 0.5rem;
+    }
+    
+    .btns-action-table .btn .btn-text {
+        font-size: 0.65rem;
+        padding: 3px 6px;
+    }
+}
+
 /* #ff7b7b */
 #page-load {
   position: fixed;
