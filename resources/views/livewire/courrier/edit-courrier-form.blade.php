@@ -458,7 +458,7 @@
             </div>
             <div class="footer-sidebar">
                 <a href="{{ route('regidoc.courriers.index') }}" class="btn">Quitter</a>
-                <button class="btn btn-valid">Valider</button>
+                <button class="btn btn-valid" @disabled(!$isFormValid)>Valider</button>
             </div>
         </form>
     </div>
@@ -505,6 +505,71 @@
     </script> --}}
     <script>
         $(document).ready(function() {
+            // Fonction pour vérifier si tous les champs obligatoires sont remplis
+            function checkFormValidity() {
+                // Liste des sélecteurs des champs obligatoires
+                const requiredFields = [
+                    // 'select[name="type_id"]',         // Type de courrier
+                    'select[name="categorie"]',      // Catégorie
+                    'select[name="exp"]',            // Expéditeur
+                    // 'input[name="ref_interne"]',     // N° d'enregistrement
+                    'input[name="ref"]',             // Référence du courrier
+                    'input[name="title"]',           // Titre
+                    'select[name="nature"]',         // Nature
+                    // 'select[name="priorite"]',       // Priorité
+                    'input[name="date-doc"]',        // Date du courrier
+                    // 'input[name="date-arriv"]'       // Date de réception
+                ];
+
+                let isValid = true;
+                
+                // Vérifier chaque champ obligatoire
+                for (const selector of requiredFields) {
+                    const field = $(selector);
+                    // Pour les champs de type select2, vérifier si une valeur est sélectionnée
+                    if (field.hasClass('select2-hidden-accessible')) {
+                        if (!field.val() || field.val().length === 0) {
+                            isValid = false;
+                            break;
+                        }
+                    } 
+                    // Pour les champs input normaux
+                    else if (!field.val() || field.val().trim() === '') {
+                        isValid = false;
+                        break;
+                    }
+                }
+                
+                @this.set('isFormValid', isValid);
+                return isValid;
+            }
+
+            // Vérifier la validité du formulaire au chargement de la page
+            checkFormValidity();
+
+            // Liste des sélecteurs des champs obligatoires
+            const requiredFields = [
+                // 'select[name="type_id"]',
+                'select[name="categorie"]',
+                'select[name="exp"]',
+                // 'input[name="ref_interne"]',
+                'input[name="ref"]',
+                'input[name="title"]',
+                'select[name="nature"]',
+                // 'select[name="priorite"]',
+                'input[name="date-doc"]',
+                // 'input[name="date-arriv"]'
+            ];
+
+            // Écouter les changements sur les champs obligatoires
+            $(requiredFields.join(',')).on('change keyup', function() {
+                checkFormValidity();
+            });
+
+            // Pour les champs Select2
+            $(document).on('select2:select select2:unselect', 'select.select2', function() {
+                checkFormValidity();
+            });
 
             setEntrat($('#type_id').val());
             $('#type_id').on('change', function(e) {
