@@ -35,12 +35,12 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Courrier::class => CourrierPolicy::class,
-        // Classeur::class => ClasseurPolicy::class,
-        // Dossier::class => DossierPolicy::class,
-        // Document::class => DocumentPolicy::class,
-        // Direction::class => DirectionPolicy::class,
-        // Division::class => DivisionPolicy::class,
-        // Service::class => ServicePolicy::class,
+        Classeur::class => ClasseurPolicy::class,
+        Dossier::class => DossierPolicy::class,
+        Document::class => DocumentPolicy::class,
+        Direction::class => DirectionPolicy::class,
+        Division::class => DivisionPolicy::class,
+        Service::class => ServicePolicy::class,
     ];
 
     /**
