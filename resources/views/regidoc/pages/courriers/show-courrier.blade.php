@@ -2571,6 +2571,20 @@
         });
     </script>
 
+    <script>
+        // Initialisation des tooltips Bootstrap pour les boutons de la barre d'outils PDF
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    trigger: 'hover',
+                    placement: 'top',
+                    container: 'body',
+                    html: true
+                });
+            });
+        });
+    </script>
 
 </body>
 
