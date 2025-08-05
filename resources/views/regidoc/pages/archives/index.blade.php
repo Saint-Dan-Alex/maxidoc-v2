@@ -2,20 +2,12 @@
 
 @section('content')
     <div class="card card-lg mb-4">
-        <div class="d-flex align-items-center text-star">
-
-            {{-- <a href="{{ route('regidoc.home') }}" class="back mb-0">
-                <i class="fi fi-rr-angle-left"></i>
-                <div class="tooltip-indicator">
-                    Retour
-                </div>
-            </a> --}}
-
+        <div class="d-flex align-items-center justify-content-between">
             <h1 class="mb-0 ">Archivages</h1>
-            {{-- <p class="mb-0">
-                Vous avez {{ $countClasseurs }} classeurs, {{ $countDossiers }} dossiers et {{ $countFiles }}
-                fichiers
-            </p> --}}
+            <a href="{{ route('regidoc.archivages.create') }}" class="btn btn-primary">
+                <i class="fi fi-rr-plus"></i>
+                <span>Archiver un document</span>
+            </a>
         </div>
         {{-- <div class="block-circle">
             <div class="circle-white"></div>

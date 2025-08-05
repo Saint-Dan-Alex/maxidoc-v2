@@ -9,6 +9,11 @@ use App\Models\DocumentArchivage;
 use App\Models\Dossier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Agent;
+use App\Models\Service;
+use App\Models\CourrierType;
+use App\Models\CourrierNature;
+use App\Models\Direction;
 
 class ArchiveController extends Controller
 {
@@ -46,9 +51,34 @@ class ArchiveController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        $types = CourrierType::all();
+    $services = Service::all();
+    $agents = Agent::actif()->select('id','user_id','direction_id','nom','post_nom','prenom','division_id','service_id','fonction_id')->get();
+    $natures = CourrierNature::select('id', 'titre')->get();
+    $sec = Direction::find(1)->dgSecretaires->pluck('responsable_id');
+    $isDestinateur = $sec->contains(auth()->id());
+
+    // Variables communes
+    $viewData = [
+        'types' => $types,
+        'services' => $services,
+        'agents' => $agents,
+        'natures' => $natures,
+        'sec' => $sec,
+        'isDestinateur' => $isDestinateur,
+    ];
+
+    // Si newdoc est présent, ajoute les champs supplémentaires
+    if ($request->has('newdoc')) {
+        $viewData['newDoc'] = $request->newdoc;
+        $viewData['textSelected'] = $request->textSelected;
+        $viewData['fileName'] = $request->fileName;
+    }
+
+    // return view('regidoc.pages.courriers.new-doc', $viewData);
+        return view('regidoc.pages.archives.create',$viewData);
     }
 
     /**
