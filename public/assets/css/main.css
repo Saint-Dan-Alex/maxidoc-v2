@@ -10682,6 +10682,341 @@ textarea {
     max-width: 84%;
   }
 }
+/* Styles pour la visualisation PDF */
+.pdf-viewer-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    position: relative;
+    background: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Barre d'outils PDF */
+.pdf-tools {
+    background: #f8f9fa;
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 8px;
+    border-bottom: 1px solid #e9ecef;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #fff;
+    white-space: nowrap;
+    box-sizing: border-box;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.pdf-tools::-webkit-scrollbar {
+    display: none;
+}
+
+/* Masquer la barre de défilement pour Webkit */
+.pdf-tools::-webkit-scrollbar {
+    display: none;
+}
+
+/* Style de la barre de défilement pour Webkit */
+.pdf-tools::-webkit-scrollbar {
+    height: 6px;
+}
+
+.pdf-tools::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.pdf-tools::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 3px;
+}
+
+/* Groupes de boutons alignés */
+#toolbarViewerLeft,
+#toolbarViewerMiddle,
+#toolbarViewerRight {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    padding: 0 8px;
+    position: relative;
+    height: 100%;
+}
+
+/* Groupe de gauche - navigation */
+#toolbarViewerLeft {
+    min-width: 200px;
+}
+
+/* Groupe du milieu - zoom */
+#toolbarViewerMiddle {
+    min-width: 200px;
+    justify-content: center;
+}
+
+/* Groupe de droite - actions */
+#toolbarViewerRight {
+    min-width: 200px;
+    justify-content: flex-end;
+    margin-left: auto;
+}
+
+/* Séparateur entre les groupes de boutons */
+#toolbarViewerLeft::after,
+#toolbarViewerMiddle::after {
+    content: '';
+    display: inline-block;
+    width: 1px;
+    height: 20px;
+    background-color: #dee2e6;
+    margin: 0 2px;
+}
+
+/* Boutons de navigation et contrôles */
+#previous, #next,
+#zoomIn, #zoomOut,
+#pageNumber,
+#scaleSelect,
+.toolbarButton,
+#print,
+#download,
+#search {
+    height: 34px;
+    min-width: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #fff;
+    color: #495057;
+    transition: all 0.15s;
+    font-size: 13px;
+    line-height: 1;
+    padding: 0 10px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    outline: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+/* Boutons d'icônes */
+#previous, #next,
+#zoomIn, #zoomOut,
+#print,
+#download,
+#search {
+    padding: 0;
+    min-width: 34px;
+    width: 34px;
+}
+
+/* Champs de formulaire */
+#pageNumber,
+#scaleSelect {
+    text-align: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: auto;
+    max-width: 100px;
+}
+
+/* Boutons de navigation spécifiques */
+#previous, #next {
+    width: 30px;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+/* Champs de formulaire */
+#pageNumber,
+#scaleSelect {
+    text-align: center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: auto;
+    max-width: 80px;
+}
+
+/* Boutons d'action */
+#zoomIn, #zoomOut,
+.toolbarButton {
+    cursor: pointer;
+}
+
+/* États des boutons */
+#previous:hover, #next:hover,
+#zoomIn:hover, #zoomOut:hover,
+.toolbarButton:hover {
+    background: #e9ecef;
+    color: #0d6efd;
+    border-color: #86b7fe;
+}
+
+/* Désactivé */
+#previous:disabled, #next:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+/* Champ de numéro de page */
+#pageNumber {
+    width: 60px;
+    height: 32px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin: 0 5px;
+    padding: 0 5px;
+}
+
+/* Conteneur du contenu PDF */
+#pdf-contents {
+    width: 100%;
+    background: #525659;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Page PDF individuelle */
+#pdf-contents > div {
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    background: #fff;
+    position: relative;
+}
+
+/* Canvas PDF */
+#pdf-contents canvas {
+    max-width: 100%;
+    height: auto !important;
+    display: block;
+}
+
+/* Couche de texte pour la sélection */
+.textLayer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    opacity: 0.2;
+    line-height: 1.0;
+}
+
+.textLayer ::selection {
+    background: rgba(0, 0, 255, 0.2);
+}
+
+/* Indicateur de chargement */
+.page-loader {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+/* Styles responsifs */
+@media (max-width: 768px) {
+    .pdf-tools {
+        padding: 8px 10px;
+    }
+    
+    #toolbarViewerLeft,
+    #toolbarViewerMiddle,
+    #toolbarViewerRight {
+        justify-content: center;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    #pageNumber {
+        width: 50px;
+    }
+    
+    #scaleSelect {
+        max-width: 120px;
+    }
+}
+
+/* Styles pour les écrans très petits */
+@media (max-width: 768px) {
+    .pdf-tools {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        border-top: 1px solid #dee2e6;
+        z-index: 1050;
+        padding: 8px 10px;
+        gap: 6px;
+    }
+    
+    #pdf-contents {
+        padding-bottom: 60px; /* Espace pour la barre d'outils fixe */
+    }
+    
+    /* Ajustement des boutons et champs */
+    #previous, #next {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    #pageNumber {
+        width: 45px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    #scaleSelect {
+        height: 28px;
+        font-size: 12px;
+        max-width: 90px;
+    }
+    
+    /* Masquer les éléments non essentiels sur très petits écrans */
+    @media (max-width: 360px) {
+        .toolbarButton:not(#previous):not(#next):not(#pageNumber) {
+            padding: 0 6px;
+            font-size: 12px;
+        }
+        
+        #scaleSelect {
+            max-width: 70px;
+        }
+    }
+}
+
 /* Styles pour les boutons d'action dans les tableaux */
 .btns-action-table .btn {
     position: relative;
