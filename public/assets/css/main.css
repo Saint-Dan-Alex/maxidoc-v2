@@ -8488,6 +8488,7 @@ label {
   z-index: 1;
   overflow: hidden;
   user-select: none;
+  -webkit-user-select: none;
 }
 .block-intervenant .content-intervenant .avatar-intervenant {
   width: 34px;
@@ -9692,6 +9693,7 @@ textarea {
 .pdf-tools {
   background: #ffffffcc !important;
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 
   #numPages {
     color: var(--colorParagraph);
