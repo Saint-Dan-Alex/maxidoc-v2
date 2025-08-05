@@ -16,7 +16,27 @@ let tache_id = $("#pdf-main-container").data("tache");
 let docId = $("#pdf-main-container").data("docid");
 let code = $("#pdf-main-container").data("code");
 
+// Show the pdf document.
 showPDF(url);
+
+// Handle window resize for responsive PDF display
+let resizeTimeout;
+$(window).on('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function() {
+        if (typeof __CURRENT_PAGE !== 'undefined' && __CURRENT_PAGE > 0) {
+            // Get all canvas elements and re-render the current page
+            $('.pdf-page').each(function() {
+                const pageNumber = parseInt($(this).attr('id').split('-')[1]);
+                if (pageNumber === __CURRENT_PAGE) {
+                    const canvas = $(this).find('canvas')[0];
+                    const textLayer = $(this).find('.text-layer')[0];
+                    showPage(canvas, null, textLayer, pageNumber);
+                }
+            });
+        }
+    }, 250); // Debounce resize events for better performance
+});
 
 function showPDF(pdf_url) {
     // Nettoyer l'URL
@@ -248,12 +268,19 @@ function showPage(canvas, vignetteCanvas, textLayer, page_no) {
 
     // Fetch the page
     __PDF_DOC.getPage(page_no).then(function (page) {
-        // Support HiDPI-screens.
+        // Get the container width and calculate the scale factor
+        var container = $(canvas).closest('#pdf-contents');
+        var containerWidth = container.width() - 40; // 20px padding on each side
+        
+        // Get the viewport at 100% scale to calculate the proper scale factor
+        var viewport = page.getViewport(1.0);
+        var scale = containerWidth / viewport.width;
+        
+        // Apply the scale to get a properly sized viewport
+        viewport = page.getViewport(scale);
+        
+        // Support HiDPI-screens
         var outputScale = window.devicePixelRatio || 1;
-
-        var scale = outputScale > 1 ? 1.5 : 1.2;
-
-        var viewport = page.getViewport(scale);
 
         if ($(".confidentiel-doc").length <= 0) {
             var context = canvas.getContext("2d");
