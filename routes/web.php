@@ -83,7 +83,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
 
             // Archivage  
-            Route::resource('archivages', ArchiveController::class);
+            Route::resource('archivages', ArchiveController::class)->names('archivages');
             Route::resource('archive-classeurs', ArchivesClasseurController::class)->except('index');
             Route::get('archive-classeurs/list/{annee}', [ArchivesClasseurController::class, 'index'])->name('archive-classeurs.index');
             Route::resource('archive-classeurs.archive-dossiers', ArchivesDossierController::class);
