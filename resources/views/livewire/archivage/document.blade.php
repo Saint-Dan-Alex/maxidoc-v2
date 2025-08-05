@@ -77,9 +77,10 @@
                                 @endif
                                 <div class="text-star">
 
-                                    <h6 class="text-capitalize">{{ Str::ucfirst($document->titre) }}</h6>
+                                    <h6 class="text-capitalize">{{ Str::ucfirst($document->libelle) }}</h6>
                                     <p>Reférence : {{ Str::ucfirst($document->reference) }}</p>
-                                    <p>Ajouté le: {{ $document->created_at->format('d/m/Y h:i') }}</p>
+                                    <p>Archivé le : {{ \Carbon\Carbon::parse($document->archived_at)->format('d/m/Y h:i') }}</p>
+
                                 </div>
                             </div>
                         </a>
