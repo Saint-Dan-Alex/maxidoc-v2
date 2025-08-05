@@ -14,6 +14,22 @@ use App\Models\Service;
 use App\Models\CourrierType;
 use App\Models\CourrierNature;
 use App\Models\Direction;
+use App\Http\Controllers\File;
+use App\Http\Controllers\ScanFile;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Courrier;
+use App\Models\Historique;
+use App\Models\Priorite;
+use App\Models\Statut;  
+use App\Models\User; 
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Collection;
+use App\Events\DocumentCreated;
+
 
 class ArchiveController extends Controller
 {
@@ -81,6 +97,115 @@ class ArchiveController extends Controller
         return view('regidoc.pages.archives.create',$viewData);
     }
 
+    public function createDocument($request, $destinateur, $doc = null) 
+{
+    // 1. Création ou récupération du classeur
+    $classeur = Classeur::firstOrCreate(
+        ['titre' => Auth::user()->agent->direction?->lieu?->titre ?? 'Region inconnu'], 
+        [
+            'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
+            'direction_id' => Agent::find($destinateur)?->direction_id,
+            'created_by' => Auth::user()->agent->id
+        ]
+    );
+
+    // 2. Création ou récupération du dossier 'Courriers'
+    $dossier = Dossier::firstOrCreate(
+        ['titre' => 'Courriers', 'classeur_id' => $classeur->id], 
+        [
+            'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
+            'created_by' => Auth::user()->agent->id,
+            'updated_by' => Auth::user()->agent->id,
+        ]
+    );
+
+    // 3. Si pas de document existant passé en paramètre
+    if ($doc == null) {
+
+        // Cas où c’est un scan ou un document déjà sélectionné
+        if (($request?->is_scan ?? false) == "true" || ($request?->has('selected_doc') && !empty($request->selected_doc))) {
+
+            $document = new Document();
+            $document->dossier_id = $dossier->id;
+            $document->reference = is_array($request->get('ref')) ? implode(', ', $request->get('ref')) : $request->get('ref');
+            $document->category_id = $request->get('categorie');
+            $document->libelle = $request->get('title');
+            $document->type = $request->get('type');
+
+            if (($request->is_scan ?? false) == "true") {
+                // Stockage du fichier scanné (à adapter selon ta logique ScanFile)
+                $document->document = (new ScanFile())->handle('documents');
+            } else {
+                // Déplacer un fichier sélectionné déjà uploadé en temporaire
+                $document->document = $this->moveCreatedDoc($request->selected_doc);
+            }
+
+            $document->user_id = Auth::user()->id;
+            $document->statut_id = 6;
+            $document->created_by = Auth::user()->agent->id;
+            $document->save();
+
+            return $document;
+        }
+
+        // Cas d'un upload via formulaire (input file)
+        if ($request->hasFile('document') && (empty($request->document_id))) {
+
+            $document = new Document();
+            $document->dossier_id = $dossier->id;
+            $document->reference = $request->get('ref');
+            $document->category_id = $request->get('categorie');
+            $document->libelle = $request->get('title');
+            $document->type = $request->get('type');
+
+            // Utilisation de la classe File pour stocker le fichier
+            $document->document = (new File())->handle($request, 'document', 'documents');
+
+            $document->user_id = Auth::user()->id;
+            $document->statut_id = 6;
+            $document->created_by = Auth::user()->agent->id;
+            $document->save();
+
+            return $document;
+        } 
+        
+        // Cas où on utilise un document existant via son ID
+        elseif ($request->has('document_id') && !empty($request->document_id)) {
+            return Document::find($request->document_id);
+        }
+
+    } else {
+        // Cas où on crée un nouveau document à partir d’un autre objet $doc existant
+        $document = Document::create([
+            'dossier_id' => $dossier->id,
+            'reference' => is_array($doc->reference) ? implode(', ', $doc->reference) . '/R' : $doc->reference . '/R',
+            'category_id' => $doc->category_id,
+            'libelle' => $doc->libelle,
+            'type' => $doc->type,
+            'document' => $doc->document ?? (new File())->handle($request, 'document', 'documents'),
+            'user_id' => Auth::user()->id,
+            'statut_id' => 6,
+            'created_by' => Auth::user()->agent->id,
+        ]);
+
+        return $document;
+    }
+
+    // Si aucune des conditions ci-dessus n'est remplie (ex: pas de fichier), 
+    // on crée quand même un document avec les métadonnées.
+    $document = new Document();
+    $document->dossier_id = $dossier->id;
+    $document->reference = $request->get('ref');
+    $document->category_id = $request->get('categorie');
+    $document->libelle = $request->get('title');
+    $document->type = $request->get('type');
+    $document->user_id = Auth::user()->id;
+    $document->statut_id = 6; // Statut 'Archivé' ou autre à définir
+    $document->created_by = Auth::user()->agent->id;
+    $document->save();
+
+    return $document;
+}
     /**
      * Store a newly created resource in storage.
      *
@@ -89,9 +214,56 @@ class ArchiveController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        try {
+            // 1. Création du document via la méthode existante
+            // Le destinataire est l'utilisateur authentifié par défaut pour un archivage
+            $document = $this->createDocument($request, Auth::user()->agent->id);
 
+            if (!$document) {
+                 throw new \Exception('La création du document a échoué.');
+            }
+
+            // 2. Mettre à jour le document avec les informations d'archivage
+            $document->archived_at = $request->input('date-arriv', now());
+            $document->confidentiel = $request->has('confidentiel');
+            // Vous pouvez ajouter ici d'autres champs du modèle Document à mettre à jour
+            // Exemple: $document->reference = $request->input('ref_interne');
+            $document->save();
+
+            // 3. Création de l'historique
+            Historique::create([
+                "key" => "Archivage de document",
+                "historiquecable_id" => $document->id,
+                "historiquecable_type" => Document::class,
+                "description" => "A archivé un document",
+                "user_id" => Auth::user()->id,
+            ]);
+
+            // 4. Préparation du message de succès
+            $content = json_encode([
+                'name' => 'Archive',
+                'statut' => 'success',
+                'message' => 'Document archivé avec succès !',
+            ]);
+
+        } catch (\Throwable $th) {
+            Log::error("Erreur lors de l'archivage : " . $th->getMessage(), [
+                'file' => $th->getFile(),
+                'line' => $th->getLine(),
+                'trace' => $th->getTraceAsString(),
+            ]);
+
+            $content = json_encode([
+                'name' => 'Archive',
+                'statut' => 'error',
+                'message' => 'Impossible d\'archiver le document, une erreur s\'est produite.',
+            ]);
+        }
+
+        // 5. Redirection avec le message flash
+        session()->flash('session', $content);
+        return redirect()->route('regidoc.archivages.index');
+    }
     /**
      * Display the specified resource.
      *

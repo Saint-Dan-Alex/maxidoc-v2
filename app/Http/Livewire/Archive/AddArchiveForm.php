@@ -23,6 +23,7 @@ class AddArchiveForm extends Component
     public $isFormValid = false;
     public $selectedDoc = false;
     public $isConfidentiel = false;
+    public $ref;
 
     public function mount($types, $natures, $services, $agents, $sec, $isDestinateur, $newDoc, $textSelected, $fileName)
     {

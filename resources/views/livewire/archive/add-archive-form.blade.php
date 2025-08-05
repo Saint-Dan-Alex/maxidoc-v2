@@ -1,7 +1,7 @@
 <div id="createMailPage">
     <div class="sidebar-doc">
         <div class="header-sidebar d-flex align-items-center">
-            <a href="{{ route('regidoc.courriers.index') }}" class="btn-back"
+            <a href="{{ route('regidoc.documents.index') }}" class="btn-back"
                 style="font-size: 14px; color: var(--colorTitle)">
                 <i class="fi fi-rr-angle-left"></i>
                 <div class="tooltip-indicator">
@@ -11,7 +11,7 @@
             <h4 class="ms-0 ms-2">Archivage du document</h4>
         </div>
         {{--  --}}
-        <form action="{{ route('regidoc.courriers.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('regidoc.archivages.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="body-siderbar">
         <div class="form-group row g-3">
@@ -20,110 +20,10 @@
             {{-- DÉBUT DE LA CONDITION PRINCIPALE --}}
             {{-- =================================================================== --}}
 
-            @if ($this->isDestinateur  )
-                @if ($type ==1 )
-                    
-                @endif
-                {{-- AFFICHAGE POUR LE DESTINATEUR : UNIQUEMENT SCAN/UPLOAD --}}
-                <input type="hidden" value="1" name="type">
-                
-
-                <div class="col-12 select_doc" onclick="scanToPdf();" wire:ignore>
-                    <div class="block-file block-import-doc">
-                        <label for="is_scan">
-                            <i class="fi fi-rr-print"></i>
-                            <p>Numériser à partir d'un scanner</p>
-                            <i class="bi bi-plus-lg"></i>
-                        </label>
-                    </div>
-                </div>
-                <input type="hidden" name="is_scan" id="server_response" wire:ignore />
-                <div class="col-12" wire:ignore>
-                    <div class="block-file ">
-                        <input type="file" id="file-upload" name="document" accept=".pdf" required>
-                        <label for="file-upload" class="d-flex">
-                            <svg viewBox="0 0 24 24" width="32" height="32">
-                                <path
-                                    d="m23.493,11.017c-.487-.654-1.234-1.03-2.05-1.03h-.443v-1.987c0-2.757-2.243-5-5-5h-5.056c-.154,0-.31-.037-.447-.105l-3.155-1.578c-.414-.207-.878-.316-1.342-.316h-2C1.794,1,0,2.794,0,5v13c0,2.757,2.243,5,5,5h12.558c2.226,0,4.15-1.432,4.802-3.607l1.532-6.116c.234-.782.089-1.605-.398-2.26ZM2,18V5c0-1.103.897-2,2-2h2c.154,0,.31.037.447.105l3.155,1.578c.414.207.878.316,1.342.316h5.056c1.654,0,3,1.346,3,3v1.987h-10.385c-1.7,0-3.218,1.079-3.789,2.72l-2.19,7.138c-.398-.509-.636-1.15-.636-1.845Zm19.964-5.253l-1.532,6.115c-.384,1.279-1.539,2.138-2.874,2.138H5c-.208,0-.411-.021-.607-.062l2.334-7.609c.279-.803,1.039-1.342,1.889-1.342h12.828c.242,0,.383.14.445.224.062.084.156.259.075.536Z" />
-                            </svg>
-                            <p class="d-flex align-items-center justify-content-center g-2"> Importer à partir
-                                de l'ordinateur
-                                <span class="mx-1" data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="PDF uniquement">
-                                    <i class="fi fi-sr-info ms-2" style="font-size: 20px;"></i>
-                                </span>
-                            </p>
-                            <i class="bi bi-plus-lg"></i>
-                        </label>
-                    </div>
-                </div>
-                 <div class="mb-4 col-12 d-none block-col" wire:ignore>
-                    <ul class="list-file">
-                        <li class="d-flex align-items-center">
-                            <div class="block-remove">
-                                <a href="#" class="btn btn-remove">
-                                    <i class="fi fi-rr-trash"></i>
-                                </a>
-                            </div>
-                            <i class="bi bi-file-earmark"></i>
-                            <div class="block-detail">
-                                <div class="names">
-                                    <p class="name-file">File uploader <span class="size"></span></p>
-                                    <p class="pourc">
-                                        <i class="bi bi-check-lg" style="font-size: 20px; color: #07c451"></i>
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                     <div class="d-flex d-md-none justify-content-end">
-                        <a href="#" style="font-size: 12px; font-weight: 500; color: var(--primaryColor)"
-                           data-bs-toggle="offcanvas" data-bs-target="#offcanvasNotif"
-                           aria-controls="offcanvasRight">Voir le document</a>
-                    </div>
-                    
-                </div>
-                
-                <div class="col-12">
-                    <div class="row">
-                        <label class="col-5 col-form-label">N° d'enregistrement</label>
-                        <div class="col-7">
-                            <input type="text" class="form-control" name="ref_interne" value="{{ $num }}" placeholder="N° d'enregistrement" readonly>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 datearrive_field" wire:ignore>
-                    <div class="row">
-                        <label class="col-5 col-form-label">Date de réception</label>
-                        <div class="col-7">
-                            <input type="datetime-local" class="form-control" id="date-arrivee" name="date-arriv"
-                                value="{{ now()->format('Y-m-d\TH:i') }}" readonly
-                                @if ($type == [1]) required @endif>
-                        </div>
-                    </div>
-                </div>
-
-            @else
+          
                 {{-- AFFICHAGE POUR LES AUTRES UTILISATEURS : FORMULAIRE COMPLET --}}
 
-                <div class="col-12">
-                    <div class="row" wire:ignore>
-                        <label class="col-5 col-form-label">Type de document</label>
-                        <div class="col-7">
-                            <select class="form-select form-control select autreSelect2"
-                                aria-label="Default select example" name="type" id="type_id" required>
-                                <option value="" selected disabled>Selectionnez</option>
-                                @foreach ($types as $type)
-                                    @if ($type->id != 2)
-                                        <option value="{{ $type->id }}" @selected($loop->first)>
-                                            {{ $type->titre }}
-                                        </option>
-                                    @endif
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                 <input type="hidden" name="type" value="1" wire:ignore/>
 
                 @if (!$selectedDoc)
                     <div class="col-12 select_doc" onclick="scanToPdf();" wire:ignore>
@@ -184,7 +84,7 @@
                     <input type="hidden" name="selected_doc" value="{{ $fileName }}" id="" wire:ignore />
                 @endif
                 
-                <div class="col-12 categorie_field" wire:ignore>
+                {{-- <div class="col-12 categorie_field" wire:ignore>
                     <div class="row">
                         <label class="col-5 col-form-label">Catégorie</label>
                         <div class="col-7" wire:ignore>
@@ -198,9 +98,9 @@
                             </select>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
-                <div class="col-12" wire:ignore>
+                {{-- <div class="col-12" wire:ignore>
                     <h5 class="mt-1 title-info">Destination du courrier</h5>
                 </div>
                 
@@ -277,10 +177,10 @@
                             </div>
                         </div>
                     </div>
-                @endcan
+                @endcan --}}
 
                 <div class="col-12">
-                    <h5 class="mb-3 title-info">Détails du Courrier</h5>
+                    <h5 class="mb-3 title-info">Détails du Document</h5>
                 </div>
 
                  <div class="col-12 d-none block_initiateur" wire:ignore>
@@ -299,10 +199,10 @@
                 
                 <div class="col-12">
                     <div class="row">
-                        <label class="col-5 col-form-label">Référence courrier</label>
+                        <label class="col-5 col-form-label">Référence document</label>
                         <div class="col-7">
                             <input type="text" class="form-control" name="ref"
-                                placeholder="Référence courrier" wire:model="ref">
+                                placeholder="Référence document" wire:model="ref">
                         </div>
                     </div>
                 </div>
@@ -375,7 +275,7 @@
 
                 <div class="col-12">
                     <div class="row">
-                        <label class="col-5 col-form-label">Date du courrier</label>
+                        <label class="col-5 col-form-label">Date du document</label>
                         <div class="col-7">
                             <input type="date" class="form-control" id="inputPassword1" name="date-doc"
                                 max="{{ now()->format('Y-m-d') }}" required>
@@ -385,7 +285,7 @@
 
                 <div class="col-12 datearrive_field" wire:ignore>
                     <div class="row">
-                        <label class="col-5 col-form-label">Date de réception</label>
+                        <label class="col-5 col-form-label">Date d'archivage</label>
                         <div class="col-7">
                             <input type="datetime-local" class="form-control" id="date-arrivee" name="date-arriv"
                                 value="{{ now()->format('Y-m-d\TH:i') }}" readonly
@@ -428,8 +328,7 @@
                     </div>
                 @endcan
 
-            @endif
-
+          
             {{-- =================================================================== --}}
             {{-- FIN DE LA CONDITION PRINCIPALE --}}
             {{-- =================================================================== --}}
@@ -438,8 +337,8 @@
     </div>
     
     <div class="footer-sidebar">
-        <a href="{{ route('regidoc.courriers.index') }}" class="btn btn-concel">Annuler</a>
-        <button class="btn btn-valid" @disabled(!$isFormValid)>Numériser</button>
+        <a href="{{ route('regidoc.archivages.index') }}" class="btn btn-concel">Annuler</a>
+        <button class="btn btn-valid" @disabled(!$isFormValid)>Archiver</button>
     </div>
 </form>
     </div>
