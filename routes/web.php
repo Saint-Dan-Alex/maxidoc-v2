@@ -34,6 +34,9 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\SignaturesMail;
 use Illuminate\Support\Str;
 use App\Jobs\SendEmail;
+use App\Http\Livewire\Systems\CourrierCategory;
+use App\Http\Livewire\Systems\CourrierExpediteur;
+use App\Http\Livewire\Systems\CourrierNature;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +67,19 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
             // Paramètres
             Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+            
+            // Gestion des catégories, expéditeurs et natures de courrier via Livewire
+            Route::get('/settings/categories', function () {
+                return view('regidoc.pages.parametres', ['activeTab' => 'categorie']);
+            })->name('settings.categories');
+            
+            Route::get('/settings/expediteurs', function () {
+                return view('regidoc.pages.parametres', ['activeTab' => 'expediteur']);
+            })->name('settings.expediteurs');
+            
+            Route::get('/settings/natures', function () {
+                return view('regidoc.pages.parametres', ['activeTab' => 'nature']);
+            })->name('settings.natures');
 
             // Documents
             Route::resource('documents', DocumentController::class);
@@ -237,6 +253,15 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 Route::resource('assistants', AssistanatController::class)->only('index', 'store', 'update', 'destroy');
                 Route::resource('grades', GradeController::class)->only('index', 'store', 'update', 'destroy');
                 Route::resource('lieux', LieuAffectationController::class)->only('index', 'store', 'update', 'destroy');
+                
+                // Routes pour la gestion des courriers
+                Route::resource('categories', \App\Http\Controllers\Courriers\CourrierCategoryController::class)
+                    ->only('index', 'store', 'update', 'destroy');
+                Route::resource('expediteurs', \App\Http\Controllers\Courriers\CourrierExpediteurController::class)
+                    ->only('index', 'store', 'update', 'destroy');
+                Route::resource('natures', \App\Http\Controllers\Courriers\CourrierNatureController::class)
+                    ->only('index', 'store', 'update', 'destroy');
+                
                 Route::get('/sessions/logs/session', [LogSessionController::class, 'index'])->name('session');
             });
 

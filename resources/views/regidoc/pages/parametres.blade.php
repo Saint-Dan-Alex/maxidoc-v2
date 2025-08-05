@@ -5,11 +5,30 @@
         <div class="row g-lg-3">
             <div class="col-lg-3">
                 <h1 class="mb-lg-4 mb-3">Paramètres</h1>
+                @php
+                    $activeTab = $activeTab ?? 'lieux';
+                    $tabs = [
+                        'lieux' => 'active',
+                        'direction' => '',
+                        'section' => '',
+                        'secretariat' => '',
+                        'division' => '',
+                        'assistanat' => '',
+                        'service' => '',
+                        'fonction' => '',
+                        'grade' => '',
+                        'categorie' => '',
+                        'expediteur' => '',
+                        'nature' => ''
+                    ];
+                    $tabs[$activeTab] = 'active';
+                @endphp
+                
                 <ul class="nav nav-pills mb-3 nav-parametres flex-column" id="pills-tab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="pills-lieux-tab" data-bs-toggle="pill"
+                        <button class="nav-link {{ $tabs['lieux'] }}" id="pills-lieux-tab" data-bs-toggle="pill"
                             data-bs-target="#pills-lieux" type="button" role="tab" aria-controls="pills-lieux"
-                            aria-selected="true">Lieux d'affectation</button>
+                            aria-selected="{{ $tabs['lieux'] === 'active' ? 'true' : 'false' }}">Lieux d'affectation</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="pills-direction-tab" data-bs-toggle="pill"
@@ -49,6 +68,18 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="pills-grade-tab" data-bs-toggle="pill" data-bs-target="#pills-grade"
                             type="button" role="tab" aria-controls="pills-grade" aria-selected="false">Grades</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ $tabs['categorie'] }}" id="pills-categorie-tab" data-bs-toggle="pill" data-bs-target="#pills-categorie"
+                            type="button" role="tab" aria-controls="pills-categorie" aria-selected="{{ $tabs['categorie'] === 'active' ? 'true' : 'false' }}">Catégories</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ $tabs['expediteur'] }}" id="pills-expediteur-tab" data-bs-toggle="pill" data-bs-target="#pills-expediteur"
+                            type="button" role="tab" aria-controls="pills-expediteur" aria-selected="{{ $tabs['expediteur'] === 'active' ? 'true' : 'false' }}">Expéditeurs</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ $tabs['nature'] }}" id="pills-nature-tab" data-bs-toggle="pill" data-bs-target="#pills-nature"
+                            type="button" role="tab" aria-controls="pills-nature" aria-selected="{{ $tabs['nature'] === 'active' ? 'true' : 'false' }}">Natures</button>
                     </li>
                 </ul>
 
@@ -1017,6 +1048,33 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    
+                    <!-- Onglet Catégories -->
+                    <div class="tab-pane fade" id="pills-categorie" role="tabpanel" aria-labelledby="pills-categorie-tab" tabindex="0">
+                        <div class="block-info-page">
+                            <h3 class="text-page">Catégories de courrier</h3>
+                            <p class="para-page mb-4">Gérez les différentes catégories de courrier utilisées pour classer les documents entrants et sortants.</p>
+                        </div>
+                        @livewire('systems.courrier-category')
+                    </div>
+                    
+                    <!-- Onglet Expéditeurs -->
+                    <div class="tab-pane fade" id="pills-expediteur" role="tabpanel" aria-labelledby="pills-expediteur-tab" tabindex="0">
+                        <div class="block-info-page">
+                            <h3 class="text-page">Expéditeurs de courrier</h3>
+                            <p class="para-page mb-4">Gérez la liste des expéditeurs de courrier pour un suivi précis des documents entrants.</p>
+                        </div>
+                        @livewire('systems.courrier-expediteur')
+                    </div>
+                    
+                    <!-- Onglet Natures -->
+                    <div class="tab-pane fade" id="pills-nature" role="tabpanel" aria-labelledby="pills-nature-tab" tabindex="0">
+                        <div class="block-info-page">
+                            <h3 class="text-page">Natures de courrier</h3>
+                            <p class="para-page mb-4">Définissez les différentes natures de courrier pour une meilleure classification des documents.</p>
+                        </div>
+                        @livewire('systems.courrier-nature')
                     </div>
 
                 </div>
