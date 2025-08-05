@@ -506,17 +506,26 @@ if (window.Livewire !== undefined) {
 }
 
 function gotToPage(numPage) {
-    // scroll to element
-    // console.log(numPage);
-    // $('html,body').animate({
-    //     scrollTop: $('#page-' + numPage).offset().top - 170
-    // }, 400);
-
-    document.getElementById("page-" + numPage).scrollIntoView({
-        behavior: "smooth",
-        block: "center",
+    // S'assurer que le numéro de page est un entier
+    numPage = parseInt(numPage);
+    
+    // Mettre à jour l'affichage du numéro de page (commence à 1)
+    $("#pageNumber").val(numPage);
+    
+    // Faire défiler vers le haut de la page
+    $('html, body').animate({
+        scrollTop: 0
+    }, 100, function() {
+        // Une fois le défilement terminé, faire défiler vers l'élément
+        const pageElement = document.getElementById("page-" + numPage);
+        if (pageElement) {
+            pageElement.scrollIntoView({
+                behavior: "smooth",
+                block: "start", // Fait défiler vers le haut de l'élément
+                inline: "nearest"
+            });
+        }
     });
-    // var offsetTop = document.getElementById('page-' + numPage).offset().top -
 }
 
 $("#pageNumber").on("change", function () {
@@ -525,9 +534,9 @@ $("#pageNumber").on("change", function () {
 
 // previous btn
 $("#previous").on("click", function () {
-    if ($("#pageNumber").val() > 1) {
-        gotToPage($("#pageNumber").val() - 1);
-        $("#pageNumber").val($("#pageNumber").val() - 1);
+    let currentPage = parseInt($("#pageNumber").val());
+    if (currentPage > 1) {
+        gotToPage(currentPage - 1);
     }
 });
 
@@ -536,16 +545,33 @@ $("#next").on("click", function () {
     let currentPage = parseInt($("#pageNumber").val());
     if (currentPage < __TOTAL_PAGES) {
         gotToPage(currentPage + 1);
-        $("#pageNumber").val(currentPage + 1);
     }
 });
 
-$(document).on("scroll", function () {
-    $("#pdf-contents > div").each((index, element) => {
-        if ($(document).scrollTop() >= element.offsetTop - 170) {
-            $("#pageNumber").val(index);
+// Mise à jour du numéro de page lors du défilement
+let scrollTimeout;
+$(window).on("scroll", function () {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(function() {
+        let currentScroll = $(window).scrollTop();
+        let closestPage = 1;
+        let minDistance = Number.MAX_SAFE_INTEGER;
+        
+        $("#pdf-contents > div").each((index, element) => {
+            const elementTop = $(element).offset().top;
+            const distance = Math.abs(elementTop - currentScroll - 100); // 100px de marge pour le header
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestPage = index + 1; // +1 car les pages commencent à 1
+            }
+        });
+        
+        // Mettre à jour uniquement si différent de la valeur actuelle
+        if (parseInt($("#pageNumber").val()) !== closestPage) {
+            $("#pageNumber").val(closestPage);
         }
-    });
+    }, 100); // Délai pour éviter les calculs trop fréquents
 });
 
 $("#print").on("click", function () {
