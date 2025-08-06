@@ -24,8 +24,7 @@ class CourrierCategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'libelle' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'title' => 'required|string|max:255'
         ]);
 
         $category = CourrierCategory::create($validated);
@@ -42,8 +41,7 @@ class CourrierCategoryController extends Controller
         $category = CourrierCategory::findOrFail($id);
         
         $validated = $request->validate([
-            'libelle' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'title' => 'required|string|max:255'
         ]);
 
         $category->update($validated);

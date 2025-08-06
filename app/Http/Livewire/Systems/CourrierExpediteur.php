@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Systems;
 
 use App\Models\CourrierExpediteur as ExpediteurModel;
+use App\Models\CourrierCategory;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -14,10 +15,8 @@ class CourrierExpediteur extends Component
     public $filterText;
     public $search;
     public $nom;
-    public $adresse;
-    public $telephone;
-    public $email;
     public $editingId = null;
+    public $category_id;
 
     protected $paginationTheme = 'bootstrap-5';
     protected $queryString = [
@@ -27,9 +26,7 @@ class CourrierExpediteur extends Component
 
     protected $rules = [
         'nom' => 'required|string|max:255',
-        'adresse' => 'nullable|string|max:255',
-        'telephone' => 'nullable|string|max:20',
-        'email' => 'nullable|email|max:255',
+        'category_id' => 'required|exists:courrier_categories,id',
     ];
 
     public function mount()
@@ -39,14 +36,15 @@ class CourrierExpediteur extends Component
 
     public function render()
     {
-        $query = ExpediteurModel::query();
+        $query = ExpediteurModel::with('category');
 
         // Gestion de la recherche
         if ($this->search) {
             $query->where(function($q) {
-                $q->where('nom', 'LIKE', '%' . $this->search . '%')
-                  ->orWhere('email', 'LIKE', '%' . $this->search . '%')
-                  ->orWhere('telephone', 'LIKE', '%' . $this->search . '%');
+                $q->where('name', 'LIKE', '%' . $this->search . '%')
+                  ->orWhereHas('category', function($q) {
+                      $q->where('title', 'LIKE', '%' . $this->search . '%');
+                  });
             });
         }
 
@@ -58,11 +56,11 @@ class CourrierExpediteur extends Component
                 break;
             case 2:
                 $this->filterText = 'A - Z';
-                $query->orderBy('nom', 'asc');
+                $query->orderBy('name', 'asc');
                 break;
             case 3:
                 $this->filterText = 'Z - A';
-                $query->orderBy('nom', 'desc');
+                $query->orderBy('name', 'desc');
                 break;
             case 4:
                 $this->filterText = "Date d'ajout";
@@ -77,9 +75,11 @@ class CourrierExpediteur extends Component
         }
 
         $expediteurs = $query->paginate(10);
+        $categories = CourrierCategory::orderBy('title')->get();
         
         return view('livewire.systems.courrier-expediteur', [
-            'expediteurs' => $expediteurs
+            'expediteurs' => $expediteurs,
+            'categories' => $categories
         ]);
     }
 
@@ -91,7 +91,7 @@ class CourrierExpediteur extends Component
 
     public function resetForm()
     {
-        $this->reset(['nom', 'adresse', 'telephone', 'email', 'editingId']);
+        $this->reset(['nom', 'category_id', 'editingId']);
         $this->resetErrorBag();
     }
 
@@ -99,24 +99,22 @@ class CourrierExpediteur extends Component
     {
         $this->validate();
 
-        $data = [
-            'nom' => $this->nom,
-            'adresse' => $this->adresse,
-            'telephone' => $this->telephone,
-            'email' => $this->email,
-        ];
-
         if ($this->editingId) {
             $expediteur = ExpediteurModel::findOrFail($this->editingId);
-            $expediteur->update($data);
+            $expediteur->update([
+                'nom' => $this->nom,
+                'category_id' => $this->category_id,
+            ]);
             session()->flash('message', 'Expéditeur mis à jour avec succès.');
         } else {
-            ExpediteurModel::create($data);
+            ExpediteurModel::create([
+                'nom' => $this->nom,
+                'category_id' => $this->category_id,
+            ]);
             session()->flash('message', 'Expéditeur créé avec succès.');
         }
 
         $this->resetForm();
-        $this->dispatchBrowserEvent('close-modal');
     }
 
     public function edit($id)
@@ -124,10 +122,7 @@ class CourrierExpediteur extends Component
         $expediteur = ExpediteurModel::findOrFail($id);
         $this->editingId = $id;
         $this->nom = $expediteur->nom;
-        $this->adresse = $expediteur->adresse;
-        $this->telephone = $expediteur->telephone;
-        $this->email = $expediteur->email;
-        $this->dispatchBrowserEvent('show-edit-modal');
+        $this->category_id = $expediteur->category_id;
     }
 
     public function delete($id)

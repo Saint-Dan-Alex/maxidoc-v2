@@ -113,17 +113,10 @@
                         @csrf
                         <div class="form-group row g-4">
                             <div class="col-lg-12">
-                                <label for="libelle">Libellé <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('libelle') is-invalid @enderror"
-                                    id="libelle" wire:model="libelle" required>
-                                @error('libelle')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-lg-12">
-                                <label for="description">Description</label>
-                                <textarea class="form-control @error('description') is-invalid @enderror" id="description" wire:model="description" rows="3"></textarea>
-                                @error('description')
+                                <label for="titre">Titre <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('titre') is-invalid @enderror"
+                                    id="titre" wire:model="titre" required>
+                                @error('titre')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -155,18 +148,10 @@
                             @csrf
                             <div class="form-group row g-4">
                                 <div class="col-lg-12">
-                                    <label for="edit_libelle_{{ $nature->id }}">Libellé <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('libelle') is-invalid @enderror"
-                                        id="edit_libelle_{{ $nature->id }}" wire:model="libelle" required>
-                                    @error('libelle')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-lg-12">
-                                    <label for="edit_description_{{ $nature->id }}">Description</label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror" 
-                                        id="edit_description_{{ $nature->id }}" wire:model="description" rows="3">{{ $nature->description }}</textarea>
-                                    @error('description')
+                                    <label for="edit_titre_{{ $nature->id }}">Titre <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('titre') is-invalid @enderror"
+                                        id="edit_titre_{{ $nature->id }}" wire:model="titre" value="{{ $nature->titre }}" required>
+                                    @error('titre')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

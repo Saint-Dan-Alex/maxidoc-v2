@@ -51,8 +51,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Nom</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Téléphone</th>
+                        <th scope="col">Catégorie</th>
                         <th scope="col">Date de création</th>
                         <th scope="col">Action</th>
                     </tr>
@@ -61,9 +60,14 @@
                     @forelse ($expediteurs as $expediteur)
                         <tr>
                             <td>{{ $expediteur->nom }}</td>
-                            <td>{{ $expediteur->email ?? 'Non renseigné' }}</td>
-                            <td>{{ $expediteur->telephone ?? 'Non renseigné' }}</td>
-                            <td>{{ $expediteur->created_at->format('d/m/Y H:i') }}</td>
+                            <td>
+                                @if($expediteur->category)
+                                    <span class="badge bg-primary">{{ $expediteur->category->title }}</span>
+                                @else
+                                    <span class="text-muted">Non défini</span>
+                                @endif
+                            </td>
+                            <td>{{ $expediteur->created_at->format('d/m/Y') }}</td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
                                     <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
@@ -82,7 +86,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">
+                            <td colspan="4" class="text-center">
                                 <div class="py-4">
                                     <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
                                     <p class="mt-2 mb-0">Aucun expéditeur trouvé</p>
@@ -123,25 +127,14 @@
                                 @enderror
                             </div>
                             <div class="col-lg-12">
-                                <label for="email">Email</label>
-                                <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                    id="email" wire:model="email">
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-lg-12">
-                                <label for="telephone">Téléphone</label>
-                                <input type="text" class="form-control @error('telephone') is-invalid @enderror"
-                                    id="telephone" wire:model="telephone">
-                                @error('telephone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-lg-12">
-                                <label for="adresse">Adresse</label>
-                                <textarea class="form-control @error('adresse') is-invalid @enderror" id="adresse" wire:model="adresse" rows="2"></textarea>
-                                @error('adresse')
+                                <label for="category_id">Catégorie <span class="text-danger">*</span></label>
+                                <select class="form-select @error('category_id') is-invalid @enderror" id="category_id" wire:model="category_id" required>
+                                    <option value="">Sélectionnez une catégorie</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->title }}</option>
+                                    @endforeach
+                                </select>
+                                @error('category_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -173,7 +166,7 @@
                             @csrf
                             <div class="form-group row g-4">
                                 <div class="col-lg-12">
-                                    <label for="edit_nom_{{ $expediteur->id }}">Nom <span class="text-danger">*</span></label>
+                                    <label for="edit_name_{{ $expediteur->id }}">Nom <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('nom') is-invalid @enderror"
                                         id="edit_nom_{{ $expediteur->id }}" wire:model="nom" required>
                                     @error('nom')
@@ -181,26 +174,18 @@
                                     @enderror
                                 </div>
                                 <div class="col-lg-12">
-                                    <label for="edit_email_{{ $expediteur->id }}">Email</label>
-                                    <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                        id="edit_email_{{ $expediteur->id }}" wire:model="email">
-                                    @error('email')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-lg-12">
-                                    <label for="edit_telephone_{{ $expediteur->id }}">Téléphone</label>
-                                    <input type="text" class="form-control @error('telephone') is-invalid @enderror"
-                                        id="edit_telephone_{{ $expediteur->id }}" wire:model="telephone">
-                                    @error('telephone')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-lg-12">
-                                    <label for="edit_adresse_{{ $expediteur->id }}">Adresse</label>
-                                    <textarea class="form-control @error('adresse') is-invalid @enderror" 
-                                        id="edit_adresse_{{ $expediteur->id }}" wire:model="adresse" rows="2">{{ $expediteur->adresse }}</textarea>
-                                    @error('adresse')
+                                    <label for="edit_category_id_{{ $expediteur->id }}">Catégorie <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('category_id') is-invalid @enderror" 
+                                        id="edit_category_id_{{ $expediteur->id }}" 
+                                        wire:model="category_id" required>
+                                        <option value="">Sélectionnez une catégorie</option>
+                                        @foreach($categories as $category)
+                                            <option value="{{ $category->id }}" {{ $category->id == $expediteur->category_id ? 'selected' : '' }}>
+                                                {{ $category->title }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('category_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -217,21 +202,4 @@
     @endforeach
 </div>
 
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:load', function() {
-            // Fermer le modal après l'ajout ou la mise à jour
-            window.livewire.on('close-modal', () => {
-                $('.modal').modal('hide');
-                $('body').removeClass('modal-open');
-                $('.modal-backdrop').remove();
-            });
 
-            // Afficher le modal d'édition
-            window.livewire.on('show-edit-modal', () => {
-                $('.modal').modal('hide');
-                $('#modal-edit-expediteur-' + window.livewire.get('editingId')).modal('show');
-            });
-        });
-    </script>
-@endpush

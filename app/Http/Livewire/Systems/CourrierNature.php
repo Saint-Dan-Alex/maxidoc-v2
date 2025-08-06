@@ -13,8 +13,7 @@ class CourrierNature extends Component
     public $filter;
     public $filterText;
     public $search;
-    public $libelle;
-    public $description;
+    public $titre;
     public $editingId = null;
 
     protected $paginationTheme = 'bootstrap-5';
@@ -24,8 +23,7 @@ class CourrierNature extends Component
     ];
 
     protected $rules = [
-        'libelle' => 'required|string|max:255',
-        'description' => 'nullable|string',
+        'titre' => 'required|string|max:255'
     ];
 
     public function mount()
@@ -40,7 +38,7 @@ class CourrierNature extends Component
         // Gestion de la recherche
         if ($this->search) {
             $query->where(function($q) {
-                $q->where('libelle', 'LIKE', '%' . $this->search . '%')
+                $q->where('titre', 'LIKE', '%' . $this->search . '%')
                   ->orWhere('description', 'LIKE', '%' . $this->search . '%');
             });
         }
@@ -53,11 +51,11 @@ class CourrierNature extends Component
                 break;
             case 2:
                 $this->filterText = 'A - Z';
-                $query->orderBy('libelle', 'asc');
+                $query->orderBy('titre', 'asc');
                 break;
             case 3:
                 $this->filterText = 'Z - A';
-                $query->orderBy('libelle', 'desc');
+                $query->orderBy('titre', 'desc');
                 break;
             case 4:
                 $this->filterText = "Date d'ajout";
@@ -68,7 +66,7 @@ class CourrierNature extends Component
                 $query->orderBy('updated_at', 'desc');
                 break;
             default:
-                $query->orderBy('libelle', 'asc');
+                $query->orderBy('titre', 'asc');
         }
 
         $natures = $query->paginate(10);
@@ -86,7 +84,7 @@ class CourrierNature extends Component
 
     public function resetForm()
     {
-        $this->reset(['libelle', 'description', 'editingId']);
+        $this->reset(['titre', 'editingId']);
         $this->resetErrorBag();
     }
 
@@ -94,17 +92,16 @@ class CourrierNature extends Component
     {
         $this->validate();
 
-        $data = [
-            'libelle' => $this->libelle,
-            'description' => $this->description,
-        ];
-
         if ($this->editingId) {
             $nature = NatureModel::findOrFail($this->editingId);
-            $nature->update($data);
+            $nature->update([
+                'titre' => $this->titre
+            ]);
             session()->flash('message', 'Nature mise à jour avec succès.');
         } else {
-            NatureModel::create($data);
+            NatureModel::create([
+                'titre' => $this->titre
+            ]);
             session()->flash('message', 'Nature créée avec succès.');
         }
 
@@ -116,8 +113,7 @@ class CourrierNature extends Component
     {
         $nature = NatureModel::findOrFail($id);
         $this->editingId = $id;
-        $this->libelle = $nature->libelle;
-        $this->description = $nature->description;
+        $this->titre = $nature->titre;
         $this->dispatchBrowserEvent('show-edit-modal');
     }
 
