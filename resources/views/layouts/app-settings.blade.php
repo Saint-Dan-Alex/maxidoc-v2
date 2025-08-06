@@ -147,8 +147,34 @@
 
 <body>
     <div class="global-div">
+        <!-- Navbar Horizontale -->
+        <nav class="navbar navbar-expand-lg fixed-top">
+            <div class="container-fluid px-lg-4">
+                <div class="row w-100 ms-0">
+                    <div class="col-lg-6 col-4 col-sm-6 ps-0">
+                        <div class="d-flex align-items-center">
+                            <div class="logo-header">
+                                <a href="/">
+                                    <div class="block-logo">
+                                        <img src="{{ asset('assets/regidoc/icon.png') }}" class="theme-light-show">
+                                        <img src="{{ asset('assets/regidoc/icon-white.png') }}" class="theme-dark-show">
+                                        <img src="{{ asset('assets/regidoc/logo.png') }}" alt="Maxidoc" style="height: 40px; margin-left: 10px;">
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-8 col-sm-6 pe-0">
+                        <div class="d-flex ms-auto align-items-center justify-content-end">
+                            <!-- Ici vous pouvez ajouter d'autres éléments de navigation si nécessaire -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
         <!-- Settings Sidebar -->
-        <div class="settings-sidebar">
+        <div class="settings-sidebar" style="top: 70px; height: calc(100vh - 70px);">
             <div class="settings-sidebar-header">
                 <h3>Paramètres</h3>
             </div>
