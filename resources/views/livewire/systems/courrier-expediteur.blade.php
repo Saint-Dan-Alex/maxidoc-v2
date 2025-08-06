@@ -109,42 +109,43 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title d-flex align-items-center" id="modalNewExpediteur">
-                        <span>Ajouter un expéditeur</span>
+                    <h5 class="modal-title" id="modalNewExpediteur">
+                        Ajouter un expéditeur
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
-                <div class="modal-body">
-                    <form wire:submit.prevent="store">
-                        @csrf
-                        <div class="form-group row g-4">
-                            <div class="col-lg-12">
-                                <label for="nom">Nom <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('nom') is-invalid @enderror"
-                                    id="nom" wire:model="nom" required>
-                                @error('nom')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-lg-12">
-                                <label for="category_id">Catégorie <span class="text-danger">*</span></label>
-                                <select class="form-select @error('category_id') is-invalid @enderror" id="category_id" wire:model="category_id" required>
-                                    <option value="">Sélectionnez une catégorie</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->title }}</option>
-                                    @endforeach
-                                </select>
-                                @error('category_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                <form action="{{ route('regidoc.expediteurs.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('nom') is-invalid @enderror"
+                                id="nom" name="nom" value="{{ old('nom') }}" required>
+                            @error('nom')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Catégorie <span class="text-danger">*</span></label>
+                            <select class="form-select @error('category_id') is-invalid @enderror" 
+                                id="category_id" name="category_id" required>
+                                <option value="">Sélectionnez une catégorie</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                        {{ $category->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                    </form>
-                </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -156,50 +157,69 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title d-flex align-items-center" id="modalEditExpediteur{{ $expediteur->id }}">
-                            <span>Modifier l'expéditeur</span>
+                        <h5 class="modal-title" id="modalEditExpediteur{{ $expediteur->id }}">
+                            Modifier l'expéditeur
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
-                    <div class="modal-body">
-                        <form wire:submit.prevent="edit({{ $expediteur->id }})">
-                            @csrf
-                            <div class="form-group row g-4">
-                                <div class="col-lg-12">
-                                    <label for="edit_name_{{ $expediteur->id }}">Nom <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('nom') is-invalid @enderror"
-                                        id="edit_nom_{{ $expediteur->id }}" wire:model="nom" required>
-                                    @error('nom')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-lg-12">
-                                    <label for="edit_category_id_{{ $expediteur->id }}">Catégorie <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('category_id') is-invalid @enderror" 
-                                        id="edit_category_id_{{ $expediteur->id }}" 
-                                        wire:model="category_id" required>
-                                        <option value="">Sélectionnez une catégorie</option>
-                                        @foreach($categories as $category)
-                                            <option value="{{ $category->id }}" {{ $category->id == $expediteur->category_id ? 'selected' : '' }}>
-                                                {{ $category->title }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('category_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                    <form action="{{ route('regidoc.expediteurs.update', $expediteur->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="edit_nom_{{ $expediteur->id }}" class="form-label">Nom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('nom') is-invalid @enderror"
+                                    id="edit_nom_{{ $expediteur->id }}" name="nom" 
+                                    value="{{ old('nom', $expediteur->nom) }}" required>
+                                @error('nom')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                            <div class="mb-3">
+                                <label for="edit_category_id_{{ $expediteur->id }}" class="form-label">Catégorie <span class="text-danger">*</span></label>
+                                <select class="form-select @error('category_id') is-invalid @enderror" 
+                                    id="edit_category_id_{{ $expediteur->id }}" 
+                                    name="category_id" required>
+                                    <option value="">Sélectionnez une catégorie</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" {{ (old('category_id', $expediteur->category_id) == $category->id) ? 'selected' : '' }}>
+                                            {{ $category->title }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('category_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
-                        </form>
-                    </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     @endforeach
 </div>
 
+@section('scripts')
+    <script>
+        // Initialisation des sélecteurs Select2 si nécessaire
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Sélectionnez une option',
+                allowClear: true
+            });
 
+            // Réinitialiser les champs du formulaire quand le modal est fermé
+            $('.modal').on('hidden.bs.modal', function () {
+                $(this).find('form').trigger('reset');
+                $(this).find('.is-invalid').removeClass('is-invalid');
+                $(this).find('.invalid-feedback').remove();
+            });
+        });
+    </script>
+@endsection

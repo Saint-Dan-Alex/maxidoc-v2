@@ -1,8 +1,8 @@
 <div class="col-lg-12">
-    <div class="block-info-page">
+    {{-- <div class="block-info-page">
         <h3 class="text-page">Catégories de courrier</h3>
         <p class="para-page mb-4">Gérez les différentes catégories de courrier utilisées pour classer les documents entrants et sortants.</p>
-    </div>
+    </div> --}}
 
     <div class="card card-table" style="overflow: inherit">
         <div class="d-none position-absolute loader-card d-flex justify-content-center m-0"
@@ -100,19 +100,51 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title d-flex align-items-center" id="modalNewCategory">
-                        <span>Ajouter une catégorie</span>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="modalNewCategory">Ajouter une catégorie</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
-                <div class="modal-body">
-                    <form wire:submit.prevent="store">
+                <form action="{{ route('regidoc.categories.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Titre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('title') is-invalid @enderror" 
+                                   id="title" name="title" value="{{ old('title') }}" required>
+                            @error('title')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Édition -->
+    @foreach ($categories as $category)
+        <!-- Modal Édition -->
+        <div class="modal fade" id="modal-edit-category-{{ $category->id }}" tabindex="-1"
+            aria-labelledby="modalEditCategory{{ $category->id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEditCategory{{ $category->id }}">
+                            Modifier la catégorie
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <form action="{{ route('regidoc.categories.update', $category->id) }}" method="POST">
                         @csrf
-                        <div class="form-group row g-4">
-                            <div class="col-lg-12">
-                                <label for="title">Titre <span class="text-danger">*</span></label>
+                        @method('PUT')
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="title-edit-{{ $category->id }}" class="form-label">Titre <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('title') is-invalid @enderror"
-                                    id="title" wire:model="title" required>
+                                    id="title-edit-{{ $category->id }}" name="title" value="{{ old('title', $category->title) }}" required>
                                 @error('title')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -120,45 +152,9 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            <button type="submit" class="btn btn-primary">Mettre à jour</button>
                         </div>
                     </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Édition -->
-    @foreach ($categories as $category)
-        <div class="modal fade" id="modal-edit-category-{{ $category->id }}" tabindex="-1"
-            aria-labelledby="modalEditCategory{{ $category->id }}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title d-flex align-items-center" id="modalEditCategory{{ $category->id }}">
-                            <span>Modifier la catégorie</span>
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form wire:submit.prevent="edit({{ $category->id }})">
-                            @csrf
-                            <div class="form-group row g-4">
-                                <div class="col-lg-12">
-                                    <label for="edit_title_{{ $category->id }}">Titre <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('title') is-invalid @enderror"
-                                        id="edit_title_{{ $category->id }}" wire:model="title" value="{{ $category->title }}" required>
-                                    @error('title')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-primary">Mettre à jour</button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             </div>
         </div>
@@ -167,23 +163,20 @@
 
 @section('scripts')
     <script>
+        // Initialisation des sélecteurs Select2 si nécessaire
         $(document).ready(function() {
-            // Gestion de la fermeture des modals
-            window.livewire.on('close-modal', () => {
-                $('.modal').modal('hide');
-                $('body').removeClass('modal-open');
-                $('.modal-backdrop').remove();
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Sélectionnez une option',
+                allowClear: true
             });
 
-            // Gestion de l'affichage du modal d'édition
-            window.livewire.on('show-edit-modal', () => {
-                $('.modal').modal('hide');
-                $('#modal-edit-category-' + window.livewire.get('editingId')).modal('show');
-            });
-
-            // Réinitialiser le formulaire lorsque le modal est fermé
+            // Réinitialiser les champs du formulaire quand le modal est fermé
             $('.modal').on('hidden.bs.modal', function () {
-                window.livewire.emit('resetForm');
+                $(this).find('form').trigger('reset');
+                $(this).find('.is-invalid').removeClass('is-invalid');
+                $(this).find('.invalid-feedback').remove();
             });
         });
     </script>

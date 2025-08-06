@@ -55,7 +55,7 @@ class Document extends Component
                 $this->documents = $this->documents->sortByDesc('updated_at');
                 break;
             default:
-                # code...
+                $this->documents = $this->documents->sortByDesc('archived_at');
                 break;
         }
 

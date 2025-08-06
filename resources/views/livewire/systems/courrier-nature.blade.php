@@ -51,17 +51,13 @@
                 <thead>
                     <tr>
                         <th scope="col">Libellé</th>
-                        <th scope="col">Description</th>
-                        <th scope="col">Date de création</th>
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($natures as $nature)
                         <tr>
-                            <td>{{ $nature->libelle }}</td>
-                            <td>{{ $nature->description ? Str::limit($nature->description, 50) : 'Aucune description' }}</td>
-                            <td>{{ $nature->created_at->format('d/m/Y H:i') }}</td>
+                            <td>{{ $nature->titre }}</td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
                                     <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
@@ -103,19 +99,51 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title d-flex align-items-center" id="modalNewNature">
-                        <span>Ajouter une nature</span>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="modalNewNature">Ajouter une nature</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
-                <div class="modal-body">
-                    <form wire:submit.prevent="store">
+                <form action="{{ route('regidoc.natures.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="titre" class="form-label">Libellé <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('titre') is-invalid @enderror" 
+                                   id="titre" name="titre" value="{{ old('titre') }}" required>
+                            @error('titre')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Édition -->
+    @foreach ($natures as $nature)
+        <!-- Modal Édition -->
+        <div class="modal fade" id="modal-edit-nature-{{ $nature->id }}" tabindex="-1"
+            aria-labelledby="modalEditNature{{ $nature->id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEditNature{{ $nature->id }}">
+                            Modifier la nature
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <form action="{{ route('regidoc.natures.update', $nature->id) }}" method="POST">
                         @csrf
-                        <div class="form-group row g-4">
-                            <div class="col-lg-12">
-                                <label for="titre">Titre <span class="text-danger">*</span></label>
+                        @method('PUT')
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="titre-edit-{{ $nature->id }}" class="form-label">Libellé <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('titre') is-invalid @enderror"
-                                    id="titre" wire:model="titre" required>
+                                    id="titre-edit-{{ $nature->id }}" name="titre" value="{{ old('titre', $nature->titre) }}" required>
                                 @error('titre')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -123,66 +151,32 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            <button type="submit" class="btn btn-primary">Mettre à jour</button>
                         </div>
                     </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Édition -->
-    @foreach ($natures as $nature)
-        <div class="modal fade" id="modal-edit-nature-{{ $nature->id }}" tabindex="-1"
-            aria-labelledby="modalEditNature{{ $nature->id }}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title d-flex align-items-center" id="modalEditNature{{ $nature->id }}">
-                            <span>Modifier la nature</span>
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form wire:submit.prevent="edit({{ $nature->id }})">
-                            @csrf
-                            <div class="form-group row g-4">
-                                <div class="col-lg-12">
-                                    <label for="edit_titre_{{ $nature->id }}">Titre <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('titre') is-invalid @enderror"
-                                        id="edit_titre_{{ $nature->id }}" wire:model="titre" value="{{ $nature->titre }}" required>
-                                    @error('titre')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-primary">Mettre à jour</button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             </div>
         </div>
     @endforeach
 </div>
 
-@push('scripts')
+@section('scripts')
     <script>
-        document.addEventListener('livewire:load', function() {
-            // Fermer le modal après l'ajout ou la mise à jour
-            window.livewire.on('close-modal', () => {
-                $('.modal').modal('hide');
-                $('body').removeClass('modal-open');
-                $('.modal-backdrop').remove();
+        // Initialisation des sélecteurs Select2 si nécessaire
+        $(document).ready(function() {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Sélectionnez une option',
+                allowClear: true
             });
 
-            // Afficher le modal d'édition
-            window.livewire.on('show-edit-modal', () => {
-                $('.modal').modal('hide');
-                $('#modal-edit-nature-' + window.livewire.get('editingId')).modal('show');
+            // Réinitialiser les champs du formulaire quand le modal est fermé
+            $('.modal').on('hidden.bs.modal', function () {
+                $(this).find('form').trigger('reset');
+                $(this).find('.is-invalid').removeClass('is-invalid');
+                $(this).find('.invalid-feedback').remove();
             });
         });
     </script>
-@endpush
+@endsection
