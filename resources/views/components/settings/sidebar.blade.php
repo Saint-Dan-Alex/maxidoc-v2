@@ -12,6 +12,7 @@
     $hasCategories = $groupedItems->count() > 1;
 @endphp
 
+
 <nav class="settings-nav">
     @if($hasCategories)
         @foreach($groupedItems as $category => $items)
