@@ -106432,3 +106432,31 @@ Did you mean one of these?
 #74 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\wamp64\\\\www\\\\m...')
 #75 {main}
 "} 
+[2025-08-06 09:20:06] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 09:20:08] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 09:20:08] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":26,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 
+[2025-08-06 09:27:00] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 09:27:06] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 09:27:06] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":26,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 
+[2025-08-06 09:30:09] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 09:30:12] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 09:30:12] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":27,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 
+[2025-08-06 09:47:00] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 09:47:04] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 09:47:04] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":28,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 
+[2025-08-06 10:04:22] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 10:04:26] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 10:04:26] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":29,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,1,"K-%"]} 
+[2025-08-06 10:17:13] local.INFO: 🟢 Début du traitement  
+[2025-08-06 10:17:13] local.INFO: 📩 Courrier chargé {"courrier_id":56} 
+[2025-08-06 10:17:13] local.INFO: ➡️ Traitement du courrier entrant  
+[2025-08-06 10:17:14] local.INFO: ✅ Courrier marqué comme traité  
+[2025-08-06 10:17:14] local.INFO: 🗂️ Document marqué comme traité {"document_id":82} 
+[2025-08-06 10:17:14] local.INFO: 👤 Agent identifié {"agent_id":1} 
+[2025-08-06 10:17:14] local.INFO: 📝 Traitement enregistré {"traitement_id":90} 
+[2025-08-06 10:17:14] local.INFO: 🔁 Traitement et étape ajoutés  
+[2025-08-06 10:17:14] local.INFO: 📨 Courrier sortant créé {"new_courrier_id":57} 
+[2025-08-06 10:17:14] local.INFO: 👥 Responsables attachés {"ids":{"Illuminate\\Support\\Collection":[83]}} 
+[2025-08-06 10:17:14] local.INFO: 📢 Notification envoyée {"agents":{"Illuminate\\Support\\Collection":[83]}} 
+[2025-08-06 10:17:14] local.INFO: 🟩 Statut du courrier entrant mis à jour  
+[2025-08-06 10:17:14] local.INFO: ✅ Fin du traitement avec succès  

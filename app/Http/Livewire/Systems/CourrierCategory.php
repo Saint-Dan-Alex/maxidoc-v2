@@ -94,16 +94,35 @@ class CourrierCategory extends Component
             $category->update([
                 'title' => $this->title
             ]);
-            session()->flash('message', 'Catégorie mise à jour avec succès.');
+            $message = 'Catégorie mise à jour avec succès.';
+            $this->resetForm();
+            $this->dispatchBrowserEvent('close-modal');
+            session()->flash('message', $message);
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'data' => $category
+                ]);
+            }
         } else {
-            Model::create([
+            $category = Model::create([
                 'title' => $this->title
             ]);
-            session()->flash('message', 'Catégorie créée avec succès.');
+            $message = 'Catégorie créée avec succès.';
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'data' => $category
+                ]);
+            }
+            
+            session()->flash('message', $message);
+            return redirect()->route('regidoc.categories.index');
         }
-
-        $this->resetForm();
-        $this->dispatchBrowserEvent('close-modal');
     }
 
     public function edit($id)
