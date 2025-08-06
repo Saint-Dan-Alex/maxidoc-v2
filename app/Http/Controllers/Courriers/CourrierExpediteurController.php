@@ -16,7 +16,7 @@ class CourrierExpediteurController extends Controller
             return response()->json($expediteurs);
         }
         
-        return view('livewire.systems.courrier-expediteur', [
+        return view('regidoc.pages.systems.courrier-expediteur', [
             'expediteurs' => $expediteurs
         ]);
     }
@@ -25,10 +25,7 @@ class CourrierExpediteurController extends Controller
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
-            'type' => 'required|in:interne,externe',
-            'adresse' => 'nullable|string|max:255',
-            'telephone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
+            'category_id' => 'required|exists:courrier_categories,id',
         ]);
 
         $expediteur = CourrierExpediteur::create($validated);
@@ -46,10 +43,7 @@ class CourrierExpediteurController extends Controller
         
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
-            'type' => 'required|in:interne,externe',
-            'adresse' => 'nullable|string|max:255',
-            'telephone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
+            'category_id' => 'required|exists:courrier_categories,id',
         ]);
 
         $expediteur->update($validated);

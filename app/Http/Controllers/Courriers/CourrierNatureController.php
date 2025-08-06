@@ -16,7 +16,7 @@ class CourrierNatureController extends Controller
             return response()->json($natures);
         }
         
-        return view('livewire.systems.courrier-nature', [
+        return view('regidoc.pages.systems.courrier-nature', [
             'natures' => $natures
         ]);
     }
@@ -24,10 +24,7 @@ class CourrierNatureController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'libelle' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'couleur' => 'nullable|string|max:50',
-            'delai_traitement' => 'nullable|integer|min:1',
+            'titre' => 'required|string|max:255'
         ]);
 
         $nature = CourrierNature::create($validated);
@@ -44,10 +41,7 @@ class CourrierNatureController extends Controller
         $nature = CourrierNature::findOrFail($id);
         
         $validated = $request->validate([
-            'libelle' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'couleur' => 'nullable|string|max:50',
-            'delai_traitement' => 'nullable|integer|min:1',
+            'titre' => 'required|string|max:255'
         ]);
 
         $nature->update($validated);

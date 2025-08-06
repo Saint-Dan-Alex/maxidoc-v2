@@ -14,7 +14,6 @@ class CourrierCategory extends Component
     public $filterText;
     public $search;
     public $title;
-    public $description;
     public $editingId = null;
 
     protected $paginationTheme = 'bootstrap-5';
@@ -24,8 +23,7 @@ class CourrierCategory extends Component
     ];
 
     protected $rules = [
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string',
+        'title' => 'required|string|max:255'
     ];
 
     public function mount()
@@ -39,10 +37,7 @@ class CourrierCategory extends Component
 
         // Gestion de la recherche
         if ($this->search) {
-            $query->where(function($q) {
-                $q->where('title', 'LIKE', '%' . $this->search . '%')
-                  ->orWhere('description', 'LIKE', '%' . $this->search . '%');
-            });
+            $query->where('title', 'LIKE', '%' . $this->search . '%');
         }
 
         // Gestion du filtrage
@@ -86,7 +81,7 @@ class CourrierCategory extends Component
 
     public function resetForm()
     {
-        $this->reset(['title', 'description', 'editingId']);
+        $this->reset(['title', 'editingId']);
         $this->resetErrorBag();
     }
 
@@ -95,16 +90,14 @@ class CourrierCategory extends Component
         $this->validate();
 
         if ($this->editingId) {
-            $category = CourrierCategory::findOrFail($this->editingId);
+            $category = Model::findOrFail($this->editingId);
             $category->update([
-                'title' => $this->title,
-                'description' => $this->description,
+                'title' => $this->title
             ]);
             session()->flash('message', 'Catégorie mise à jour avec succès.');
         } else {
-            CourrierCategory::create([
-                'title' => $this->title,
-                'description' => $this->description,
+            Model::create([
+                'title' => $this->title
             ]);
             session()->flash('message', 'Catégorie créée avec succès.');
         }
@@ -115,16 +108,15 @@ class CourrierCategory extends Component
 
     public function edit($id)
     {
-        $category = CourrierCategory::findOrFail($id);
+        $category = Model::findOrFail($id);
         $this->editingId = $id;
         $this->title = $category->title;
-        $this->description = $category->description;
         $this->dispatchBrowserEvent('show-edit-modal');
     }
 
     public function delete($id)
     {
-        $category = CourrierCategory::findOrFail($id);
+        $category = Model::findOrFail($id);
         $category->delete();
         session()->flash('message', 'Catégorie supprimée avec succès.');
     }

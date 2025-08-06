@@ -48,15 +48,13 @@
                 <thead>
                     <tr>
                         <th scope="col">Titre</th>
-                        <th scope="col">Description</th>
                         <th scope="col" class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($categories as $category)
                         <tr>
-                            <td class="text-truncate">{{ $category->titre }}</td>
-                            <td class="text-truncate">{{ $category->description ?? 'Aucune description' }}</td>
+                            <td class="text-truncate">{{ $category->title }}</td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table justify-content-end">
                                     <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
@@ -112,17 +110,10 @@
                         @csrf
                         <div class="form-group row g-4">
                             <div class="col-lg-12">
-                                <label for="titre">Titre <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('titre') is-invalid @enderror"
-                                    id="titre" wire:model="titre" required>
-                                @error('titre')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-lg-12">
-                                <label for="description">Description</label>
-                                <textarea class="form-control @error('description') is-invalid @enderror" id="description" wire:model="description" rows="3"></textarea>
-                                @error('description')
+                                <label for="title">Titre <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('title') is-invalid @enderror"
+                                    id="title" wire:model="title" required>
+                                @error('title')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -154,17 +145,10 @@
                             @csrf
                             <div class="form-group row g-4">
                                 <div class="col-lg-12">
-                                    <label for="edit_titre_{{ $category->id }}">Titre <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('titre') is-invalid @enderror"
-                                        id="edit_titre_{{ $category->id }}" wire:model="titre" required>
-                                    @error('titre')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-lg-12">
-                                    <label for="edit_description_{{ $category->id }}">Description</label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror" id="edit_description_{{ $category->id }}" wire:model="description" rows="3">{{ $category->description }}</textarea>
-                                    @error('description')
+                                    <label for="edit_title_{{ $category->id }}">Titre <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('title') is-invalid @enderror"
+                                        id="edit_title_{{ $category->id }}" wire:model="title" value="{{ $category->title }}" required>
+                                    @error('title')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
