@@ -30,11 +30,16 @@ class CourrierExpediteurController extends Controller
 
         $expediteur = CourrierExpediteur::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Expéditeur créé avec succès',
-            'data' => $expediteur
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Expéditeur créé avec succès',
+                'data' => $expediteur
+            ]);
+        }
+
+        return redirect()->route('regidoc.expediteurs.index')
+            ->with('success', 'Expéditeur créé avec succès');
     }
 
     public function update(Request $request, $id)
@@ -48,11 +53,16 @@ class CourrierExpediteurController extends Controller
 
         $expediteur->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Expéditeur mis à jour avec succès',
-            'data' => $expediteur
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Expéditeur mis à jour avec succès',
+                'data' => $expediteur
+            ]);
+        }
+
+        return redirect()->route('regidoc.expediteurs.index')
+            ->with('success', 'Expéditeur mis à jour avec succès');
     }
 
     public function destroy($id)
