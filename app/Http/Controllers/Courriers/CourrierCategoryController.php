@@ -29,11 +29,16 @@ class CourrierCategoryController extends Controller
 
         $category = CourrierCategory::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Catégorie créée avec succès',
-            'data' => $category
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Catégorie créée avec succès',
+                'data' => $category
+            ]);
+        }
+
+        return redirect()->route('regidoc.categories.index')
+            ->with('success', 'Catégorie créée avec succès');
     }
 
     public function update(Request $request, $id)
@@ -46,11 +51,16 @@ class CourrierCategoryController extends Controller
 
         $category->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Catégorie mise à jour avec succès',
-            'data' => $category
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Catégorie mise à jour avec succès',
+                'data' => $category
+            ]);
+        }
+
+        return redirect()->route('regidoc.categories.index')
+            ->with('success', 'Catégorie mise à jour avec succès');
     }
 
     public function destroy($id)

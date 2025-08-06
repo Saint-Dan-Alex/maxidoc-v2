@@ -29,11 +29,16 @@ class CourrierNatureController extends Controller
 
         $nature = CourrierNature::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Nature de courrier créée avec succès',
-            'data' => $nature
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Nature de courrier créée avec succès',
+                'data' => $nature
+            ]);
+        }
+
+        return redirect()->route('regidoc.natures.index')
+            ->with('success', 'Nature de courrier créée avec succès');
     }
 
     public function update(Request $request, $id)
@@ -46,11 +51,16 @@ class CourrierNatureController extends Controller
 
         $nature->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Nature de courrier mise à jour avec succès',
-            'data' => $nature
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Nature de courrier mise à jour avec succès',
+                'data' => $nature
+            ]);
+        }
+
+        return redirect()->route('regidoc.natures.index')
+            ->with('success', 'Nature de courrier mise à jour avec succès');
     }
 
     public function destroy($id)
