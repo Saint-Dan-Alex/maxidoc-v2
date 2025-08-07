@@ -76,9 +76,14 @@ class Document extends Component
     {
         // Filtre par recherche
         if (!empty($this->search)) {
-            $query->where(function($q) {
-                $q->where('titre', 'like', '%' . $this->search . '%')
-                  ->orWhere('reference', 'like', '%' . $this->search . '%');
+            $searchTerm = '%' . $this->search . '%';
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('libelle', 'like', $searchTerm)
+                  ->orWhere('reference', 'like', $searchTerm)
+                  ->orWhereHas('courrier', function($q) use ($searchTerm) {
+                      $q->where('objet', 'like', $searchTerm)
+                        ->orWhere('reference', 'like', $searchTerm);
+                  });
             });
         }
         
