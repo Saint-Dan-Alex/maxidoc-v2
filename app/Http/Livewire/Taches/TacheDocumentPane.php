@@ -80,7 +80,7 @@ class TacheDocumentPane extends Component
                 ]
             );
         }
-
+        $is_piece_jointe = 1;
         $document = Document::create([
             'dossier_id' => $dossier->id,
             'libelle' => Str::beforeLast($this->file->getClientOriginalName(), '.'),
@@ -91,6 +91,7 @@ class TacheDocumentPane extends Component
             'user_id' => Auth::user()->id,
             'statut_id' => 1,
             'created_by' => Auth::user()->agent->id,
+            'is_piece_jointe' => $is_piece_jointe,
         ]);
 
         $tache = Tache::findOrFail($this->tache->id);
