@@ -394,10 +394,10 @@ use Illuminate\Support\Facades\Storage;
         $docToShow = '';
         $nameDocToShow = '';
         $docToShowId = '';
-        if ($tache?->documents->last()) {
-            $docToShow = str_replace('\\', '/', files($tache->documents->last()->document)->link);
-            $nameDocToShow = files($tache->documents->last()->document)->name;
-            $docToShowId = $tache->documents->last()->id;
+        if ($tache?->documents->first()) {
+            $docToShow = str_replace('\\', '/', files($tache->documents->first()->document)->link);
+            $nameDocToShow = files($tache->documents->first()->document)->name;
+            $docToShowId = $tache->documents->first()->id;
         }
         // dd(class_exists('imagick'));
     @endphp
@@ -642,9 +642,42 @@ use Illuminate\Support\Facades\Storage;
                 </div>
                 <div class="col-md-8">
                     <select class="form-select form-select-sm" id="document-select" onchange="changeDocument(this.value)">
+                        @php
+                            $firstDocumentId = $tache->documents->first() ? $tache->documents->first()->id : null;
+                        @endphp
                         @foreach($documents as $index => $document)
-                            <option value="{{ $document->id }}" data-url="{{ $document->document_url }}" {{ $loop->last || $document->id == request('document_id') ? 'selected' : '' }}>
-                                Document {{ $loop->iteration }} - {{ $document->libelle }}
+                            @php
+                                // Récupérer le nom du document de différentes manières
+                                $docName = 'Document ' . $loop->iteration; // Valeur par défaut
+                                
+                                // Essayer de récupérer le nom via la fonction files()
+                                try {
+                                    $fileInfo = files($document->document);
+                                    if (is_object($fileInfo) && property_exists($fileInfo, 'name') && !empty($fileInfo->name)) {
+                                        $docName = $fileInfo->name;
+                                    } elseif (is_array($fileInfo) && isset($fileInfo['name'])) {
+                                        $docName = $fileInfo['name'];
+                                    } elseif (is_string($fileInfo)) {
+                                        $docName = basename($fileInfo);
+                                    }
+                                } catch (Exception $e) {
+                                    // En cas d'erreur, on garde le nom par défaut
+                                }
+                                
+                                // Si le document a un libellé, on l'utilise
+                                if (!empty($document->libelle)) {
+                                    $docName = $document->libelle;
+                                }
+                                
+                                // Déterminer si le document est sélectionné
+                                $isSelected = ($document->id == $firstDocumentId) || 
+                                           ($document->id == request('document_id')) || 
+                                           ($loop->first && !request('document_id'));
+                            @endphp
+                            <option value="{{ $document->id }}" 
+                                    data-url="{{ $document->document_url }}" 
+                                    {{ $isSelected ? 'selected' : '' }}>
+                                {{ $docName }}
                             </option>
                         @endforeach
                     </select>
