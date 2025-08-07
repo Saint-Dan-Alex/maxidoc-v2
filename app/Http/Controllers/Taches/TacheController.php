@@ -38,6 +38,12 @@ class TacheController extends Controller
      * @param string $documentPath Chemin du document depuis la base de données
      * @return string URL complète du document
      */
+    /**
+     * Construit une URL valide pour un document
+     *
+     * @param string $documentPath Chemin du document depuis la base de données
+     * @return string URL complète du document
+     */
     public static function buildDocumentUrl($documentPath)
     {
         if (empty($documentPath)) {
@@ -62,20 +68,25 @@ class TacheController extends Controller
         }
 
         // Nettoyer le chemin
-        $documentPath = ltrim($documentPath, '["\'');
-        $documentPath = rtrim($documentPath, '\"]}');
+        $documentPath = ltrim($documentPath, '[\"\'');
+        $documentPath = rtrim($documentPath, '\\\"\\]}');
 
         // Si c'est déjà une URL complète, la retourner telle quelle
         if (Str::startsWith($documentPath, ['http://', 'https://', '/'])) {
             return $documentPath;
         }
 
-        // Si le chemin contient 'documentsJuly2025', le corriger en 'documents/July2025/'
+        // Remplacer les antislashs par des slashs pour la cohérence
+        $documentPath = str_replace('\\', '/', $documentPath);
+
+        // Si le chemin contient 'documentsJuly2025', le corriger en 'July2025/'
         if (str_contains($documentPath, 'documentsJuly2025')) {
             $documentPath = str_replace('documentsJuly2025', 'July2025/', $documentPath);
         }
         // Sinon, si le chemin contient 'July2025' mais pas de slash après, l'ajouter
-        elseif (str_contains($documentPath, 'July2025') && !str_contains($documentPath, 'July2025/')) {
+        elseif (str_contains($documentPath, 'July2025') && 
+                !str_contains($documentPath, 'July2025/') && 
+                !str_ends_with($documentPath, 'July2025')) {
             $documentPath = str_replace('July2025', 'July2025/', $documentPath);
         }
 
@@ -95,6 +106,11 @@ class TacheController extends Controller
 
         // Si le fichier n'existe pas, essayer de le trouver directement dans le dossier July2025
         $filename = basename($documentPath);
+        // Vérifier si le fichier a une extension, sinon essayer d'ajouter .pdf
+        if (!preg_match('/\.[a-z0-9]+$/i', $filename)) {
+            $filename .= '.pdf';
+        }
+        
         $directPath = 'documents/July2025/' . $filename;
         if (Storage::disk('public')->exists($directPath)) {
             return asset('storage/' . $directPath);
