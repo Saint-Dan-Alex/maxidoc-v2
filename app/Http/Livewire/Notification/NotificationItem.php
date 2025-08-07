@@ -29,27 +29,47 @@ class NotificationItem extends Component
     public function open()
     {
         $url = '';
-        $id = '';
+        $params = [];
+        
         if ($this->notification->type == DocumentNotification::class) {
-            $url = 'regidoc.documents.show';
-            $id = $this->notification->data['data']['object']['id'];
-        } elseif ($this->notification->type == CourrierNotification::class) {
+            // Pour les documents
+            $document = $this->notification->data['data']['object'];
+            if (isset($document['dossier_id'])) {
+                $url = 'regidoc.documents.details';
+                $params = ['dossier' => $document['dossier_id'], 'document' => $document['id']];
+            } else {
+                $url = 'regidoc.documents.show';
+                $params = $document['id'];
+            }
+        } 
+        elseif ($this->notification->type == CourrierNotification::class || $this->notification->type == CourrierPartageNotification::class) {
+            // Pour les courriers
+            $courrier = $this->notification->data['data']['courrier'];
             $url = 'regidoc.courriers.show';
-            $id = $this->notification->data['data']['courrier']['id'];
-        } elseif ($this->notification->type == TacheNotification::class) {
-            $url = 'regidoc.taches.index';
-            $id = '';
-        }elseif ($this->notification->type == CourrierPartageNotification::class) {
-            $url = 'regidoc.courriers.show';
-            $id = $this->notification->data['data']['courrier']['id'];
+            $params = $courrier['id'];
+        } 
+        elseif ($this->notification->type == TacheNotification::class) {
+            // Pour les tâches
+            $tache = $this->notification->data['data']['tache'] ?? null;
+            if ($tache) {
+                $url = 'regidoc.taches.index';
+                // Ajouter un paramètre pour ouvrir directement la tâche
+                $params = ['#tache-' . $tache['id']];
+            } else {
+                $url = 'regidoc.taches.index';
+            }
         }
 
-        if(empty($id) || empty($url)) {
+        if (empty($url)) {
             return;
         }
 
         $this->markAsRead();
 
-        return redirect()->route($url, $id);
+        if (is_array($params)) {
+            return redirect()->route($url, $params);
+        }
+        
+        return redirect()->route($url, $params);
     }
 }
