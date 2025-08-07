@@ -103,7 +103,7 @@
                                 <label for="inputPassword" class="col-5 col-form-label">Objet</label>
                                 <div class="col-7">
                                     <p class="items">
-                                        {{ $find_document->courrier->objet }}
+                                        {{ $find_document->courrier ? $find_document->courrier->objet : 'Aucun objet' }}
                                     </p>
                                 </div>
                             </div>
