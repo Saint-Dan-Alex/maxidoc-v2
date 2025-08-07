@@ -39,21 +39,10 @@ $(window).on('resize', function() {
 });
 
 function showPDF(pdf_url) {
-    // Nettoyer l'URL
-    if (typeof pdf_url === 'string') {
-        // Supprimer les échappements et guillemets
-        pdf_url = pdf_url.replace(/\\/g, '').replace(/^"|"$/g, '');
-        
-        // Corriger les doubles 'documents' dans l'URL
-        pdf_url = pdf_url.replace(/(\/storage\/documents\/?)documents\//, '$1');
-    }
-    
-    console.log('Tentative de chargement du PDF depuis :', pdf_url);
+    console.log('Début du chargement du PDF, URL brute :', pdf_url);
     
     const pdfContents = $("#pdf-contents");
-    $(".pdf-tools #download").attr("href", pdf_url);
-    $(".pdf-tools #download").attr("download", pdf_url);
-
+    
     // Vérifier si l'URL est valide
     if (!pdf_url) {
         const errorMsg = 'Aucune URL de document fournie';
@@ -61,6 +50,44 @@ function showPDF(pdf_url) {
         pdfContents.html('<div class="alert alert-danger m-3"><h5>Erreur de chargement</h5><p>' + errorMsg + '</p></div>');
         return;
     }
+    
+    // Nettoyer l'URL
+    if (typeof pdf_url === 'string') {
+        // Supprimer les échappements et guillemets
+        pdf_url = pdf_url.replace(/\\/g, '/').replace(/^["\[\]{}]|["\[\]{},]$/g, '');
+        
+        // Corriger les doubles 'documents' dans l'URL
+        pdf_url = pdf_url.replace(/(\/storage\/documents\/?)documents\//, '$1');
+        
+        // S'assurer que l'URL commence par /storage/
+        if (!pdf_url.startsWith('http') && !pdf_url.startsWith('/storage/')) {
+            if (pdf_url.startsWith('documents/')) {
+                pdf_url = '/storage/' + pdf_url;
+            } else if (pdf_url.startsWith('/documents/')) {
+                pdf_url = '/storage' + pdf_url.substring(1);
+            } else {
+                pdf_url = '/storage/documents/' + pdf_url;
+            }
+        }
+        
+        // Ajouter le protocole et le domaine si nécessaire (pour les URL relatives)
+        if (!pdf_url.startsWith('http') && !pdf_url.startsWith(window.location.origin)) {
+            // Si c'est un chemin absolu, ajouter le domaine
+            if (pdf_url.startsWith('/')) {
+                pdf_url = window.location.origin + pdf_url;
+            } else {
+                // Sinon, construire l'URL complète à partir de la base
+                const baseUrl = window.location.origin + '/storage/documents/';
+                pdf_url = baseUrl + pdf_url;
+            }
+        }
+    }
+    
+    console.log('URL du PDF après nettoyage :', pdf_url);
+    
+    // Mettre à jour les attributs de téléchargement
+    $(".pdf-tools #download").attr("href", pdf_url);
+    $(".pdf-tools #download").attr("download", pdf_url);
 
     PDFJS.getDocument({
         url: pdf_url,

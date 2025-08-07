@@ -1274,6 +1274,8 @@ use Illuminate\Support\Facades\Storage;
         // Fonction pour changer le document affiché
         function changeDocument(documentId) {
             try {
+                console.log('Changement de document, ID:', documentId);
+                
                 // Trouver le document sélectionné dans la liste des documents
                 const documentSelect = document.getElementById('document-select');
                 if (!documentSelect) {
@@ -1295,8 +1297,32 @@ use Illuminate\Support\Facades\Storage;
                 }
 
                 // Nettoyer l'URL
-                documentUrl = documentUrl.replace(/\\/g, ''); // Supprimer les échappements
-                documentUrl = documentUrl.replace(/^"|"$/g, ''); // Supprimer les guillemets autour de l'URL
+                console.log('URL brute du document:', documentUrl);
+                
+                // Supprimer les échappements et guillemets
+                documentUrl = documentUrl.replace(/\\/g, '/').replace(/^["\[\]{}]|["\[\]{},]$/g, '');
+                
+                // Si l'URL ne commence pas par http ou /storage, ajouter le préfixe /storage/documents/
+                if (!documentUrl.match(/^(http|\/storage\/)/)) {
+                    if (documentUrl.startsWith('documents/')) {
+                        documentUrl = '/storage/' + documentUrl;
+                    } else if (documentUrl.startsWith('July2025/')) {
+                        documentUrl = '/storage/documents/' + documentUrl;
+                    } else if (!documentUrl.startsWith('/')) {
+                        documentUrl = '/storage/documents/July2025/' + documentUrl;
+                    }
+                }
+                
+                // Si l'URL est relative, ajouter le domaine
+                if (!documentUrl.startsWith('http') && !documentUrl.startsWith(window.location.origin)) {
+                    if (documentUrl.startsWith('/')) {
+                        documentUrl = window.location.origin + documentUrl;
+                    } else {
+                        documentUrl = window.location.origin + '/storage/documents/July2025/' + documentUrl;
+                    }
+                }
+                
+                console.log('URL du document après nettoyage:', documentUrl);
 
                 console.log('Chargement du document avec URL:', documentUrl);
                 
