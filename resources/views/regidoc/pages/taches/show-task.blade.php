@@ -469,6 +469,22 @@ use Illuminate\Support\Facades\Storage;
 </head>
 
 <body>
+    <!-- Flash Messages -->
+    @if(session('success'))
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <i class="fi fi-rr-check-circle me-2"></i>
+                <strong class="me-auto">Succès</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Fermer"></button>
+            </div>
+            <div class="toast-body">
+                {{ session('success') }}
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Loader -->
     <div class="loader-overlay" id="document-loader">
         <div class="loader-content">
@@ -1395,6 +1411,22 @@ use Illuminate\Support\Facades\Storage;
     </script>
 
     <script>
+        // Fermer automatiquement les messages flash après 5 secondes
+        document.addEventListener('DOMContentLoaded', function() {
+            const toast = document.querySelector('.toast');
+            if (toast) {
+                setTimeout(() => {
+                    const toastInstance = bootstrap.Toast.getOrCreateInstance(toast);
+                    toastInstance.hide();
+                    
+                    // Supprimer le toast du DOM après l'animation
+                    toast.addEventListener('hidden.bs.toast', function() {
+                        toast.remove();
+                    });
+                }, 5000);
+            }
+        });
+
         // Fonction pour changer le document affiché
         function changeDocument(documentId) {
             try {
