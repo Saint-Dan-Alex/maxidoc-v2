@@ -16,6 +16,17 @@ let tache_id = $("#pdf-main-container").data("tache");
 let docId = $("#pdf-main-container").data("docid");
 let code = $("#pdf-main-container").data("code");
 
+// Fonctions pour gérer le loader
+function showLoader() {
+    const loader = document.getElementById('document-loader');
+    if (loader) loader.style.display = 'flex';
+}
+
+function hideLoader() {
+    const loader = document.getElementById('document-loader');
+    if (loader) loader.style.display = 'none';
+}
+
 // Show the pdf document.
 showPDF(url);
 
@@ -42,12 +53,14 @@ function showPDF(pdf_url) {
     console.log('Début du chargement du PDF, URL brute :', pdf_url);
     
     const pdfContents = $("#pdf-contents");
+    showLoader(); // Afficher le loader au début du chargement
     
     // Vérifier si l'URL est valide
     if (!pdf_url) {
         const errorMsg = 'Aucune URL de document fournie';
         console.error(errorMsg);
         pdfContents.html('<div class="alert alert-danger m-3"><h5>Erreur de chargement</h5><p>' + errorMsg + '</p></div>');
+        hideLoader(); // Cacher le loader en cas d'erreur
         return;
     }
     
@@ -178,6 +191,9 @@ function showPDF(pdf_url) {
                     // Show the first page
                     showPage(canvas, vignetteCanvas, textLayer, i);
                 }
+                
+                // Cacher le loader une fois le chargement terminé
+                hideLoader();
             } else {
                 showPage(null, null, null, 1);
             }
@@ -187,6 +203,9 @@ function showPDF(pdf_url) {
             
             // Message d'erreur plus détaillé
             let errorMessage = 'Ce fichier n\'est pas un pdf  ';
+            
+            // Cacher le loader en cas d'erreur
+            hideLoader();
             
             if (error.name === 'MissingPDFException') {
                 errorMessage += 'Le fichier PDF est introuvable à l\'emplacement spécifié. ';

@@ -30,6 +30,31 @@ use Illuminate\Support\Facades\Storage;
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.16.0/pdf-lib.min.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <style>
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loader-content {
+            text-align: center;
+        }
+        .loader-text {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #333;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primaryColor);
+        }
         #upload-button {
             width: 150px;
             display: block;
@@ -390,6 +415,16 @@ use Illuminate\Support\Facades\Storage;
 </head>
 
 <body>
+    <!-- Loader -->
+    <div class="loader-overlay" id="document-loader">
+        <div class="loader-content">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <div class="loader-text">Chargement du document en cours...</div>
+        </div>
+    </div>
+    
     @php
         $docToShow = '';
         $nameDocToShow = '';
