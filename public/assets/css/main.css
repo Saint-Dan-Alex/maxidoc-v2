@@ -12382,6 +12382,105 @@ nav[role="navigation"] {
   display: block;
 }
 
+/* Styles pour la barre de filtres avancés */
+.block-input-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  padding: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.block-input-filter .form-select {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  min-width: 120px;
+  height: 36px;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+}
+
+.block-input-filter .form-select:focus {
+  border-color: var(--primaryColor);
+  box-shadow: 0 0 0 0.2rem rgba(10, 100, 202, 0.15);
+}
+
+.block-input-filter .form-select:disabled {
+  background-color: #f1f3f5;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Style pour le bouton de réinitialisation */
+.btn-reset-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  padding: 6px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.btn-reset-filters:hover {
+  background-color: #e9ecef;
+  color: #0a64ca;
+}
+
+/* Style pour les titres des filtres */
+.filter-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--colorTitre);
+  margin-bottom: 8px;
+}
+
+/* Style pour la pagination personnalisée */
+.pagination {
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.pagination .page-link {
+  color: var(--primaryColor);
+  border: 1px solid #dee2e6;
+  padding: 6px 12px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--primaryColor);
+  border-color: var(--primaryColor);
+  color: #fff;
+}
+
+.pagination .page-link:hover {
+  background-color: #f1f5ff;
+  border-color: #dee2e6;
+}
+
+/* Ajustements pour les écrans mobiles */
+@media (max-width: 768px) {
+  .block-input-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .block-input-filter .form-select {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+}
+
 .refresh-filter {
   transform: translateY(0px) !important;
 }

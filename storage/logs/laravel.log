@@ -106460,3 +106460,6 @@ Did you mean one of these?
 [2025-08-06 10:17:14] local.INFO: 📢 Notification envoyée {"agents":{"Illuminate\\Support\\Collection":[83]}} 
 [2025-08-06 10:17:14] local.INFO: 🟩 Statut du courrier entrant mis à jour  
 [2025-08-06 10:17:14] local.INFO: ✅ Fin du traitement avec succès  
+[2025-08-06 14:21:09] local.INFO: mount - Paramètres: {"services":[1,26],"type":1,"prefix":"K"} 
+[2025-08-06 14:21:15] local.INFO: changeNumRef - Paramètres: {"services":[1,26],"type":"1","prefix":"K"} 
+[2025-08-06 14:21:15] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":30,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?, ?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[1,26,"1","K-%"]} 
