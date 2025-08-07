@@ -19,6 +19,7 @@ class Document extends Component
     
     protected $paginationTheme = 'bootstrap-5';
     
+    public $loading = false;
     public $dossier;
     public $documents;
     public $filter;
@@ -62,6 +63,9 @@ class Document extends Component
         
         // Appliquer le tri
         $this->applySorting();
+        
+        // Désactiver le loader une fois le rendu terminé
+        $this->loading = false;
         
         return view('livewire.archivage.document', [
             'paginatedDocuments' => $documents
@@ -158,41 +162,44 @@ class Document extends Component
 
     public function updatedLieuQuery($value)
     {
+        $this->loading = true;
+        $this->resetPage();
         if ($value) {
-            $this->directions = LieuAffectation::findOrFail($value)->directions ?? collect();
+            $this->directions = Direction::where('lieu_id', $value)->get();
         } else {
             $this->directions = collect();
-        } 
+        }
         $this->divisions = collect();
         $this->agents = collect();
         $this->direction_query = null;
         $this->division_query = null;
         $this->agent_query = null;
-        $this->resetPage();
     }
 
     public function updatedDirectionQuery($value)
     {
+        $this->loading = true;
+        $this->resetPage();
         if ($value) {
-            $this->divisions = Direction::findOrFail($value)->divisions ?? collect();
+            $this->divisions = Division::where('direction_id', $value)->get();
         } else {
             $this->divisions = collect();
         }
         $this->agents = collect();
         $this->division_query = null;
         $this->agent_query = null;
-        $this->resetPage();
     }
 
     public function updatedDivisionQuery($value)
     {
+        $this->loading = true;
+        $this->resetPage();
         if ($value) {
-            $this->agents = Division::findOrFail($value)->agents ?? collect();
+            $this->agents = Agent::where('division_id', $value)->get();
         } else {
             $this->agents = collect();
         }
         $this->agent_query = null;
-        $this->resetPage();
     }
 
     public function updatedAgentQuery()
@@ -202,32 +209,38 @@ class Document extends Component
 
     public function updatedSearch()
     {
+        $this->loading = true;
         $this->resetPage();
     }
 
     public function updatedSelectedYear()
     {
+        $this->loading = true;
         $this->resetPage();
     }
 
     public function updatedSelectedMonth()
     {
+        $this->loading = true;
         $this->resetPage();
     }
 
     public function updatedSelectedDay()
     {
+        $this->loading = true;
         $this->resetPage();
     }
 
     public function changeFilter($value)
     {
+        $this->loading = true;
         $this->filter = $value;
         $this->resetPage();
     }
     
     public function resetFilters()
     {
+        $this->loading = true;
         $this->reset([
             'search',
             'lieu_query',
@@ -239,7 +252,6 @@ class Document extends Component
             'selectedYear',
             'filter'
         ]);
-        
         $this->directions = collect();
         $this->divisions = collect();
         $this->agents = collect();

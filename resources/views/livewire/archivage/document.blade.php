@@ -14,7 +14,18 @@
         {{-- <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-new-archive-document">Ajouter</button> --}}
         {{-- </div> --}}
     </div>
-    <div class="pb-5 card card-table" style="overflow:inherit">
+    <div class="pb-5 card card-table position-relative" style="overflow:inherit; min-height: 200px;">
+        <!-- Overlay de chargement -->
+        <div class="d-none position-absolute loader-card d-flex justify-content-center m-0"
+            style="z-index: 2; left:5px; right:5px; top:5px; bottom:5px; background-color: rgba(255,255,255,0.95)"
+            wire:loading wire:target="search,lieu_query,direction_query,division_query,agent_query,selectedDay,selectedMonth,selectedYear,filter,resetFilters" 
+            wire:loading.class.remove="d-none">
+            <div class="text-center m-auto">
+                <div class="spinner-border" role="status" style="color: var(--primaryColor)">
+                    <span class="sr-only"></span>
+                </div>
+            </div>
+        </div>
         <!-- Ligne du titre -->
         <div class="mb-3">
             <p class="mb-0"><small>Dossier</small></p>
@@ -22,7 +33,7 @@
         </div>
         
         <!-- Ligne des filtres et recherche -->
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center justify-content-between position-relative">
             <!-- Barre de recherche -->
             <div class="d-flex align-items-center" style="width: 300px;">
                 <input type="text" class="form-control input-search-card" placeholder="Recherche"
