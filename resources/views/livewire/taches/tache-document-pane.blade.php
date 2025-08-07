@@ -30,21 +30,32 @@
 <!-- Confirmation Modal -->
 <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true" style="z-index: 9999;">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="pointer-events: auto;">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title" id="confirmationModalLabel">Confirmation requise</h5>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center" id="confirmationModalLabel">
+                    <i class="fi fi-rr-document-signed me-2"></i>
+                    <span>Confirmation d'ajout</span>
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir ajouter ce document ? Cette action est irréversible.</p>
-                <p class="text-muted small">Le fichier sera traité et ne pourra pas être supprimé après enregistrement.</p>
+                <div class="d-flex align-items-start">
+                    <i class="fi fi-rr-info text-primary me-3 mt-1"></i>
+                    <div>
+                        <p class="mb-2">Êtes-vous sûr de vouloir ajouter ce document ?</p>
+                        <p class="small text-muted mb-0">
+                            <i class="fi fi-rr-shield-check me-1"></i> 
+                            Le document sera traité et ne pourra pas être supprimé après enregistrement.
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer bg-light">
+            <div class="modal-footer justify-content-between">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i> Annuler
+                    <i class="fi fi-rr-cross-small me-1"></i> Annuler
                 </button>
                 <button type="button" id="confirmUpload" class="btn btn-primary">
-                    <i class="fas fa-check me-1"></i> Confirmer l'ajout
+                    <i class="fi fi-rr-check me-1"></i> Confirmer
                 </button>
             </div>
         </div>
@@ -154,23 +165,6 @@
                 return response.json();
             })
             .then((data) => {
-                // Show success message
-                const toast = document.createElement('div');
-                toast.className = 'position-fixed bottom-0 end-0 p-3';
-                toast.style.zIndex = '9999';
-                toast.innerHTML = `
-                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div class="toast-header bg-success text-white">
-                            <strong class="me-auto">Succès</strong>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Fermer"></button>
-                        </div>
-                        <div class="toast-body">
-                            Le fichier a été ajouté avec succès.
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(toast);
-                
                 // Reset form
                 form.reset();
                 fileInputContainer.style.display = 'none';
@@ -187,13 +181,12 @@
                     document.body.style.overflow = '';
                 }
                 
-                // Emit an event to refresh the parent component if needed
+                // Emit an event to refresh the parent component
                 window.dispatchEvent(new CustomEvent('document-uploaded', { detail: data }));
                 
-                // Remove toast after 5 seconds
-                setTimeout(() => {
-                    toast.remove();
-                }, 5000);
+                // Show success message in URL hash to be displayed after page reload
+                const successMessage = encodeURIComponent(data.message || 'Le document a été ajouté avec succès.');
+                window.location.href = window.location.pathname + '?success=' + successMessage;
             })
             .catch(error => {
                 console.error('Erreur lors du téléversement:', error);

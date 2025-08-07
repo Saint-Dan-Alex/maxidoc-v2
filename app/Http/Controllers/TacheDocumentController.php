@@ -69,8 +69,10 @@ class TacheDocumentController extends Controller
             'updated_at' => now()
         ]);
 
-        return response()->json([
+        // Préparer la réponse JSON
+        $response = [
             'success' => true,
+            'message' => 'Le document a été ajouté avec succès.',
             'document' => $document,
             'tache_document' => [
                 'tache_id' => $tache->id,
@@ -78,6 +80,14 @@ class TacheDocumentController extends Controller
                 'created_at' => now(),
                 'updated_at' => now()
             ]
-        ]);
+        ];
+
+        // Si c'est une requête AJAX, retourner la réponse JSON
+        if ($request->ajax()) {
+            return response()->json($response);
+        }
+
+        // Pour les requêtes normales, rediriger avec un message flash
+        return redirect()->back()->with('success', $response['message']);
     }
 }
