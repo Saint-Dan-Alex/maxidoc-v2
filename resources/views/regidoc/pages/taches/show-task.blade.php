@@ -722,7 +722,7 @@ use Illuminate\Support\Facades\Storage;
                             <option value="{{ $document->id }}" 
                                     data-url="{{ $document->document_url }}" 
                                     {{ $isSelected ? 'selected' : '' }}>
-                                {{ $docName }}
+                                {{ $docName }}{{ $loop->first ? ' (Original)' : '' }}
                             </option>
                         @endforeach
                     </select>
