@@ -76,6 +76,30 @@ $(window).on('resize', function() {
 });
 
 function showPDF(pdf_url) {
+    const file_extension = typeof pdf_url === 'string' ? pdf_url.split('.').pop().toLowerCase() : '';
+    const isImage = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'].includes(file_extension);
+
+    if (isImage) {
+        const pdfContents = $("#pdf-contents");
+        pdfContents.empty();
+        const imgHtml = `
+            <div class="d-flex flex-column align-items-center justify-content-center p-4" style="min-height: 500px;">
+                
+                <div class="img-container" style="max-width: 100%; max-height: 70vh; overflow: auto; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; background-color: #f8f9fa;">
+                    <img src="${pdf_url}" class="img-fluid" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" alt="Aperçu de l'image">
+                </div>
+                <div class="mt-3">
+                    <a href="${pdf_url}" class="btn btn-primary btn-sm" download>
+                        <i class="fi fi-rr-download me-1"></i> Télécharger
+                    </a>
+                </div>
+            </div>
+        `;
+        pdfContents.html(imgHtml);
+        hideLoader(); // Assurez-vous que le loader est masqué
+        return; // Arrêter l'exécution pour les images
+    }
+
     console.log('Début du chargement du PDF, URL brute :', pdf_url);
     
     const pdfContents = $("#pdf-contents");
@@ -471,103 +495,149 @@ function showPage(canvas, vignetteCanvas, textLayer, page_no) {
 
 function showFirstPageImg(url = [], parentContainer) {
     for (let index = 0; index < url.length; index++) {
-        const pdf_url = url[index].link;
+        const file_url = url[index].link;
         const id = url[index].id;
         const tache_id = url[index].tache_id;
+        const file_extension = file_url.split('.').pop().toLowerCase();
+        const isImage = ['png', 'jpg', 'jpeg'].includes(file_extension);
+        const isPdf = file_extension === 'pdf';
 
-        PDFJS.getDocument({
-            url: pdf_url,
-        })
-            .then(function (pdf_doc) {
-                var imgPage = document.createElement("img");
-                imgPage.classList.add("img-fluid");
+        // Create common elements
+        var content = document.createElement("div");
+        content.classList.add("text-center", "mb-3");
+        content.style.width = "150px";
+        content.style.display = "inline-block";
+        content.style.margin = "0 10px 15px 0";
+        content.style.verticalAlign = "top";
 
-                var span = document.createElement("span");
-                span.classList.add("d-block");
+        var a = document.createElement("a");
+        a.setAttribute("href", "javascript:void(0)");
+        a.classList.add("d-block", "vignette-page", "text-decoration-none");
+        a.style.border = "1px solid #dee2e6";
+        a.style.borderRadius = "4px";
+        a.style.overflow = "hidden";
+        a.style.backgroundColor = "#f8f9fa";
+        a.style.height = "150px";
+        a.style.display = "flex";
+        a.style.alignItems = "center";
+        a.style.justifyContent = "center";
+        
+        // Set click handler
+        a.setAttribute(
+            "onclick",
+            'changDoc("' + file_url + '", this, ' + id + ", " + tache_id + ", " + (index == 0 ? 1 : 0) + "); return false;"
+        );
 
-                var content = document.createElement("div");
-                content.classList.add("text-center");
+        var span = document.createElement("span");
+        span.classList.add("d-block", "small", "mt-2");
+        span.innerText = index > 0 ? "Pièce jointe " + index : "Document original";
 
-                var a = document.createElement("a");
-                a.setAttribute("href", "javascript:void(0)");
-                a.classList.add("d-block");
-                a.classList.add("vignette-page");
-                if (index == 0) {
-                    span.innerText = "(Original)";
-                }
-                a.setAttribute(
-                    "onclick",
-                    'changDoc("' +
-                        pdf_url +
-                        '", this, ' +
-                        id +
-                        ", " +
-                        tache_id +
-                        ", " +
-                        (index == 0 ? 1 : 0) +
-                        ")"
-                );
-
-                var canvas = document.createElement("canvas");
-
-                // Show the first page
-                pdf_doc.getPage(1).then(function (page) {
-                    // Support HiDPI-screens.
-                    var outputScale = window.devicePixelRatio || 1;
-
-                    var scale = outputScale > 1 ? 1.5 : 1.2;
-
-                    var viewport = page.getViewport(scale);
-
+        if (isImage) {
+            // Handle image files (PNG, JPG, JPEG)
+            var img = document.createElement("img");
+            img.src = file_url;
+            img.style.maxWidth = "100%";
+            img.style.maxHeight = "100%";
+            img.style.objectFit = "contain";
+            img.alt = "Aperçu de l'image";
+            a.appendChild(img);
+            
+            // Add image-specific styling
+            a.style.padding = "10px";
+            
+            content.appendChild(a);
+            content.appendChild(span);
+            parentContainer.append(content);
+        } else if (isPdf) {
+            // Handle PDF files
+            var pdfContainer = document.createElement("div");
+            pdfContainer.style.position = "relative";
+            pdfContainer.style.width = "100%";
+            pdfContainer.style.height = "100%";
+            
+            var pdfIcon = document.createElement("i");
+            pdfIcon.className = "fi fi-rr-file-pdf";
+            pdfIcon.style.fontSize = "3rem";
+            pdfIcon.style.color = "#dc3545";
+            pdfIcon.style.marginBottom = "10px";
+            
+            var pdfText = document.createElement("div");
+            pdfText.innerText = "Aperçu PDF";
+            pdfText.style.fontSize = "0.8rem";
+            pdfText.style.color = "#6c757d";
+            
+            pdfContainer.appendChild(pdfIcon);
+            pdfContainer.appendChild(pdfText);
+            a.appendChild(pdfContainer);
+            
+            // Add PDF-specific styling
+            a.style.padding = "20px 10px";
+            a.style.textAlign = "center";
+            
+            content.appendChild(a);
+            content.appendChild(span);
+            parentContainer.append(content);
+            
+            // Load PDF preview in the background
+            PDFJS.getDocument({ url: file_url })
+                .then(function(pdf_doc) {
+                    return pdf_doc.getPage(1);
+                })
+                .then(function(page) {
+                    var viewport = page.getViewport(1.0);
+                    var canvas = document.createElement("canvas");
                     var context = canvas.getContext("2d");
-
-                    canvas.width = Math.floor(viewport.width * outputScale);
-                    canvas.height = Math.floor(viewport.height * outputScale);
-                    canvas.style.width =
-                        Math.floor(viewport.width * outputScale) + "px";
-
-                    var transform =
-                        outputScale !== 1
-                            ? [outputScale, 0, 0, outputScale, 0, 0]
-                            : null;
-
-                    var renderContext = {
+                    
+                    // Adjust canvas dimensions
+                    var containerWidth = 140; // Width of the container minus padding
+                    var scale = containerWidth / viewport.width;
+                    var scaledViewport = page.getViewport(scale);
+                    
+                    canvas.width = scaledViewport.width;
+                    canvas.height = scaledViewport.height;
+                    
+                    // Render PDF page to canvas
+                    page.render({
                         canvasContext: context,
-                        transform: transform,
-                        viewport: viewport,
-                    };
-
-                    // Render the page contents in the canvas
-                    page.render(renderContext).then(function () {
-                        // Return the text contents of the page after the pdf has been rendered in the canvas
-                        // return page.getTextContent();
-                        var imgData = canvas.toDataURL("image/png");
-                        imgPage.setAttribute("src", imgData);
-                        imgPage.style.width = "120px";
-                        imgPage.classList.add("border");
-
-                        a.append(imgPage);
-                        if (index > 0) {
-                            span.innerText = "Pièce jointe " + index;
-                        }
-                        if (index == url.length - 1) {
-                            a.classList.add("active");
-                        }
-                        content.append(a);
-                        content.append(span);
-                        parentContainer.append(content);
+                        viewport: scaledViewport
+                    }).promise.then(function() {
+                        // Replace icon with PDF preview
+                        pdfContainer.innerHTML = '';
+                        pdfContainer.style.padding = '0';
+                        canvas.style.maxWidth = '100%';
+                        canvas.style.height = 'auto';
+                        pdfContainer.appendChild(canvas);
+                        
+                        // Adjust container height to fit content
+                        a.style.height = 'auto';
+                        a.style.minHeight = '150px';
                     });
+                })
+                .catch(function(error) {
+                    console.error("Erreur lors du chargement de l'aperçu PDF:", error);
                 });
-                // }
-            })
-            .catch(function (error) {
-                console.log(error);
-                // If error re-show the upload button
-                // $("#pdf-loader").hide();
-                // $("#upload-button").show();
-
-                // alert(error.message);
-            });
+        } else {
+            // Handle other file types
+            var fileIcon = document.createElement("i");
+            fileIcon.className = "fi fi-rr-file";
+            fileIcon.style.fontSize = "3rem";
+            fileIcon.style.color = "#6c757d";
+            fileIcon.style.marginBottom = "10px";
+            
+            var fileText = document.createElement("div");
+            fileText.innerText = file_extension.toUpperCase();
+            fileText.style.fontSize = "0.7rem";
+            fileText.style.color = "#6c757d";
+            
+            a.appendChild(fileIcon);
+            a.appendChild(fileText);
+            a.style.padding = "20px 10px";
+            a.style.textAlign = "center";
+            
+            content.appendChild(a);
+            content.appendChild(span);
+            parentContainer.append(content);
+        }
     }
 }
 
@@ -583,33 +653,57 @@ function changDoc(
     is_original = false,
     courrier_id = null
 ) {
+    // Vider le conteneur
     $("#pdf-contents").empty();
+    
+    // Mettre à jour les liens de téléchargement
     $(".pdf-tools #download").attr("href", url);
     $(".pdf-tools #download").attr("download", url);
-    showPDF(url);
+    
+    // Vérifier le type de fichier
+    const file_extension = url.split('.').pop().toLowerCase();
+    const isImage = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'].includes(file_extension);
+    
+    // Si c'est une image, l'afficher directement
+    if (isImage) {
+        const imgHtml = `
+            <div class="d-flex flex-column align-items-center justify-content-center p-4" style="min-height: 500px;">
+                <div class="text-center mb-4">
+                    <h4>Visualisation de l'image</h4>
+                    <p class="text-muted">${url.split('/').pop()}</p>
+                </div>
+                <div class="img-container" style="max-width: 100%; max-height: 70vh; overflow: auto; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; background-color: #f8f9fa;">
+                    <img src="${url}" class="img-fluid" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" alt="Aperçu de l'image">
+                </div>
+                <div class="mt-3">
+                    <a href="${url}" class="btn btn-primary btn-sm" download>
+                        <i class="fi fi-rr-download me-1"></i> Télécharger
+                    </a>
+                </div>
+            </div>
+        `;
+        $("#pdf-contents").html(imgHtml);
+    } else {
+        // Pour les PDF, utiliser la fonction showPDF existante
+        showPDF(url);
+    }
 
+    // Mettre à jour la navigation
     $(".vignette-page").removeClass("active");
     if (element) {
         $(element).addClass("active");
     }
-    $(".signature_btn").attr(
-        "href",
-        "/system/documents/sign/task?doc_id=" +
-            docId +
-            "&is_original=" +
-            is_original
-    );
-    if (tache_id) {
-        $(".signature_btn").attr(
-            "href",
-            $(".signature_btn").attr("href") + "&tache_id=" + tache_id
-        );
-    }
-    if (courrier_id) {
-        $(".signature_btn").attr(
-            "href",
-            $(".signature_btn").attr("href") + "&courrier_id=" + courrier_id
-        );
+    
+    // Mettre à jour le bouton de signature si nécessaire
+    if (docId) {
+        let signatureUrl = "/system/documents/sign/task?doc_id=" + docId + "&is_original=" + is_original;
+        if (tache_id) {
+            signatureUrl += "&tache_id=" + tache_id;
+        }
+        if (courrier_id) {
+            signatureUrl += "&courrier_id=" + courrier_id;
+        }
+        $(".signature_btn").attr("href", signatureUrl);
     }
 }
 
