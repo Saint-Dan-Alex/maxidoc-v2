@@ -19,12 +19,38 @@ let code = $("#pdf-main-container").data("code");
 // Fonctions pour gérer le loader
 function showLoader() {
     const loader = document.getElementById('document-loader');
-    if (loader) loader.style.display = 'flex';
+    const pdfContents = document.getElementById('pdf-contents');
+    
+    if (loader && pdfContents) {
+        // S'assurer que le conteneur du PDF a une position relative
+        if (window.getComputedStyle(pdfContents).position === 'static') {
+            pdfContents.style.position = 'relative';
+        }
+        
+        // Positionner le loader dans le conteneur PDF
+        loader.style.display = 'flex';
+        loader.style.position = 'absolute';
+        loader.style.top = '0';
+        loader.style.left = '0';
+        
+        // Ajouter une légère animation d'apparition
+        setTimeout(() => {
+            loader.style.opacity = '1';
+        }, 10);
+    }
 }
 
 function hideLoader() {
     const loader = document.getElementById('document-loader');
-    if (loader) loader.style.display = 'none';
+    if (loader) {
+        // Ajouter une animation de disparition
+        loader.style.opacity = '0';
+        
+        // Masquer après l'animation
+        setTimeout(() => {
+            loader.style.display = 'none';
+        }, 300); // Correspond à la durée de la transition CSS
+    }
 }
 
 // Show the pdf document.
@@ -53,14 +79,40 @@ function showPDF(pdf_url) {
     console.log('Début du chargement du PDF, URL brute :', pdf_url);
     
     const pdfContents = $("#pdf-contents");
-    showLoader(); // Afficher le loader au début du chargement
+    
+    // Initialiser le conteneur PDF
+    if (pdfContents.length) {
+        // Vider le contenu précédent
+        pdfContents.empty();
+        
+        // Créer un conteneur pour le loader s'il n'existe pas
+        if ($('#document-loader').length === 0) {
+            const loaderHtml = `
+                <div id="document-loader" class="loader-overlay">
+                    <div class="loader-content">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <div class="loader-text">Chargement du document en cours...</div>
+                    </div>
+                </div>
+            `;
+            pdfContents.append(loaderHtml);
+        }
+        
+        // Afficher le loader
+        showLoader();
+    } else {
+        console.error('Conteneur PDF non trouvé');
+        return;
+    }
     
     // Vérifier si l'URL est valide
     if (!pdf_url) {
         const errorMsg = 'Aucune URL de document fournie';
         console.error(errorMsg);
         pdfContents.html('<div class="alert alert-danger m-3"><h5>Erreur de chargement</h5><p>' + errorMsg + '</p></div>');
-        hideLoader(); // Cacher le loader en cas d'erreur
+        hideLoader();
         return;
     }
     
