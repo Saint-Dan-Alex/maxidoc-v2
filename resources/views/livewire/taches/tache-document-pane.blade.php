@@ -39,11 +39,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
-                <div class="d-flex align-items-start">
+                <div class="d-flex align-items-start mb-3">
                     <i class="fi fi-rr-info text-primary me-3 mt-1"></i>
                     <div>
-                        <p class="mb-2">Êtes-vous sûr de vouloir ajouter ce document ?</p>
-                        <p class="small text-muted mb-0">
+                        <p class="mb-2">Veuillez vérifier l'aperçu du document avant confirmation :</p>
+                        <div id="documentPreview" class="text-center mt-3" style="min-height: 200px; background-color: #f8f9fa; border-radius: 4px; border: 1px dashed #dee2e6; display: flex; align-items: center; justify-content: center;">
+                            <div class="py-4">
+                                <i class="fi fi-rr-file-upload fs-1 text-muted mb-2 d-block"></i>
+                                <span class="text-muted">Aperçu du document</span>
+                            </div>
+                        </div>
+                        <p class="small text-muted mt-3 mb-0">
                             <i class="fi fi-rr-shield-check me-1"></i> 
                             Le document sera traité et ne pourra pas être supprimé après enregistrement.
                         </p>
@@ -63,6 +69,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('assets/js/pdfjs/pdf.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const documentSelect = document.getElementById('documentFile');
@@ -88,7 +95,13 @@
         documentSelect.addEventListener('change', function() {
             if (this.value === 'upload') {
                 fileInputContainer.style.display = 'block';
-                submitBtn.disabled = true; // Disable submit until a file is selected
+                submitBtn.disabled = true; // Désactiver le bouton jusqu'à ce qu'un fichier soit sélectionné
+                // Réinitialiser l'aperçu
+                document.getElementById('documentPreview').innerHTML = `
+                    <div class="py-4">
+                        <i class="fi fi-rr-file-upload fs-1 text-muted mb-2 d-block"></i>
+                        <span class="text-muted">Aperçu du document</span>
+                    </div>`;
             } else {
                 fileInputContainer.style.display = 'none';
                 submitBtn.disabled = false;
@@ -96,8 +109,82 @@
         });
 
         // Handle file selection
-        fileInput.addEventListener('change', function(e) {
+        fileInput.addEventListener('change', async function(e) {
             if (this.files && this.files[0]) {
+                // Reset preview
+                const previewContainer = document.getElementById('documentPreview');
+                previewContainer.innerHTML = `
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>`;
+
+                const file = this.files[0];
+                const fileType = file.type;
+                const isPdf = fileType === 'application/pdf';
+                const isImage = fileType.startsWith('image/');
+
+                if (isImage) {
+                    // Preview for images
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewContainer.innerHTML = `
+                            <img src="${e.target.result}" class="img-fluid" style="max-height: 300px; object-fit: contain;" alt="Aperçu du document">
+                            <div class="text-center mt-2">
+                                <small class="text-muted">${file.name}</small>
+                            </div>`;
+                        submitBtn.disabled = false;
+                    };
+                    reader.readAsDataURL(file);
+                } else if (isPdf) {
+                    // Preview for PDFs using server-side Imagick
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    try {
+                        const response = await fetch('{{ route("taches.generatePdfPreview") }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success && data.preview_url) {
+                            previewContainer.innerHTML = `
+                                <img src="${data.preview_url}" class="img-fluid" style="max-height: 300px; object-fit: contain;" alt="Aperçu du document">
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">${file.name}</small>
+                                </div>`;
+                        } else {
+                            throw new Error(data.message || 'Erreur lors de la génération de l\'aperçu');
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors de la génération de l\'aperçu PDF :', error);
+                        previewContainer.innerHTML = `
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                <div class="text-center text-muted">
+                                    <i class="fi fi-rr-file-pdf fs-1 d-block mb-2"></i>
+                                    <span>Impossible de générer l'aperçu du PDF</span>
+                                    <p class="small mt-2">${error.message || ''}</p>
+                                </div>
+                            </div>`;
+                    }
+                } else {
+                    // For unsupported file types
+                    previewContainer.innerHTML = `
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                            <div class="text-center text-muted">
+                                <i class="fi fi-rr-file fs-1 d-block mb-2"></i>
+                                <span>Format non supporté pour l'aperçu</span>
+                                <p class="small mt-2">${file.name}</p>
+                            </div>
+                        </div>`;
+                }
                 submitBtn.disabled = false;
                 // Display file preview if needed
                 if (this.files[0].type.startsWith('image/')) {
