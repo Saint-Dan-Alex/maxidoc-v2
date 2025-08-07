@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Spatie\PdfToImage\Pdf;
 use Intervention\Image\ImageManagerStatic as Image;
+use Illuminate\Support\Facades\Storage;
+use Imagick;
+use Illuminate\Support\Facades\Log;
 
 class TacheDocumentController extends Controller
 {
@@ -89,5 +92,55 @@ class TacheDocumentController extends Controller
 
         // Pour les requêtes normales, rediriger avec un message flash
         return redirect()->back()->with('success', $response['message']);
+    }
+
+    /**
+     * Génère un aperçu de la première page d'un PDF
+     */
+    public function generatePdfPreview(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf|max:10240', // Max 10MB
+        ]);
+
+        $file = $request->file('file');
+        
+        try {
+            // Créer un nom de fichier unique pour l'aperçu
+            $previewName = 'preview_' . time() . '.jpg';
+            $previewPath = storage_path('app/public/previews/' . $previewName);
+            
+            // Créer le répertoire s'il n'existe pas
+            if (!file_exists(dirname($previewPath))) {
+                mkdir(dirname($previewPath), 0777, true);
+            }
+
+            // Utiliser Imagick pour générer l'aperçu
+            $imagick = new \Imagick();
+            $imagick->readImage($file->getRealPath() . '[0]'); // Première page
+            $imagick->setImageFormat('jpg');
+            $imagick->setImageCompressionQuality(80);
+            
+            // Redimensionner tout en conservant le ratio
+            $imagick->thumbnailImage(800, 0); // Largeur maximale de 800px
+            
+            // Sauvegarder l'aperçu
+            $imagick->writeImage($previewPath);
+            $imagick->clear();
+            $imagick->destroy();
+            
+            // Retourner l'URL de l'aperçu
+            return response()->json([
+                'success' => true,
+                'preview_url' => asset('storage/previews/' . $previewName)
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de la génération de l\'aperçu PDF: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Impossible de générer l\'aperçu du PDF.'
+            ], 500);
+        }
     }
 }

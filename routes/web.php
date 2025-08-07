@@ -299,6 +299,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 Route::post('courriers/scan', [CourrierController::class, 'scan'])->name('courriers.scan');
 Route::post('documents/save-pdf', [DocumentController::class, 'storeNew'])->name('documents.storeNew'); 
 Route::post('documents/save-as-doc', [DocumentController::class, 'saveDoc'])->name('documents.saveDoc');
+Route::post('taches/generate-pdf-preview', [TacheDocumentController::class, 'generatePdfPreview'])->name('taches.generatePdfPreview');
 
 // Routes pour les documents des tâches
 Route::post('/taches/{tache}/documents', [TacheDocumentController::class, 'store'])->name('taches.documents.store');
