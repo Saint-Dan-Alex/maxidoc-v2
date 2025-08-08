@@ -10,30 +10,15 @@ return new class extends Migration
     {
         Schema::create('courriers_annotations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('courrier_id')->constrained('courriers')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users');
+
+            $table->foreignId('courrier_id')->nullable()->constrained('courriers')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             
-            // Contenu de l'annotation
-            $table->text('contenu');
-            $table->string('type', 50)->default('note'); // note, commentaire, correction, etc.
-            $table->string('statut', 50)->default('actif'); // actif, archive, supprime
-            
-            // Position et mise en forme
-            $table->string('page')->nullable(); // Pour les annotations sur des pages spécifiques
-            $table->json('position')->nullable(); // Coordonnées x,y si applicable
-            
-            // Réponse à une autre annotation (pour les fils de discussion)
-            $table->foreignId('parent_id')->nullable()->constrained('courriers_annotations')->nullOnDelete();
-            
-            // Visibilité
-            $table->boolean('est_prive')->default(false);
-            
+            $table->text('note')->nullable();
+            $table->boolean('is_done')->default(false);
+            $table->foreignId('done_by')->nullable()->constrained('users')->nullOnDelete();
+
             $table->timestamps();
-            $table->softDeletes();
-            
-            // Index
-            $table->index(['courrier_id', 'type', 'statut']);
-            $table->index(['user_id', 'created_at']);
         });
     }
 

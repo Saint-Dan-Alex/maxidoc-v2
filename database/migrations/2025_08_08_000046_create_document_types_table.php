@@ -10,14 +10,7 @@ return new class extends Migration
     {
         Schema::create('document_types', function (Blueprint $table) {
             $table->id();
-            $table->string('titre');
-            $table->string('code', 50)->unique();
-            $table->text('description')->nullable();
-            $table->string('extension', 20);
-            $table->string('mime_type', 100);
-            $table->string('icone', 50)->nullable();
-            $table->boolean('est_actif')->default(true);
-            $table->foreignId('created_by')->constrained('users');
+            $table->string('titre', 200)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

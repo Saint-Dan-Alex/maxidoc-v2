@@ -10,38 +10,19 @@ return new class extends Migration
     {
         Schema::create('archive_permissions', function (Blueprint $table) {
             $table->id();
-            
-            // Type d'entité (user, role, etc.)
-            $table->string('permissible_type');
-            $table->unsignedBigInteger('permissible_id');
-            
-            // Type d'archive (courrier, document, etc.)
-            $table->string('archive_type');
-            
-            // Droits d'accès
-            $table->boolean('peut_voir')->default(false);
-            $table->boolean('peut_telecharger')->default(false);
-            $table->boolean('peut_supprimer')->default(false);
-            $table->boolean('peut_restaurer')->default(false);
-            
-            // Période de validité
-            $table->date('date_debut')->nullable();
-            $table->date('date_fin')->nullable();
-            
-            // Restrictions supplémentaires
-            $table->json('restrictions')->nullable();
-            
-            // Métadonnées
-            $table->foreignId('created_by')->constrained('users');
-            $table->text('raison')->nullable();
-            
+
+            $table->unsignedBigInteger('agent_id')->index();
+
+            $table->unsignedBigInteger('permissionable_id')->nullable();
+            $table->string('permissionable_type')->nullable();
+
+            $table->string('key', 50)->nullable();
+
             $table->timestamps();
             $table->softDeletes();
-            
-            // Index
-            $table->index(['permissible_type', 'permissible_id']);
-            $table->index('archive_type');
-            $table->index(['date_debut', 'date_fin']);
+
+            // Optionnel : clé étrangère si agent_id réfère à users ou agents
+            // $table->foreign('agent_id')->references('id')->on('agents')->cascadeOnDelete();
         });
     }
 

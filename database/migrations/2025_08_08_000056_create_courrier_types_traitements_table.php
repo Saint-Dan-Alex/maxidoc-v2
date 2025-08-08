@@ -10,16 +10,7 @@ return new class extends Migration
     {
         Schema::create('courrier_types_traitements', function (Blueprint $table) {
             $table->id();
-            $table->string('titre');
-            $table->string('code', 50)->unique();
-            $table->text('description')->nullable();
-            $table->string('icone', 50)->nullable();
-            $table->string('couleur', 20)->nullable();
-            $table->integer('delai_jours')->nullable();
-            $table->boolean('notification_actif')->default(false);
-            $table->text('message_notification')->nullable();
-            $table->boolean('est_actif')->default(true);
-            $table->foreignId('created_by')->constrained('users');
+            $table->string('titre', 255)->nullable()->collation('utf8mb3_general_ci');
             $table->timestamps();
             $table->softDeletes();
         });

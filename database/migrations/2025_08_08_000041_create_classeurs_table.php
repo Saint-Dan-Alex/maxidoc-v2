@@ -10,19 +10,16 @@ return new class extends Migration
     {
         Schema::create('classeurs', function (Blueprint $table) {
             $table->id();
-            $table->string('titre');
-            $table->string('code', 50)->unique();
+            $table->foreignId('direction_id')->nullable()->constrained('directions')->nullOnDelete();
+            $table->string('titre')->nullable();
+            $table->string('reference'); // correspond au champ non nullable
             $table->text('description')->nullable();
-            $table->foreignId('service_id')->nullable()->constrained('services')->nullOnDelete();
-            $table->foreignId('created_by')->constrained('users');
-            $table->boolean('est_public')->default(false);
-            $table->string('couleur', 20)->nullable();
-            $table->string('icone', 50)->nullable();
-            $table->integer('position')->default(0);
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index(['service_id', 'created_by']);
+
+            $table->index('direction_id');
         });
     }
 

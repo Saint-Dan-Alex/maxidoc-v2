@@ -10,34 +10,18 @@ return new class extends Migration
     {
         Schema::create('revisions', function (Blueprint $table) {
             $table->id();
-            
-            // Modèle concerné
-            $table->string('revisionable_type');
-            $table->unsignedBigInteger('revisionable_id');
-            
-            // Utilisateur ayant effectué la modification
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            
-            // Données de la révision
-            $table->json('old_values')->nullable();
-            $table->json('new_values')->nullable();
-            
-            // Type de modification (create, update, delete, restore, etc.)
-            $table->string('key');
-            
-            // Numéro de version (incrémentiel)
-            $table->unsignedInteger('revision_number')->default(0);
-            
-            // Métadonnées
-            $table->string('ip_address', 45)->nullable();
-            $table->string('user_agent')->nullable();
-            
+
+            $table->string('revisionable_type')->index();
+            $table->unsignedBigInteger('revisionable_id')->index();
+
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete()->index();
+
+            $table->text('old_value')->nullable();
+            $table->text('new_value')->nullable();
+
+            $table->string('key')->index();
+
             $table->timestamps();
-            
-            // Index
-            $table->index(['revisionable_type', 'revisionable_id']);
-            $table->index(['user_id', 'created_at']);
-            $table->index('key');
         });
     }
 

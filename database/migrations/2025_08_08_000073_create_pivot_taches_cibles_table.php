@@ -10,23 +10,15 @@ return new class extends Migration
     {
         Schema::create('pivot_taches_cibles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tache_id')->constrained('taches')->cascadeOnDelete();
+            $table->unsignedBigInteger('tache_id')->nullable();
+            $table->unsignedBigInteger('cible_id')->nullable();
             
-            // Type polymorphique pour gérer différents types de cibles
-            $table->string('cible_type'); // Modèle cible (ex: App\Models\Courrier, App\Models\Document)
-            $table->unsignedBigInteger('cible_id'); // ID de l'entité cible
-            
-            // Type de relation (lié à, impacte, dépend de, etc.)
-            $table->string('type_relation', 50)->default('lie_a');
-            
-            // Métadonnées
-            $table->text('commentaire')->nullable();
-            $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
-            
-            // Index
-            $table->index(['tache_id', 'cible_type', 'cible_id']);
-            $table->index(['cible_type', 'cible_id']);
+            $table->softDeletes(); // pour deleted_at
+
+            // Index facultatif
+            $table->index(['tache_id']);
+            $table->index(['cible_id']);
         });
     }
 

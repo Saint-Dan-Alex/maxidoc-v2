@@ -10,20 +10,10 @@ return new class extends Migration
     {
         Schema::create('document_templates', function (Blueprint $table) {
             $table->id();
-            $table->string('titre');
-            $table->string('code', 50)->unique();
-            $table->text('description')->nullable();
-            $table->foreignId('type_id')->constrained('document_types');
-            $table->string('fichier');
-            $table->string('chemin');
-            $table->string('taille');
-            $table->string('version', 20)->default('1.0');
-            $table->boolean('est_actif')->default(true);
-            $table->foreignId('created_by')->constrained('users');
+            $table->string('titre', 100)->nullable();
+            $table->longText('modele')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index(['type_id', 'created_by']);
         });
     }
 

@@ -10,36 +10,22 @@ return new class extends Migration
     {
         Schema::create('views', function (Blueprint $table) {
             $table->id();
-            
-            // Modèle visualisé
-            $table->string('viewable_type');
-            $table->unsignedBigInteger('viewable_id');
-            
-            // Utilisateur qui a visualisé
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            
-            // Données de session pour les utilisateurs non connectés
-            $table->string('session_id')->nullable();
-            
-            // Métadonnées
-            $table->string('ip_address', 45)->nullable();
-            $table->string('user_agent')->nullable();
-            $table->string('referer')->nullable();
-            
-            // Durée de la visualisation (en secondes)
-            $table->integer('duree')->default(0);
-            
-            // Données techniques
-            $table->string('device_type', 20)->nullable(); // desktop, mobile, tablet
-            $table->string('browser', 50)->nullable();
-            $table->string('platform', 50)->nullable();
-            
-            $table->timestamps();
-            
-            // Index
-            $table->index(['viewable_type', 'viewable_id']);
-            $table->index(['user_id', 'created_at']);
-            $table->index('session_id');
+
+            $table->string('viewable_type')->index();
+            $table->unsignedBigInteger('viewable_id')->index();
+
+            $table->text('visitor')->nullable();
+            $table->string('collection')->nullable();
+
+            $table->unsignedBigInteger('user_id')->nullable();
+
+            // Timestamp avec valeur par défaut CURRENT_TIMESTAMP
+            $table->timestamp('viewed_at')->useCurrent();
+
+            // Clé étrangère optionnelle sur user_id si tu veux
+            // $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
+
+            // Pas de timestamps automatiques created_at/updated_at car absents de la table SQL
         });
     }
 

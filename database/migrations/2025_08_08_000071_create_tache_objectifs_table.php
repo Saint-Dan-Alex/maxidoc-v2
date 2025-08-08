@@ -10,27 +10,17 @@ return new class extends Migration
     {
         Schema::create('tache_objectifs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tache_id')->constrained('taches')->cascadeOnDelete();
+
+            // Champs de base
             $table->string('libelle');
-            $table->text('description')->nullable();
-            
-            // Statut de l'objectif
-            $table->boolean('est_termine')->default(false);
-            $table->dateTime('date_realisation')->nullable();
-            
-            // Priorité et ordre
-            $table->integer('priorite')->default(0);
-            $table->integer('ordre_affichage')->default(0);
-            
-            // Suivi
-            $table->foreignId('termine_par')->nullable()->constrained('users');
-            $table->foreignId('created_by')->constrained('users');
-            
+            $table->string('statut', 1)->default('0');
+
+            // Relations
+            $table->foreignId('tache_id')->nullable()->constrained('taches')->nullOnDelete();
+            $table->foreignId('agent_id')->nullable()->constrained('agents')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+
             $table->timestamps();
-            $table->softDeletes();
-            
-            // Index
-            $table->index(['tache_id', 'est_termine', 'priorite']);
         });
     }
 

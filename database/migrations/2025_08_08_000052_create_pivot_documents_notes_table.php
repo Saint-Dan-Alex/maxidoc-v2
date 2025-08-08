@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('pivot_documents_notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('document_id')->constrained('documents')->cascadeOnDelete();
-            $table->foreignId('note_id')->constrained('document_notes')->cascadeOnDelete();
-            $table->foreignId('created_by')->constrained('users');
-            $table->timestamps();
+            $table->foreignId('document_id')->nullable()->constrained('documents')->cascadeOnDelete();
+            $table->foreignId('note_id')->nullable()->constrained('document_notes')->cascadeOnDelete();
+            $table->timestamps();       // created_at, updated_at
+            $table->softDeletes();      // deleted_at
             
-            $table->unique(['document_id', 'note_id']);
+            // Pas d'unicité sur ['document_id', 'note_id'] car non indiquée dans ta table SQL
         });
     }
 

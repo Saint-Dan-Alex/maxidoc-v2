@@ -10,14 +10,11 @@ return new class extends Migration
     {
         Schema::create('document_notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('document_id')->constrained('documents')->cascadeOnDelete();
-            $table->foreignId('created_by')->constrained('users');
-            $table->text('contenu');
-            $table->boolean('est_public')->default(false);
+            $table->foreignId('agent_id')->nullable()->constrained('agents')->nullOnDelete();
+            $table->string('titre')->nullable();
+            $table->text('note')->nullable();
             $table->timestamps();
-            $table->softDeletes();
-            
-            $table->index(['document_id', 'created_by']);
+            $table->softDeletes(); // ajoute la colonne deleted_at
         });
     }
 
