@@ -21,7 +21,20 @@ return new class extends Migration
         });
 
         // Insert default admin user
-        \DB::table('users')->insert([
+        DB::table('users')->insert([
+            'name' => 'Administrateur',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('users');
+    }
             'name' => 'Administrateur',
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
