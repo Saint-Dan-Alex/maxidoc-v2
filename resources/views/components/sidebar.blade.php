@@ -120,7 +120,25 @@
             </ul>
         </div>
     </div>
-    @if (!Auth::user()->agent->direction->services->pluck('id')->contains(3) || !Auth::user()->agent->IsDG())
+    @php
+        $user = Auth::user();
+        $showButton = true;
+        
+        // Vérifier si l'utilisateur est le super admin (ID = 1)
+        if ($user->id === 1) {
+            $showButton = true;
+        } 
+        // Vérifier si l'utilisateur a un agent avec une direction
+        elseif ($user->agent && $user->agent->direction) {
+            $showButton = !$user->agent->direction->services->pluck('id')->contains(3) || !$user->agent->IsDG();
+        }
+        // Pour les autres cas (pas d'agent ou agent sans direction)
+        else {
+            $showButton = false;
+        }
+    @endphp
+    
+    @if ($showButton)
         <a href="{{ route('regidoc.courriers.create') }}" class="link-action">
             <div class="card card-sm pointer">
                 <div class="text-center">
