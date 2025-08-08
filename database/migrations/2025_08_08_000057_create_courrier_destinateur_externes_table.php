@@ -9,23 +9,13 @@ return new class extends Migration
     public function up()
     {
         Schema::create('courrier_destinateur_externes', function (Blueprint $table) {
-            $table->id();
-            $table->string('nom');
-            $table->string('prenom')->nullable();
-            $table->string('fonction')->nullable();
-            $table->string('entreprise')->nullable();
-            $table->string('adresse')->nullable();
-            $table->string('telephone', 20)->nullable();
-            $table->string('email')->nullable();
-            $table->string('pays', 100)->nullable();
-            $table->string('ville', 100)->nullable();
-            $table->string('code_postal', 20)->nullable();
-            $table->text('notes')->nullable();
-            $table->foreignId('created_by')->constrained('users');
-            $table->timestamps();
-            $table->softDeletes();
-            
-            $table->index(['nom', 'prenom', 'entreprise']);
+            $table->id(); // int auto_increment primary key
+            $table->string('nom', 255)->nullable()->collation('utf8mb3_general_ci'); // nullable et collation utf8mb3
+            $table->timestamps(); // created_at et updated_at (nullable)
+            $table->softDeletes(); // deleted_at (nullable)
+
+            // Index optionnel selon ta table d'origine (sur nom uniquement ici)
+            $table->index('nom');
         });
     }
 

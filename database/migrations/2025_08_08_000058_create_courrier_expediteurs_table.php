@@ -9,26 +9,14 @@ return new class extends Migration
     public function up()
     {
         Schema::create('courrier_expediteurs', function (Blueprint $table) {
-            $table->id();
-            $table->string('nom');
-            $table->string('prenom')->nullable();
-            $table->string('fonction')->nullable();
-            $table->string('entreprise')->nullable();
-            $table->string('adresse')->nullable();
-            $table->string('telephone', 20)->nullable();
-            $table->string('email')->nullable();
-            $table->string('pays', 100)->nullable();
-            $table->string('ville', 100)->nullable();
-            $table->string('code_postal', 20)->nullable();
-            $table->enum('type', ['interne', 'externe'])->default('externe');
-            $table->foreignId('agent_id')->nullable()->constrained('agents')->nullOnDelete();
-            $table->text('notes')->nullable();
-            $table->foreignId('created_by')->constrained('users');
-            $table->timestamps();
-            $table->softDeletes();
+            $table->id(); // int auto-increment primary key
+            $table->unsignedBigInteger('category_id')->nullable(); // category_id int nullable
+            $table->string('nom', 25)->nullable()->collation('utf8mb3_general_ci'); // nom varchar(25), nullable, collation utf8mb3_general_ci
+            $table->timestamps(); // created_at et updated_at nullable
+            $table->softDeletes(); // deleted_at nullable
             
-            $table->index(['nom', 'prenom', 'entreprise']);
-            $table->index('agent_id');
+            $table->index('category_id'); // index sur category_id
+            $table->index('nom'); // index sur nom si besoin
         });
     }
 

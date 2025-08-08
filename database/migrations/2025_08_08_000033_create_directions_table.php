@@ -10,9 +10,13 @@ return new class extends Migration
     {
         Schema::create('directions', function (Blueprint $table) {
             $table->id();
-            $table->string('titre');
-            $table->string('sigle', 50)->nullable();
+            $table->string('titre')->nullable();
+            $table->string('code', 20)->nullable();
             $table->text('description')->nullable();
+            $table->unsignedBigInteger('lieu_id')->default(12);
+            $table->unsignedBigInteger('responsable_id')->nullable();
+            $table->string('slug')->nullable();
+            $table->unsignedBigInteger('adjoint_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -10,20 +10,13 @@ return new class extends Migration
     {
         Schema::create('images', function (Blueprint $table) {
             $table->id();
-            $table->string('titre', 100)->nullable();
-            $table->string('fichier');
-            $table->string('chemin');
-            $table->string('type_mime', 50);
-            $table->integer('taille')->unsigned();
-            $table->integer('largeur')->nullable();
-            $table->integer('hauteur')->nullable();
-            $table->text('description')->nullable();
-            $table->morphs('imageable');
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('image_url', 255)->nullable();
+            $table->enum('type_image', ['SIGNATURE', 'TAMPON', 'INITIALES'])->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('password', 255)->nullable();
             $table->timestamps();
-            $table->softDeletes();
-            
-            $table->index(['imageable_id', 'imageable_type']);
+
+            $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
         });
     }
 

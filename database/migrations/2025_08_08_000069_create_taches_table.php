@@ -10,43 +10,28 @@ return new class extends Migration
     {
         Schema::create('taches', function (Blueprint $table) {
             $table->id();
-            $table->string('titre');
-            $table->text('description')->nullable();
-            
-            // Statut et priorité
-            $table->foreignId('statut_id')->constrained('taches_statuts');
-            $table->enum('priorite', ['basse', 'moyenne', 'haute', 'urgente'])->default('moyenne');
-            
-            // Dates importantes
-            $table->dateTime('date_debut')->nullable();
-            $table->dateTime('date_echeance')->nullable();
-            $table->dateTime('date_fin')->nullable();
-            
-            // Progression
-            $table->integer('progression')->default(0); // 0-100
-            
-            // Confidentialité
-            $table->boolean('est_privee')->default(false);
-            
-            // Références
-            $table->foreignId('courrier_id')->nullable()->constrained('courriers')->nullOnDelete();
-            $table->foreignId('document_id')->nullable()->constrained('documents')->nullOnDelete();
-            $table->foreignId('parent_id')->nullable()->constrained('taches')->nullOnDelete();
-            
-            // Création et mise à jour
-            $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('updated_by')->nullable()->constrained('users');
-            
-            // Suivi
-            $table->integer('temps_estime')->nullable(); // en minutes
-            $table->integer('temps_passe')->default(0); // en minutes
-            
-            $table->timestamps();
-            $table->softDeletes();
-            
-            // Index
-            $table->index(['statut_id', 'date_echeance', 'priorite']);
-            $table->index(['created_by', 'est_privee']);
+
+            $table->foreignId('user_id')->nullable()->index(); // selon ta colonne 2
+            $table->foreignId('statut_id')->nullable()->default(1); // colonne 3
+            $table->foreignId('tache_statut_id')->nullable()->default(1); // colonne 4
+            $table->foreignId('priorite_id')->nullable(); // colonne 5
+            $table->foreignId('parent_id')->nullable(); // colonne 6
+
+            $table->string('titre', 255)->nullable(); // colonne 7
+            $table->integer('pourcentage')->default(0); // colonne 8 (progression)
+            $table->text('description')->nullable(); // colonne 9
+
+            $table->timestamp('date_debut')->nullable(); // colonne 10
+            $table->timestamp('date_fin')->nullable(); // colonne 11
+
+            $table->foreignId('courrier_id')->nullable()->constrained('courriers')->nullOnDelete(); // colonne 15
+
+            $table->timestamps(); // created_at & updated_at
+            $table->softDeletes(); // deleted_at
+
+            // Indexes utiles (ajoute selon besoins)
+            $table->index(['statut_id', 'date_fin']);
+            $table->index('user_id');
         });
     }
 

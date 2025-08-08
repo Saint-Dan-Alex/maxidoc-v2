@@ -10,15 +10,7 @@ return new class extends Migration
     {
         Schema::create('taches_statuts', function (Blueprint $table) {
             $table->id();
-            $table->string('titre');
-            $table->string('code', 50)->unique();
-            $table->string('couleur', 20)->default('#6c757d');
-            $table->string('icone', 50)->default('circle');
-            $table->boolean('est_termine')->default(false);
-            $table->boolean('est_actif')->default(true);
-            $table->integer('ordre_affichage')->default(0);
-            $table->text('description')->nullable();
-            $table->foreignId('created_by')->constrained('users');
+            $table->string('titre', 50)->nullable(); // longueur et nullable d'après ta table
             $table->timestamps();
             $table->softDeletes();
         });

@@ -10,15 +10,7 @@ return new class extends Migration
     {
         Schema::create('document_statuts', function (Blueprint $table) {
             $table->id();
-            $table->string('titre');
-            $table->string('code', 50)->unique();
-            $table->text('description')->nullable();
-            $table->string('couleur', 20)->nullable();
-            $table->string('icone', 50)->nullable();
-            $table->boolean('est_par_defaut')->default(false);
-            $table->boolean('peut_modifier')->default(true);
-            $table->boolean('peut_supprimer')->default(true);
-            $table->foreignId('created_by')->constrained('users');
+            $table->string('titre', 200)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

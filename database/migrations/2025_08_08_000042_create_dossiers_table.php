@@ -10,19 +10,17 @@ return new class extends Migration
     {
         Schema::create('dossiers', function (Blueprint $table) {
             $table->id();
-            $table->string('titre');
-            $table->string('reference', 100)->unique()->nullable();
+            $table->foreignId('classeur_id')->nullable()->constrained('classeurs')->nullOnDelete();
+            $table->string('reference')->nullable();
+            $table->string('titre')->nullable();
             $table->text('description')->nullable();
-            $table->foreignId('classeur_id')->constrained('classeurs')->cascadeOnDelete();
-            $table->foreignId('parent_id')->nullable()->constrained('dossiers')->nullOnDelete();
-            $table->foreignId('created_by')->constrained('users');
-            $table->boolean('est_public')->default(false);
-            $table->string('couleur', 20)->nullable();
-            $table->integer('position')->default(0);
+            $table->integer('confidentiel')->default(0);
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index(['classeur_id', 'parent_id', 'created_by']);
+
+            $table->index(['classeur_id', 'created_by']);
         });
     }
 

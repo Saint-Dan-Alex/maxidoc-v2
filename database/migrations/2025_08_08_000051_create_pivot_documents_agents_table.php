@@ -10,16 +10,13 @@ return new class extends Migration
     {
         Schema::create('pivot_documents_agents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('document_id')->constrained('documents')->cascadeOnDelete();
-            $table->foreignId('agent_id')->constrained('agents')->cascadeOnDelete();
-            $table->string('role', 50); // proprietaire, signataire, destinataire, etc.
-            $table->date('date_debut');
-            $table->date('date_fin')->nullable();
-            $table->text('commentaire')->nullable();
-            $table->foreignId('created_by')->constrained('users');
-            $table->timestamps();
-            
-            $table->unique(['document_id', 'agent_id', 'role']);
+            $table->foreignId('agent_id')->nullable()->constrained('agents')->cascadeOnDelete();
+            $table->foreignId('document_id')->nullable()->constrained('documents')->cascadeOnDelete();
+            $table->timestamps();         // created_at, updated_at
+            $table->softDeletes();        // deleted_at
+
+            // Pas d'autres colonnes (comme role, dates, commentaire)
+            // Pas d'index ou clé unique (non mentionné dans ta table SQL)
         });
     }
 

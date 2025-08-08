@@ -10,18 +10,12 @@ return new class extends Migration
     {
         Schema::create('dossier_passwords', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('dossier_id')->constrained('dossiers')->cascadeOnDelete();
-            $table->string('titre');
-            $table->text('login')->nullable();
-            $table->text('password');
-            $table->text('url')->nullable();
-            $table->text('notes')->nullable();
-            $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('updated_by')->nullable()->constrained('users');
+            $table->foreignId('dossier_id')->nullable()->constrained('dossiers')->nullOnDelete();
+            $table->string('password')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index(['dossier_id', 'created_by']);
+
+            $table->index('dossier_id');
         });
     }
 

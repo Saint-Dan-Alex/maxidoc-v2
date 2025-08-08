@@ -10,42 +10,14 @@ return new class extends Migration
     {
         Schema::create('pointages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('agent_id')->constrained('agents')->cascadeOnDelete();
+            $table->string('date');              // varchar(255), NOT NULL
+            $table->string('arrive');            // varchar(255), NOT NULL
+            $table->string('supplementaire', 5)->default('00:00');  // varchar(5), NOT NULL
+            $table->string('majoree', 5)->default('00:00');         // varchar(5), NOT NULL
+            $table->timestamps();                // created_at, updated_at nullable
             
-            // Type de pointage (entrée, sortie, pause, etc.)
-            $table->enum('type', ['entree', 'sortie', 'debut_pause', 'fin_pause', 'deplacement']);
-            
-            // Date et heure du pointage
-            $table->dateTime('date_heure');
-            
-            // Localisation (si disponible)
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
-            $table->string('adresse')->nullable();
-            
-            // Méthode de pointage (badge, mobile, web, etc.)
-            $table->string('methode', 50)->default('web');
-            
-            // Statut (validé, en attente, rejeté)
-            $table->enum('statut', ['valide', 'en_attente', 'rejete'])->default('valide');
-            
-            // Commentaires
-            $table->text('commentaire')->nullable();
-            
-            // Référence à un éventuel modérateur
-            $table->foreignId('modere_par')->nullable()->constrained('users');
-            $table->text('raison_moderation')->nullable();
-            
-            // Données techniques
-            $table->string('ip_address', 45)->nullable();
-            $table->string('user_agent')->nullable();
-            $table->string('appareil_id', 100)->nullable();
-            
-            $table->timestamps();
-            
-            // Index
-            $table->index(['agent_id', 'date_heure']);
-            $table->index(['type', 'statut']);
+            $table->unsignedBigInteger('user_id')->nullable()->index();
+            $table->unsignedBigInteger('agent_id')->nullable()->index();
         });
     }
 

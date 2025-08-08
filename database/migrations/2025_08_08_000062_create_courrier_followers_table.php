@@ -10,29 +10,12 @@ return new class extends Migration
     {
         Schema::create('courrier_followers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('courrier_id')->constrained('courriers')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            
-            // Type de suivi (pour les notifications)
-            $table->enum('type', ['suivi', 'notification', 'information'])->default('suivi');
-            
-            // Préférences de notification
-            $table->boolean('notify_email')->default(true);
-            $table->boolean('notify_sms')->default(false);
-            $table->boolean('notify_in_app')->default(true);
-            
-            // Métadonnées
-            $table->dateTime('date_derniere_notification')->nullable();
-            $table->text('preferences')->nullable(); // JSON pour stocker des préférences supplémentaires
-            
+
+            $table->foreignId('courrier_id')->nullable()->constrained('courriers')->nullOnDelete();
+            $table->foreignId('agent_id')->nullable()->constrained('agents')->nullOnDelete();
+
             $table->timestamps();
-            
-            // Contrainte d'unicité
-            $table->unique(['courrier_id', 'user_id']);
-            
-            // Index
-            $table->index(['courrier_id', 'type']);
-            $table->index('user_id');
+            $table->softDeletes();
         });
     }
 

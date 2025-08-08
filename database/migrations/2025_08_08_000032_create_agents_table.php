@@ -10,31 +10,36 @@ return new class extends Migration
     {
         Schema::create('agents', function (Blueprint $table) {
             $table->id();
-            $table->string('matricule', 20)->unique();
-            $table->string('nom');
-            $table->string('prenom');
+            
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('lieu_id')->nullable();
+            $table->unsignedBigInteger('direction_id')->nullable();
+            $table->unsignedBigInteger('section_id')->nullable();
+            $table->unsignedBigInteger('grade_id')->nullable();
+            $table->unsignedBigInteger('statut_id')->nullable();
+            $table->string('nom', 25)->nullable();
+            $table->string('post_nom', 25)->nullable();
+            $table->string('prenom', 25)->nullable();
+            $table->char('sexe', 1)->nullable();
+            $table->string('lieu_naiss', 200)->nullable();
             $table->date('date_naiss')->nullable();
-            $table->string('lieu_naiss', 100)->nullable();
-            $table->enum('sexe', ['M', 'F'])->nullable();
-            $table->string('adresse', 255)->nullable();
-            $table->string('telephone', 20)->nullable();
-            $table->string('email')->unique()->nullable();
-            $table->string('photo', 255)->nullable();
-            $table->foreignId('grade_id')->nullable()->constrained('grades')->nullOnDelete();
-            $table->foreignId('fonction_id')->nullable()->constrained('fonctions')->nullOnDelete();
-            $table->foreignId('service_id')->nullable()->constrained('services')->nullOnDelete();
-            $table->foreignId('statut_id')->default(1)->constrained('statuts');
-            $table->date('date_prise_service')->nullable();
-            $table->date('date_retraite')->nullable();
-            $table->string('compte_bancaire', 50)->nullable();
-            $table->string('nom_banque', 100)->nullable();
-            $table->string('nom_contact_urgence', 100)->nullable();
-            $table->string('tel_contact_urgence', 20)->nullable();
-            $table->text('notes')->nullable();
+            $table->string('province', 255)->nullable();
+            $table->string('ville', 255)->nullable();
+            $table->string('etat_civil', 25)->nullable();
+            $table->unsignedBigInteger('division_id')->nullable();
+            $table->unsignedBigInteger('service_id')->nullable();
+            $table->unsignedBigInteger('fonction_id')->nullable();
+            $table->tinyInteger('nbr_enfant')->nullable();
+            $table->string('nationalite', 100)->nullable();
+            $table->string('matricule', 20)->nullable()->index();
+            $table->string('image', 50)->nullable();
+            $table->string('slug', 255)->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->integer('delegue_id')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index(['grade_id', 'fonction_id', 'service_id', 'statut_id']);
         });
     }
 

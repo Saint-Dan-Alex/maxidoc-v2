@@ -10,20 +10,13 @@ return new class extends Migration
     {
         Schema::create('document_versions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('document_id')->constrained('documents')->cascadeOnDelete();
-            $table->integer('version_majeure');
-            $table->integer('version_mineure');
-            $table->string('fichier');
-            $table->string('chemin');
-            $table->string('taille');
-            $table->string('hash', 64);
+            $table->foreignId('original_document_id')->constrained('documents')->cascadeOnDelete();
+            $table->foreignId('new_document_id')->constrained('documents')->cascadeOnDelete();
             $table->foreignId('created_by')->constrained('users');
-            $table->text('commentaire')->nullable();
-            $table->boolean('est_courante')->default(false);
+            $table->text('reason')->nullable();
             $table->timestamps();
-            
-            $table->unique(['document_id', 'version_majeure', 'version_mineure']);
-            $table->index(['document_id', 'created_by']);
+
+            $table->index(['original_document_id', 'new_document_id', 'created_by']);
         });
     }
 

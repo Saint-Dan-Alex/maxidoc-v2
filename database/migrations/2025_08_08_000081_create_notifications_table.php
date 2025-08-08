@@ -9,39 +9,18 @@ return new class extends Migration
     public function up()
     {
         Schema::create('notifications', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->char('id', 36)->primary();   // char(36), clé primaire
             
-            // Type de notification (peut être utilisé pour le routage)
-            $table->string('type');
+            $table->string('type');               // varchar(255), NOT NULL
             
-            // Données de la notification (sérialisées en JSON)
-            $table->json('data');
+            $table->string('notifiable_type')->index(); // varchar(255), NOT NULL + index
+            $table->unsignedBigInteger('notifiable_id')->index(); // bigint unsigned, NOT NULL + index
             
-            // Date de lecture de la notification
-            $table->timestamp('read_at')->nullable();
+            $table->text('data');                 // text, NOT NULL
             
-            // Référence à l'utilisateur destinataire
-            $table->foreignId('notifiable_id')->constrained('users')->cascadeOnDelete();
-            $table->string('notifiable_type'); // Pour la polymorphie si nécessaire
+            $table->timestamp('read_at')->nullable(); // timestamp nullable
             
-            // Métadonnées
-            $table->string('titre');
-            $table->text('message');
-            $table->string('lien')->nullable();
-            $table->string('icone', 50)->nullable();
-            $table->string('couleur', 20)->nullable();
-            
-            // Niveau de priorité (info, warning, error, success)
-            $table->enum('niveau', ['info', 'warning', 'error', 'success'])->default('info');
-            
-            // Expiration de la notification
-            $table->timestamp('expire_at')->nullable();
-            
-            $table->timestamps();
-            
-            // Index
-            $table->index(['notifiable_id', 'notifiable_type', 'read_at']);
-            $table->index(['type', 'created_at']);
+            $table->timestamps();                 // created_at, updated_at (timestamp nullable)
         });
     }
 

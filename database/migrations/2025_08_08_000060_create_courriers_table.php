@@ -10,51 +10,49 @@ return new class extends Migration
     {
         Schema::create('courriers', function (Blueprint $table) {
             $table->id();
-            $table->string('reference', 100)->unique();
-            $table->string('objet');
-            $table->text('resume')->nullable();
-            $table->enum('type', ['entrant', 'sortant', 'interne']);
-            $table->enum('sous_type', ['courrier', 'note', 'rapport', 'autre'])->default('courrier');
-            $table->enum('priorite', ['basse', 'normale', 'haute', 'urgente'])->default('normale');
-            $table->enum('confidentialite', ['normal', 'confidentiel', 'tres_confidentiel'])->default('normal');
-            
-            // Relations
-            $table->foreignId('categorie_id')->constrained('courrier_categories');
-            $table->foreignId('nature_id')->nullable()->constrained('courrier_natures');
-            $table->foreignId('type_id')->constrained('courrier_types');
-            $table->foreignId('expediteur_id')->constrained('courrier_expediteurs');
-            $table->foreignId('traitement_actuel_id')->nullable()->constrained('courrier_traitements');
-            $table->foreignId('service_traitant_id')->nullable()->constrained('services');
-            $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('updated_by')->nullable()->constrained('users');
-            
-            // Dates importantes
-            $table->date('date_emission');
-            $table->date('date_reception');
-            $table->date('date_limite_traitement')->nullable();
-            $table->date('date_cloture')->nullable();
-            
-            // Métadonnées
-            $table->integer('nombre_pieces')->default(1);
-            $table->string('mots_cles')->nullable();
-            $table->string('fichier_joint')->nullable();
-            $table->string('chemin_fichier')->nullable();
-            $table->string('taille_fichier')->nullable();
-            $table->string('format_fichier', 20)->nullable();
-            
-            // Statut et suivi
-            $table->enum('statut', ['brouillon', 'en_cours', 'traite', 'cloture', 'annule'])->default('brouillon');
-            $table->boolean('est_archive')->default(false);
-            $table->date('date_archivage')->nullable();
-            
+
+            $table->foreignId('document_id')->nullable()->constrained('documents')->nullOnDelete();
+            $table->foreignId('type_id')->nullable()->constrained('courrier_types')->nullOnDelete();
+
+            $table->unsignedBigInteger('exped_externe')->nullable();
+            $table->foreignId('exped_interne_id')->nullable()->constrained('agents')->nullOnDelete();
+            $table->foreignId('dest_externe_id')->nullable()->constrained('courrier_destinateur_externes')->nullOnDelete();
+            $table->foreignId('dest_interne_id')->nullable()->constrained('agents')->nullOnDelete();
+
+            $table->foreignId('departement_id')->nullable()->constrained('departements')->nullOnDelete();
+            $table->foreignId('service_id')->nullable()->constrained('services')->nullOnDelete();
+            $table->foreignId('service_traitant_id')->nullable()->constrained('services')->nullOnDelete();
+
+            $table->boolean('is_intern')->default(true);
+            $table->text('title')->nullable();
+            $table->boolean('confidentiel')->default(false);
+            $table->string('reference_courrier', 200)->nullable();
+            $table->string('reference_interne', 200)->nullable();
+
+            $table->foreignId('priorite_id')->nullable()->constrained('priorites')->nullOnDelete();
+            $table->timestamp('date_du_courrier')->useCurrent();
+            $table->timestamp('date_arrive')->nullable();
+            $table->date('date_fin')->nullable();
+
+            $table->foreignId('nature_id')->nullable()->constrained('courrier_natures')->nullOnDelete();
+            $table->text('objet')->nullable();
+
+            $table->integer('copie')->nullable();
+            $table->foreignId('category_id')->nullable()->constrained('courrier_categories')->nullOnDelete();
+
+            $table->boolean('is_classified')->default(false);
+            $table->foreignId('traitement_id')->nullable()->constrained('courrier_traitements')->nullOnDelete();
+
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('parent_id')->nullable()->constrained('courriers')->nullOnDelete();
+            $table->foreignId('statut_id')->nullable()->constrained('statuts')->nullOnDelete();
+
             $table->timestamps();
+
+            $table->boolean('mark_as_done')->nullable();
+            $table->string('etape')->default('en_attente');
+
             $table->softDeletes();
-            
-            // Index
-            $table->index(['reference', 'type', 'statut', 'date_reception', 'date_emission']);
-            $table->index(['categorie_id', 'nature_id', 'type_id']);
-            $table->index('expediteur_id');
-            $table->index('service_traitant_id');
         });
     }
 

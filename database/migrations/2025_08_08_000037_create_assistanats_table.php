@@ -10,16 +10,19 @@ return new class extends Migration
     {
         Schema::create('assistanats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('agent_id')->constrained('agents')->cascadeOnDelete();
-            $table->foreignId('fonction_id')->nullable()->constrained('fonctions')->nullOnDelete();
-            $table->date('date_debut');
-            $table->date('date_fin')->nullable();
-            $table->text('commentaire')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('titre', 100);
+            $table->unsignedBigInteger('direction_id')->nullable();
+            $table->unsignedBigInteger('responsable_id')->nullable();
+            $table->boolean('for_dg')->default(false);
+            $table->boolean('for_dga')->default(false);
             $table->timestamps();
             $table->softDeletes();
-            
-            $table->index(['agent_id', 'fonction_id']);
+
+            $table->index('direction_id');
+            $table->index('responsable_id');
+
+            $table->foreign('direction_id')->references('id')->on('directions')->nullOnDelete();
+            $table->foreign('responsable_id')->references('id')->on('agents')->nullOnDelete();
         });
     }
 

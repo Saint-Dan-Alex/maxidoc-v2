@@ -9,22 +9,11 @@ return new class extends Migration
     public function up()
     {
         Schema::create('courrier_traitements', function (Blueprint $table) {
-            $table->id();
-            $table->string('titre');
-            $table->text('description')->nullable();
-            $table->foreignId('type_traitement_id')->constrained('courrier_types_traitements');
-            $table->date('date_debut')->nullable();
-            $table->date('date_echeance')->nullable();
-            $table->date('date_fin')->nullable();
-            $table->enum('statut', ['en_attente', 'en_cours', 'termine', 'annule'])->default('en_attente');
-            $table->integer('priorite')->default(2); // 1: Haute, 2: Normale, 3: Basse
-            $table->boolean('est_confidentiel')->default(false);
-            $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('updated_by')->nullable()->constrained('users');
-            $table->timestamps();
-            $table->softDeletes();
-            
-            $table->index(['type_traitement_id', 'statut', 'priorite']);
+            $table->id(); // id bigint AUTO_INCREMENT
+            $table->foreignId('agent_id')->nullable()->constrained('agents')->nullOnDelete(); // agent_id bigint nullable
+            $table->longText('note')->nullable(); // note longtext nullable
+            $table->text('document_url')->nullable(); // document_url text nullable
+            $table->timestamps(); // created_at, updated_at
         });
     }
 
