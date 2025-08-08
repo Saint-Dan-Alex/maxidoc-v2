@@ -43,6 +43,7 @@ class DirectionController extends Controller
     public function store(Request $request)
     {
         try {
+            // Création de la direction
             $direction = Direction::create([
                 "code" => $request->code,
                 "titre" => $request->libelle,
@@ -50,6 +51,14 @@ class DirectionController extends Controller
                 "adjoint_id" => $request->adjoint_id,
                 "lieu_id" => $request->lieu_id,
                 "description" => $request->description,
+            ]);
+
+            // Création automatique d'une division avec le même nom
+            $division = $direction->divisions()->create([
+                'libelle' => $request->libelle,
+                'description' => $request->description,
+                'responsable_id' => $request->responsable_id,
+                'statut_id' => 1, // Statut actif par défaut
             ]);
 
             $fonction = Fonction::firstOrCreate([
@@ -116,6 +125,24 @@ class DirectionController extends Controller
                 "lieu" => $request->lieu_id,
                 "description" => $request->description,
             ]);
+
+            // Mise à jour de la division principale
+            $division = $direction->divisions()->first();
+            if ($division) {
+                $division->update([
+                    'libelle' => $request->libelle,
+                    'description' => $request->description,
+                    'responsable_id' => $request->responsable_id,
+                ]);
+            } else {
+                // Si aucune division n'existe, on en crée une nouvelle
+                $direction->divisions()->create([
+                    'libelle' => $request->libelle,
+                    'description' => $request->description,
+                    'responsable_id' => $request->responsable_id,
+                    'statut_id' => 1, // Statut actif par défaut
+                ]);
+            }
 
             $direction->code = $request->code;
             $direction->save();

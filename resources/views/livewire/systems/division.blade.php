@@ -58,7 +58,6 @@
                         <th scope="col">Direction</th>
                         <th scope="col">Responsable</th>
                         <th scope="col">Nbe Services</th>
-                        <th scope="col">Nbe Agents</th>
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
@@ -68,7 +67,7 @@
                             <td class="text-truncate"> {{ $division->libelle }} </td>
                             <td class="text-truncate"> {{ $division->direction?->titre }} </td>
                             <td> {{ $division->responsable?->prenom . ' ' . $division->responsable?->nom }} </td>
-                            <td> {{ $division->services->count() }} </td>
+                            {{-- <td> {{ $division->services->count() }} </td> --}}
                             <td> {{ $division->agents->count() }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
