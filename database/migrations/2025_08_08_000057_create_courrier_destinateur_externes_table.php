@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('courrier_destinateur_externes', function (Blueprint $table) {
             $table->id(); // int auto_increment primary key
-            $table->string('nom', 255)->nullable()->collation('utf8mb3_general_ci'); // nullable et collation utf8mb3
+            $table->string('nom', 255)->nullable(); // nullable et collation utf8mb3
             $table->timestamps(); // created_at et updated_at (nullable)
             $table->softDeletes(); // deleted_at (nullable)
 

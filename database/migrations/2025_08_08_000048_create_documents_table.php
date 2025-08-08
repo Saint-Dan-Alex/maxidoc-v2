@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dossier_id')->nullable()->constrained('dossiers')->nullOnDelete();
-            $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
+            $table->foreignId('category_id')->nullable()->constrained('courrier_categories')->nullOnDelete();
             $table->string('reference', 255)->nullable();
             $table->string('libelle', 255)->nullable();
             $table->foreignId('type')->nullable()->constrained('document_types')->nullOnDelete();
@@ -28,11 +28,11 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             $table->boolean('is_piece_jointe')->default(false);
+            $table->foreignId('reference_document_id')->nullable();
 
             // Indexes
             $table->index(['user_id']);
             $table->index(['statut_id']);
-            $table->index(['reference_document_id']);
         });
     }
 

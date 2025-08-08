@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('courrier_natures', function (Blueprint $table) {
             $table->id();
-            $table->string('titre', 100)->nullable()->collation('utf8mb3_general_ci');
-            $table->longText('modele')->nullable()->collation('utf8mb3_general_ci');
+            $table->string('titre', 100)->nullable();
+            $table->longText('modele')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
