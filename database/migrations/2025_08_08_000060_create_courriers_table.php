@@ -19,7 +19,6 @@ return new class extends Migration
             $table->foreignId('dest_externe_id')->nullable()->constrained('courrier_destinateur_externes')->nullOnDelete();
             $table->foreignId('dest_interne_id')->nullable()->constrained('agents')->nullOnDelete();
 
-            $table->foreignId('departement_id')->nullable()->constrained('departements')->nullOnDelete();
             $table->foreignId('service_id')->nullable()->constrained('services')->nullOnDelete();
             $table->foreignId('service_traitant_id')->nullable()->constrained('services')->nullOnDelete();
 

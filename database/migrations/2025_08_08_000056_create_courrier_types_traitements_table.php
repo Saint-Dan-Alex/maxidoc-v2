@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('courrier_types_traitements', function (Blueprint $table) {
             $table->id();
-            $table->string('titre', 255)->nullable()->collation('utf8mb3_general_ci');
+            $table->string('titre', 255)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

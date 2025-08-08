@@ -31,7 +31,6 @@ return new class extends Migration
 
             // Indexes utiles (ajoute selon besoins)
             $table->index(['statut_id', 'date_fin']);
-            $table->index('user_id');
         });
     }
 
