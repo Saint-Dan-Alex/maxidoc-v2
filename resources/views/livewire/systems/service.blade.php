@@ -141,7 +141,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-lg-12">
+                            {{-- <div class="col-lg-12">
                                 <label for="">Division</label>
                                 <select name="division_id" class="form-control select2Bis" required
                                     data-placeholder="Selectionnez le Division">
@@ -150,10 +150,10 @@
                                         <option value="{{ $division->id }}"> {{ $division->libelle }} </option>
                                     @endforeach
                                 </select>
-                            </div>
+                            </div> --}}
                             <div class="col-lg-12">
                                 <label for="">Responsable</label>
-                                <select name="responsable_id" class="form-control select2" required
+                                <select name="responsable_id" class="form-control select2" 
                                     data-placeholder="Selectionner"
                                     data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
                                     data-get-items-field="nom" data-method="get"
