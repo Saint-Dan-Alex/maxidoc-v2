@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Systems;
 use App\Models\Direction;
 use App\Models\Division;
 use App\Models\Service as Model;
+use App\Models\Statut;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -14,6 +15,7 @@ class Service extends Component
     
     public $divisions;
     public $directions;
+    public $statuts;
     public $filter;
     public $filterText;
     public $search;
@@ -39,6 +41,10 @@ class Service extends Component
             
         $this->directions = Direction::select('id', 'titre')
             ->orderBy('titre', 'asc')
+            ->get();
+            
+        $this->statuts = Statut::select('id', 'libelle')
+            ->orderBy('libelle', 'asc')
             ->get();
     }
 
@@ -98,6 +104,7 @@ class Service extends Component
         return view('livewire.systems.service', [
             'services' => $services,
             'allDivisions' => $this->divisions,
+            'statuts' => $this->statuts,
             'allDirections' => $this->directions
         ]);
     }

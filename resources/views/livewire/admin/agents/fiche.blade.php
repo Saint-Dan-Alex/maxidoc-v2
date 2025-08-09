@@ -83,7 +83,17 @@
                                                 <h6>{{ $actifAgent?->prenom . ' ' . $actifAgent?->nom }}</h6>
                                                 <p>{{ $actifAgent?->poste?->titre }}</p>
                                             </div>
-                                            @if (Auth::user()->agent->id == $actifAgent?->id)
+                                            @php
+                                                $isCurrentUser = false;
+                                                if (Auth::user()->id==1) {
+                                                    // Pour le superadmin, on compare directement avec l'ID de l'utilisateur
+                                                    $isCurrentUser = Auth::id() == $actifAgent?->user_id;
+                                                } else if (Auth::user()->agent) {
+                                                    // Pour les autres utilisateurs, on vérifie l'agent associé
+                                                    $isCurrentUser = Auth::user()->agent->id == $actifAgent?->id;
+                                                }
+                                            @endphp
+                                            @if ($isCurrentUser)
                                                 <small class="badge bg-info ms-3" style="font-size:8px">Vous</small>
                                             @endif
                                         </div>

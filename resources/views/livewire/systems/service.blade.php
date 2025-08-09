@@ -211,58 +211,54 @@
                                         placeholder="Nom du service" required>
                                 </div>
                                 <div class="col-lg-12">
-                                    <label for="">Direction</label>
-                                    <select name="direction_id" class="form-control select2Bis" required
-                                        data-placeholder="Selectionnez le Division" @selected($service->direction_id == $direction->id)>
+                                    <label for="direction_id">Direction</label>
+                                    <select name="direction_id" id="direction_id" class="form-control select2Bis" required
+                                        data-placeholder="Sélectionnez une direction">
                                         <option value=""></option>
                                         @foreach ($directions as $direction)
-                                            <option value="{{ $direction->id }}"> {{ $direction->titre }} </option>
+                                            <option value="{{ $direction->id }}" {{ $service->direction_id == $direction->id ? 'selected' : '' }}>
+                                                {{ $direction->titre }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="col-lg-12">
-                                    <label for="">Division</label>
-                                    <select name="division_id" class="form-control select2Bis" required
-                                        data-placeholder="Selectionnez la Division">
-                                        <option value=""></option>
-                                        @foreach ($divisions as $division)
-                                            <option value="{{ $division->id }}" @selected($service->division_id == $division->id)>
-                                                {{ $division->libelle }} </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-lg-12">
-                                    <label for="">Responsable</label>
-                                    <select name="responsable_id" class="form-control select2" required
-                                        data-placeholder="Selectionner"
+                                    <label for="responsable_id">Responsable</label>
+                                    <select name="responsable_id" id="responsable_id" class="form-control select2"
+                                        data-placeholder="Sélectionnez un responsable"
                                         data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
-                                        data-get-items-field="nom" data-method="get"
+                                        data-get-items-field="nom" 
+                                        data-method="get"
                                         data-label="prenom,nom,post_nom"
                                         data-related-model="Agent">
-                                        <option value="{{ $service->responsable_id }}">{{ $service->responsable?->prenom.' '.$service->responsable?->nom.' '.$service->responsable?->post_nom }}</option>
-                                        {{-- <option value="">Selectionnez le responsable</option>
-                                        @foreach ($users as $user)
-                                            <option value="{{ $user?->agent?->id }}" @selected($service?->responsable_id == $user?->agent?->id)>
-                                                {{ $user?->agent?->prenom ." ".$user?->agent?->nom }} </option>
-                                        @endforeach --}}
+                                        @if($service->responsable)
+                                            <option value="{{ $service->responsable_id }}" selected>
+                                                {{ $service->responsable->prenom }} 
+                                                {{ $service->responsable->nom }}
+                                                {{ $service->responsable->post_nom ? ' ' . $service->responsable->post_nom : '' }}
+                                            </option>
+                                        @endif
                                     </select>
-                                </div>
-                                {{-- <div class="col-lg-12">
-                                    <label for="">Description</label>
-                                    <textarea name="description" class="form-control" cols="30" rows="5"> {{ $service->description }} </textarea>
                                 </div>
                                 <div class="col-lg-12">
-                                    <label for="">Statut</label>
-                                    <select name="statut_id" class="form-control" required>
-                                        <option value="">Selectionnez le statut</option>
-                                        @foreach ($statuts as $statut)
-                                            <option value="{{ $statut->id }}" @selected($service->statut_id == $statut->id)>
-                                                {{ $statut->libelle }} </option>
+                                    <label for="description">Description</label>
+                                    <textarea name="description" id="description" class="form-control" 
+                                        rows="3" placeholder="Description du service">{{ $service->description }}</textarea>
+                                </div>
+                                <div class="col-lg-12">
+                                    <label for="statut_id">Statut</label>
+                                    <select name="statut_id" id="statut_id" class="form-control" required>
+                                        @foreach($statuts as $statut)
+                                            <option value="{{ $statut->id }}" {{ $service->statut_id == $statut->id ? 'selected' : '' }}>
+                                                {{ $statut->libelle }}
+                                            </option>
                                         @endforeach
                                     </select>
-                                </div> --}}
+                                </div>
                                 <div class="col-lg-12 text-end">
-                                    <button class="btn btn-add">Modifier</button>
+                                    <button type="submit" class="btn btn-add">
+                                        <i class="fi fi-rr-check"></i> Enregistrer les modifications
+                                    </button>
                                 </div>
                             </div>
                         </form>
