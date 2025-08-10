@@ -130,7 +130,12 @@
                                                 <h6>{{ $inactifAgent?->prenom . ' ' . $inactifAgent?->nom }}</h6>
                                                 <p>{{ $inactifAgent?->poste?->titre }}</p>
                                             </div>
-                                            @if (Auth::user()->agent->id == $inactifAgent?->id)
+                                            @php
+                                                $currentUserId = Auth::id();
+                                                $isCurrentUser = $currentUserId === 1 || 
+                                                              (Auth::user()->agent && Auth::user()->agent->id === $inactifAgent?->id);
+                                            @endphp
+                                            @if ($isCurrentUser)
                                                 <small class="badge bg-info ms-3" style="font-size:8px">Vous</small>
                                             @endif
                                         </div>
