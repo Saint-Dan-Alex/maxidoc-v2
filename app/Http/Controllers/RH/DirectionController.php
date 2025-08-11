@@ -11,6 +11,8 @@ use App\Models\Statut;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DirectionController extends Controller
 {
@@ -19,20 +21,54 @@ class DirectionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
+{
+    $lieuId = $request->input('lieu_id');
+
+    $directionsQuery = Direction::with('lieu', 'responsable')
+                        ->select('id', 'titre', 'lieu_id', 'responsable_id', 'code', 'adjoint_id');
+
+    if ($lieuId) {
+        $directionsQuery->where('lieu_id', $lieuId);
+    }
+
+    $directions = $directionsQuery->get();
+
+    $lieus = LieuAffectation::select('titre', 'id')->get();
+
+    $agents = Agent::orderBy('prenom')->get();
+
+    return view('regidoc.pages.systems.direction', compact('directions', 'lieus', 'agents', 'lieuId'));
+}
+
+
+    // public function getAgents(Request $request){
+    //     return $this->relation($request, 'agent');
+    // }
+    public function getAgents(Request $request)
     {
+        
+        $lieus = LieuAffectation::all();
 
-        $data = [
-            'directions' => Direction::with('lieu','responsable')->select('id','titre','lieu_id','responsable_id','code', 'adjoint_id'),
-            // 'users' => User::select('name', 'id')->get(),
-            'lieus' => LieuAffectation::select('titre', 'id')->get(),
-        ];
-        return view('regidoc.pages.systems.direction')->with($data);
+        // Si tu as un filtre lieu_id dans la requête
+        $lieuId = $request->input('lieu_id');
+
+        $directions = Direction::query();
+
+        if ($lieuId) {
+            $directions->where('lieu_id', $lieuId);
+        }
+
+        $directions = $directions->get();
+
+        $agents = Agent::orderBy('prenom')->get();
+
+        return view('regidoc.pages.systems.direction', compact('directions', 'lieus', 'agents', 'lieuId'));
+
+
     }
 
-    public function getAgents(Request $request){
-        return $this->relation($request, 'agent');
-    }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -250,86 +286,151 @@ class DirectionController extends Controller
         return back();
     }
 
+    // public function relation(Request $request, $slug)
+    // {
+    //     $page = $request->input('page');
+    //     $on_page = 30;
+    //     $search = $request->input('search', false);
+
+    //     $method = $request->input('method', 'add');
+
+    //     $model = app('\App\Models\\' . Str::ucfirst(Str::camel(Str::singular($slug))));
+
+    //     // if ($method != 'add') {
+    //     //     $model = $model->find($request->input('id'));
+    //     // }
+    //     // dd($request->input('id'));
+
+
+    //     // $model = app('\App\Models\\' . Str::ucfirst(Str::camel(Str::singular($request->input('model')))));
+    //     $skip = $on_page * ($page - 1);
+
+    //     $additional_attributes = $model->additional_attributes ?? [];
+
+    //     $labels = explode(',', $request->input('label'));
+
+    //     // If search query, use LIKE to filter results depending on field label
+    //     if ($search) {
+    //         $data = null;
+    //         foreach($labels as $key => $label){
+    //             if($key == 0){
+    //                 $data = $model->where($label, 'LIKE', '%' . $search . '%');
+    //             }else{
+    //                 $data = $data?->orWhere($label, 'LIKE', '%' . $search . '%');
+    //             }
+    //         }
+    //         $total_count = $data->count();
+
+    //         $relationshipOptions = $model->take($on_page)->skip($skip);
+    //         foreach($labels as $key => $label){
+    //             if($key == 0){
+    //                 $relationshipOptions = $relationshipOptions->where($label, 'LIKE', '%' . $search . '%');
+    //             }else{
+    //                 $relationshipOptions = $relationshipOptions->orWhere($label, 'LIKE', '%' . $search . '%');
+    //             }
+    //         }
+
+    //         $relationshipOptions = $relationshipOptions->get();
+    //     } else {
+    //         $total_count = $model->count();
+    //         $relationshipOptions = $model->take($on_page)->skip($skip)->get();
+    //     }
+
+    //     $results = [];
+
+    //     if (!$search && $page == 1) {
+    //         $results[] = [
+    //             'id' => '',
+    //             'text' => 'aucune donnée trouvée',
+    //         ];
+    //     }
+
+    //     $relationshipOptions = $relationshipOptions->sortBy($labels[0]);
+
+    //     foreach ($relationshipOptions as $relationshipOption) {
+    //         $text = '';
+    //         foreach($labels as $key => $label){
+    //             $text .= $relationshipOption->{$label}.' ';
+    //         }
+    //         $results[] = [
+    //             'id' => $relationshipOption->id,
+    //             'text' => trim($text),
+    //         ];
+    //     }
+
+    //     return response()->json([
+    //         'results' => $results,
+    //         'pagination' => [
+    //             'more' => ($total_count > ($skip + $on_page)),
+    //         ],
+    //     ]);
+
+    //     // No result found, return empty array
+    //     // return response()->json([], 404);
+    // }
     public function relation(Request $request, $slug)
-    {
-        $page = $request->input('page');
-        $on_page = 30;
-        $search = $request->input('search', false);
+{
+    $page = $request->input('page', 1);
+    $on_page = 30;
+    $search = $request->input('search', false);
+    $method = $request->input('method', 'add');
+    $labels = explode(',', $request->input('label', 'nom'));
 
-        $method = $request->input('method', 'add');
+    $modelClass = '\App\Models\\' . Str::ucfirst(Str::camel(Str::singular($slug)));
 
-        $model = app('\App\Models\\' . Str::ucfirst(Str::camel(Str::singular($slug))));
-
-        // if ($method != 'add') {
-        //     $model = $model->find($request->input('id'));
-        // }
-        // dd($request->input('id'));
-
-
-        // $model = app('\App\Models\\' . Str::ucfirst(Str::camel(Str::singular($request->input('model')))));
-        $skip = $on_page * ($page - 1);
-
-        $additional_attributes = $model->additional_attributes ?? [];
-
-        $labels = explode(',', $request->input('label'));
-
-        // If search query, use LIKE to filter results depending on field label
-        if ($search) {
-            $data = null;
-            foreach($labels as $key => $label){
-                if($key == 0){
-                    $data = $model->where($label, 'LIKE', '%' . $search . '%');
-                }else{
-                    $data = $data?->orWhere($label, 'LIKE', '%' . $search . '%');
-                }
-            }
-            $total_count = $data->count();
-
-            $relationshipOptions = $model->take($on_page)->skip($skip);
-            foreach($labels as $key => $label){
-                if($key == 0){
-                    $relationshipOptions = $relationshipOptions->where($label, 'LIKE', '%' . $search . '%');
-                }else{
-                    $relationshipOptions = $relationshipOptions->orWhere($label, 'LIKE', '%' . $search . '%');
-                }
-            }
-
-            $relationshipOptions = $relationshipOptions->get();
-        } else {
-            $total_count = $model->count();
-            $relationshipOptions = $model->take($on_page)->skip($skip)->get();
-        }
-
-        $results = [];
-
-        if (!$search && $page == 1) {
-            $results[] = [
-                'id' => '',
-                'text' => 'aucune donnée trouvée',
-            ];
-        }
-
-        $relationshipOptions = $relationshipOptions->sortBy($labels[0]);
-
-        foreach ($relationshipOptions as $relationshipOption) {
-            $text = '';
-            foreach($labels as $key => $label){
-                $text .= $relationshipOption->{$label}.' ';
-            }
-            $results[] = [
-                'id' => $relationshipOption->id,
-                'text' => trim($text),
-            ];
-        }
-
+    if (!class_exists($modelClass)) {
         return response()->json([
-            'results' => $results,
-            'pagination' => [
-                'more' => ($total_count > ($skip + $on_page)),
-            ],
+            'results' => [],
+            'pagination' => ['more' => false],
         ]);
-
-        // No result found, return empty array
-        // return response()->json([], 404);
     }
+
+    $query = app($modelClass)::query();
+
+    if ($search) {
+        foreach ($labels as $index => $label) {
+            if ($index === 0) {
+                $query->where($label, 'LIKE', '%' . $search . '%');
+            } else {
+                $query->orWhere($label, 'LIKE', '%' . $search . '%');
+            }
+        }
+    }
+
+    $total_count = $query->count();
+
+    $results = [];
+
+    if (!$search && $page == 1) {
+        $results[] = [
+            'id' => '',
+            'text' => 'aucune donnée trouvée',
+        ];
+    }
+
+    $relationshipOptions = $query->skip(($page - 1) * $on_page)
+                                 ->take($on_page)
+                                 ->get()
+                                 ->sortBy($labels[0]);
+
+    foreach ($relationshipOptions as $item) {
+        $text = '';
+        foreach ($labels as $label) {
+            $text .= $item->{$label} . ' ';
+        }
+
+        $results[] = [
+            'id' => $item->id,
+            'text' => trim($text),
+        ];
+    }
+
+    return response()->json([
+        'results' => $results,
+        'pagination' => [
+            'more' => ($total_count > ($page * $on_page)),
+        ],
+    ]);
+}
+
 }

@@ -1,3 +1,13 @@
+{{-- <script>
+    fetch('/ajax/types/get/all/agents')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Liste des agents :', data);
+        })
+        .catch(error => {
+            console.error('Erreur lors de la récupération des agents:', error);
+        });
+</script> --}}
 <div class="col-lg-12">
     <div class="card card-table" style="overflow: inherit">
         <div class="d-none position-absolute loader-card d-flex justify-content-center m-0"
