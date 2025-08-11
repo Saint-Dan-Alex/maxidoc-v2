@@ -132,12 +132,11 @@
                                     required>
                             </div>
                             <div class="col-lg-12">
-                                <label for="">Direction</label>
-                                <select name="direction_id" class="form-control select2Bis" required
-                                    data-placeholder="Selectionnez le Division">
-                                    <option value=""></option>
-                                    @foreach ($directions as $direction)
-                                        <option value="{{ $direction->id }}"> {{ $direction->titre }} </option>
+                                <label>Direction</label>
+                                <select name="direction_id" class="form-control" required>
+                                    <option value="">Sélectionner</option>
+                                    @foreach ($allDirections as $direction)
+                                        <option value="{{ $direction->id }}">{{ $direction->titre }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -152,18 +151,14 @@
                                 </select>
                             </div> --}}
                             <div class="col-lg-12">
-                                <label for="">Responsable</label>
-                                <select name="responsable_id" class="form-control select2" 
-                                    data-placeholder="Selectionner"
-                                    data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
-                                    data-get-items-field="nom" data-method="get"
-                                    data-label="prenom,nom,post_nom"
-                                    data-related-model="Agent">
-                                    {{-- <option value="">Selectionnez le responsable</option>
-                                    @foreach ($users as $user)
-                                        <option value="{{ $user->agent?->id }}">
-                                            {{ $user->agent?->prenom . ' ' . $user->agent?->nom }} </option>
-                                    @endforeach --}}
+                                <label>Responsable</label>
+                                <select name="responsable_id" class="form-control">
+                                    <option value="">Sélectionner</option>
+                                    @foreach ($agents as $agent)
+                                        <option value="{{ $agent->id }}">
+                                            {{ $agent->prenom }} {{ $agent->nom }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                             {{-- <div class="col-lg-12">
@@ -224,20 +219,13 @@
                                 </div>
                                 <div class="col-lg-12">
                                     <label for="responsable_id">Responsable</label>
-                                    <select name="responsable_id" id="responsable_id" class="form-control select2"
-                                        data-placeholder="Sélectionnez un responsable"
-                                        data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
-                                        data-get-items-field="nom" 
-                                        data-method="get"
-                                        data-label="prenom,nom,post_nom"
-                                        data-related-model="Agent">
-                                        @if($service->responsable)
-                                            <option value="{{ $service->responsable_id }}" selected>
-                                                {{ $service->responsable->prenom }} 
-                                                {{ $service->responsable->nom }}
-                                                {{ $service->responsable->post_nom ? ' ' . $service->responsable->post_nom : '' }}
+                                    <select name="responsable_id" id="responsable_id" class="form-control">
+                                        <option value="">Sélectionner</option>
+                                        @foreach ($agents as $agent)
+                                            <option value="{{ $agent->id }}" @selected($service->responsable_id == $agent->id)>
+                                                {{ $agent->prenom }} {{ $agent->nom }}
                                             </option>
-                                        @endif
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-lg-12">
@@ -269,105 +257,4 @@
     @endforeach
 </div>
 
-@section('scripts')
-    <script>
-        $('select.select2').each(function() {
 
-            $(this).select2({
-                tags: $(this).data('tags') ? $(this).data('tags') : false,
-                placeholder: $(this).data('placeholder'),
-                language: "fr",
-                createTag: function(params) {
-                    var term = $.trim(params.term);
-
-                    if (term === '') {
-                        return null;
-                    }
-
-                    return {
-                        id: term,
-                        text: term,
-                        newTag: true
-                    }
-                },
-                ajax: {
-                    url: $(this).data('get-items-route'),
-                    data: function(params) {
-                        var query = {
-                            search: params.term,
-                            type: $(this).data('get-items-field'),
-                            method: $(this).data('method'),
-                            id: $(this).data('id'),
-                            page: params.page || 1,
-                            model: $(this).data('related-model'),
-                            label: $(this).data('label'),
-                        }
-                        return query;
-                    }
-                },
-                width: '100%',
-                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') : null,
-                dropdownParent: $(this).parent()
-            });
-
-            $(this).on('select2:select', function(e) {
-                var data = e.params.data;
-
-                if (data.id == '') {
-                    // "None" was selected. Clear all selected options
-                    $(this).val([]).trigger('change');
-                } else {
-                    $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected', 'selected');
-                }
-            });
-
-            $(this).on('select2:unselect', function(e) {
-                var data = e.params.data;
-                $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected',
-                    false);
-            });
-
-            $(this).on('select2:selecting', function(e) {
-
-                if (!$(this).data('tags')) {
-                    return;
-                }
-                var $el = $(this);
-                var route = $el.data('route');
-                var label = $el.data('label');
-                var relativeId = $el.data('relative-id');
-                var errorMessage = $el.data('error-message');
-                var newTag = e.params.args.data.newTag;
-
-                if (!newTag) return;
-
-                $el.select2('close');
-
-                $.post(route, {
-                    [label]: e.params.args.data.text,
-                    relative_id: relativeId,
-                    _tagging: true,
-                }).done(function(data) {
-                    console.log(data);
-                    var newOption = new Option(e.params.args.data.text, data.results.id,
-                        false, true);
-                    $el.append(newOption).trigger('change');
-                }).fail(function(error) {
-                    // toastr.error(errorMessage);
-                    console.log(errorMessage);
-                });
-
-                return false;
-            });
-        });
-
-        $('.select2Bis').each(function() {
-            $(this).select2({
-                placeholder: $(this).data('placeholder'),
-                language: "fr",
-                width: '100%',
-                dropdownParent: $(this).parent()
-            });
-        });
-    </script>
-@endsection

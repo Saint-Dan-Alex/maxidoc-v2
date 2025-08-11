@@ -142,15 +142,13 @@
                             </div>
                             <div class="col-lg-12">
                                 <label for="">Responsable</label>
-                                <select name="responsable_id" class="form-control select2" required
-                                    data-placeholder="Selectionner"
-                                    data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
-                                    data-get-items-field="nom" data-method="get" data-label="prenom,nom,post_nom"
-                                    data-related-model="Agent">
-                                    {{-- <option value="">Selectionnez le responsable</option>
-                                    @foreach ($users as $user)
-                                        <option value="{{ $user->id }}"> {{ $user->name }} </option>
-                                    @endforeach --}}
+                                <select name="responsable_id" class="form-control" required>
+                                    <option value="">Sélectionner un responsable</option>
+                                    @foreach($agents as $agent)
+                                        <option value="{{ $agent->id }}">
+                                            {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom ?? '' }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12">
@@ -214,18 +212,13 @@
                                 </div>
                                 <div class="col-lg-12">
                                     <label for="">Responsable</label>
-                                    <select name="responsable_id" class="form-control select2" required
-                                        data-placeholder="Selectionner"
-                                        data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
-                                        data-get-items-field="nom" data-method="get" data-label="prenom,nom,post_nom"
-                                        data-related-model="Agent">
-                                        <option value="{{ $assistant->responsable_id }}">
-                                            {{ $assistant->responsable?->prenom . ' ' . $assistant->responsable?->nom . ' ' . $assistant->responsable?->post_nom }}
-                                        </option>
-                                        {{-- @foreach ($users as $user)
-                                            <option value="{{ $user->id }}" @selected($assistant->responsable_id == $user->id)>
-                                                {{ $user->name }} </option>
-                                        @endforeach --}}
+                                    <select name="responsable_id" class="form-control" required>
+                                        <option value="">Sélectionner un responsable</option>
+                                        @foreach($agents as $agent)
+                                            <option value="{{ $agent->id }}" @selected($assistant->responsable_id == $agent->id)>
+                                                {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom ?? '' }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-12">
