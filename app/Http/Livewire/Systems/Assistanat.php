@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Systems;
 
+use App\Models\Agent;
 use App\Models\Assistanat as Model;
 use App\Models\Direction;
 use Livewire\Component;
@@ -12,6 +13,7 @@ class Assistanat extends Component
     use WithPagination;
     
     public $directions;
+    public $agents;
     public $filter;
     public $filterText;
     public $search;
@@ -26,6 +28,7 @@ class Assistanat extends Component
     public function mount()
     {
         $this->loadDirections();
+        $this->loadAgents();
         $this->filterText = "Filtre";
     }
 
@@ -33,6 +36,14 @@ class Assistanat extends Component
     {
         $this->directions = Direction::select('id', 'titre')
             ->orderBy('titre', 'asc')
+            ->get();
+    }
+
+    protected function loadAgents()
+    {
+        $this->agents = Agent::select('id', 'prenom', 'nom', 'post_nom')
+            ->orderBy('prenom')
+            ->orderBy('nom')
             ->get();
     }
 
@@ -85,7 +96,8 @@ class Assistanat extends Component
         
         return view('livewire.systems.assistanat', [
             'assistants' => $assistants,
-            'allDirections' => $this->directions
+            'allDirections' => $this->directions,
+            'agents' => $this->agents
         ]);
     }
 

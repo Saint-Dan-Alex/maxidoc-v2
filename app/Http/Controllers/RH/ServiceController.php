@@ -9,6 +9,7 @@ use App\Models\Statut;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\Agent;
 
 class ServiceController extends Controller
 {
@@ -20,10 +21,11 @@ class ServiceController extends Controller
     public function index()
     {
         $data = [
-            // 'services' => Service::all(),
-            // 'users' => User::select('name', 'id')->get(),
-            // 'divisions' => Division::select('libelle', 'id')->get(),
-            // 'statuts' => Statut::select('libelle', 'id')->get(),
+                'services' => Service::all(),
+                'users' => User::select('name', 'id')->get(),
+                'divisions' => Division::select('libelle', 'id')->get(),
+                'statuts' => Statut::select('libelle', 'id')->get(),
+                'agents' => Agent::select('prenom', 'id', 'nom')->get(),
 
         ];
         return view('regidoc.pages.systems.service', $data);
@@ -38,7 +40,7 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
-        \Log::info('Données reçues : ', $request->all());
+        Log::info('Données reçues : ', $request->all());
         
         try {
             // Validation des données
@@ -50,7 +52,7 @@ class ServiceController extends Controller
                 'statut_id' => 'nullable|exists:statuts,id',
             ]);
 
-            \Log::info('Données validées : ', $validated);
+            Log::info('Données validées : ', $validated);
 
             // Création du service
             $serviceData = [
@@ -66,10 +68,10 @@ class ServiceController extends Controller
                 $serviceData['responsable_id'] = $validated['responsable_id'];
             }
 
-            \Log::info('Données du service à créer : ', $serviceData);
+            Log::info('Données du service à créer : ', $serviceData);
             
             $service = Service::create($serviceData);
-            \Log::info('Service créé avec succès : ', $service->toArray());
+            Log::info('Service créé avec succès : ', $service->toArray());
 
             // Création automatique d'une section liée au service
             $sectionData = [
@@ -85,7 +87,7 @@ class ServiceController extends Controller
             }
 
             $section = $service->sections()->create($sectionData);
-            \Log::info('Section créée avec succès : ', $section->toArray());
+            Log::info('Section créée avec succès : ', $section->toArray());
 
             // Mise à jour de l'agent responsable si un responsable est fourni
             if (!empty($validated['responsable_id'])) {
@@ -95,7 +97,7 @@ class ServiceController extends Controller
                         'direction_id' => $validated['direction_id'],
                         'service_id' => $service->id
                     ]);
-                    \Log::info('Agent mis à jour avec succès : ', $agent->toArray());
+                    Log::info('Agent mis à jour avec succès : ', $agent->toArray());
                 }
             }
 
@@ -105,7 +107,7 @@ class ServiceController extends Controller
                 'message' => "Service créé avec succès",
             ]);
         } catch (\Throwable $th) {
-            \Log::error('Erreur lors de la création du service : ' . $th->getMessage(), [
+            Log::error('Erreur lors de la création du service : ' . $th->getMessage(), [
                 'exception' => $th,
                 'trace' => $th->getTraceAsString()
             ]);
@@ -135,7 +137,7 @@ class ServiceController extends Controller
      */
     public function update(Request $request, $id)
     {
-        \Log::info('Mise à jour du service - Données reçues : ', $request->all());
+        Log::info('Mise à jour du service - Données reçues : ', $request->all());
         
         try {
             // Validation des données
@@ -147,7 +149,7 @@ class ServiceController extends Controller
                 'statut_id' => 'nullable|exists:statuts,id',
             ]);
 
-            \Log::info('Mise à jour du service - Données validées : ', $validated);
+            Log::info('Mise à jour du service - Données validées : ', $validated);
 
             // Récupération du service
             $service = Service::findOrFail($id);
@@ -169,11 +171,11 @@ class ServiceController extends Controller
                 $serviceData['responsable_id'] = null;
             }
 
-            \Log::info('Mise à jour du service - Données du service à mettre à jour : ', $serviceData);
+            Log::info('Mise à jour du service - Données du service à mettre à jour : ', $serviceData);
             
             // Mise à jour du service
             $service->update($serviceData);
-            \Log::info('Service mis à jour avec succès : ', $service->toArray());
+            Log::info('Service mis à jour avec succès : ', $service->toArray());
 
             // Préparation des données de la section
             $sectionData = [
@@ -192,10 +194,10 @@ class ServiceController extends Controller
             if ($service->sections()->exists()) {
                 $section = $service->sections()->first();
                 $section->update($sectionData);
-                \Log::info('Section mise à jour avec succès : ', $section->toArray());
+                Log::info('Section mise à jour avec succès : ', $section->toArray());
             } else {
                 $section = $service->sections()->create($sectionData);
-                \Log::info('Nouvelle section créée avec succès : ', $section->toArray());
+                Log::info('Nouvelle section créée avec succès : ', $section->toArray());
             }
 
             // Mise à jour des agents responsables si le responsable a changé
@@ -208,7 +210,7 @@ class ServiceController extends Controller
                             'service_id' => null,
                             'direction_id' => null
                         ]);
-                        \Log::info('Ancien responsable mis à jour avec succès : ', $ancienResponsable->toArray());
+                        Log::info('Ancien responsable mis à jour avec succès : ', $ancienResponsable->toArray());
                     }
                 }
 
@@ -220,7 +222,7 @@ class ServiceController extends Controller
                             'service_id' => $service->id,
                             'direction_id' => $validated['direction_id']
                         ]);
-                        \Log::info('Nouveau responsable mis à jour avec succès : ', $nouveauResponsable->toArray());
+                        Log::info('Nouveau responsable mis à jour avec succès : ', $nouveauResponsable->toArray());
                     }
                 }
             }
@@ -231,7 +233,7 @@ class ServiceController extends Controller
                 'message' => "Service et section associée mis à jour avec succès",
             ]);
         } catch (\Throwable $th) {
-            \Log::error('Erreur lors de la mise à jour du service : ' . $th->getMessage(), [
+            Log::error('Erreur lors de la mise à jour du service : ' . $th->getMessage(), [
                 'exception' => $th,
                 'trace' => $th->getTraceAsString()
             ]);

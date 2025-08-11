@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Systems;
 
+use App\Models\Agent;
 use App\Models\Direction;
 use App\Models\Secretariat as Model;
 use Livewire\Component;
@@ -14,6 +15,7 @@ class Secretariat extends Component
     public $filter;
     public $filterText;
     public $directions;
+    public $agents;
     public $search;
 
     protected $listeners = ['reloadSecretariat' => '$refresh'];
@@ -27,6 +29,10 @@ class Secretariat extends Component
     {
         $this->filterText = "Filtre";
         $this->directions = Direction::select('id','titre')->get();
+        $this->agents = Agent::select('id', 'prenom', 'nom', 'post_nom')
+            ->orderBy('prenom')
+            ->orderBy('nom')
+            ->get();
     }
 
     public function render()
@@ -70,7 +76,8 @@ class Secretariat extends Component
         
         return view('livewire.systems.secretariat', [
             'secretariats' => $secretariats,
-            'directions' => $this->directions
+            'directions' => $this->directions,
+            'agents' => $this->agents
         ]);
     }
 

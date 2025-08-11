@@ -16,6 +16,7 @@ class Service extends Component
     public $divisions;
     public $directions;
     public $statuts;
+    public $agents;
     public $filter;
     public $filterText;
     public $search;
@@ -45,6 +46,10 @@ class Service extends Component
             
         $this->statuts = Statut::select('id', 'libelle')
             ->orderBy('libelle', 'asc')
+            ->get();
+            
+        $this->agents = \App\Models\Agent::select('id', 'prenom', 'nom')
+            ->orderBy('prenom', 'asc')
             ->get();
     }
 
@@ -105,7 +110,8 @@ class Service extends Component
             'services' => $services,
             'allDivisions' => $this->divisions,
             'statuts' => $this->statuts,
-            'allDirections' => $this->directions
+            'allDirections' => $this->directions,
+            'agents' => $this->agents
         ]);
     }
 
