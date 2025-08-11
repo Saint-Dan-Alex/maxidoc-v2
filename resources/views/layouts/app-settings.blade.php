@@ -141,6 +141,15 @@
             .settings-card {
                 padding: 20px 15px;
             }
+            #responsable_list, #adjoint_list {
+                max-height: 200px;
+                overflow-y: auto;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 0 0 4px 4px;
+                display: none;
+            }
+
         }
     </style>
 </head>
