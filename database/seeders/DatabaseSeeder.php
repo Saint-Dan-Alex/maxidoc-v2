@@ -20,17 +20,19 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-        \App\Models\Permission::factory()->createMany([
-            [
-                'name' => 'Telecharger un document',
-                'guard_name' => 'web',
-                'module_id' => 4,
-            ],
-            [
-                'name' => 'Imprimer un document',
-                'guard_name' => 'web',
-                'module_id' => 4,
-            ]
-        ]);
+        // \App\Models\Permission::factory()->createMany([
+        //     [
+        //         'name' => 'Telecharger un document',
+        //         'guard_name' => 'web',
+        //         'module_id' => 4,
+        //     ],
+        //     [
+        //         'name' => 'Imprimer un document',
+        //         'guard_name' => 'web',
+        //         'module_id' => 4,
+        //     ]
+        // ]);
+        $this->call(AdminSeeder::class);
+
     }
 }
