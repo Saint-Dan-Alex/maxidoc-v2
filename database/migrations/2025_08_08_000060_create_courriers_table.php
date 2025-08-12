@@ -29,7 +29,7 @@ return new class extends Migration
             $table->string('reference_interne', 200)->nullable();
 
             $table->foreignId('priorite_id')->nullable()->constrained('priorites')->nullOnDelete();
-            $table->timestamp('date_du_courrier')->useCurrent();
+            $table->timestamp('date_du_courrier')->nullable();
             $table->timestamp('date_arrive')->nullable();
             $table->date('date_fin')->nullable();
 
