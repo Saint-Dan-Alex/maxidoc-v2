@@ -13,26 +13,15 @@ use Illuminate\Support\Facades\Auth;
 
 class AssistanatController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         return view('regidoc.pages.systems.assistanat');
     }
 
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         try {
+            // Création de l’assistanat
             Assistanat::create([
                 "titre" => $request->titre,
                 "direction_id" => $request->direction_id,
@@ -40,24 +29,26 @@ class AssistanatController extends Controller
                 "for_dg" => $request->for == 1 ? 1 : 0,
                 "for_dga" => $request->for == 2 ? 1 : 0,
             ]);
+
+            // Création ou récupération de la fonction
             $fonction = Fonction::firstOrCreate([
                 'titre' => $request->titre,
             ], [
                 "direction_id" => $request->direction_id,
             ]);
 
+            // Attribution de la fonction au responsable (sans modifier sa direction)
             $agent = Agent::findOrFail($request->responsable_id);
             $agent->update([
                 'fonction_id' => $fonction->id,
-                'direction_id' => $request->direction_id
             ]);
+
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'success',
                 'message' => "assistant ajouté avec succès",
             ]);
         } catch (\Throwable $th) {
-            // dd($th);
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
@@ -65,30 +56,22 @@ class AssistanatController extends Controller
             ]);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
-
+        session()->flash('session', $content);
         return back();
     }
 
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         try {
             $assistant = Assistanat::findOrFail($id);
+
+            // On vide la fonction de l’ancien responsable
             $ancienAgent = Agent::findOrFail($assistant->responsable_id);
             $ancienAgent->update([
                 'fonction_id' => null
             ]);
+
+            // Mise à jour des données de l’assistanat
             $assistant->update([
                 "titre" => $request->titre,
                 "direction_id" => $request->direction_id,
@@ -96,16 +79,18 @@ class AssistanatController extends Controller
                 "for_dg" => $request->for == 1 ? 1 : 0,
                 "for_dga" => $request->for == 2 ? 1 : 0,
             ]);
+
+            // Création ou récupération de la fonction
             $fonction = Fonction::firstOrCreate([
                 'titre' => $request->titre,
             ], [
                 "direction_id" => $request->direction_id,
             ]);
 
+            // Attribution de la fonction au nouveau responsable (sans modifier sa direction)
             $agent = Agent::findOrFail($request->responsable_id);
             $agent->update([
                 'fonction_id' => $fonction->id,
-                'direction_id' => $request->direction_id
             ]);
 
             $content = json_encode([
@@ -114,7 +99,6 @@ class AssistanatController extends Controller
                 'message' => "assistant modifié avec succès",
             ]);
         } catch (\Throwable $th) {
-            // dd($th);
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
@@ -122,25 +106,14 @@ class AssistanatController extends Controller
             ]);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
-
+        session()->flash('session', $content);
         return back();
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         try {
             $assistant = Assistanat::findOrFail($id);
-
             $assistant->delete();
 
             $content = json_encode([
@@ -156,11 +129,7 @@ class AssistanatController extends Controller
             ]);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
-
+        session()->flash('session', $content);
         return back();
     }
 }

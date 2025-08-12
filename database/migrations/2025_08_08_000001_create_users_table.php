@@ -39,8 +39,8 @@ return new class extends Migration
 
         // Insert default admin user
         DB::table('users')->insert([
-            'name' => 'Administrateur',
-            'email' => 'admin@example.com',
+            'name' => 'Admin system',
+            'email' => 'admin@maxidoc.com',
             'password' => Hash::make('password'),
             'statut_id' => 1,
             'role_id' => 1,
