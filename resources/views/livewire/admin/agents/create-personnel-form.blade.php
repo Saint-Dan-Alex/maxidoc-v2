@@ -42,7 +42,7 @@
             <div class="col-lg-6">
                 <select class="form-select form-control" name="sexe" wire:model='sexe'
                     aria-label="Default select example" required>
-                    <option disabled selected value="">Sexe</option>
+                    <option  selected value="">Sexe</option>
                     <option value="M">Masculin</option>
                     <option value="F">Féminin</option>
                 </select>
@@ -199,7 +199,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-lg-4">
+            {{-- <div class="col-lg-4">
                 <label for="">Division</label>
                 <select class="form-select form-control" name="division_id" wire:model="division_id"
                     aria-label="Default select example" @disabled($isReadyOnly['division'])>
@@ -208,7 +208,7 @@
                         <option value="{{ $division->id }}">{{ $division->libelle }}</option>
                     @endforeach
                 </select>
-            </div>
+            </div> --}}
             <div class="col-lg-4">
                 <label for="">Service</label>
                 <select class="form-select form-control" name="sevice_id"
@@ -219,7 +219,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-lg-4">
+            {{-- <div class="col-lg-4">
                 <label for="">Section</label>
                 <select class="form-select form-control" name="section_id" wire:model="section_id"
                     aria-label="Default select example" @disabled($isReadyOnly['section'])>
@@ -228,8 +228,8 @@
                         <option value="{{ $section->id }}">{{ $section->titre }}</option>
                     @endforeach
                 </select>
-            </div>
-            <div class="col-lg-4">
+            </div> --}}
+            {{-- <div class="col-lg-4">
                 <label for="">Grade</label>
                 <select class="form-select form-control" name="grade_id" wire:model='grade_id' aria-label="Default select example" required>
                     <option selected value="">Selectionnez</option>
@@ -238,7 +238,7 @@
                     @endforeach
                 </select>
                 @error('grade_id') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
+            </div> --}}
             <div class="col-lg-4">
                 <label for="">Type Fonction</label>
                 <select class="form-select form-control" name="fonction_type" caria-label="Default select example"

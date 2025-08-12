@@ -16,8 +16,6 @@ class FonctionController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
@@ -30,27 +28,33 @@ class FonctionController extends Controller
             'divisions' => Division::select('libelle', 'id')->get(),
             'statuts' => Statut::select('libelle', 'id')->get(),
         ];
+
         return view('regidoc.pages.systems.fonction', $data);
     }
 
-
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'libelle' => 'required|string|max:255',
+            'section_id' => 'nullable|exists:sections,id',
+            'service_id' => 'nullable|exists:services,id',
+            'division_id' => 'nullable|exists:divisions,id',
+            'direction_id' => 'nullable|exists:directions,id',
+            'description' => 'nullable|string',
+        ]);
 
         try {
-            Fonction::create([
+            Fonction::firstOrCreate([
                 "titre" => $request->libelle,
-                "section_id" => $request->section_id ?? null,
-                "service_id" => $request->service_id ?? null,
-                "division_id" => $request->division_id ?? null,
-                "direction_id" => $request->direction_id ?? null,
-                "description" => $request->description ?? null,
+                "section_id" => $request->section_id,
+                "service_id" => $request->service_id,
+                "division_id" => $request->division_id,
+                "direction_id" => $request->direction_id,
+            ], [
+                "description" => $request->description
             ]);
 
             $content = json_encode([
@@ -59,7 +63,6 @@ class FonctionController extends Controller
                 'message' => "Fonction ajoutée avec succès",
             ]);
         } catch (\Throwable $th) {
-            // dd($th);
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
@@ -67,34 +70,34 @@ class FonctionController extends Controller
             ]);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
-
+        session()->flash('session', $content);
         return back();
     }
 
-
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
-        try {
-            $Fonction = Fonction::findOrFail($id);
+        $request->validate([
+            'libelle' => 'required|string|max:255',
+            'section_id' => 'nullable|exists:sections,id',
+            'service_id' => 'nullable|exists:services,id',
+            'division_id' => 'nullable|exists:divisions,id',
+            'direction_id' => 'nullable|exists:directions,id',
+            'description' => 'nullable|string',
+        ]);
 
-            $Fonction->update([
+        try {
+            $fonction = Fonction::findOrFail($id);
+
+            $fonction->update([
                 "titre" => $request->libelle,
-                "section_id" => $request->section_id ?? null,
-                "service_id" => $request->service_id ?? null,
-                "division_id" => $request->division_id ?? null,
-                "direction_id" => $request->direction_id ?? null,
-                "description" => $request->description ?? null,
+                "section_id" => $request->section_id,
+                "service_id" => $request->service_id,
+                "division_id" => $request->division_id,
+                "direction_id" => $request->direction_id,
+                "description" => $request->description,
             ]);
 
             $content = json_encode([
@@ -103,7 +106,6 @@ class FonctionController extends Controller
                 'message' => "Fonction modifiée avec succès",
             ]);
         } catch (\Throwable $th) {
-            // dd($th);
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
@@ -111,31 +113,23 @@ class FonctionController extends Controller
             ]);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
-
+        session()->flash('session', $content);
         return back();
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
         try {
-            $Fonction = Fonction::findOrFail($id);
-
-            $Fonction->delete();
+            $fonction = Fonction::findOrFail($id);
+            $fonction->delete();
 
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'success',
-                'message' => "Fonction Supprimée avec succès",
+                'message' => "Fonction supprimée avec succès",
             ]);
         } catch (\Throwable $th) {
             $content = json_encode([
@@ -145,11 +139,7 @@ class FonctionController extends Controller
             ]);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
-
+        session()->flash('session', $content);
         return back();
     }
 }

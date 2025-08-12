@@ -18,91 +18,92 @@ class SecretariatController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'titre' => 'required|string|max:255',
+            'direction_id' => 'required|exists:directions,id',
+            'responsable_id' => 'required|exists:agents,id',
+            'for' => 'nullable|in:1,2'
+        ]);
+
         try {
             Secretariat::create([
-                "titre" => $request->titre,
-                "direction_id" => $request->direction_id,
-                "responsable_id" => $request->responsable_id,
-                "for_dg" => $request->for == 1 ? 1 : 0,
-                "for_dga" => $request->for == 2 ? 1 : 0,
-            ]);
-
-            $fonction = Fonction::firstOrCreate([
                 'titre' => $request->titre,
-            ], [
-                "direction_id" => $request->direction_id,
+                'direction_id' => $request->direction_id,
+                'responsable_id' => $request->responsable_id,
+                'for_dg' => $request->for == 1 ? 1 : 0,
+                'for_dga' => $request->for == 2 ? 1 : 0,
             ]);
 
-            $agent = Agent::find($request->responsable_id);
-            $agent->update([
-                'fonction_id' => $fonction->id,
-                // 'direction_id' => $request->direction_id supprimé ici
-            ]);
+            // Création de la fonction uniquement si elle n'existe pas
+            Fonction::firstOrCreate(
+                ['titre' => $request->titre],
+                ['direction_id' => $request->direction_id]
+            );
+
+            // ⚠️ On ne touche plus à l'agent ici
 
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'success',
-                'message' => "Secretariat ajouté avec succès",
+                'message' => 'Secrétariat ajouté avec succès',
             ]);
         } catch (\Throwable $th) {
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
-                'message' => 'L\'ajout de la Secretariat a échoué !',
+                'message' => 'L\'ajout du Secrétariat a échoué !',
             ]);
         }
 
         session()->flash('session', $content);
-
         return back();
     }
 
     public function update(Request $request, $id)
     {
-        try {
-            $secretariat = Secretariat::find($id);
-            $ancienAgent = Agent::find($secretariat->responsable_id);
+        $request->validate([
+            'titre' => 'required|string|max:255',
+            'direction_id' => 'required|exists:directions,id',
+            'responsable_id' => 'required|exists:agents,id',
+            'for' => 'nullable|in:1,2'
+        ]);
 
-            $ancienAgent->update([
-                'fonction_id' => null
-            ]);
+        try {
+            $secretariat = Secretariat::findOrFail($id);
+
+            // On ne modifie pas le fonction_id de l'ancien agent
+            // Ni celui du nouveau
 
             $secretariat->update([
-                "titre" => $request->titre,
-                "direction_id" => $request->direction_id,
-                "responsable_id" => $request->responsable_id,
-                "for_dg" => $request->for == 1 ? 1 : 0,
-                "for_dga" => $request->for == 2 ? 1 : 0,
-            ]);
-
-            $fonction = Fonction::firstOrCreate([
                 'titre' => $request->titre,
-            ], [
-                "direction_id" => $request->direction_id,
+                'direction_id' => $request->direction_id,
+                'responsable_id' => $request->responsable_id,
+                'for_dg' => $request->for == 1 ? 1 : 0,
+                'for_dga' => $request->for == 2 ? 1 : 0,
             ]);
 
-            $agent = Agent::find($request->responsable_id);
-            $agent->update([
-                'fonction_id' => $fonction->id,
-                // 'direction_id' => $request->direction_id supprimé ici
-            ]);
+            // Création de la fonction si elle n'existe pas
+            Fonction::firstOrCreate(
+                ['titre' => $request->titre],
+                ['direction_id' => $request->direction_id]
+            );
+
+            // ⚠️ On ne modifie pas le fonction_id de l'agent ici
 
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'success',
-                'message' => "Secretariat modifié avec succès",
+                'message' => 'Secrétariat modifié avec succès',
             ]);
-
         } catch (\Throwable $th) {
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
-                'message' => 'La modification de la Secretariat a échoué !',
+                'message' => 'La modification du Secrétariat a échoué !',
             ]);
         }
 
         Session::put('session', $content);
-
         return back();
     }
 
@@ -115,18 +116,17 @@ class SecretariatController extends Controller
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'success',
-                'message' => "Secretariat Supprimé avec succès",
+                'message' => 'Secrétariat supprimé avec succès',
             ]);
         } catch (\Throwable $th) {
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
-                'message' => 'La suppression de la Secretariat a échoué !',
+                'message' => 'La suppression du Secrétariat a échoué !',
             ]);
         }
 
         session()->flash('session', $content);
-
         return back();
     }
 }

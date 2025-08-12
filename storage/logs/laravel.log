@@ -128495,3 +128495,37 @@ DETAIL:  La ligne en échec contient (2, 2, 1, null, null, null, null, null, nul
 [2025-08-12 09:15:02] local.INFO: mount - Paramètres: {"services":[],"type":1,"prefix":"K"} 
 [2025-08-12 09:15:04] local.INFO: changeNumRef - Paramètres: {"services":[],"type":1,"prefix":"K"} 
 [2025-08-12 09:15:04] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":0,"type":1,"requete_sql":"select * from \"courriers\" where (0 = 1 or \"service_id\" is null) and \"type_id\" = ? and \"reference_interne\"::text LIKE ?","bindings":[1,"K-%"]} 
+[2025-08-12 09:55:25] local.INFO: Fonctions chargées :   
+[2025-08-12 09:55:25] local.INFO: Nombre de fonctions : 0  
+[2025-08-12 09:58:53] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null}] 
+[2025-08-12 09:58:53] local.INFO: Nombre de fonctions : 1  
+[2025-08-12 09:59:06] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null}] 
+[2025-08-12 09:59:06] local.INFO: Nombre de fonctions : 1  
+[2025-08-12 10:00:03] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null}] 
+[2025-08-12 10:00:03] local.INFO: Nombre de fonctions : 1  
+[2025-08-12 10:02:52] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null}] 
+[2025-08-12 10:02:52] local.INFO: Nombre de fonctions : 1  
+[2025-08-12 10:03:42] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null}] 
+[2025-08-12 10:03:42] local.INFO: Nombre de fonctions : 1  
+[2025-08-12 10:04:51] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null}] 
+[2025-08-12 10:04:51] local.INFO: Nombre de fonctions : 1  
+[2025-08-12 10:05:04] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null}] 
+[2025-08-12 10:05:04] local.INFO: Nombre de fonctions : 1  
+[2025-08-12 10:07:40] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null},{"id":2,"titre":"Directeur ","description":""}] 
+[2025-08-12 10:07:40] local.INFO: Nombre de fonctions : 2  
+[2025-08-12 10:09:10] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null},{"id":2,"titre":"Directeur ","description":""}] 
+[2025-08-12 10:09:10] local.INFO: Nombre de fonctions : 2  
+[2025-08-12 10:09:25] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null},{"id":2,"titre":"Directeur ","description":""}] 
+[2025-08-12 10:09:25] local.INFO: Nombre de fonctions : 2  
+[2025-08-12 10:09:51] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null},{"id":2,"titre":"Directeur ","description":""}] 
+[2025-08-12 10:09:51] local.INFO: Nombre de fonctions : 2  
+[2025-08-12 10:10:20] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null},{"id":2,"titre":"Directeur ","description":""}] 
+[2025-08-12 10:10:20] local.INFO: Nombre de fonctions : 2  
+[2025-08-12 10:11:53] local.INFO: Fonctions chargées :  [{"id":1,"titre":"Adjoint Responsable Direction Générale","description":null},{"id":2,"titre":"Directeur ","description":""},{"id":3,"titre":"Chef ","description":""}] 
+[2025-08-12 10:11:53] local.INFO: Nombre de fonctions : 3  
+[2025-08-12 10:18:12] local.INFO: mount - Paramètres: {"services":[],"type":1,"prefix":"K"} 
+[2025-08-12 10:18:14] local.INFO: changeNumRef - Paramètres: {"services":[],"type":1,"prefix":"K"} 
+[2025-08-12 10:18:14] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":0,"type":1,"requete_sql":"select * from \"courriers\" where (0 = 1 or \"service_id\" is null) and \"type_id\" = ? and \"reference_interne\"::text LIKE ?","bindings":[1,"K-%"]} 
+[2025-08-12 10:21:04] local.INFO: mount - Paramètres: {"services":[],"type":1,"prefix":"K"} 
+[2025-08-12 10:21:05] local.INFO: changeNumRef - Paramètres: {"services":[],"type":1,"prefix":"K"} 
+[2025-08-12 10:21:05] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":0,"type":1,"requete_sql":"select * from \"courriers\" where (0 = 1 or \"service_id\" is null) and \"type_id\" = ? and \"reference_interne\"::text LIKE ?","bindings":[1,"K-%"]} 

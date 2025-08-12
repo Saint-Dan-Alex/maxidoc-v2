@@ -11,13 +11,13 @@ class AdminSeeder extends Seeder
     public function run()
     {
         // Vérifie si l'admin existe déjà
-        $admin = DB::table('users')->where('email', 'admin@example.com')->first();
+        $admin = DB::table('users')->where('email', 'admin@maxidoc.com')->first();
 
         if (!$admin) {
             // Créer l'utilisateur admin
             $adminId = DB::table('users')->insertGetId([
-                'name' => 'Administrateur',
-                'email' => 'admin@example.com',
+                'name' => 'Admin system',
+                'email' => 'admin@maxidoc.com',
                 'password' => Hash::make('password'),
                 'statut_id' => 1,
                 'role_id' => 1,
