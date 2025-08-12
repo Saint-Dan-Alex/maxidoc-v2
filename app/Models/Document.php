@@ -34,6 +34,14 @@ class Document extends Model
     protected $revisionNullString = 'vide';
     protected $revisionUnknownString = 'inconnu';
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'document' => 'array',
+    ];
 
     protected $guarded = [];
     /**
