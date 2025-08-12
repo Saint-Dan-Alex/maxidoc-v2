@@ -47,6 +47,11 @@ class DocumentPolicy
      */
     public function view(User $user, Document $document)
     {
+        // Vérifier si c'est un document par défaut
+        if ($document->is_default) {
+            return $user->can('Voir les documents');
+        }
+
         // Vérifier si l'utilisateur a le rôle 'Admin'
         if ($user->hasRole('Admin')) {
             return true;
