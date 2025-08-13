@@ -160,7 +160,14 @@ class DesCourriers extends Component
 
         // Gestion des différents onglets
         if ($this->active_tab == 1) {
-            $allcourriers = $courriersQuery->where('statut_id','!=',3)->orderBy('id', 'desc');
+            $allcourriers = $courriersQuery->where('statut_id','!=',3);
+            
+            // Si c'est un secrétaire du DG, on ne montre que les courriers entrants (type_id = 1)
+            if ($this->isSec) {
+                $allcourriers->where('type_id', 1);
+            }
+            
+            $allcourriers = $allcourriers->orderBy('id', 'desc');
             $allcourriers = $this->applyFilters($allcourriers);
             $allcourriers = $this->applyPermissions($allcourriers);
             $allcourriers = $this->mapFollowers($allcourriers);
