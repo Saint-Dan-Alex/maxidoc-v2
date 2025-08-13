@@ -2,6 +2,8 @@
 
 namespace App\Http\Livewire\Taches;
 
+use Illuminate\Support\Facades\Log;
+
 use App\Events\TacheCreated;
 use App\Http\Controllers\File;
 use App\Models\Classeur;
@@ -95,63 +97,107 @@ class TachePane extends Component
     }
     public function addFichier()
     {
+        $this->validate([
+            'file' => 'required|file|max:10240', // 10MB max
+        ]);
+
         try {
-            //code...
-            if ($this->file) {
-                # code...
-                $classer = Classeur::where('direction_id', Auth::user()->agent?->direction_id)->where('titre', 'Classeur Tâches ' . Auth::user()->agent?->direction->titre)->first();
-                if ($classer == null) {
-                    # code...
-                    $classer = Classeur::firstOrCreate(
-                        [
-                            'direction_id' => Auth::user()->agent?->direction_id,
-                            'titre' => 'Classeur tâches ' . Auth::user()->agent?->direction->titre,
-                        ],
-                        [
-                            'description' => 'Classeur pour les documents des tâches',
-                            'created_by' => Auth::user()->agent->id,
-                            'updated_by' => Auth::user()->agent->id,
-                        ]
-                    );
-                }
-                $dossier = Dossier::where('titre', 'Dossier ' . Auth::user()->agent?->nom . ' ' . Auth::user()->agent?->post_nom)->where('reference', 'DT/' . Auth::user()->agent?->matricule)->first();
-                if ($dossier == null) {
-                    $dossier = Dossier::firstOrCreate(
-                        [
-                            'classeur_id' => $classer->id,
-                            'titre' => 'Dossier ' . Auth::user()->agent?->nom . ' ' . Auth::user()->agent?->post_nom,
-                        ],
-                        [
-                            'reference' => 'DT/' . Auth::user()->agent?->matricule,
-                            'description' => 'Dossier pour les documents tâche ' . Auth::user()->agent?->nom . ' ' . Auth::user()->agent?->post_nom,
-                            'confidentiel' => 0,
-                            'created_by' => Auth::user()->agent->id,
-                            'updated_by' => Auth::user()->agent->id,
-                        ]
-                    );
-
-                }
-
-                $document = Document::create([
-                    'dossier_id' => $dossier->id,
-                    'libelle' => Str::beforeLast($this->file?->getClientOriginalName() ?? $this->tache->id . date('dmYi'), '.'),
-                    'category_id' => 6,
-                    'reference' => 'DT/' . Auth::user()->agent?->matricule,
-                    'type' => 3,
-                    'document' => (new File)->handle($this->file, 'document', 'documents'),
-                    'user_id' => Auth::user()->id,
-                    'statut_id' => 1,
-                    'created_by' => Auth::user()->agent->id,
-                ]);
-                $tache = Tache::findOrFail($this->tache->id);
-                $tache->documents()->attach($document->id);
-                $this->emit('alert', 'success', 'Document a été ajouté à la tâche');
-                $this->reset('file');
-                event(new TacheCreated($this->tache, $this->tache->user->agent->id, 'La tâche ' . $this->tache->titre . ' a un nouveau fichier'));
-                $this->mount($this->tache, 3);
+            if (!$this->file) {
+                $this->emit('alert', 'error', 'Aucun fichier sélectionné');
+                return;
             }
+
+            // Vérifier si le fichier est valide
+            if (!$this->file->isValid()) {
+                $this->emit('alert', 'error', 'Le fichier est invalide : ' . $this->file->getErrorMessage());
+                return;
+            }
+
+            // Vérifier la taille du fichier (10MB max)
+            if ($this->file->getSize() > 10 * 1024 * 1024) {
+                $this->emit('alert', 'error', 'Le fichier est trop volumineux (max 10MB)');
+                return;
+            }
+
+            // Vérifier l'extension du fichier
+            $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png'];
+            $extension = strtolower($this->file->getClientOriginalExtension());
+            
+            if (!in_array($extension, $allowedExtensions)) {
+                $this->emit('alert', 'error', 'Type de fichier non autorisé. Types autorisés : ' . implode(', ', $allowedExtensions));
+                return;
+            }
+
+            // Créer ou récupérer le classeur
+            $classer = Classeur::firstOrCreate(
+                [
+                    'direction_id' => Auth::user()->agent?->direction_id,
+                    'titre' => 'Classeur tâches ' . Auth::user()->agent?->direction->titre,
+                ],
+                [
+                    'reference' => 'CLS-TACHES-' . strtoupper(Str::random(8)),
+                    'description' => 'Classeur pour les documents des tâches',
+                    'created_by' => Auth::user()->agent->id,
+                    'updated_by' => Auth::user()->agent->id,
+                ]
+            );
+
+            // Créer ou récupérer le dossier
+            $dossier = Dossier::firstOrCreate(
+                [
+                    'classeur_id' => $classer->id,
+                    'titre' => 'Dossier ' . Auth::user()->agent?->nom . ' ' . Auth::user()->agent?->post_nom,
+                ],
+                [
+                    'reference' => 'DT/' . Auth::user()->agent?->matricule,
+                    'description' => 'Dossier pour les documents tâche ' . Auth::user()->agent?->nom . ' ' . Auth::user()->agent?->post_nom,
+                    'confidentiel' => 0,
+                    'created_by' => Auth::user()->agent->id,
+                    'updated_by' => Auth::user()->agent->id,
+                ]
+            );
+
+            // Traiter le fichier
+            $fileHandler = new File();
+            $fileData = $fileHandler->handle($this->file, 'file', 'documents');
+            
+            if (!$fileData) {
+                throw new \Exception("Échec du traitement du fichier. Veuillez réessayer.");
+            }
+            
+            // Créer le document
+            $document = Document::create([
+                'dossier_id' => $dossier->id,
+                'libelle' => Str::beforeLast($this->file->getClientOriginalName(), '.'),
+                'category_id' => 6,
+                'reference' => 'DOC-' . strtoupper(Str::random(8)),
+                'type' => 3,
+                'document' => $fileData,
+                'user_id' => Auth::user()->id,
+                'statut_id' => 1,
+                'created_by' => Auth::user()->agent->id,
+            ]);
+
+            // Associer le document à la tâche
+            $tache = Tache::findOrFail($this->tache->id);
+            $tache->documents()->attach($document->id);
+            
+            // Réinitialiser le champ de fichier
+            $this->reset('file');
+            
+            // Rafraîchir la liste des fichiers
+            $this->emit('refreshFiles');
+            
+            // Afficher un message de succès
+            $this->emit('alert', 'success', 'Le document a été ajouté avec succès à la tâche');
+            
+            // Déclencher l'événement
+            event(new TacheCreated($tache, $tache->user->agent->id, 'La tâche ' . $tache->titre . ' a un nouveau fichier'));
+            $this->mount($this->tache, 3);
+            
         } catch (\Throwable $th) {
-            $this->emit('alert', 'error', 'Echec de l\'opération, Réessayez svp');
+            \Log::error('Erreur lors de l\'ajout du fichier : ' . $th->getMessage());
+            $this->emit('alert', 'error', 'Echec de l\'opération : ' . $th->getMessage());
         }
 
         $this->fichiers = $this->tache->documents->sortByDesc('id');

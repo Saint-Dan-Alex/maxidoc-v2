@@ -97,34 +97,60 @@ if (!function_exists('getYear')) {
 if (!function_exists('files')) {
     function files($file, $multiple = false)
     {
+        // Si le fichier est déjà un tableau, on le convertit en JSON
         if (is_array($file)) {
             $file = json_encode($file);
         }
 
-        $files = json_decode($file);
-        $results = collect();
-
-        if (is_null($files) || (is_countable($files) && (count($files) <= 0))) {
-            $fichier = new stdClass;
-            $fichier->link = '';
-            $fichier->name = '';
-            return $fichier;
+        // Si le fichier est une chaîne JSON, on le décode
+        $decoded = json_decode($file);
+        
+        // Si le décodage échoue et que c'est une chaîne (ancien format), on crée un objet avec les propriétés attendues
+        if (json_last_error() !== JSON_ERROR_NONE && is_string($file)) {
+            $fileObj = new stdClass;
+            $fileObj->download_link = $file;
+            $fileObj->original_name = basename($file);
+            $decoded = [$fileObj];
+        }
+        // Si le décodage réussit mais que c'est un objet simple, on le met dans un tableau
+        elseif (is_object($decoded) && !empty($decoded->download_link)) {
+            $decoded = [$decoded];
+        }
+        // Si c'est déjà un tableau d'objets, on le laisse tel quel
+        elseif (is_array($decoded) && !empty($decoded[0]->download_link)) {
+            // Tout va bien, on garde tel quel
+        }
+        // Sinon, on crée un objet vide
+        else {
+            $fileObj = new stdClass;
+            $fileObj->download_link = '';
+            $fileObj->original_name = '';
+            $decoded = [$fileObj];
         }
 
-        foreach ($files ?? [] as $file) {
+        $results = collect();
+
+        foreach ($decoded as $file) {
+            // S'assurer que l'objet a les propriétés attendues
+            if (!isset($file->download_link)) $file->download_link = '';
+            if (!isset($file->original_name)) $file->original_name = basename($file->download_link);
+            
+            // Nettoyer les chemins
             $link = str_replace('\\', DIRECTORY_SEPARATOR, $file->download_link);
             $url = str_replace('\\', '/', asset('storage') . DIRECTORY_SEPARATOR . $link);
+            
             $fichier = new stdClass;
             $fichier->link = $url;
             $fichier->name = $file->original_name;
             $results->push($fichier);
         }
 
-        if (!$multiple) {
-            $results = count($results) ? $results[0] : collect();
+        // Si on ne veut qu'un seul résultat, on retourne le premier élément
+        if (!$multiple && $results->isNotEmpty()) {
+            return $results->first();
         }
 
-        return $results;
+        return $results->isNotEmpty() ? $results : (object)['link' => '', 'name' => ''];
     }
 }
 
