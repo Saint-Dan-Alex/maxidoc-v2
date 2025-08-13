@@ -108,7 +108,7 @@
                                 <label for="inputPassword" class="col-5 col-form-label">Type de document</label>
                                 <div class="col-7">
                                     <p class="items">
-                                        {{$find_document->typeDocument->titre}}
+                                        {{$find_document->typeDocument->titre ?? 'Pièce jointe tâche'}}
                                     </p>
                                 </div>
                             </div>

@@ -23,9 +23,22 @@ class TacheDocumentController extends Controller
             'file' => 'required|file',
         ]);
 
-        $file = $request->file('file');
-        $fileName = time() . '_' . $file->getClientOriginalName();
-        $filePath = $file->storeAs('documents', $fileName, 'public');
+        // Utilisation de la classe File pour gérer le stockage au format JSON
+        $fileHandler = new File();
+        $fileData = $fileHandler->handle($request, 'file', 'documents');
+        
+        // Si aucun fichier n'a été traité (erreur)
+        if (!$fileData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucun fichier valide fourni.'
+            ], 400);
+        }
+        
+        // Décoder le JSON pour récupérer les informations du fichier
+        $fileInfo = json_decode($fileData, true);
+        $filePath = $fileInfo[0]['download_link'] ?? null;
+        $originalName = $fileInfo[0]['original_name'] ?? null;
 
         $classer = Classeur::where('direction_id', Auth::user()->agent->direction_id)
             ->where('titre', 'Classeur Tâches ' . Auth::user()->agent->direction?->titre)
@@ -56,10 +69,10 @@ class TacheDocumentController extends Controller
         }
 
         $document = Document::create([
-            'libelle' => $file->getClientOriginalName(),
+            'libelle' => $originalName ?? 'Document sans nom',
             'reference' => 'DOC-' . strtoupper(Str::random(8)),
             'description' => 'Document lié à la tâche ' . $tache->id,
-            'document' => $filePath,
+            'document' => $fileData, // Stockage du JSON complet
             'dossier_id' => $dossier->id,
             'created_by' => Auth::id(),
             'statut_id' => 1, // Statut par défaut

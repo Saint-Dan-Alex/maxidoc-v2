@@ -50,20 +50,37 @@ class TacheController extends Controller
             return '';
         }
 
-        // Essayer de décoder le JSON si c'est une chaîne JSON
-        $decoded = json_decode($documentPath, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            // Si c'est un tableau avec une clé download_link
-            if (is_array($decoded) && isset($decoded['download_link'])) {
-                $documentPath = $decoded['download_link'];
+        // Si c'est déjà un tableau, le traiter directement
+        if (is_array($documentPath)) {
+            // Si le tableau contient une clé 'download_link'
+            if (isset($documentPath['download_link'])) {
+                $documentPath = $documentPath['download_link'];
             } 
             // Si c'est un tableau avec un premier élément contenant download_link
-            elseif (is_array($decoded) && isset($decoded[0]['download_link'])) {
-                $documentPath = $decoded[0]['download_link'];
+            elseif (isset($documentPath[0]) && is_array($documentPath[0]) && isset($documentPath[0]['download_link'])) {
+                $documentPath = $documentPath[0]['download_link'];
             }
-            // Si c'est un tableau simple
-            elseif (is_array($decoded) && !empty($decoded[0])) {
-                $documentPath = $decoded[0];
+            // Si c'est un tableau simple avec des chaînes
+            elseif (is_string($documentPath[0])) {
+                $documentPath = $documentPath[0];
+            }
+        } 
+        // Si c'est une chaîne JSON, essayer de la décoder
+        elseif (is_string($documentPath)) {
+            $decoded = json_decode($documentPath, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                // Si c'est un tableau avec une clé download_link
+                if (is_array($decoded) && isset($decoded['download_link'])) {
+                    $documentPath = $decoded['download_link'];
+                } 
+                // Si c'est un tableau avec un premier élément contenant download_link
+                elseif (is_array($decoded) && isset($decoded[0]['download_link'])) {
+                    $documentPath = $decoded[0]['download_link'];
+                }
+                // Si c'est un tableau simple
+                elseif (is_array($decoded) && !empty($decoded[0])) {
+                    $documentPath = $decoded[0];
+                }
             }
         }
 
