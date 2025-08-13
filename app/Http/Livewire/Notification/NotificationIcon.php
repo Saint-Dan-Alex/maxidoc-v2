@@ -18,9 +18,27 @@ class NotificationIcon extends Component
     /**
      * Initialisation du composant
      */
+    /**
+     * Indique si l'utilisateur est un secrétaire du DG
+     *
+     * @var bool
+     */
+    public $isSecretaireDG = false;
+
+    /**
+     * Initialisation du composant
+     */
     public function mount()
     {
         $this->notifications = collect();
+        
+        // Vérifier si l'utilisateur est un secrétaire du DG
+        $user = Auth::user();
+        if ($user && $user->agent) {
+            $this->isSecretaireDG = \App\Models\Secretariat::where('responsable_id', $user->agent->id)
+                ->where('for_dg', true)
+                ->exists();
+        }
     }
 
     /**

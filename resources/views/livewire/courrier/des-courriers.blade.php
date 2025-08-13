@@ -33,14 +33,17 @@
                         </li>
                     @endif
 
-                    @can('Enregistrer un courrier entrant')
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
-                                data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
-                                aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
-                                wire:click='changeTab(2)'>Courriers entrants</button>
-                        </li>
-                    @endcan
+                    @if (!$isSec)
+                        @can('Enregistrer un courrier entrant')
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
+                                    data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
+                                    aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
+                                    wire:click='changeTab(2)'>Courriers entrants</button>
+                            </li>
+                        @endcan
+                        
+                    @endif
 
                     @can('Enregistrer un courrier sortant')
                         <li class="nav-item" role="presentation">
@@ -119,11 +122,19 @@
                         <table class="table table-hover" wire:loading.remove wire:poll.180000ms>
                             <thead>
                                 <tr>
-                                    <th scope="col">Titre</th>
+                                    @if (!$isSec)
+                                        <th scope="col">Titre</th>
+                                    @endif
                                     <th scope="col">N° d'enregistrement</th>
-                                    <th scope="col">Expéditeur</th>
-                                    <th scope="col">Destinataire</th>
-                                    <th scope="col">Accusées réceptions</th>
+                                    @if (!$isSec)
+                                        <th scope="col">Expéditeur</th>
+                                    @endif
+                                    @if (!$isSec)
+                                        <th scope="col">Destinataire</th>
+                                    @endif
+                                    @if (!$isSec)
+                                        <th scope="col">Accusées réceptions</th>
+                                    @endif
                                     <th scope="col">Date de réception</th>
                                     <th scope="col">Type</th>
                                     @if (!$isSec)
@@ -148,7 +159,9 @@
                                                         </span>
                                                         {{ $courrier->title }}
                                                     </td>
+
                                                 @elseif ($courrier->type->titre === 'Entrant')
+                                                @if (!$isSec)   
                                                     <td class="text-truncate title-file-box-table-data">
                                                         <span class="mail-entry-icon">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="1em"
@@ -159,6 +172,7 @@
                                                         </span>
                                                         {{ $courrier->title }}
                                                     </td>
+                                                @endif
                                                 @elseif ($courrier->type->titre === 'Interne')
                                                     <td class="text-truncate title-file-box-table-data">
                                                         <span class="mail-internal-icon">
@@ -183,13 +197,25 @@
                                                 </td>
                                             @endif
                                             <td>{{ $courrier->reference_interne }}</td>
-                                            <td>
-                                                @if ($courrier->type_id == 1)
-                                                    {{ $courrier->externExpediteur->nom ?? 'N/D' }}
-                                                @elseif($courrier->type_id == 3)
-                                                    {{ $courrier->service->titre ?? 'N/D' }}
+                                            @if (!$isSec)
+                                                <td>
+                                                    @if ($courrier->type_id == 1)
+                                                        {{ $courrier->externExpediteur->nom ?? 'N/D' }}
+                                                    @elseif($courrier->type_id == 3)
+                                                        {{ $courrier->service->titre ?? 'N/D' }}
+                                                    @else
+                                                        Lerexcom Petroleum
+                                                    @endif
+                                                </td>
+                                            @endif
+                                            @if (!$isSec)
+                                                <td>
+                                                    @if ($courrier->type_id == 1)
+                                                        {{ $courrier->externExpediteur->nom ?? 'N/D' }}
+                                                    @elseif($courrier->type_id == 3)
+                                                        {{ $courrier->service->titre ?? 'N/D' }}
                                                 @else
-                                                    Lerex Petroleum
+                                                    Lerexcom Petroleum
                                                 @endif
                                             </td>
                                             <td>
@@ -198,9 +224,11 @@
                                                 @elseif($courrier->type_id == 3)
                                                     {{ $courrier->toDirection->titre ?? 'N/D' }}
                                                 @else
-                                                    Lerex Petroleum
+                                                    Lerexcom Petroleum
                                                 @endif
                                             </td>
+                                            @endif
+                                            @if (!$isSec)
                                             <td class="text-nowrap">
                                                 @if ($courrier->followers->unique()->count())
                                                     <div class="box-avatar d-flex align-items-center">
@@ -259,6 +287,9 @@
                                                     Aucun
                                                 @endif
                                             </td>
+                                                
+                                            @endif
+                                            
                                             <td>{{ $courrier->created_at->format('d/m/Y') }}</td>
                                             <td>{{ $courrier->type ? $courrier->type->titre : 'Inconnu' }}</td>
                                             @if (!$isSec)
@@ -309,182 +340,185 @@
             </div>
         @endif
 
-        @can('Enregistrer un courrier entrant')
-            <!-- Entrants Tab -->
-            <div class="tab-pane fade {{ $active_tab == 2 ? 'show active' : '' }}" id="entrant" role="tabpanel"
-                aria-labelledby="entrant-tab">
-                <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
-                    <div class="row g-3 align-items-center">
-                        <div class="col-lg-6 col-md-6">
-                            <div class="col-lg-6">
-                                <input type="text" class="form-control input-search-card" placeholder="Recherche"
-                                    style="border:none;" wire:model='search'>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6 col-sm-6 col-lg-6">
-                            <div class="d-flex align-items-center justify-content-end gap-2">
-                                <div class="input-group block-input-filter">
-                                    <select wire:model.debounce.500ms="statut" id="statut" style="border-right: none"
-                                        class="form-select form-control">
-                                        <option value="null" selected disabled>Etat </option>
-                                        <option value="">Tous</option>
-                                        <option value=1>En attente</option>
-                                        <option value=2>En cours</option>
-                                        <option value=3>Traité</option>
-                                        <option value=4>Archivé</option>
-                                    </select>
-                                    <select id="priority" class="form-select form-control"
-                                        wire:model.debounce.500ms="priority">
-                                        <option value="null" selected disabled>Priorité</option>
-                                        <option value="">Toutes</option>
-                                        <option value=1>Faible</option>
-                                        <option value=2>Moyen</option>
-                                        <option value=3>Fort</option>
-                                    </select>
-                                    <select name="datep" id="mois" class="form-select form-control"
-                                        wire:model.debounce.500ms='selectedMonth'>
-                                        <option value="null" selected disabled>Mois</option>
-                                        @for ($i = 1; $i <= 12; $i++)
-                                            <option value="{{ $i }}">{{ now()->month($i)->isoFormat('MMMM') }}
-                                            </option>
-                                        @endfor
-                                    </select>
-                                    <select name="datep" id="annee" class="form-select form-control"
-                                        style="border-right: none" wire:model.debounce.500ms='selectedYear'>
-                                        <option value="null" selected disabled>Année</option>
-                                        @for ($i = ((int) now()->year); $i > 1990; $i--)
-                                            <option value="{{ $i }}">{{ $i }}</option>
-                                        @endfor
-                                    </select>
-                                    <button class="btn btn-add refresh-filter btn-search-sm" type="button"
-                                        id="" wire:click="refreshSelection">
-                                        <i class="fi fi-rr-refresh"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <hr class="mb-0">
-                    <div class="table-responsive">
-                        <div class="card card-table w-100" style="height: 250px" wire:loading>
-                            <div class="d-flex justify-content-center h-100 align-items-center">
-                                <div class="spinner-border" role="status">
-                                    <span class="sr-only"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <table class="table table-hover" wire:loading.remove wire:poll.180000ms>
-                            <thead>
-                                <tr>
-                                    <th scope="col">Titre</th>
-                                    <th scope="col">N° de reference</th>
-                                    <th scope="col">Expediteur</th>
-                                    <th scope="col">Accusées réceptions</th>
-                                    @can('Definir le traitement')
-                                        <th scope="col">Priorité</th>
-                                    @endcan
-                                    <th scope="col">Date de réception</th>
-                                    @if (!$isSec)
-                                        <th scope="col">Statut</th>
-                                        <th scope="col">Action</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($entrants as $entrant)
-                                    <tr @class(['', 'tr-no-read' => !$entrant->isViewed()])>
-                                        <td class="text-truncate title-file-box-table-data">
-                                            <span class="mail-entry-icon">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
-                                                    viewBox="0 0 24 24">
-                                                    <path fill="currentColor"
-                                                        d="M11 4h2v12l5.5-5.5l1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5L11 16z" />
-                                                </svg>
-                                            </span>
-                                            {{ $entrant->title }}
-                                        </td>
-                                        <td>{{ $entrant->reference_courrier }}</td>
-                                        <td>{{ $entrant->externExpediteur->nom ?? 'N/D' }}</td>
-                                        <td class="text-nowrap">
-                                            <div class="box-avatar d-flex align-items-center">
-                                                @foreach ($entrant->followers->unique() as $follower)
-                                                    @if (!$follower->is(Auth::user()->agent))
-                                                        <div class="cursor-pointer avatar-team" data-bs-toggle="offcanvas"
-                                                            data-bs-target="#detail-personnel"
-                                                            aria-controls="offcanvasRight">
-                                                            <div class="tooltip-team">{{ $follower->prenom }}
-                                                                {{ $follower->nom }}</div>
-                                                            <img src="{{ imageOrDefault($follower->image) }}"
-                                                                alt="">
-                                                        </div>
-                                                    @endif
-                                                @endforeach
-                                            </div>
-                                        </td>
-                                        @can('Definir le traitement')
-                                            <td>
-                                                <div @class([
-                                                    'badge-priority',
-                                                    'badge-priority-gray' =>
-                                                        $entrant->priorite_id != 1 &&
-                                                        $entrant->priorite_id != 2 &&
-                                                        $entrant->priorite_id != 3,
-                                                    'normal badge-priority-normal' => $entrant->priorite_id == 1,
-                                                    'urgent  badge-priority-red' => $entrant->priorite_id == 4,
-                                                    'absolute badge-priority-yellow' => $entrant->priorite_id == 3,
-                                                    'important badge-priority-green' => $entrant->priorite_id == 2,
-                                                ])>
-                                                    {{ $entrant->priorite?->titre ?? 'N/A' }}
-                                                </div>
-                                            </td>
-                                        @endcan
-                                        <td>{{ $entrant->created_at->format('d/m/Y') }}</td>
-                                        @if (!$isSec)
-                                            <td>
-                                                <div @class([
-                                                    'badge',
-                                                'badge-gray' => $entrant->statut_id == 1,
-                                                'badge-yellow' => $entrant->statut_id == 2,
-                                                'badge-green' => $entrant->statut_id == 3,
-                                            ])>
-                                                {{ $entrant->statut?->libelle ?? 'Inconnu' }}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                
-                                                    @if (
-                                                        ($entrant->isIntern() && in_array(Auth::user()->agent->id, $entrant->destinateurs->pluck('id')->toArray())) ||
-                                                            in_array(Auth::user()->agent->id, $entrant->followers->pluck('id')->toArray()) ||
-                                                            $entrant->created_by == Auth::user()->agent->id)
-                                                        <a href="{{ route('regidoc.courriers.show', $entrant) }}"
-                                                            class="btn">
-                                                            <i class="fi fi-rr-eye"></i>
-                                                            <div class="tooltip-btn">Voir détails</div>
-                                                        </a>
-                                                    @endif
-                                        @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="text-center">
-                                            <img src="{{ asset('assets/images/sad.gif') }}" alt=""
-                                                width="35px" class=""><br>
-                                            Aucun courrier entrant en cours de traitement
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    @if (count($entrants))
-                        {{ $entrants->links() }}
-                    @endif
-                </div>
-            </div>
-        @endcan
+       @if (!$isSec)
+       @can('Enregistrer un courrier entrant')
+       <!-- Entrants Tab -->
+       <div class="tab-pane fade {{ $active_tab == 2 ? 'show active' : '' }}" id="entrant" role="tabpanel"
+           aria-labelledby="entrant-tab">
+           <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
+               <div class="row g-3 align-items-center">
+                   <div class="col-lg-6 col-md-6">
+                       <div class="col-lg-6">
+                           <input type="text" class="form-control input-search-card" placeholder="Recherche"
+                               style="border:none;" wire:model='search'>
+                       </div>
+                   </div>
+                   <div class="col-12 col-md-6 col-sm-6 col-lg-6">
+                       <div class="d-flex align-items-center justify-content-end gap-2">
+                           <div class="input-group block-input-filter">
+                               <select wire:model.debounce.500ms="statut" id="statut" style="border-right: none"
+                                   class="form-select form-control">
+                                   <option value="null" selected disabled>Etat </option>
+                                   <option value="">Tous</option>
+                                   <option value=1>En attente</option>
+                                   <option value=2>En cours</option>
+                                   <option value=3>Traité</option>
+                                   <option value=4>Archivé</option>
+                               </select>
+                               <select id="priority" class="form-select form-control"
+                                   wire:model.debounce.500ms="priority">
+                                   <option value="null" selected disabled>Priorité</option>
+                                   <option value="">Toutes</option>
+                                   <option value=1>Faible</option>
+                                   <option value=2>Moyen</option>
+                                   <option value=3>Fort</option>
+                               </select>
+                               <select name="datep" id="mois" class="form-select form-control"
+                                   wire:model.debounce.500ms='selectedMonth'>
+                                   <option value="null" selected disabled>Mois</option>
+                                   @for ($i = 1; $i <= 12; $i++)
+                                       <option value="{{ $i }}">{{ now()->month($i)->isoFormat('MMMM') }}
+                                       </option>
+                                   @endfor
+                               </select>
+                               <select name="datep" id="annee" class="form-select form-control"
+                                   style="border-right: none" wire:model.debounce.500ms='selectedYear'>
+                                   <option value="null" selected disabled>Année</option>
+                                   @for ($i = ((int) now()->year); $i > 1990; $i--)
+                                       <option value="{{ $i }}">{{ $i }}</option>
+                                   @endfor
+                               </select>
+                               <button class="btn btn-add refresh-filter btn-search-sm" type="button"
+                                   id="" wire:click="refreshSelection">
+                                   <i class="fi fi-rr-refresh"></i>
+                               </button>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+               <hr class="mb-0">
+               <div class="table-responsive">
+                   <div class="card card-table w-100" style="height: 250px" wire:loading>
+                       <div class="d-flex justify-content-center h-100 align-items-center">
+                           <div class="spinner-border" role="status">
+                               <span class="sr-only"></span>
+                           </div>
+                       </div>
+                   </div>
+                   <table class="table table-hover" wire:loading.remove wire:poll.180000ms>
+                       <thead>
+                           <tr>
+                               <th scope="col">Titre</th>
+                               <th scope="col">N° de reference</th>
+                               <th scope="col">Expediteur</th>
+                               <th scope="col">Accusées réceptions</th>
+                               @can('Definir le traitement')
+                                   <th scope="col">Priorité</th>
+                               @endcan
+                               <th scope="col">Date de réception</th>
+                               @if (!$isSec)
+                                   <th scope="col">Statut</th>
+                                   <th scope="col">Action</th>
+                               @endif
+                           </tr>
+                       </thead>
+                       <tbody>
+                           @forelse ($entrants as $entrant)
+                               <tr @class(['', 'tr-no-read' => !$entrant->isViewed()])>
+                                   <td class="text-truncate title-file-box-table-data">
+                                       <span class="mail-entry-icon">
+                                           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
+                                               viewBox="0 0 24 24">
+                                               <path fill="currentColor"
+                                                   d="M11 4h2v12l5.5-5.5l1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5L11 16z" />
+                                           </svg>
+                                       </span>
+                                       {{ $entrant->title }}
+                                   </td>
+                                   <td>{{ $entrant->reference_courrier }}</td>
+                                   <td>{{ $entrant->externExpediteur->nom ?? 'N/D' }}</td>
+                                   <td class="text-nowrap">
+                                       <div class="box-avatar d-flex align-items-center">
+                                           @foreach ($entrant->followers->unique() as $follower)
+                                               @if (!$follower->is(Auth::user()->agent))
+                                                   <div class="cursor-pointer avatar-team" data-bs-toggle="offcanvas"
+                                                       data-bs-target="#detail-personnel"
+                                                       aria-controls="offcanvasRight">
+                                                       <div class="tooltip-team">{{ $follower->prenom }}
+                                                           {{ $follower->nom }}</div>
+                                                       <img src="{{ imageOrDefault($follower->image) }}"
+                                                           alt="">
+                                                   </div>
+                                               @endif
+                                           @endforeach
+                                       </div>
+                                   </td>
+                                   @can('Definir le traitement')
+                                       <td>
+                                           <div @class([
+                                               'badge-priority',
+                                               'badge-priority-gray' =>
+                                                   $entrant->priorite_id != 1 &&
+                                                   $entrant->priorite_id != 2 &&
+                                                   $entrant->priorite_id != 3,
+                                               'normal badge-priority-normal' => $entrant->priorite_id == 1,
+                                               'urgent  badge-priority-red' => $entrant->priorite_id == 4,
+                                               'absolute badge-priority-yellow' => $entrant->priorite_id == 3,
+                                               'important badge-priority-green' => $entrant->priorite_id == 2,
+                                           ])>
+                                               {{ $entrant->priorite?->titre ?? 'N/A' }}
+                                           </div>
+                                       </td>
+                                   @endcan
+                                   <td>{{ $entrant->created_at->format('d/m/Y') }}</td>
+                                   @if (!$isSec)
+                                       <td>
+                                           <div @class([
+                                               'badge',
+                                           'badge-gray' => $entrant->statut_id == 1,
+                                           'badge-yellow' => $entrant->statut_id == 2,
+                                           'badge-green' => $entrant->statut_id == 3,
+                                       ])>
+                                           {{ $entrant->statut?->libelle ?? 'Inconnu' }}
+                                       </div>
+                                   </td>
+                                   <td>
+                                       <div class="d-flex align-items-center">
+                                           
+                                               @if (
+                                                   ($entrant->isIntern() && in_array(Auth::user()->agent->id, $entrant->destinateurs->pluck('id')->toArray())) ||
+                                                       in_array(Auth::user()->agent->id, $entrant->followers->pluck('id')->toArray()) ||
+                                                       $entrant->created_by == Auth::user()->agent->id)
+                                                   <a href="{{ route('regidoc.courriers.show', $entrant) }}"
+                                                       class="btn">
+                                                       <i class="fi fi-rr-eye"></i>
+                                                       <div class="tooltip-btn">Voir détails</div>
+                                                   </a>
+                                               @endif
+                                   @endif
+                                       </div>
+                                   </td>
+                               </tr>
+                           @empty
+                               <tr>
+                                   <td colspan="7" class="text-center">
+                                       <img src="{{ asset('assets/images/sad.gif') }}" alt=""
+                                           width="35px" class=""><br>
+                                       Aucun courrier entrant en cours de traitement
+                                   </td>
+                               </tr>
+                           @endforelse
+                       </tbody>
+                   </table>
+               </div>
+               @if (count($entrants))
+                   {{ $entrants->links() }}
+               @endif
+           </div>
+       </div>
+   @endcan
+           
+       @endif
 
         @can('Enregistrer un courrier sortant')
             <!-- Sortants Tab -->
