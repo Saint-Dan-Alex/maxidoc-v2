@@ -248,25 +248,8 @@
                         <div class="tab-pane fade" id="activite" role="tabpanel" aria-labelledby="home-tab">
                             <div class="info-lg">
                                 <h2>Historique d'activité de l'agent</h2>
-                                <div class="row g-3">
-                                    @php
-                                        $historiques = [];
-                                        $courriel = null;
-                                        $task = null;
-
-                                        $historiques = \App\Models\Historique::where('user_id', Auth::user()->id)
-                                            ->orderBy('id', 'desc')
-                                            ->get();
-                                        foreach ($historiques as $historique) {
-                                            if ($historique->historiquecable_type == 'App\Models\Courrier') {
-                                                $courriel = \App\Models\Courrier::find($historique->historiquecable_id);
-                                            } elseif ($historique->historiquecable_type == 'App\Models\Tache') {
-                                                $task = \App\Models\Tache::find($historique->historiquecable_id);
-                                            }
-                                        }
-                                    @endphp
-
-                                    <table class="table mt-lg-3 mt-2">
+                                <div class="table-responsive">
+                                    <table class="table mt-3">
                                         <thead>
                                             <tr>
                                                 <th>#</th>
@@ -278,40 +261,60 @@
                                         </thead>
                                         <tbody>
                                             @forelse ($historiques as $key => $item)
+                                                @php
+                                                    $courriel = null;
+                                                    $task = null;
+                                                    if ($item->historiquecable_type == 'App\Models\Courrier') {
+                                                        $courriel = \App\Models\Courrier::find($item->historiquecable_id);
+                                                    } elseif ($item->historiquecable_type == 'App\Models\Tache') {
+                                                        $task = \App\Models\Tache::find($item->historiquecable_id);
+                                                    }
+                                                @endphp
                                                 <tr>
                                                     <td>
                                                         <span class="number">
                                                             {{ $key + 1 }}
                                                         </span>
                                                     </td>
-                                                    @if ($item->historiquecable_type == 'App\Models\Courrier')
+                                                    @if ($item->historiquecable_type == 'App\\Models\\Courrier')
                                                         <td style="text-align: left !important;">Courrier</td>
-                                                        <td class="table-cell" style="text-align: left !important; ">
-                                                            {{ $courriel->title ?? 'Non Specifié' }}</td>
-                                                    @elseif($item->historiquecable_type == 'App\Models\Tache')
-                                                        <td style="text-align: left !important;">Tache</td>
                                                         <td class="table-cell" style="text-align: left !important;">
-                                                            {{ $task->titre ?? 'Non Specifié' }}</td>
+                                                            {{ $courriel->title ?? 'Non Specifié' }}
+                                                        </td>
+                                                    @elseif($item->historiquecable_type == 'App\\Models\\Tache')
+                                                        <td style="text-align: left !important;">Tâche</td>
+                                                        <td class="table-cell" style="text-align: left !important;">
+                                                            {{ $task->titre ?? 'Non Specifié' }}
+                                                        </td>
+                                                    @else
+                                                        <td style="text-align: left !important;">Autre</td>
+                                                        <td style="text-align: left !important;">-</td>
                                                     @endif
                                                     <td style="text-align: left !important;">
-                                                        {{ $item->description ?? 'Non Specifié' }}</td>
+                                                        {{ $item->description ?? 'Non spécifié' }}
+                                                    </td>
                                                     <td style="text-align: left !important;">
                                                         {{ $item->created_at->isoFormat('ddd l') }} à
-                                                        {{ $item->created_at->format('H:i:s') }}</td>
+                                                        {{ $item->created_at->format('H:i:s') }}
+                                                    </td>
                                                 </tr>
                                             @empty
-                                                <div class="text-center col-12">
-                                                    <img src="{{ asset('assets/images/sad.gif') }}" alt=""
-                                                        width="35px" class="">
-                                                    <p>Aucune activité à signaler</p>
-                                                </div>
+                                                <tr>
+                                                    <td colspan="5" class="text-center">
+                                                        <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px" class="mb-2">
+                                                        <p class="mb-0">Aucune activité à signaler</p>
+                                                    </td>
+                                                </tr>
                                             @endforelse
                                         </tbody>
                                     </table>
-
+                                    
+                                    <!-- Pagination -->
+                                    <div class="mt-4 d-flex justify-content-center">
+                                        {!! $historiques->links() !!}
+                                    </div>
                                 </div>
                             </div>
-
                         </div>
 
                         <div class="tab-pane fade" id="edit-profil" role="tabpanel" aria-labelledby="home-tab">
