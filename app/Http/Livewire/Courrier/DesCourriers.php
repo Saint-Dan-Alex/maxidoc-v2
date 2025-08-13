@@ -23,6 +23,23 @@ class DesCourriers extends Component
     public $selectedYear = '';
     public $priority = null;
     public $statut = null; 
+    public $isSec = false;
+
+    public function mount()
+    {
+        $this->isSec = false;
+        $user = Auth::user();
+        
+        if ($user && $user->agent) {
+            // Vérifier si l'utilisateur est un secrétaire du DG
+            $agent = $user->agent;
+            $isSecretaireDG = \App\Models\Secretariat::where('responsable_id', $agent->id)
+                ->where('for_dg', true)
+                ->exists();
+                
+            $this->isSec = $isSecretaireDG;
+        }
+    }
 
     protected $listeners = [
         'CourrierCreated' => 'SendCourrierCreatedNotification',
