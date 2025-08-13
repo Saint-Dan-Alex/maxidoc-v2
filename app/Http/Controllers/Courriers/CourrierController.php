@@ -48,8 +48,10 @@ class CourrierController extends Controller
     {
         // $files = Courrier::notClassified()->get();
         // , compact('files')
+        $sec = Direction::find(1)->dgSecretaires->pluck('responsable_id');
+        $isSec = $sec->contains(auth()->id());
 
-        return view('regidoc.pages.courriers.courriers');
+        return view('regidoc.pages.courriers.courriers', compact('isSec'));
     }
 
     /**

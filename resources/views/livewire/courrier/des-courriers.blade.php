@@ -126,8 +126,10 @@
                                     <th scope="col">Accusées réceptions</th>
                                     <th scope="col">Date de réception</th>
                                     <th scope="col">Type</th>
-                                    <th scope="col">Statut</th>
-                                    <th scope="col">Actions</th>
+                                    @if (!$isSec)
+                                        <th scope="col">Statut</th>
+                                        <th scope="col">Actions</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -259,30 +261,32 @@
                                             </td>
                                             <td>{{ $courrier->created_at->format('d/m/Y') }}</td>
                                             <td>{{ $courrier->type ? $courrier->type->titre : 'Inconnu' }}</td>
-                                            <td>
-                                                <div @class([
-                                                    'badge',
-                                                    'badge-gray' => $courrier->statut_id == 1,
-                                                    'badge-yellow' => $courrier->statut_id == 2,
-                                                    'badge-green' => $courrier->statut_id == 3,
-                                                ])>
-                                                    {{ $courrier->statut?->libelle ?? 'Inconnu' }}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    @if (
-                                                        ($courrier->isIntern() && in_array(Auth::user()->agent->id, $courrier->destinateurs->pluck('id')->toArray())) ||
-                                                            in_array(Auth::user()->agent->id, $courrier->followers->pluck('id')->toArray()) ||
-                                                            $courrier->created_by == Auth::user()->agent->id)
-                                                        <a href="{{ route('regidoc.courriers.show', $courrier) }}"
-                                                            class="btn">
-                                                            <i class="fi fi-rr-eye"></i>
-                                                            <div class="tooltip-btn">Voir détails</div>
-                                                        </a>
-                                                    @endif
-                                                </div>
-                                            </td>
+                                            @if (!$isSec)
+                                                <td>
+                                                    <div @class([
+                                                        'badge',
+                                                        'badge-gray' => $courrier->statut_id == 1,
+                                                        'badge-yellow' => $courrier->statut_id == 2,
+                                                        'badge-green' => $courrier->statut_id == 3,
+                                                    ])>
+                                                        {{ $courrier->statut?->libelle ?? 'Inconnu' }}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        @if (
+                                                            ($courrier->isIntern() && in_array(Auth::user()->agent->id, $courrier->destinateurs->pluck('id')->toArray())) ||
+                                                                in_array(Auth::user()->agent->id, $courrier->followers->pluck('id')->toArray()) ||
+                                                                $courrier->created_by == Auth::user()->agent->id)
+                                                            <a href="{{ route('regidoc.courriers.show', $courrier) }}"
+                                                                class="btn">
+                                                                <i class="fi fi-rr-eye"></i>
+                                                                <div class="tooltip-btn">Voir détails</div>
+                                                            </a>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            @endif
                                         </tr>
                                     @endif
                                 @empty
@@ -380,8 +384,10 @@
                                         <th scope="col">Priorité</th>
                                     @endcan
                                     <th scope="col">Date de réception</th>
-                                    <th scope="col">Statut</th>
-                                    <th scope="col">Action</th>
+                                    @if (!$isSec)
+                                        <th scope="col">Statut</th>
+                                        <th scope="col">Action</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -433,9 +439,10 @@
                                             </td>
                                         @endcan
                                         <td>{{ $entrant->created_at->format('d/m/Y') }}</td>
-                                        <td>
-                                            <div @class([
-                                                'badge',
+                                        @if (!$isSec)
+                                            <td>
+                                                <div @class([
+                                                    'badge',
                                                 'badge-gray' => $entrant->statut_id == 1,
                                                 'badge-yellow' => $entrant->statut_id == 2,
                                                 'badge-green' => $entrant->statut_id == 3,
@@ -445,16 +452,18 @@
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                @if (
-                                                    ($entrant->isIntern() && in_array(Auth::user()->agent->id, $entrant->destinateurs->pluck('id')->toArray())) ||
-                                                        in_array(Auth::user()->agent->id, $entrant->followers->pluck('id')->toArray()) ||
-                                                        $entrant->created_by == Auth::user()->agent->id)
-                                                    <a href="{{ route('regidoc.courriers.show', $entrant) }}"
-                                                        class="btn">
-                                                        <i class="fi fi-rr-eye"></i>
-                                                        <div class="tooltip-btn">Voir détails</div>
-                                                    </a>
-                                                @endif
+                                                
+                                                    @if (
+                                                        ($entrant->isIntern() && in_array(Auth::user()->agent->id, $entrant->destinateurs->pluck('id')->toArray())) ||
+                                                            in_array(Auth::user()->agent->id, $entrant->followers->pluck('id')->toArray()) ||
+                                                            $entrant->created_by == Auth::user()->agent->id)
+                                                        <a href="{{ route('regidoc.courriers.show', $entrant) }}"
+                                                            class="btn">
+                                                            <i class="fi fi-rr-eye"></i>
+                                                            <div class="tooltip-btn">Voir détails</div>
+                                                        </a>
+                                                    @endif
+                                        @endif
                                             </div>
                                         </td>
                                     </tr>
