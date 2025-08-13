@@ -287,53 +287,45 @@ class PersonnelController extends Controller
     public function store(Request $request)
     {
         try {
-            $nom = $request->nom;
-            $postnom = $request->post_nom;
-            $prenom = $request->prenom;
-            $nomSansAccents = $this->removeAccents($nom);
-            $prenomSansAccents = $this->removeAccents($postnom);
-            $newMail = $request->newMail;
-            $existingAgent = Agent::where('matricule', $request->matricule)->first();
-            if ($existingAgent) {
-                $content = json_encode([
-                    'name' => 'Ressources humaines',
-                    'statut' => 'error',
-                    'message' => 'L\'ajout de l\'agent a échoué. Le matricule existe déjà.',
-                ]);
-                session()->flash('session', $content);
-                return back();
+            // Validation des données requises
+            $request->validate([
+                'nom' => 'required',
+                'post_nom' => 'required',
+                'prenom' => 'required',
+                'matricule' => 'required|unique:agents',
+                'newMail' => 'required|email|unique:users,email',
+                'direction_id' => 'required|exists:directions,id',
+                'fonction_id' => 'required|exists:fonctions,id',
+                'sexe' => 'required',
+            ]);
+
+            // Vérification des doublons
+            if (Agent::where('matricule', $request->matricule)->exists()) {
+                return back()->with('error', 'Ce matricule existe déjà.');
             }
 
-            $existingUser = User::where('email', $newMail)->first();
-            if ($existingUser) {
-                $content = json_encode([
-                    'name' => 'Ressources humaines',
-                    'statut' => 'error',
-                    'message' => 'L\'ajout de l\'agent a échoué. L\'email existe déjà.',
-                ]);
-                session()->flash('session', $content);
-                return back();
+            if (User::where('email', $request->newMail)->exists()) {
+                return back()->with('error', 'Cet email existe déjà.');
             }
-            $user = null;
-            $user = User::create(
-                [
-                    'email' => $newMail,
-                    'name' => $request->prenom . ' ' . $request->nom,
-                    'password' => Hash::make('12345678'),
-                    // 'password' => Hash::make($password),
-                    'statut_id' => 1,
-                ]
-            );
 
+            // Création de l'utilisateur
+            $user = User::create([
+                'email' => $request->newMail,
+                'name' => $request->prenom . ' ' . $request->nom,
+                'password' => Hash::make('12345678'), // Mot de passe par défaut
+                'statut_id' => 1, // Statut actif
+            ]);
+
+            // Création de l'agent
             $agent = new Agent();
             $agent->user_id = $user->id;
             $agent->statut_id = 1;
-            $agent->nom = Str::ucfirst(Str::lower($nom));
-            $agent->post_nom = Str::ucfirst(Str::lower($postnom));
-            $agent->prenom = Str::ucfirst(Str::lower($prenom));
+            $agent->nom = Str::ucfirst(Str::lower($request->nom));
+            $agent->post_nom = Str::ucfirst(Str::lower($request->post_nom));
+            $agent->prenom = Str::ucfirst(Str::lower($request->prenom));
             $agent->sexe = $request->sexe;
             $agent->lieu_naiss = $request->lieu_naiss ?? null;
-            $agent->date_naiss = Carbon::parse($request->date_naiss) ?? null;
+            $agent->date_naiss = $request->date_naiss ? Carbon::parse($request->date_naiss) : null;
             $agent->etat_civil = $request->etat_civil ?? null;
             $agent->nbr_enfant = $request->nbr_enfants ?? null;
             $agent->nationalite = $request->nationalite ?? null;
@@ -341,171 +333,35 @@ class PersonnelController extends Controller
             $agent->ville = $request->ville ?? null;
             $agent->matricule = $request->matricule;
             $agent->image = (new Image())->handle($request, 'image', 'agents');
-            $agent->slug = Str::slug($nom . ' ' . $postnom . ' ' . $prenom);
-            $agent->direction_id = $request->direction_id ?? null;
+            $agent->slug = Str::slug($request->nom . ' ' . $request->post_nom . ' ' . $request->prenom);
+            
+            // Assignation simplifiée des relations
+            $agent->direction_id = $request->direction_id;
+            $agent->fonction_id = $request->fonction_id;
+            
+            // Gestion des autres relations optionnelles
             $agent->division_id = $request->division_id ?? null;
-            $agent->service_id = $request->sevice_id ?? null;
+            $agent->service_id = $request->service_id ?? null;
             $agent->section_id = $request->section_id ?? null;
-            $agent->grade_id = $request->grade_id ?? null;
-            $agent->lieu_id = $request->lieu_id ?? null;
+            
             $agent->created_by = Auth::user()->id;
             $agent->updated_by = Auth::user()->id;
             $agent->save();
-            $titre = '';
 
-            if ($request->fonction_type == '1') {
-                $titre = 'Directeur ' . $request->fonction;
-                $dir = Direction::find($request->direction_id);
-                $dir->responsable_id = $agent->id;
-                $dir->save();
-            }
-
-            if ($request->fonction_type == '2') {
-                $titre = 'Chef ' . $request->fonction;
-                if (Str::startsWith($titre, 'Chef Division')) {
-                    $div = Division::find($request->division_id);
-                    if ($div) {
-                        $div->responsable_id = $agent->id;
-                        $div->save();
-                    }
-                }
-                if (Str::startsWith($titre, 'Chef Service')) {
-                    $ser = Service::find($request->service_id);
-                    if ($ser) {
-                        $ser->responsable_id = $agent->id;
-                        $ser->save();
-                    }
-                }
-                if (Str::startsWith($titre, 'Chef Section')) {
-                    $sec = Section::find($request->section_id);
-                    if ($sec) {
-                        $sec->responsable_id = $agent->id;
-                        $sec->save();
-                    }
-                }
-            }
-
-            if ($request->fonction_type == '3') {
-                $titre = 'Secrétaire ' . $request->fonction;
-                if (Str::startsWith($titre, 'Secrétaire Direction')) {
-                    $direction = Direction::find($request->direction_id);
-                    if ($direction) {
-                        Secretariat::firstOrCreate([
-                            'titre' => 'Secrétaire ' . $direction->titre,
-                            'direction_id' => $direction->id,
-                        ], [
-                            'responsable_id' => $agent->id,
-                        ]);
-                    }
-                }
-                if (Str::startsWith($titre, 'Secrétaire Division')) {
-                    $division = Division::find($request->division_id);
-                    if ($division) {
-                        Secretariat::firstOrCreate([
-                            'titre' => 'Secrétaire ' . $division->titre,
-                            'division_id' => $division->id,
-                        ], [
-                            'responsable_id' => $agent->id,
-                        ]);
-                    }
-                }
-            }
-
-            if ($request->fonction_type == '4') {
-                $titre = 'Assistant ' . $request->fonction;
-                $fct = Fonction::firstOrCreate(
-                    [
-                        "titre" => $titre,
-                        "direction_id" => $request->direction_id,
-                    ],
-                    [
-                        "section_id" => $request->section_id,
-                        "service_id" => $request->service_id,
-                        "division_id" => $request->division_id,
-                        "description" => '',
-                    ]
-                );
-            }
-
-            if ($request->fonction_type == '5') {
-                $titre = $request->fonction;
-                $fct = Fonction::firstOrCreate(
-                    [
-                        "titre" => $titre,
-                        "direction_id" => $request->direction_id,
-                    ],
-                    [
-                        "section_id" => $request->section_id ?? null,
-                        "service_id" => $request->service_id ?? null,
-                        "division_id" => $request->division_id ?? null,
-                        "description" => '',
-                    ]
-                );
-            }
-
-            if ($request->fonction_type == '6') {
-                $fct = Fonction::find($request->fonction_id);
-            } else {
-                # code...
-                $fct = Fonction::firstOrCreate(
-                    [
-                        "titre" => $titre,
-                    ],
-                    [
-                        "direction_id" => $request->direction_id,
-                        "division_id" => $request->division_id,
-                        "section_id" => $request->section_id,
-                        "service_id" => $request->service_id,
-                        "description" => '',
-                    ]
-                );
-            }
-
-            if ($fct) {
-                $exAgent = Agent::where('lieu_id', $request->lieu_id)->where('direction_id', $request->direction_id)->where('fonction_id', $fct->id)->first();
-                if ($exAgent) {
-                    # code...
-                    $exAgent->fonction_id = null;
-                    $exAgent->save();
-                }
-                $agent->fonction_id = $fct->id;
-                $agent->save();
-            }
-
+            // Création de l'adresse
             $adresse = new Adresse();
             $adresse->phone = $request->telephone;
-            // $adresse->phone_2 = $request->autre_telephone;
-            $adresse->email = $newMail;
+            $adresse->email = $request->newMail;
             $adresse->residence = $request->adresse;
             $adresse->agent_id = $agent->id;
             $adresse->save();
 
-            $content = json_encode([
-                'name' => 'Ressources humaines',
-                'statut' => 'success',
-                'message' => 'L\'ajout de l\'agent a réussi avec succès !',
-            ]);
-            session()->flash(
-                'session',
-                $content
-            );
-
-            return redirect()->route('regidoc.personnels.index');
+            return redirect()->route('regidoc.personnels.index')
+                           ->with('success', 'Agent créé avec succès.');
 
         } catch (\Throwable $th) {
-            // dd($th);
-            $content = json_encode([
-                'name' => 'Ressources humaines',
-                'statut' => 'error',
-                'message' => 'L\'ajout de l\'agent a échoué !',
-            ]);
-            session()->flash(
-                'session',
-                $content
-            );
-            return back();
+            return back()->with('error', 'Erreur lors de la création: ' . $th->getMessage());
         }
-
     }
 
     public function show($id)

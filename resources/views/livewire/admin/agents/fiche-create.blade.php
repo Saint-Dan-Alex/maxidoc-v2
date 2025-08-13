@@ -104,7 +104,7 @@
                                             </div>
                                             @php
                                                 $currentUserId = Auth::id();
-                                                $isCurrentUser = $currentUserId === 1 || 
+                                                
                                                               (Auth::user()->agent && Auth::user()->agent->id === $inactifAgent?->id);
                                             @endphp
                                             @if ($isCurrentUser)
