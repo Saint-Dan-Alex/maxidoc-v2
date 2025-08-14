@@ -200,36 +200,19 @@
                     @endforeach
                 </select>
             </div>
-            {{-- <div class="col-lg-4">
-                <label for="">Division</label>
-                <select class="form-select form-control" name="division_id" wire:model="division_id"
-                    aria-label="Default select example" @disabled($isReadyOnly['division'])>
-                    <option selected value="">Selectionnez</option>
-                    @foreach ($divisions as $division)
-                        <option value="{{ $division->id }}">{{ $division->libelle }}</option>
-                    @endforeach
-                </select>
-            </div> --}}
+
             <div class="col-lg-4">
                 <label for="">Service</label>
-                <select class="form-select form-control" name="sevice_id"
-                    wire:model='service_id'aria-label="Default select example" @disabled($isReadyOnly['service'])>
+                <select class="form-select form-control" name="service_id"
+                    wire:model='service_id' aria-label="Default select example" @disabled($isReadyOnly['service'])>
                     <option selected value="">Selectionnez</option>
                     @foreach ($services as $service)
                         <option value="{{ $service->id }}">{{ $service->titre }}</option>
                     @endforeach
                 </select>
+                @error('service_id') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
-            {{-- <div class="col-lg-4">
-                <label for="">Section</label>
-                <select class="form-select form-control" name="section_id" wire:model="section_id"
-                    aria-label="Default select example" @disabled($isReadyOnly['section'])>
-                    <option selected value="">Selectionnez</option>
-                    @foreach ($sections as $section)
-                        <option value="{{ $section->id }}">{{ $section->titre }}</option>
-                    @endforeach
-                </select>
-            </div> --}}
+
             <div class="col-lg-4">
                 <label for="">Grade</label>
                 <select class="form-select form-control" name="grade_id" wire:model='grade_id' aria-label="Default select example" required>
@@ -242,9 +225,9 @@
             </div>
             <div class="col-lg-4">
                 <label for="">Fonction</label>
-                <select class="form-select form-control" name="fonction_type" caria-label="Default select example"
+                <select class="form-select form-control" name="fonction_type" aria-label="Default select example"
                     wire:model='fonction_type' @disabled($isReadyOnly['fonction_type']) required>
-                    <option value="">Selectionnez </option>
+                    <option value="">Selectionnez</option>
                     @foreach($fonctions as $fonction)
                         <option value="{{ $fonction->id }}">{{ $fonction->titre }}</option>
                     @endforeach

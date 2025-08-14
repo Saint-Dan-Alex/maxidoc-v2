@@ -42,12 +42,9 @@ class CreatePersonnelForm extends Component
     public $grades;
     public $directions;
     public $direction_id;
-    public $divisions;
-    public $division_id;
     public $services;
     public $service_id;
     public $fonctions;
-    public $fonction;
     public $fonction_type;
     public $chef_type;
     public $sec_type;
@@ -57,8 +54,6 @@ class CreatePersonnelForm extends Component
     public $csv = false;
     public $csc = false;
     public $fonction_id = null;
-    public $sections;
-    public $section_id;
     public $grade_id;
 
     public $isReadyOnly = [
@@ -76,48 +71,54 @@ class CreatePersonnelForm extends Component
         $this->lieus = LieuAffectation::select('id', 'titre')->get();
         $this->grades = Grade::select('id', 'titre')->get();
         $this->directions = collect();
-        $this->divisions = collect();
         $this->services = collect();
-        $this->sections = collect();
         
-        // Récupération des fonctions avec logging
-        $this->fonctions = Fonction::select('id', 'titre')->get();
-        
-        // Log pour débogage
+        // Chargement initial des fonctions
+        $this->loadFonctions();
+    }
+    
+    protected function loadFonctions()
+    {
+        $this->fonctions = Fonction::select('id', 'titre')
+            ->orderBy('titre')
+            ->get();
+            
         \Log::info('Fonctions chargées : ', $this->fonctions->toArray());
-        \Log::info('Nombre de fonctions : ' . $this->fonctions->count());
     }
     public function updatedLieuId()
     {
+        $this->reset(['direction_id', 'service_id']);
         $this->isReadyOnly['direction'] = false;
-        $this->directions = LieuAffectation::findOrFail($this->lieu_id)->directions ?? collect();
+        $this->directions = LieuAffectation::with('directions')
+            ->findOrFail($this->lieu_id)
+            ->directions
+            ->sortBy('titre') ?? collect();
     }
     public function updatedDirectionId()
     {
-        $this->isReadyOnly['division'] = false;
-        $this->divisions = Direction::findOrFail($this->direction_id)->divisions ?? collect();
-        if ($this->divisions->count() == 0) {
-            # code...
+        $this->reset('service_id');
+        
+        if ($this->direction_id) {
             $this->isReadyOnly['service'] = false;
-        }
-    }
-
-    public function updatedDivisionId()
-    {
-        $this->isReadyOnly['service'] = false;
-        $this->services = Division::findOrFail($this->division_id)->services ?? collect();
-        if ($this->services->count() == 0) {
-            # code...
-            $this->isReadyOnly['section'] = false;
-            $this->isReadyOnly['fonction_type'] = false;
+            $this->services = Direction::with('services')
+                ->findOrFail($this->direction_id)
+                ->services
+                ->sortBy('titre') ?? collect();
+        } else {
+            $this->isReadyOnly['service'] = true;
+            $this->services = collect();
         }
     }
 
     public function updatedServiceId()
     {
-        $this->isReadyOnly['section'] = false;
-        $this->isReadyOnly['fonction_type'] = false;
-        $this->sections = Service::findOrFail($this->service_id)->sections ?? collect();
+        // Activer le champ de fonction lorsqu'un service est sélectionné
+        if ($this->service_id) {
+            $this->isReadyOnly['fonction_type'] = false;
+        } else {
+            $this->isReadyOnly['fonction_type'] = true;
+            $this->fonction_type = null;
+        }
     }
 
     public function updatedFonctionType()
