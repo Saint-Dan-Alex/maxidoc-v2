@@ -384,171 +384,81 @@ class PersonnelController extends Controller
 
     public function update(Request $request, $id)
     {
-        // dd($request);
         try {
-            $nom = $request->nom;
-            $prenom = $request->post_nom;
-            // dd([
-            //     'request' => $request,
-            // ]);
+            // Validation des données
+            $request->validate([
+                'nom' => 'required',
+                'post_nom' => 'required',
+                'prenom' => 'required',
+                'matricule' => 'required|unique:agents,matricule,' . $id,
+                'direction_id' => 'required|exists:directions,id',
+                'fonction_id' => 'required|exists:fonctions,id',
+                'sexe' => 'required',
+            ]);
+
             $agent = Agent::findOrFail($id);
             $user = $agent->user;
 
-            $nomSansAccents = $this->removeAccents($nom);
-            $prenomSansAccents = $this->removeAccents($prenom);
-
+            // Génération de l'email
+            $nomSansAccents = $this->removeAccents($request->nom);
+            $prenomSansAccents = $this->removeAccents($request->post_nom);
             $newMail = Str::lower($nomSansAccents) . '.' . Str::lower($prenomSansAccents) . '@regideso.cd';
 
-            $existingUser = User::where('email', $newMail)->where('id', '!=', $user->id)->first();
-            if ($existingUser) {
-                $content = json_encode([
-                    'name' => 'Ressources humaines',
-                    'statut' => 'error',
-                    'message' => 'La modification de l\'agent ' . $agent->prenom . ' ' . $agent->nom . ' a échoué. L\'email existe déjà.',
-                ]);
-                session()->flash('session', $content);
-                return redirect()->route('regidoc.personnels.index');
+            // Vérification de l’unicité de l’email
+            if (User::where('email', $newMail)->where('id', '!=', $user->id)->exists()) {
+                return back()->with('error', 'Cet email est déjà utilisé par un autre utilisateur.');
             }
 
-            // Vérifier si le matricule existe déjà dans la table agents
-            $existingAgent = Agent::where('matricule', $request->matricule)->where('id', '!=', $agent->id)->first();
-            if ($existingAgent) {
-                $content = json_encode([
-                    'name' => 'Ressources humaines',
-                    'statut' => 'error',
-                    'message' => 'La modification de l\'agent ' . $agent->prenom . ' ' . $agent->nom . ' a échoué. Vous avez déjà un agent avec ce matricule.',
-                ]);
-                session()->flash('session', $content);
-                return redirect()->route('regidoc.personnels.index');
-            }
-
+            // Mise à jour de l'utilisateur
             $user->update([
                 'email' => $newMail,
                 'name' => $request->prenom . ' ' . $request->nom,
             ]);
 
-            $agent->nom = Str::ucfirst(Str::lower($request->nom));
-            $agent->post_nom = Str::ucfirst(Str::lower($request->post_nom));
-            $agent->prenom = Str::ucfirst(Str::lower($request->prenom));
-            $agent->sexe = $request->sexe;
-            $agent->province = $request->province ?? null;
-            $agent->ville = $request->ville ?? null;
-            $agent->lieu_naiss = $request->lieu_naiss ?? null;
-            $agent->date_naiss = Carbon::parse($request->date_naiss) ?? null;
-            $agent->etat_civil = $request->etat_civil ?? null;
-            $agent->nbr_enfant = $request->nbr_enfant ?? null;
-            $agent->nationalite = $request->nationalite ?? null;
-            $agent->image = $request->hasFile('image') ? (new Image())->handle($request, 'image', 'agents') : $agent->image;
-            $agent->slug = Str::slug($request->nom . ' ' . $request->post_nom . ' ' . $request->prenom);
-            $agent->matricule = $request->matricule;
-            $agent->direction_id = $request->direction_id ?? null;
-            $agent->division_id = $request->division_id ?? null;
-            $agent->service_id = $request->sevice_id ?? null;
-            $agent->section_id = $request->section_id ?? null;
-            $agent->grade_id = $request->grade_id ?? null;
-            $agent->lieu_id = $request->lieu_id ?? null;
-            $agent->updated_by = Auth::user()->id;
-            if ($request->fonction_id != null) {
-                $fct = Fonction::find($request->fonction_id);
-                $titre = $fct->titre;
-                if (Str::startsWith($titre, 'Directeur')) {
-                    $dir = Direction::find($request->direction_id);
-                    $dir->responsable_id = $agent->id;
-                    $dir->save();
-                } elseif (Str::startsWith($titre, 'Chef Division')) {
-                    $div = Division::find($request->division_id);
-                    if ($div) {
-                        $div->responsable_id = $agent->id;
-                        $div->save();
-                    }
-                } elseif (Str::startsWith($titre, 'Chef Service')) {
-                    $ser = Service::find($request->service_id);
-                    if ($ser) {
-                        $ser->responsable_id = $agent->id;
-                        $ser->save();
-                    }
-                } elseif (Str::startsWith($titre, 'Chef Section')) {
-                    $sec = Section::find($request->section_id);
-                    if ($sec) {
-                        $sec->responsable_id = $agent->id;
-                        $sec->save();
-                    }
-                } elseif (Str::startsWith($titre, 'Secrétaire Direction') || Str::startsWith($titre, 'Secretaire Direction')) {
-                    $direction = Direction::find($request->direction_id);
-                    if ($direction) {
-                        Secretariat::firstOrCreate([
-                            'titre' => 'Secrétaire ' . $direction->titre,
-                        ], [
-                            'direction_id' => $direction->id,
-                            'responsable_id' => $agent->id,
-                        ]);
-                    }
-                } elseif (Str::startsWith($titre, 'Secrétaire Division') || Str::startsWith($titre, 'Secretaire Division')) {
-                    $division = Division::find($request->division_id);
-                    if ($division) {
-                        Secretariat::firstOrCreate([
-                            'titre' => 'Secrétaire ' . $division->libelle,
-                        ], [
-                            'division_id' => $division->id,
-                            'responsable_id' => $agent->id,
-                        ]);
-                    }
-                } elseif (Str::startsWith($titre, 'Secrétaire Service') || Str::startsWith($titre, 'Secretaire Service')) {
-                    $service = Service::find($request->service_id);
-                    if ($service) {
-                        Secretariat::firstOrCreate([
-                            'titre' => 'Secrétaire ' . $service->titre,
-                        ], [
-                            'service_id' => $service->id,
-                            'responsable_id' => $agent->id,
-                        ]);
-                    }
-                } elseif (Str::startsWith($titre, 'Secrétaire') || Str::startsWith($titre, 'Secretaire')) {
-                    Secretariat::firstOrCreate([
-                        'titre' => $titre,
-                    ], [
-                        'direction_id' => $request->direction_id,
-                        'responsable_id' => $agent->id,
-                    ]);
-                } elseif (Str::startsWith($titre, 'Assistant')) {
-                    Assistanat::FirstOrCreate([
-                        "titre" => $titre,
-                    ], [
-                        "direction_id" => $request->direction_id,
-                        "responsable_id" => $agent->id,
-                    ]);
-                }
-                $agent->fonction_id = $request->fonction_id;
-            }
-            $agent->save();
+            // Mise à jour de l'agent
+            $agent->update([
+                'nom' => Str::ucfirst(Str::lower($request->nom)),
+                'post_nom' => Str::ucfirst(Str::lower($request->post_nom)),
+                'prenom' => Str::ucfirst(Str::lower($request->prenom)),
+                'sexe' => $request->sexe,
+                'lieu_naiss' => $request->lieu_naiss ?? null,
+                'date_naiss' => $request->date_naiss ? Carbon::parse($request->date_naiss) : null,
+                'etat_civil' => $request->etat_civil ?? null,
+                'nbr_enfant' => $request->nbr_enfant ?? null,
+                'nationalite' => $request->nationalite ?? null,
+                'province' => $request->province ?? null,
+                'ville' => $request->ville ?? null,
+                'matricule' => $request->matricule,
+                'image' => $request->hasFile('image') ? (new Image())->handle($request, 'image', 'agents') : $agent->image,
+                'slug' => Str::slug($request->nom . ' ' . $request->post_nom . ' ' . $request->prenom),
+                'direction_id' => $request->direction_id,
+                'division_id' => $request->division_id ?? null,
+                'service_id' => $request->service_id ?? null,
+                'section_id' => $request->section_id ?? null,
+                'grade_id' => $request->grade_id ?? null,
+                'lieu_id' => $request->lieu_id ?? null,
+                'fonction_id' => $request->fonction_id,
+                'updated_by' => Auth::id(),
+            ]);
 
+            // Mise à jour de l'adresse
             $adresse = $agent->adresse ?? new Adresse();
-            $adresse->agent_id = $agent->id;
-            $adresse->phone = $request->telephone;
-            $adresse->residence = $request->adresse;
-            $adresse->save();
+            $adresse->fill([
+                'agent_id' => $agent->id,
+                'phone' => $request->telephone,
+                'email' => $newMail,
+                'residence' => $request->adresse,
+            ])->save();
 
-            $content = json_encode([
-                'name' => 'Ressources humaines',
-                'statut' => 'success',
-                'message' => 'La modification des informations de l\'agent a réussie avec succès !',
-            ]);
+            // Traitement du rôle selon la fonction
+            $this->updateResponsabilite($agent, $request);
+
+            return redirect()->route('regidoc.personnels.index')->with('success', 'Agent modifié avec succès.');
         } catch (\Throwable $th) {
-            // dd($th);
-            $content = json_encode([
-                'name' => 'Ressources humaines',
-                'statut' => 'error',
-                'message' => 'La modification de l\'agent a échoué !',
-            ]);
+            return back()->with('error', 'Erreur lors de la modification : ' . $th->getMessage());
         }
-
-        session()->flash(
-            'session',
-            $content
-        );
-
-        return back();
     }
+
 
     public function archived(Request $request, $agent, $doc)
     {
