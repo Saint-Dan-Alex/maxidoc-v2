@@ -1225,12 +1225,41 @@ use Illuminate\Support\Facades\Storage;
             @php
                 $urls = [];
                 foreach ($tache->documents as $document) {
-                    array_push($urls, [
-                        'link' => files($document->document)->link,
-                        'id' => $document->id,
-                        'tache_id' => $tache->id ?? '',
-                    ]);
+                    try {
+                        $fileInfo = files($document->document);
+                        $url = is_object($fileInfo) ? $fileInfo->link : '';
+                        
+                        // Ajouter des logs pour le débogage
+                        \Log::info('Génération URL document', [
+                            'document_id' => $document->id,
+                            'document_data' => $document->document,
+                            'url_generée' => $url,
+                            'tache_id' => $tache->id ?? null
+                        ]);
+                        
+                        if ($url) {
+                            array_push($urls, [
+                                'link' => $url,
+                                'id' => $document->id,
+                                'tache_id' => $tache->id ?? '',
+                                'original_name' => is_object($fileInfo) ? $fileInfo->name : basename($url)
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('Erreur lors de la génération de l\'URL du document', [
+                            'document_id' => $document->id,
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                    }
                 }
+                
+                // Ajouter un log avec le nombre de documents traités
+                \Log::info('Documents traités pour la tâche', [
+                    'tache_id' => $tache->id ?? null,
+                    'nb_documents' => count($urls),
+                    'documents' => $urls
+                ]);
             @endphp
             <h6 class="mb-4">Toutes les pièces jointes</h6>
             <div class="doc-vignette d-flex gap-1 flex-wrap" data-url="{{ json_encode($urls) }}"></div>
@@ -1549,10 +1578,16 @@ use Illuminate\Support\Facades\Storage;
             }
         }
 
-        // Livewire.on('documentAdded', (e) => {
-        //     $(".doc-vignette").empty();
-        //     showFirstPageImg(e, $(".doc-vignette"));
-        // });
+        Livewire.on('documentAdded', function(e) {
+            // Vider les vignettes existantes
+            $(".doc-vignette").empty();
+            
+            // Mettre à jour l'attribut data-url avec les nouvelles URLs
+            $(".doc-vignette").attr('data-url', JSON.stringify(e));
+            
+            // Régénérer les vignettes
+            showFirstPageImg(e, $(".doc-vignette")[0]);
+        });
 
         Livewire.on('documentChanged', function(evt) {
             $('#pdf-contents').empty();

@@ -33,15 +33,10 @@ use Illuminate\Support\Facades\Log;
 class TacheController extends Controller
 {
     /**
-     * Construit une URL valide pour un document
+     * Construit une URL valide pour un document en utilisant la fonction files()
+     * pour assurer la cohérence avec le reste de l'application
      *
-     * @param string $documentPath Chemin du document depuis la base de données
-     * @return string URL complète du document
-     */
-    /**
-     * Construit une URL valide pour un document
-     *
-     * @param string $documentPath Chemin du document depuis la base de données
+     * @param mixed $documentPath Chemin du document depuis la base de données
      * @return string URL complète du document
      */
     public static function buildDocumentUrl($documentPath)
@@ -50,91 +45,42 @@ class TacheController extends Controller
             return '';
         }
 
-        // Si c'est déjà un tableau, le traiter directement
-        if (is_array($documentPath)) {
-            // Si le tableau contient une clé 'download_link'
-            if (isset($documentPath['download_link'])) {
-                $documentPath = $documentPath['download_link'];
-            } 
-            // Si c'est un tableau avec un premier élément contenant download_link
-            elseif (isset($documentPath[0]) && is_array($documentPath[0]) && isset($documentPath[0]['download_link'])) {
-                $documentPath = $documentPath[0]['download_link'];
-            }
-            // Si c'est un tableau simple avec des chaînes
-            elseif (is_string($documentPath[0])) {
-                $documentPath = $documentPath[0];
-            }
-        } 
-        // Si c'est une chaîne JSON, essayer de la décoder
-        elseif (is_string($documentPath)) {
-            $decoded = json_decode($documentPath, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                // Si c'est un tableau avec une clé download_link
-                if (is_array($decoded) && isset($decoded['download_link'])) {
-                    $documentPath = $decoded['download_link'];
-                } 
-                // Si c'est un tableau avec un premier élément contenant download_link
-                elseif (is_array($decoded) && isset($decoded[0]['download_link'])) {
-                    $documentPath = $decoded[0]['download_link'];
-                }
-                // Si c'est un tableau simple
-                elseif (is_array($decoded) && !empty($decoded[0])) {
-                    $documentPath = $decoded[0];
-                }
-            }
-        }
-
-        // Nettoyer le chemin
-        $documentPath = ltrim($documentPath, '[\"\'');
-        $documentPath = rtrim($documentPath, '\\\"\\]}');
-
-        // Si c'est déjà une URL complète, la retourner telle quelle
-        if (Str::startsWith($documentPath, ['http://', 'https://', '/'])) {
-            return $documentPath;
-        }
-
-        // Remplacer les antislashs par des slashs pour la cohérence
-        $documentPath = str_replace('\\', '/', $documentPath);
-
-        // Si le chemin contient 'documentsJuly2025', le corriger en 'July2025/'
-        if (str_contains($documentPath, 'documentsJuly2025')) {
-            $documentPath = str_replace('documentsJuly2025', 'July2025/', $documentPath);
-        }
-        // Sinon, si le chemin contient 'July2025' mais pas de slash après, l'ajouter
-        elseif (str_contains($documentPath, 'July2025') && 
-                !str_contains($documentPath, 'July2025/') && 
-                !str_ends_with($documentPath, 'July2025')) {
-            $documentPath = str_replace('July2025', 'July2025/', $documentPath);
-        }
-
-        // Si le nom de fichier commence par 'documents', nettoyer le chemin
-        if (Str::startsWith($documentPath, 'documents')) {
-            $documentPath = ltrim($documentPath, 'documents');
-            $documentPath = ltrim($documentPath, '/');
-        }
-
-        // Construire le chemin relatif du stockage
-        $relativePath = 'documents/' . ltrim($documentPath, '/');
+        // Utiliser la fonction files() pour générer l'URL de manière cohérente
+        $fileInfo = files($documentPath);
         
-        // Vérifier si le fichier existe directement
-        if (Storage::disk('public')->exists($relativePath)) {
-            return asset('storage/' . $relativePath);
-        }
-
-        // Si le fichier n'existe pas, essayer de le trouver directement dans le dossier July2025
-        $filename = basename($documentPath);
-        // Vérifier si le fichier a une extension, sinon essayer d'ajouter .pdf
-        if (!preg_match('/\.[a-z0-9]+$/i', $filename)) {
-            $filename .= '.pdf';
+        // Si files() retourne une collection, prendre le premier élément
+        if (is_object($fileInfo) && isset($fileInfo->link)) {
+            return $fileInfo->link;
         }
         
-        $directPath = 'documents/July2025/' . $filename;
-        if (Storage::disk('public')->exists($directPath)) {
-            return asset('storage/' . $directPath);
+        // Si c'est une collection, prendre le premier élément
+        if (is_iterable($fileInfo) && $fileInfo->isNotEmpty()) {
+            return $fileInfo->first()->link ?? '';
         }
-
-        // Si on arrive ici, retourner le chemin même s'il n'existe pas (pour éviter les erreurs)
-        return asset('storage/' . $relativePath);
+        
+        // Si on arrive ici, essayer de construire l'URL manuellement
+        if (is_string($documentPath)) {
+            // Si c'est déjà une URL complète, la retourner telle quelle
+            if (Str::startsWith($documentPath, ['http://', 'https://', '/'])) {
+                return $documentPath;
+            }
+            
+            // Nettoyer le chemin
+            $documentPath = ltrim($documentPath, '[\"\'');
+            $documentPath = rtrim($documentPath, '\\\"\\]}');
+            
+            // Remplacer les antislashs par des slashs pour la cohérence
+            $documentPath = str_replace('\\', '/', $documentPath);
+            
+            // Nettoyer les préfixes inutiles
+            $documentPath = preg_replace('#^/+#', '', $documentPath);
+            $documentPath = preg_replace('#^storage/#', '', $documentPath);
+            
+            // Construire l'URL complète
+            return asset('storage/' . $documentPath);
+        }
+        
+        return '';
     }
     public function index()
     {

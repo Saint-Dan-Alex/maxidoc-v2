@@ -179,7 +179,7 @@
                                             <div class="d-flex align-items-center">
                                                 <div class="form-check form-switch">
                                                     <input type="checkbox" id="permission-9" name="echeanche"
-                                                        class="echeance-toggle form-check-input" value="" checked>
+                                                        class="echeance-toggle form-check-input" value="" >
                                                 </div>
                                                 <label for="permission-9" class="mb-0" style="font-size: 14px">
                                                     Ajouter une échéance</label>
@@ -198,7 +198,7 @@
                                         <div class="col-lg-12 mb-2 echeance d-none">
                                             <label class="mb-2">Date d'échéance</label>
                                             <input type="datetime-local" class="form-control" placeholder="Objectif assigné"
-                                                name="date_fin">
+                                                name="date_fin" min="{{ now()->format('Y-m-d\TH:i') }}">
                                         </div>
 
                                         <div class="col-lg-12">
