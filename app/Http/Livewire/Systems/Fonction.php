@@ -35,8 +35,7 @@ class Fonction extends Component
         // Gestion de la recherche
         if ($this->search) {
             $query->where(function($q) {
-                $q->where('titre', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%');
+                $q->where('titre', 'like', '%' . $this->search . '%');
             });
         }
 

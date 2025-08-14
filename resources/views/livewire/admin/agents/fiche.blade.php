@@ -570,7 +570,7 @@
                                                                         </div>
                                                                         <div class="phone">
                                                                             <p>Lieu d'affectation</p>
-                                                                            <h6>{{ $agent?->lieu?->titre ?? 'Non Specifié' }}
+                                                                            <h6>{{ $agent?->lieu?->titre ?: 'Non Specifié' }}
                                                                             </h6>
                                                                         </div>
                                                                     </div>
@@ -582,7 +582,7 @@
                                                                         </div>
                                                                         <div class="infos">
                                                                             <p>Direction</p>
-                                                                            <h6>{{ $agent?->direction?->titre ?? 'Non Specifié' }}
+                                                                            <h6>{{ $agent?->direction?->titre ?: 'Non Specifié' }}
                                                                             </h6>
                                                                         </div>
                                                                     </div>
@@ -604,25 +604,25 @@
                                                     <div class="col-lg-3">
                                                         <div class="items">
                                                             <p>Prenom </p>
-                                                            <h6>{{ $agent?->prenom ?? 'Non Specifié' }}</h6>
+                                                            <h6>{{ $agent?->prenom ?: 'Non Specifié' }}</h6>
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-3">
                                                         <div class="items">
                                                             <p>Nom</p>
-                                                            <h6>{{ $agent?->nom ?? 'Non Specifié' }}</h6>
+                                                            <h6>{{ $agent?->nom ?: 'Non Specifié' }}</h6>
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-3">
                                                         <div class="items">
                                                             <p>Post-nom</p>
-                                                            <h6>{{ $agent?->post_nom ?? 'Non Specifié' }}</h6>
+                                                            <h6>{{ $agent?->post_nom ?: 'Non Specifié' }}</h6>
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-3">
                                                         <div class="items">
                                                             <p>Sexe</p>
-                                                            <h6>{{ $agent?->sexe ?? 'Non Specifié' }}</h6>
+                                                            <h6>{{ $agent?->sexe ?: 'Non Specifié' }}</h6>
                                                         </div>
                                                     </div>
                                                     {{-- <div class="col-lg-3">
@@ -678,28 +678,28 @@
                                                     <div class="col-lg-3">
                                                         <div class="items">
                                                             <p>Direction </p>
-                                                            <h6>{{ $agent?->direction?->titre ?? 'Non Specifié' }}
+                                                            <h6>{{ $agent?->direction?->titre ?: 'Non Specifié' }}
                                                             </h6>
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-3">
+                                                    {{-- <div class="col-lg-3">
                                                         <div class="items">
                                                             <p>Division</p>
                                                             <h6>{{ $agent?->division?->libelle ?? 'Non Specifié' }}
                                                             </h6>
                                                         </div>
-                                                    </div>
+                                                    </div> --}}
                                                     <div class="col-lg-3">
                                                         <div class="items">
                                                             <p>Service </p>
-                                                            <h6>{{ $agent?->service?->titre ?? 'Non Specifié' }}
+                                                            <h6>{{ $agent?->service?->titre ?: 'Non Specifié' }}
                                                             </h6>
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-3">
                                                         <div class="items">
                                                             <p>Fonction</p>
-                                                            <h6>{{ $agent?->poste?->titre ?? 'Non Specifié' }}</h6>
+                                                            <h6>{{ $agent?->poste?->titre ?: 'Non Specifié' }}</h6>
                                                         </div>
                                                     </div>
                                                 </div>
