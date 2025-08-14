@@ -29,6 +29,9 @@
                     </label>
                 </div>
             </div>
+            <div class="col-lg-6">
+                <input type="text" class="form-control" name="prenom" placeholder="Prénom" wire:model='prenom'>
+            </div>
             <div class="col-lg-6 mt-4">
                 <input type="text" class="form-control" name="nom" placeholder="Nom" wire:model='nom' required>
             </div>
@@ -36,9 +39,7 @@
                 <input type="text" class="form-control" name="post_nom" wire:model='post_nom' placeholder="Post-nom"
                     required>
             </div>
-            <div class="col-lg-6">
-                <input type="text" class="form-control" name="prenom" placeholder="Prénom" wire:model='prenom'>
-            </div>
+           
             <div class="col-lg-6">
                 <select class="form-select form-control" name="sexe" wire:model='sexe'
                     aria-label="Default select example" required>

@@ -356,20 +356,16 @@ class CreatePersonnelForm extends Component
 
     private function updateNewMail()
     {
-        $nomSansAccents = $this->removeAccents($this->nom);
-        $prenomSansAccents = $this->removeAccents($this->post_nom);
-        $this->newMail = Str::lower($nomSansAccents) . '.' . Str::lower($prenomSansAccents) . '@lerexcompetroleum.com';
+        $nomSansAccents = $this->removeAccents($this->prenom);
+        $prenomSansAccents = $this->removeAccents($this->nom);
+        $this->newMail = Str::lower($nomSansAccents) . '' . Str::lower($prenomSansAccents) . '@lerexcompetroleum.com';
     }
 
 
 
     public function render()
     {
-        if ($this->direction_id) {
-            # code...
-            $this->isReadyOnly['fonction_type'] = false;
-            $this->fonctions = Fonction::where('direction_id', $this->direction_id)->get();
-        }
+        $this->fonctions = Fonction::all();
         return view('livewire.admin.agents.create-personnel-form');
     }
 
