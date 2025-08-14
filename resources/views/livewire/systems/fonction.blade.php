@@ -57,10 +57,10 @@
                 <thead>
                     <tr>
                         <th scope="col">Nom</th>
-                        <th scope="col">Service</th>
+                        {{-- <th scope="col">Service</th>
                         <th scope="col">Direction</th>
                         <th scope="col">Division</th>
-                        <th scope="col">Section</th>
+                        <th scope="col">Section</th> --}}
                         <th scope="col">Nbe Agents</th>
                         <th scope="col">Action</th>
                     </tr>
@@ -69,10 +69,10 @@
                     @forelse ($fonctions as $fonction)
                         <tr>
                             <td class="text-truncate"> {{ $fonction->titre }} </td>
-                            <td class="text-truncate"> {{ $fonction->service?->titre }} </td>
+                            {{-- <td class="text-truncate"> {{ $fonction->service?->titre }} </td>
                             <td class="text-truncate"> {{ $fonction->direction?->titre }} </td>
-                            <td class="text-truncate"> {{ $fonction->division?->libelle }} </td>
-                            <td> {{-- $fonction->departement?->direction->titre --}} </td>
+                            <td class="text-truncate"> {{ $fonction->division?->libelle }} </td> --}}
+                            {{-- <td> $fonction->departement?->direction->titre </td> --}}
                             <td class="text-truncate"> {{ $fonction->agents->count() }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">

@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
             DirectionSeeder::class,
             ServiceSeeder::class,
             FonctionSeeder::class,
+            AgentSeeder::class,
         ]);
 
     }
