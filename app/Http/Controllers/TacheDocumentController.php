@@ -81,6 +81,7 @@ class TacheDocumentController extends Controller
 
         // Associer le document à la tâche dans la table tache_documents
         $tache->documents()->attach($document->id, [
+            'created_by' => Auth::id(),
             'created_at' => now(),
             'updated_at' => now()
         ]);
@@ -149,7 +150,7 @@ class TacheDocumentController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            \Log::error('Erreur lors de la génération de l\'aperçu PDF: ' . $e->getMessage());
+            Log::error('Erreur lors de la génération de l\'aperçu PDF: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Impossible de générer l\'aperçu du PDF.'

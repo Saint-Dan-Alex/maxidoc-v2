@@ -263,8 +263,7 @@ class TacheController extends Controller
         if ($request->has('parent_id')) {
             $newDoc = $tache->tacheParent?->documents->first();
             if ($newDoc) {
-                $tache->documents()->attach($newDoc->id);
-
+                $tache->documents()->attach($newDoc->id, ['created_by' => Auth::id()]);
                 $newDoc->followers()->attach($followers->pluck('id'));
 
                 if ($newDoc->confidentiel) {
@@ -288,9 +287,16 @@ class TacheController extends Controller
 
         if ($request->has('doc_id')) {
             $newDoc = Document::findOrFail($request->doc_id);
-            $tache->documents()->attach($newDoc->id);
+            $tache->documents()->attach($newDoc->id, ['created_by' => Auth::id()]);
 
             $newDoc->followers()->attach($followers->pluck('id'));
+            
+            // Notifier les followers du document
+            foreach ($followers as $follower) {
+                if ($follower && $follower->user) {
+                    event(new TacheCreated($tache, $follower->id, 'Un nouveau document a été attaché à la tâche : ' . $tache->titre));
+                }
+            }
 
             if ($newDoc->confidentiel) {
                 if (is_countable($followers)) {
@@ -376,9 +382,16 @@ class TacheController extends Controller
             //     'key' => 'view_document',
             // ]);
 
-            $tache->documents()->attach($document->id);
+            $tache->documents()->attach($document->id, ['created_by' => Auth::id()]);
 
             $document->followers()->attach($followers);
+            
+            // Notifier les followers du nouveau document
+            foreach ($followers as $follower) {
+                if ($follower && $follower->user) {
+                    event(new TacheCreated($tache, $follower->id, 'Un nouveau document a été créé et attaché à la tâche : ' . $tache->titre));
+                }
+            }
         }
 
         if ($request->hasFile('documents')) {
@@ -426,9 +439,13 @@ class TacheController extends Controller
                     'created_by' => Auth::user()->agent->id,
                 ]);
 
-                $tache->documents()->attach($document->id);
+                $tache->documents()->attach($document->id, ['created_by' => Auth::id()]);
                 foreach ($followers as $follower) {
                     $document->followers()->attach($follower);
+                    // Notifier chaque follower du nouveau document
+                    if ($follower && $follower->user) {
+                        event(new TacheCreated($tache, $follower->id, 'Un nouveau document a été téléversé et attaché à la tâche : ' . $tache->titre));
+                    }
                 }
             }
         }
@@ -1025,7 +1042,7 @@ class TacheController extends Controller
                 ]);
 
                 // Attacher le document à la tâche (relation many-to-many)
-                $tache->documents()->attach($document->id);
+                $tache->documents()->attach($document->id, ['created_by' => Auth::id()]);
             }
         }
 
@@ -1368,7 +1385,7 @@ class TacheController extends Controller
 
         } catch (\Exception $e) {
             // En cas d'erreur, on enregistre le message d'erreur dans les logs et on retourne un message d'erreur à l'utilisateur
-            \Log::error($e->getMessage());
+            Log::error($e->getMessage());
             return redirect()->back()->with('error', 'L\'ajout des fichiers a échoué. Veuillez réessayer.');
         }
     }
