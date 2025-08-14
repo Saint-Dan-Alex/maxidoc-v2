@@ -69,9 +69,14 @@
                                                 <p>{{ $actifAgent?->poste?->titre }}</p>
                                             </div>
                                             @php
-                                                $currentUserId = Auth::id();
-                                                $isCurrentUser = $currentUserId === 1 || 
-                                                              (Auth::user()->agent && Auth::user()->agent->id === $actifAgent?->id);
+                                                $isCurrentUser = false;
+                                                if (Auth::user()->id == 1) {
+                                                    // Pour le superadmin, on compare directement avec l'ID de l'utilisateur
+                                                    $isCurrentUser = Auth::id() == $actifAgent?->user_id;
+                                                } else if (Auth::user()->agent) {
+                                                    // Pour les autres utilisateurs, on vérifie l'agent associé
+                                                    $isCurrentUser = Auth::user()->agent->id == $actifAgent?->id;
+                                                }
                                             @endphp
                                             @if ($isCurrentUser)
                                                 <small class="badge bg-info ms-3" style="font-size:8px">Vous</small>
@@ -103,9 +108,14 @@
                                                 <p>{{ $inactifAgent?->poste?->titre }}</p>
                                             </div>
                                             @php
-                                                $currentUserId = Auth::id();
-                                                
-                                                              (Auth::user()->agent && Auth::user()->agent->id === $inactifAgent?->id);
+                                                $isCurrentUser = false;
+                                                if (Auth::user()->id == 1) {
+                                                    // Pour le superadmin, on compare directement avec l'ID de l'utilisateur
+                                                    $isCurrentUser = Auth::id() == $inactifAgent?->user_id;
+                                                } else if (Auth::user()->agent) {
+                                                    // Pour les autres utilisateurs, on vérifie l'agent associé
+                                                    $isCurrentUser = Auth::user()->agent->id == $inactifAgent?->id;
+                                                }
                                             @endphp
                                             @if ($isCurrentUser)
                                                 <small class="badge bg-info ms-3" style="font-size:8px">Vous</small>
