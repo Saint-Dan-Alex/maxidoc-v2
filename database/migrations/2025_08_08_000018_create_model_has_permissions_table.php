@@ -40,7 +40,7 @@ return new class extends Migration
         'Super Admin' => [ 
             'Gérer le personnel',
             'Voir les parametres','Voir les lieux d\'affectations','Voir les Secretaires',
-            'Voir les Assistants','Voir les Fonctions','Voir les Services','Voir les Directions'
+            'Voir les Assistants','Voir les Fonctions','Voir les Services','Voir les Directions','Voir les Grades'
         ],
         'Directeur Générale' => collect($permissions)->keys()->filter(fn($name) => $name !== 'Voir les parametres')->toArray(),
         'Responsable de Direction' => collect($permissions)->keys()->filter(fn($name) => !in_array($name, [
