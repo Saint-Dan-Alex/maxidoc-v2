@@ -37,9 +37,10 @@ return new class extends Migration
 
     // 3. Attribution des permissions selon le rôle → utilisateur (model_id)
     $rolePermissions = [
-        'Super Admin' => [
+        'Super Admin' => [ 
             'Gérer le personnel',
-            'Voir les parametres',
+            'Voir les parametres','Voir les lieux d\'affectations','Voir les Secretaires',
+            'Voir les Assistants','Voir les Fonctions','Voir les Services','Voir les Directions'
         ],
         'Directeur Générale' => collect($permissions)->keys()->filter(fn($name) => $name !== 'Voir les parametres')->toArray(),
         'Responsable de Direction' => collect($permissions)->keys()->filter(fn($name) => !in_array($name, [
