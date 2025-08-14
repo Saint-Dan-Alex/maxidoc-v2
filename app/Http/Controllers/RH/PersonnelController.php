@@ -254,7 +254,7 @@ class PersonnelController extends Controller
         // $services = Service::select('id', 'titre')->orderby('titre', 'asc')->get();
         // $dossiers = Dossier::all();
 
-        $this->authorize('Gerer les personnels');
+        $this->authorize('Gérer le personnel');
 
         return view("regidoc.pages.rh.personnels.index")->with([
             // 'directions' => $directions,

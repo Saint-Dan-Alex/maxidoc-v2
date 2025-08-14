@@ -32,7 +32,12 @@ class DatabaseSeeder extends Seeder
         //         'module_id' => 4,
         //     ]
         // ]);
-        $this->call(AdminSeeder::class);
+        $this->call([
+            AdminSeeder::class,
+            DirectionSeeder::class,
+            ServiceSeeder::class,
+            FonctionSeeder::class,
+        ]);
 
     }
 }

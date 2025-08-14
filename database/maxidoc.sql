@@ -1843,7 +1843,7 @@ CREATE TABLE `menu_items` (
 
 INSERT INTO `menu_items` (`id`, `menu_id`, `parent_id`, `title`, `url`, `route`, `policy`, `target`, `icon_regular`, `icon_solid`, `order`, `parameters`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (25, 1, NULL, 'Gestion de tâches', '', 'regidoc.taches.index', 'Voir les taches', '_self', 'fi fi-rr-list-check fi-rr', 'fi fi-sr-list-check fi-sr', 3, NULL, '2022-10-15 09:59:25', '2022-10-15 09:59:25', NULL),
-(28, 1, NULL, 'Employés', '', 'regidoc.personnels.index', 'Gerer les personnels', '_self', 'fi fi-rr-users-alt fi-rr', 'fi fi-sr-users-alt fi-sr', 7, NULL, '2022-10-15 10:07:43', '2022-10-15 10:07:43', NULL),
+(28, 1, NULL, 'Employés', '', 'regidoc.personnels.index', 'Gérer le personnel', '_self', 'fi fi-rr-users-alt fi-rr', 'fi fi-sr-users-alt fi-sr', 7, NULL, '2022-10-15 10:07:43', '2022-10-15 10:07:43', NULL),
 (40, 1, NULL, 'Paramètres', '', NULL, 'Voir les parametres', '_self', 'fi fi-rr-settings fi-rr', 'fi fi-sr-settings fi-sr', 8, NULL, '2022-10-15 10:04:19', '2022-10-15 10:04:19', NULL),
 (48, 1, NULL, 'A-propos', '#', NULL, 'voir_le_menu_à_propos', '_blank', 'fi fi-rr-info fi-rr', 'fi fi-sr-info fi-sr', 10, NULL, '2022-10-15 10:04:19', '2022-10-15 10:04:19', '2023-07-10 06:09:10'),
 (52, 1, NULL, 'Archivage', '', 'regidoc.archivages.index', 'Voir les archives', '_self', 'fi fi-rr-box fi-rr', 'fi fi-sr-box fi-sr', 5, NULL, '2022-10-15 10:04:19', '2022-10-15 10:04:19', NULL),
@@ -3063,7 +3063,7 @@ INSERT INTO `permissions` (`id`, `name`, `guard_name`, `module_id`, `created_at`
 (3, 'Voir les taches', 'web', 3, '2023-07-26 10:56:11', '2023-07-26 10:56:11'),
 (4, 'Voir les documents', 'web', 4, '2023-07-26 11:06:21', '2023-07-26 11:06:21'),
 (5, 'Voir les archives', 'web', 5, '2023-07-26 11:25:51', '2023-07-26 11:25:51'),
-(6, 'Gerer les personnels', 'web', 6, '2023-07-26 11:31:15', '2023-07-26 11:31:15'),
+(6, 'Gérer le personnel', 'web', 6, '2023-07-26 11:31:15', '2023-07-26 11:31:15'),
 (7, 'Voir les parametres', 'web', 7, '2023-07-26 11:37:37', '2023-07-26 11:37:37'),
 (8, 'Voir les lieux d\'affectations', 'web', 7, '2023-07-26 11:51:06', '2023-07-26 11:51:06'),
 (9, 'Voir les Directions', 'web', 7, '2023-07-26 11:56:45', '2023-07-26 11:56:45'),

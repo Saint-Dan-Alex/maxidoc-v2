@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -17,7 +18,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->unsignedBigInteger('statut_id')->nullable()->default(1);
             $table->foreignId('parent_id')->nullable()->constrained('services')->nullOnDelete();
-
             $table->timestamps();
             $table->softDeletes();
 
