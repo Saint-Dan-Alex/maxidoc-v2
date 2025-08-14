@@ -1457,7 +1457,7 @@ public function update(Request $request, $id)
             $courrier->service_id = $destinataireAgent->service_id ?? null;
             $courrier->service_traitant_id = $destinataireAgent->direction_id ?? null;
         } else {
-            $courrier->departement_id = $request->get('service');
+            // $courrier->departement_id = $request->get('service');
             $courrier->service_id = $request->get('service');
             $courrier->service_traitant_id = $request->get('service_traitant');
         }
