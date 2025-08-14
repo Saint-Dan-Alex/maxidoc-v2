@@ -229,7 +229,7 @@
                     @endforeach
                 </select>
             </div> --}}
-            {{-- <div class="col-lg-4">
+            <div class="col-lg-4">
                 <label for="">Grade</label>
                 <select class="form-select form-control" name="grade_id" wire:model='grade_id' aria-label="Default select example" required>
                     <option selected value="">Selectionnez</option>
@@ -238,12 +238,12 @@
                     @endforeach
                 </select>
                 @error('grade_id') <span class="text-danger">{{ $message }}</span> @enderror
-            </div> --}}
+            </div>
             <div class="col-lg-4">
-                <label for="">Type Fonction</label>
+                <label for="">Fonction</label>
                 <select class="form-select form-control" name="fonction_type" caria-label="Default select example"
                     wire:model='fonction_type' @disabled($isReadyOnly['fonction_type']) required>
-                    <option value="">Selectionnez un type de fonction</option>
+                    <option value="">Selectionnez </option>
                     @foreach($fonctions as $fonction)
                         <option value="{{ $fonction->id }}">{{ $fonction->titre }}</option>
                     @endforeach

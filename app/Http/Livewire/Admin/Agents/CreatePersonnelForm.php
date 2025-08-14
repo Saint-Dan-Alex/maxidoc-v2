@@ -81,7 +81,7 @@ class CreatePersonnelForm extends Component
         $this->sections = collect();
         
         // Récupération des fonctions avec logging
-        $this->fonctions = Fonction::select('id', 'titre', 'description')->get();
+        $this->fonctions = Fonction::select('id', 'titre')->get();
         
         // Log pour débogage
         \Log::info('Fonctions chargées : ', $this->fonctions->toArray());
