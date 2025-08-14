@@ -84,9 +84,18 @@ class File
                     continue;
                 }
 
+                // Nettoyer le chemin avant de le stocker
+                $cleanFilePath = str_replace('\\', '/', $filePath);
+                $cleanFilePath = ltrim($cleanFilePath, '/'); // Supprimer les slashes en début de chaîne
+                
                 array_push($filesPath, [
-                    'download_link' => str_replace('\\', '/', $filePath),
+                    'download_link' => $cleanFilePath,
                     'original_name' => $file->getClientOriginalName(),
+                ]);
+                
+                \Log::info('Fichier stocké avec succès', [
+                    'chemin' => $cleanFilePath,
+                    'nom_original' => $file->getClientOriginalName()
                 ]);
             }
 

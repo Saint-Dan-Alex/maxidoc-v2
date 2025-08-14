@@ -135,9 +135,15 @@ if (!function_exists('files')) {
             if (!isset($file->download_link)) $file->download_link = '';
             if (!isset($file->original_name)) $file->original_name = basename($file->download_link);
             
-            // Nettoyer les chemins
-            $link = str_replace('\\', DIRECTORY_SEPARATOR, $file->download_link);
-            $url = str_replace('\\', '/', asset('storage') . DIRECTORY_SEPARATOR . $link);
+            // Nettoyer les chemins (remplacer les antislashs par des slashs)
+            $link = str_replace('\\', '/', $file->download_link);
+            
+            // Supprimer les préfixes inutiles
+            $link = preg_replace('#^/+#', '', $link); // Supprimer les slashes en début de chaîne
+            $link = preg_replace('#^storage/#', '', $link); // Supprimer le préfixe storage/ s'il existe
+            
+            // Construire l'URL complète
+            $url = asset('storage/' . $link);
             
             $fichier = new stdClass;
             $fichier->link = $url;

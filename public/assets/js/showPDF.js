@@ -641,9 +641,16 @@ function showFirstPageImg(url = [], parentContainer) {
     }
 }
 
-if ($(".doc-vignette") !== undefined) {
-    showFirstPageImg($(".doc-vignette").data("url"), $(".doc-vignette"));
-}
+// Initialiser les vignettes au chargement du document
+$(document).ready(function() {
+    const $docVignette = $(".doc-vignette");
+    if ($docVignette.length > 0) {
+        const urls = $docVignette.data("url");
+        if (urls && urls.length > 0) {
+            showFirstPageImg(urls, $docVignette[0]);
+        }
+    }
+});
 
 function changDoc(
     url,
