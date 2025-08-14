@@ -182,7 +182,7 @@
                                 </td>
                             @empty
                                 <td colspan="8" class="text-center">
-                                    Aucun courrier entrant
+                                    Aucun courrier interne
                                 </td>
                             </tr>
                         @endforelse

@@ -102,7 +102,7 @@
                                                 <option value="">Toutes</option>
                                                 @foreach ($lieus as $lieu)
                                                     <option value="{{ $lieu->id }}"
-                                                        @selected(Auth::user()->agent->lieu->id == $lieu->id)>
+                                                        @selected(Auth::user()->agent?->lieu?->id == $lieu->id)>
                                                         {{ $lieu->titre }}
                                                     </option>
                                                 @endforeach

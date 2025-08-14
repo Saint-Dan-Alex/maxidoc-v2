@@ -631,10 +631,18 @@ class DocumentController extends Controller
     {
         $classeurs = Classeur::all();
         $dossiers = Dossier::all();
+        
+        // Récupérer les deux premiers documents avec is_default = 1
+        $defaultPdfs = Document::where('is_default', 1)
+            ->orderBy('id', 'asc')
+            ->take(2)
+            ->get();
+            
         return view('regidoc.pages.documents.show-doc')->with([
             'find_document' => $document,
             'classeurs' => $classeurs,
             'dossiers' => $dossiers,
+            'defaultPdfs' => $defaultPdfs,
         ]);
     }
 

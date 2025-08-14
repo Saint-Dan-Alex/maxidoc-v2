@@ -3,7 +3,7 @@
     <div class="px-0 card card-table">
         <div class="px-lg-3 px-2 row  align-items-center g-2">
             <div class="col-lg-7 col-sm-6">
-                <h4 class="no-padding no-margin badge-card badge-green">Courriers sortants</h4>
+                <h4 class="no-padding no-margin badge-card badge-green">Courriers traités</h4>
             </div>
             <div class="col-lg-5 d-flex align-items-center justify-content-end col-sm-6">
 
@@ -136,7 +136,7 @@
                                 </td>
                             @empty
                                 <td colspan="8" class="text-center">
-                                    Aucun courrier entrant
+                                    Aucun courrier traité
                                 </td>
                             </tr>
                         @endforelse
