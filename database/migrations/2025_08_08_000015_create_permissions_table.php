@@ -11,12 +11,16 @@ return new class extends Migration
     {
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('guard_name')->default('web');
+            $table->string('name', 191)->unique(); // Limit to 191 characters for MySQL compatibility
+            $table->string('guard_name', 191)->default('web'); // Limit to 191 characters for MySQL compatibility
             $table->foreignId('module_id')->nullable()->constrained('modules')->nullOnDelete();
             $table->timestamps();
             
-            $table->unique(['name', 'guard_name']);
+            // Create a custom index with explicit lengths for MySQL compatibility
+            // $table->unique([
+            //     'name',
+            //     'guard_name'
+            // ], 'permissions_name_guard_name_unique');
         });
 
         // Insertion directe des permissions

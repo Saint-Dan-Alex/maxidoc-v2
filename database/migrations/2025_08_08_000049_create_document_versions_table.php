@@ -16,7 +16,11 @@ return new class extends Migration
             $table->text('reason')->nullable();
             $table->timestamps();
 
-            $table->index(['original_document_id', 'new_document_id', 'created_by']);
+            // Using a shorter custom index name to avoid identifier length limit
+            $table->index(
+                ['original_document_id', 'new_document_id', 'created_by'],
+                'doc_versions_idx'
+            );
         });
     }
 
