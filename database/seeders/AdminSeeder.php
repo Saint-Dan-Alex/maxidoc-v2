@@ -38,7 +38,7 @@ class AdminSeeder extends Seeder
             DB::table('agents')->insert([
                 'user_id' => $adminId,
                 'statut_id' => 1,
-                'nom' => 'Administrateur',
+                'nom' => 'Admin system',
                 'matricule' => 'ADM-0001',
                 'created_at' => now(),
                 'updated_at' => now(),
