@@ -234,12 +234,67 @@
     </div>
     </div>
 </div>
+{{-- Modal pour ajouter un nouveau rôle --}}
+<div wire:ignore.self class="modal fade" id="modal-new-role" tabindex="-1" aria-labelledby="newRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newRoleModalLabel">
+                    <i class="fi fi-rr-user-add me-2"></i>Nouveau Rôle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form wire:submit.prevent="createRole">
+                    <div class="form-group mb-3">
+                        <label for="roleName" class="form-label">Nom du rôle <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="roleName" wire:model.defer="roleName" required 
+                               placeholder="Ex: Superviseur">
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Permissions</label>
+                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            @foreach(\Spatie\Permission\Models\Permission::all()->groupBy(function($item) {
+                                return explode(' ', $item->name)[0];
+                            }) as $group => $permissions)
+                                <div class="mb-3">
+                                    <h6 class="mb-2">{{ ucfirst($group) }}</h6>
+                                    @foreach($permissions as $permission)
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   wire:model.defer="selectedPermissions" 
+                                                   value="{{ $permission->name }}" 
+                                                   id="perm-{{ $permission->id }}">
+                                            <label class="form-check-label" for="perm-{{ $permission->id }}">
+                                                {{ $permission->name }}
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span wire:loading wire:target="createRole" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Créer le rôle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- modal --}}
 {{-- <div wire:ignore.self class="modal fade" id="modal-delete-pers" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content">
         <div class="modal-body">
-            {{-- <form action="{{  }}" method="post"> -}}
+            {{-- <form action="{{  }}" method="post"> --}}
                 <div class="content-text text-center">
                     <i data-feather="trash"></i>
                     <h5>Are you sure ? </h5>
@@ -249,7 +304,7 @@
                     <button class="btn btn-cancel me-4" data-bs-dismiss="modal" aria-label="Close" wire:click.prevent ="empty()">Annuler</button>
                     <button class="btn btn-delete" data-bs-dismiss="modal" aria-label="Close" wire:click.prevent ="update">Supprimer</button>
                 </div>
-            {{-- </form> -}}
+            {{-- </form> --}}
         </div>
     </div>
     </div>

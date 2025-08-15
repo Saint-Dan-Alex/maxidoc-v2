@@ -38,7 +38,13 @@ class Fiche extends Component
     use WithPagination;
     use WithFileUploads;
 
-
+    // Propriétés pour la gestion des rôles
+    // Propriétés pour la gestion des rôles
+    public $role;
+    public $selectedPermissions = [];
+    public $showRoleSection = true;
+    public $roleName = '';
+    
     public $historiquesPage = 1; // Propriété pour gérer la pagination des activités
 
     public $archivedAgents;
@@ -59,7 +65,6 @@ class Fiche extends Component
     public $direction_id;
     public $service_id;
     public $fonction_id;
-    public $role;
     public $photo;
     public $selected_modules = [];
     public $isReadyOnly = [
@@ -89,7 +94,59 @@ class Fiche extends Component
         'changeGrade',
         'toggelPermission',
         'updateHistoriquesPage',
+        'resetRoleForm' => 'resetRoleForm',
     ];
+
+    protected $rules = [
+        'roleName' => 'required|string|min:3|unique:roles,name',
+        'selectedPermissions' => 'array',
+    ];
+
+    public function createRole()
+    {
+        $this->validate();
+
+        try {
+            DB::beginTransaction();
+
+            // Créer le nouveau rôle
+            $role = \Spatie\Permission\Models\Role::create([
+                'name' => strtolower(Str::slug($this->roleName, '_')),
+                'display_name' => $this->roleName,
+                'guard_name' => 'web'
+            ]);
+
+            // Assigner les permissions au rôle
+            if (!empty($this->selectedPermissions)) {
+                $role->syncPermissions($this->selectedPermissions);
+            }
+
+            DB::commit();
+
+            // Réinitialiser le formulaire
+            $this->resetRoleForm();
+            
+            // Fermer la modale
+            $this->dispatchBrowserEvent('close-modal', ['modal' => 'modal-new-role']);
+            
+            // Afficher un message de succès
+            session()->flash('message', 'Rôle créé avec succès.');
+            
+            // Rafraîchir la liste des rôles
+            $this->emit('roleCreated');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Une erreur est survenue lors de la création du rôle : ' . $e->getMessage());
+        }
+    }
+    
+    public function resetRoleForm()
+    {
+        $this->reset(['roleName', 'selectedPermissions']);
+        $this->resetErrorBag();
+        $this->resetValidation();
+    }
 
     public function updateHistoriquesPage($page)
     {
@@ -106,6 +163,10 @@ class Fiche extends Component
 
     public function mount()
     {
+        // Initialiser le rôle de l'utilisateur si un agent est sélectionné
+        if ($this->agent && $this->agent->user) {
+            $this->role = $this->agent->user->roles->first()?->name;
+        }
         // $this->actifAgents = Agent::actif()->orderBy('nom');
         // $this->inactifAgents = Agent::inactif()->orderBy('nom')->limit(5)->get();
         // $this->archivedAgents = Agent::archived()->orderBy('nom')->limit(5)->get();

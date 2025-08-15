@@ -40,5 +40,7 @@
         @stack('modals')
 
         @livewireScripts
+        @stack('scripts')
+        <script src="{{ asset('js/role-management.js') }}"></script>
     </body>
 </html>
