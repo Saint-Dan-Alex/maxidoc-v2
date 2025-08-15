@@ -309,12 +309,24 @@ class PersonnelController extends Controller
             }
 
             // Création de l'utilisateur
+            // Création de l'utilisateur avec le rôle par défaut 'utilisateur'
             $user = User::create([
                 'email' => $request->newMail,
                 'name' => $request->prenom . ' ' . $request->nom,
                 'password' => Hash::make('12345678'), // Mot de passe par défaut
                 'statut_id' => 1, // Statut actif
             ]);
+
+            // Attribution du rôle sélectionné
+            if ($request->has('role_id') && $role = \Spatie\Permission\Models\Role::find($request->role_id)) {
+                $user->assignRole($role);
+            } else {
+                // Rôle par défaut si aucun rôle n'est sélectionné
+                $defaultRole = \Spatie\Permission\Models\Role::where('name', 'utilisateur')->first();
+                if ($defaultRole) {
+                    $user->assignRole($defaultRole);
+                }
+            }
 
             // Création de l'agent
             $agent = new Agent();

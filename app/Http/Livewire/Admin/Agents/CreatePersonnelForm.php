@@ -10,10 +10,12 @@ use App\Models\Grade;
 use App\Models\LieuAffectation;
 use App\Models\Section;
 use App\Models\Service;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class CreatePersonnelForm extends Component
 {
@@ -48,6 +50,8 @@ class CreatePersonnelForm extends Component
     public $fonction_type;
     public $chef_type;
     public $sec_type;
+    public $role_id;
+    public $roles = [];
     public $cd = false;
     public $sd = false;
     public $sdv = false;
@@ -68,11 +72,12 @@ class CreatePersonnelForm extends Component
 
     public function mount()
     {
-        $this->lieus = LieuAffectation::select('id', 'titre')->get();
-        $this->grades = Grade::select('id', 'titre')->get();
+        $this->lieus = LieuAffectation::all();
+        $this->grades = Grade::all();
         $this->directions = collect();
-        $this->services = collect();
-        
+        $this->services = collect(); // Initialisation de la collection des services
+        $this->fonctions = collect();
+        $this->roles = Role::all();
         // Chargement initial des fonctions
         $this->loadFonctions();
     }
