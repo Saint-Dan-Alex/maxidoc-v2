@@ -952,7 +952,8 @@
                                                                                    type="radio" 
                                                                                    name="user_role" 
                                                                                    id="role_{{ $role->id }}"
-                                                                                   wire:model="role"
+                                                                                   wire:model.live="role"
+                                                                                   wire:change="changeRole"
                                                                                    value="{{ $role->name }}"
                                                                                    {{ $userRoles->contains('id', $role->id) ? 'checked' : '' }}>
                                                                             <label class="form-check-label w-100 d-block" for="role_{{ $role->id }}">

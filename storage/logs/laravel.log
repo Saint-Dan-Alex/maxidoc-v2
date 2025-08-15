@@ -10040,3 +10040,35 @@
 [2025-08-15 13:56:14] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
 [2025-08-15 13:56:14] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":2,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
 [2025-08-15 13:56:23] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/Qvtt8wghwy1puBJmRfwh.pdf","nom_original":"Rapport de Réunion – 22 juillet 2025 (1).pdf"} 
+[2025-08-15 14:05:21] local.INFO: 🟢 Début du traitement  
+[2025-08-15 14:05:21] local.INFO: 📩 Courrier chargé {"courrier_id":2} 
+[2025-08-15 14:05:21] local.INFO: ➡️ Traitement du courrier entrant  
+[2025-08-15 14:05:21] local.INFO: ✅ Courrier marqué comme traité  
+[2025-08-15 14:05:21] local.INFO: 🗂️ Document marqué comme traité {"document_id":4} 
+[2025-08-15 14:05:21] local.INFO: 👤 Agent identifié {"agent_id":2} 
+[2025-08-15 14:05:21] local.INFO: 📝 Traitement enregistré {"traitement_id":3} 
+[2025-08-15 14:05:21] local.INFO: 🔁 Traitement et étape ajoutés  
+[2025-08-15 14:05:21] local.INFO: 📦 Nouveau destinataire externe créé {"dest_id":1} 
+[2025-08-15 14:05:22] local.INFO: 📨 Courrier sortant créé {"new_courrier_id":4} 
+[2025-08-15 14:05:22] local.INFO: 👥 Responsables attachés {"ids":{"Illuminate\\Support\\Collection":[3]}} 
+[2025-08-15 14:05:22] local.INFO: 📢 Notification envoyée {"agents":{"Illuminate\\Support\\Collection":[3]}} 
+[2025-08-15 14:05:22] local.INFO: 🟩 Statut du courrier entrant mis à jour  
+[2025-08-15 14:05:22] local.INFO: ✅ Fin du traitement avec succès  
+[2025-08-15 14:09:33] local.INFO: 🟢 Début du traitement  
+[2025-08-15 14:09:33] local.INFO: 📩 Courrier chargé {"courrier_id":1} 
+[2025-08-15 14:09:33] local.INFO: ➡️ Traitement du courrier entrant  
+[2025-08-15 14:09:33] local.INFO: ✅ Courrier marqué comme traité  
+[2025-08-15 14:09:33] local.INFO: 🗂️ Document marqué comme traité {"document_id":3} 
+[2025-08-15 14:09:33] local.INFO: 👤 Agent identifié {"agent_id":2} 
+[2025-08-15 14:09:33] local.INFO: 📝 Traitement enregistré {"traitement_id":5} 
+[2025-08-15 14:09:33] local.INFO: 🔁 Traitement et étape ajoutés  
+[2025-08-15 14:09:33] local.INFO: 📦 Nouveau destinataire externe créé {"dest_id":2} 
+[2025-08-15 14:09:33] local.INFO: 📨 Courrier sortant créé {"new_courrier_id":5} 
+[2025-08-15 14:09:33] local.INFO: 👥 Responsables attachés {"ids":{"Illuminate\\Support\\Collection":[3]}} 
+[2025-08-15 14:09:33] local.INFO: 📢 Notification envoyée {"agents":{"Illuminate\\Support\\Collection":[3]}} 
+[2025-08-15 14:09:33] local.INFO: 🟩 Statut du courrier entrant mis à jour  
+[2025-08-15 14:09:33] local.INFO: ✅ Fin du traitement avec succès  
+[2025-08-15 15:36:52] local.INFO: Méthode changeRole appelée {"agent_id":4,"user_id":4,"nouveau_role":"Archiviste","anciens_roles":{"Illuminate\\Support\\Collection":["Responsable de Direction"]}} 
+[2025-08-15 15:36:52] local.INFO: Rôle mis à jour avec succès {"agent_id":4,"user_id":4,"nouveau_role":"Archiviste","roles_apres_maj":{"Illuminate\\Support\\Collection":["Archiviste"]}} 
+[2025-08-15 15:36:57] local.INFO: Méthode changeRole appelée {"agent_id":4,"user_id":4,"nouveau_role":"Agent","anciens_roles":{"Illuminate\\Support\\Collection":["Archiviste"]}} 
+[2025-08-15 15:36:57] local.INFO: Rôle mis à jour avec succès {"agent_id":4,"user_id":4,"nouveau_role":"Agent","roles_apres_maj":{"Illuminate\\Support\\Collection":["Agent"]}} 
