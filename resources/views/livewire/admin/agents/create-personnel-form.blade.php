@@ -234,6 +234,18 @@
                 </select>
                 @error('fonction_type') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
+            
+            <div class="col-lg-4">
+                <label for="">Rôle</label>
+                <select class="form-select form-control" name="role_id" aria-label="Sélectionnez un rôle"
+                    wire:model='role_id' required>
+                    <option value="">Sélectionnez un rôle</option>
+                    @foreach($roles as $role)
+                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                    @endforeach
+                </select>
+                @error('role_id') <span class="text-danger">{{ $message }}</span> @enderror
+            </div>
             @if ($fonction_type)
                 @php
                     $selectedFonction = $fonctions->firstWhere('id', $fonction_type);
