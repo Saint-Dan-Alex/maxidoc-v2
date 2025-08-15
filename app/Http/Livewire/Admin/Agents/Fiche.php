@@ -456,34 +456,47 @@ class Fiche extends Component
 
     public function changeRole()
     {
-        $this->agent->user->assignRole($this->role);
-        if ((is_countable($this->role) && (count($this->role) && $this->role[0] === 'Admin')) || (!is_countable($this->role) && $this->role === 'Admin')) {
-            $permissions = Permission::get();
-            $this->agent->user->syncPermissions($permissions);
+        \Log::info('Méthode changeRole appelée', [
+            'agent_id' => $this->agent->id,
+            'user_id' => $this->agent->user->id,
+            'nouveau_role' => $this->role,
+            'anciens_roles' => $this->agent->user->getRoleNames()
+        ]);
 
-            foreach ($permissions as $permission) {
-                array_push($this->permissions, $permission->name);
+        try {
+            // Supprimer tous les rôles existants et attribuer le nouveau rôle
+            $this->agent->user->syncRoles([$this->role]);
+            
+            // Si le rôle est Admin, on ajoute toutes les permissions
+            if ($this->role === 'Admin') {
+                $permissions = Permission::get();
+                $this->agent->user->syncPermissions($permissions);
+                $this->permissions = $permissions->pluck('name')->toArray();
             }
-        }
-        $this->emit('alert', 'success', 'Paramètres mis à jour avec succès');
-    }
 
-    public function changePermission()
-    {
-        // dd($this->selected_modules);
-        if (count($this->selected_modules)) {
-            foreach ($this->selected_modules as $module_id) {
-                $module = Module::find($module_id);
-                foreach ($module->permissions as $permission) {
-                    if (!in_array($permission->name, $this->permissions)) {
-                        array_push($this->permissions, $permission->name);
-                    }
-                }
-            }
+            // Rafraîchir les données de l'utilisateur
+            $this->agent->refresh();
+            $this->agent->user->refresh();
+            
+            $this->emit('alert', 'success', 'Rôle mis à jour avec succès');
+            
+            \Log::info('Rôle mis à jour avec succès', [
+                'agent_id' => $this->agent->id,
+                'user_id' => $this->agent->user->id,
+                'nouveau_role' => $this->role,
+                'roles_apres_maj' => $this->agent->user->getRoleNames()
+            ]);
+            
+            // Forcer le rafraîchissement du composant
+            $this->emit('refreshComponent');
+            
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de la mise à jour du rôle', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $this->emit('alert', 'error', 'Une erreur est survenue lors de la mise à jour du rôle');
         }
-        $permissions = Permission::whereIn('name', $this->permissions)->get();
-        $this->agent->user->syncPermissions($permissions);
-        $this->emit('alert', 'success', 'Paramètres mis à jour avec succès');
     }
 
     public function toggelPermission()

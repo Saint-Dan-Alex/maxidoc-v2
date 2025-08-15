@@ -144,7 +144,7 @@
                         </div>
                         <div class="col-lg-8">
                             <h6 style="font-size: 16px;font-weight:500!important" class="mb-0">
-                                <span>{{ $location ?? "Budget d'exploitation REGIDESO S.A" }}</span>
+                                <span>{{ $location ?? "Budget d'exploitation Lerexcom Petroleum" }}</span>
                             </h6>
                         </div>
                     </div>

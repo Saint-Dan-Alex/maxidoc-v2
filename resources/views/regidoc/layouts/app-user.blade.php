@@ -1,7 +1,7 @@
 <!Doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="">
 <!--
-# Project developed by REGIDESO S.A with Newtech Consulting
+# Project developed by Lerexcom Petroleum with Newtech Consulting
 # Developers:
 # - Jean-Louis DIKASA MVITA jdikasa@yahoo.fr +243811647737
 # - Francis ISASI MPEMBA isafranck23@gmail.com +243828580212

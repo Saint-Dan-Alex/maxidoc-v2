@@ -172,7 +172,7 @@
                                 @elseif($courrier->type_id == 3)
                                     {{ $courrier->service->titre ?? 'N/D' }}
                                 @else
-                                    Regideso S.A
+                                    Lerexcom Petroleum
                                 @endif
                             </td>
                             <td>
@@ -181,7 +181,7 @@
                                 @elseif($courrier->type_id == 3)
                                     {{ $courrier->toDirection->titre ?? 'N/D' }}
                                 @else
-                                    Regideso S.A
+                                    Lerexcom Petroleum
                                 @endif
                             </td>
                             <td>{{ $courrier->created_at->format('d/m/Y') }}</td>
