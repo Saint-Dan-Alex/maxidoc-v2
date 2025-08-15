@@ -197,17 +197,7 @@
                                                 </td>
                                             @endif
                                             <td>{{ $courrier->reference_interne }}</td>
-                                            @if (!$isSec)
-                                                <td>
-                                                    @if ($courrier->type_id == 1)
-                                                        {{ $courrier->externExpediteur->nom ?? 'N/D' }}
-                                                    @elseif($courrier->type_id == 3)
-                                                        {{ $courrier->service->titre ?? 'N/D' }}
-                                                    @else
-                                                        Lerexcom Petroleum
-                                                    @endif
-                                                </td>
-                                            @endif
+                                            
                                             @if (!$isSec)
                                                 <td>
                                                     @if ($courrier->type_id == 1)
@@ -290,7 +280,7 @@
                                                 
                                             @endif
                                             
-                                            <td>{{ $courrier->created_at->format('d/m/Y') }}</td>
+                                            <td>{{ $courrier->created_at->format('d/m/Y H:i:s') }}</td>
                                             <td>{{ $courrier->type ? $courrier->type->titre : 'Inconnu' }}</td>
                                             @if (!$isSec)
                                                 <td>

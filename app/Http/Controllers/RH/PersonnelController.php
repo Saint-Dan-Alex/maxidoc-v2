@@ -412,9 +412,9 @@ class PersonnelController extends Controller
             $user = $agent->user;
 
             // Génération de l'email
-            $nomSansAccents = $this->removeAccents($request->nom);
-            $prenomSansAccents = $this->removeAccents($request->post_nom);
-            $newMail = Str::lower($nomSansAccents) . '.' . Str::lower($prenomSansAccents) . '@regideso.cd';
+            $nomSansAccents = $this->removeAccents($request->prenom);
+            $prenomSansAccents = $this->removeAccents($request->nom);
+            $newMail = Str::lower($nomSansAccents) . '.' . Str::lower($prenomSansAccents) . '@lerexcompetroleum.com';
 
             // Vérification de l’unicité de l’email
             if (User::where('email', $newMail)->where('id', '!=', $user->id)->exists()) {

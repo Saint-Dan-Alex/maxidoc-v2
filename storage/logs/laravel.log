@@ -10016,3 +10016,27 @@
 [2025-08-15 13:16:56] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
 [2025-08-15 13:16:57] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":0,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
 [2025-08-15 13:17:22] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/xiNLjsk8h7oDSLNIpw7g.pdf","nom_original":"Cv actuel.pdf"} 
+[2025-08-15 13:27:31] local.ERROR: Out of memory (allocated 4194304 bytes) (tried to allocate 32768 bytes) {"userId":1,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Out of memory (allocated 4194304 bytes) (tried to allocate 32768 bytes) at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Collections\\helpers.php:18)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Out of memory ...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
+[2025-08-15 13:27:34] local.ERROR: Out of memory (allocated 25165824 bytes) (tried to allocate 32768 bytes) {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Out of memory (allocated 25165824 bytes) (tried to allocate 32768 bytes) at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\jetstream\\src\\Console\\InstallCommand.php:398)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Out of memory ...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
+[2025-08-15 13:54:14] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-15 13:54:18] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-15 13:54:18] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":1,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
+[2025-08-15 13:54:26] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/Gg4Gju8PPMIEsRAvGFyF.pdf","nom_original":"FAC 2.pdf"} 
+[2025-08-15 13:56:13] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-15 13:56:14] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-15 13:56:14] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":2,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
+[2025-08-15 13:56:23] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/Qvtt8wghwy1puBJmRfwh.pdf","nom_original":"Rapport de Réunion – 22 juillet 2025 (1).pdf"} 
