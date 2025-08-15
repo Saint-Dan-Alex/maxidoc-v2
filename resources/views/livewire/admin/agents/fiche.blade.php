@@ -1,4 +1,18 @@
-<div>
+<div wire:init="$set('showRoleSection', true)" x-data="{ showRoleSection: @entangle('showRoleSection').defer }">
+    <!-- Messages flash -->
+    @if (session()->has('message'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('message') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+    @endif
+    
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+    @endif
     <div class="sidebar sidebar-mobile">
         <div class="content-sidebar d-flex flex-column" style="overflow: hidden">
             <div class="logo normal">
@@ -904,26 +918,59 @@
 
                                         <form method="post" wire:submit.prevent="changeRole">
                                             <div class="form-group row g-3 justify-content-center">
-                                                <div class="col-lg-12">
+                                                <div class="col-lg-12 d-flex justify-content-between align-items-center">
                                                     <h2 class="mb-2">Roles</h2>
                                                 </div>
                                                 <div class="col-12">
-                                                    <div class="row">
+                                                    <div class="mb-3">
+                                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                                            <label class="form-label mb-0 fw-bold">Rôles de l'utilisateur</label>
+                                                            <button type="button" class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-new-role">
+                                                                {{-- <i class="fi fi-rr-plus"></i> --}}
+                                                                <span>Ajouter un rôle</span>
+                                                            </button>
+                                                        </div>
+                                                        
                                                         @php
-                                                            $roles = \Spatie\Permission\Models\Role::all();
+                                                            $userRoles = $agent?->user?->roles ?? collect([]);
+                                                            $allRoles = \Spatie\Permission\Models\Role::orderBy('name')->get();
                                                         @endphp
-                                                        @foreach ($roles as $role)
-                                                            <div class="col">
-                                                                <input type="radio" name="role_id"
-                                                                    id="{{ 'role_' . $role->id }}"
-                                                                    class="permission-groupe form-check-input"
-                                                                    value="{{ $role->name }}"
-                                                                    @checked($agent?->user->hasRole($role->name)) wire:model="role">
-                                                                <label for="{{ 'role_' . $role->id }}">
-                                                                    <strong>{{ $role->name }}</strong>
-                                                                </label>
+                                                        
+                                                        @if($allRoles->count() > 0)
+                                                            <div class="row g-2">
+                                                                @foreach($allRoles as $role)
+                                                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                                                        <div class="form-check p-2 border rounded">
+                                                                            <input class="form-check-input" 
+                                                                                   type="radio" 
+                                                                                   name="user_role" 
+                                                                                   id="role_{{ $role->id }}"
+                                                                                   wire:model="role"
+                                                                                   value="{{ $role->name }}"
+                                                                                   {{ $userRoles->contains('id', $role->id) ? 'checked' : '' }}>
+                                                                            <label class="form-check-label w-100 d-block" for="role_{{ $role->id }}">
+                                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                                    <span>{{ $role->name }}</span>
+                                                                                    @if($userRoles->contains('id', $role->id))
+                                                                                        <span class="text-primary">
+                                                                                            <i class="fi fi-rr-check"></i>
+                                                                                        </span>
+                                                                                    @endif
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
                                                             </div>
-                                                        @endforeach
+                                                        @else
+                                                            <div class="alert alert-info mb-0 d-flex justify-content-between align-items-center">
+                                                                <span>Aucun rôle disponible</span>
+                                                                <button type="button" class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-new-role">
+                                                                    <i class="fi fi-rr-plus"></i>
+                                                                    <span>Créer un rôle</span>
+                                                                </button>
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                 </div>
                                                 <div class="mt-4 col-lg-112 text-end">
