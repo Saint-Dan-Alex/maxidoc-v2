@@ -235,10 +235,8 @@ class Fiche extends Component
     public function changeService($id)
     {
         $this->form_stat['service_id'] = $id;
-        if ($id != 0) {
-            // Pas de sections si on utilise seulement services
-            $this->fonctions = Fonction::where('service_id', $this->form_stat['service_id'])->orderBy('titre')->get();
-        }
+        // Les fonctions sont indépendantes du service, on charge toutes les fonctions
+        $this->fonctions = Fonction::orderBy('titre')->get();
     }
 
 

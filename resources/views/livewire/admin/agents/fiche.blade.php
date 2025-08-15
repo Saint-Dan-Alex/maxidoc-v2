@@ -359,7 +359,7 @@
                                                     </label>
                                                     <input type="text" class="form-control"
                                                         placeholder="Inserez le post-nom" name="post_nom"
-                                                        value="{{ $agent?->post_nom }}" required
+                                                        value="{{ $agent?->post_nom }}" 
                                                         wire:model='form_stat.post_nom'>
                                                 </div>
                                                 <div class="col-lg-6" wire:ignore.self>
@@ -368,7 +368,7 @@
                                                     </label>
                                                     <input type="text" class="form-control"
                                                         placeholder="Inserez le prenom" name="prenom"
-                                                        value="{{ $agent?->prenom }}" wire:model='form_stat.prenom'>
+                                                        value="{{ $agent?->prenom }}" required wire:model='form_stat.prenom'>
                                                 </div>
                                                 <div class="col-lg-6" wire:ignore.self>
                                                     <label>
@@ -716,6 +716,13 @@
                                                             <h6>{{ $agent?->poste?->titre ?: 'Non Specifié' }}</h6>
                                                         </div>
                                                     </div>
+                                                    <div class="col-lg-3">
+                                                        <div class="items">
+                                                            <p>Grade</p>
+                                                            <h6>{{ $agent?->grade?->titre ?: 'Non Specifié' }}</h6>
+                                                        </div>
+                                                    </div>
+
                                                 </div>
                                             </div>
                                         </div>
