@@ -68,9 +68,6 @@ class CourrierCategoryController extends Controller
         $category = CourrierCategory::findOrFail($id);
         $category->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Catégorie supprimée avec succès'
-        ]);
+        return redirect()->back()->with('success', 'Catégorie supprimée avec succès');
     }
 }
