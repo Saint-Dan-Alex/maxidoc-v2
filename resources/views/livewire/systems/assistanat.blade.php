@@ -204,9 +204,10 @@
                                     <select name="direction_id" class="form-control select2Bis" required
                                         data-placeholder="Selectionnez la direction">
                                         <option value=""></option>
-                                        @foreach ($directions as $direction)
-                                            <option value="{{ $direction->id }}" @selected($assistant->direction_id == $direction->id)>
-                                                {{ $direction->titre }} </option>
+                                        @foreach ($allDirections as $direction)
+                                            <option value="{{ $direction->id }}" {{ $assistant->direction_id == $direction->id ? 'selected' : '' }}>
+                                                {{ $direction->titre }} 
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -215,7 +216,7 @@
                                     <select name="responsable_id" class="form-control" required>
                                         <option value="">Sélectionner un responsable</option>
                                         @foreach($agents as $agent)
-                                            <option value="{{ $agent->id }}" @selected($assistant->responsable_id == $agent->id)>
+                                            <option value="{{ $agent->id }}" {{ $assistant->responsable_id == $agent->id ? 'selected' : '' }}>
                                                 {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom ?? '' }}
                                             </option>
                                         @endforeach
@@ -224,24 +225,21 @@
                                 <div class="col-12">
                                     <div class="d-flex gap-3">
                                         <div>
-                                            <label for="dg">Assistant DG</label>
-                                            <input type="radio" name="for" id="dg" value="1"
-                                                @checked($assistant->for_dg)>
+                                            <label for="dg-{{ $assistant->id }}">Assistant DG</label>
+                                            <input type="radio" name="for" id="dg-{{ $assistant->id }}" value="1" {{ $assistant->for_dg ? 'checked' : '' }}>
                                         </div>
                                         <div>
-                                            <label for="dga">Assistant DGA</label>
-                                            <input type="radio" name="for" id="dga" value="2"
-                                                @checked($assistant->for_dga)>
+                                            <label for="dga-{{ $assistant->id }}">Assistant DGA</label>
+                                            <input type="radio" name="for" id="dga-{{ $assistant->id }}" value="2" {{ $assistant->for_dga ? 'checked' : '' }}>
                                         </div>
                                         <div>
-                                            <label for="direction">Assistant Direction</label>
-                                            <input type="radio" name="for" id="direction" value="3"
-                                                @checked($assistant->for_dg != 1 && $assistant->for_dga != 1)>
+                                            <label for="direction-{{ $assistant->id }}">Assistant Direction</label>
+                                            <input type="radio" name="for" id="direction-{{ $assistant->id }}" value="3" {{ !$assistant->for_dg && !$assistant->for_dga ? 'checked' : '' }}>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-lg-12 text-end">
-                                    <button class="btn btn-add">Modifier</button>
+                                    <button type="submit" class="btn btn-add">Enregistrer</button>
                                 </div>
                             </div>
                         </form>
