@@ -11,7 +11,6 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Yadahan\AuthenticationLog\AuthenticationLogable;
 use Spatie\Permission\Traits\HasRoles;
-use Spatie\Permission\Traits\HasPermissions;
 use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
@@ -23,7 +22,7 @@ class User extends Authenticatable
     use TwoFactorAuthenticatable;
     use AuthenticationLogable;
     use HasRoles;
-    use HasPermissions;
+    
 
     /**
      * The attributes that are mass assignable.
