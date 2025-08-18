@@ -430,6 +430,13 @@ class PersonnelController extends Controller
      * @param int $roleId L'ID du rôle à attribuer
      * @return void
      */
+    /**
+     * Met à jour le rôle d'un utilisateur et ses permissions associées
+     *
+     * @param User $user L'utilisateur à mettre à jour
+     * @param int $roleId L'ID du rôle à attribuer
+     * @return void
+     */
     private function updateUserRole($user, $roleId)
     {
         if (!$roleId) {
@@ -437,27 +444,37 @@ class PersonnelController extends Controller
         }
 
         $role = \Spatie\Permission\Models\Role::findOrFail($roleId);
-        $currentRoles = $user->roles->pluck('id')->toArray();
         
-        // Si l'utilisateur n'a pas déjà ce rôle
-        if (!in_array($roleId, $currentRoles)) {
-            // On retire tous les rôles existants
-            $user->syncRoles([$role->name]);
-            
-            // On récupère les permissions du rôle
-            $rolePermissions = $role->permissions->pluck('name')->toArray();
-            
-            // On récupère les permissions personnalisées actuelles de l'utilisateur
-            $userDirectPermissions = $user->getDirectPermissions()->pluck('name')->toArray();
-            
-            // On combine les permissions du rôle avec les permissions personnalisées
-            $allPermissions = array_unique(array_merge($rolePermissions, $userDirectPermissions));
-            
-            // On met à jour les permissions de l'utilisateur
-            if (!empty($allPermissions)) {
-                $user->syncPermissions($allPermissions);
-            }
-        }
+        // 1. On récupère les anciennes permissions pour le log
+        $oldPermissions = $user->getAllPermissions()->pluck('name')->toArray();
+        
+        // 2. On supprime TOUTES les permissions existantes
+        $user->syncPermissions([]);
+        
+        // 3. On supprime TOUS les rôles existants
+        $user->syncRoles([]);
+        
+        // 4. On attribue le nouveau rôle
+        $user->assignRole($role);
+        
+        // 5. On récupère les permissions du nouveau rôle
+        $rolePermissions = $role->permissions->pluck('name')->toArray();
+        
+        // 6. On applique UNIQUEMENT les permissions du nouveau rôle
+        $user->syncPermissions($rolePermissions);
+        
+        // 7. On recharge les relations pour s'assurer que tout est à jour
+        $user->load(['roles', 'permissions']);
+        
+        // Log détaillé pour le débogage
+        \Log::info("Mise à jour complète des rôles et permissions", [
+            'user_id' => $user->id,
+            'ancien_role' => $user->getRoleNames(),
+            'nouveau_role' => $role->name,
+            'anciennes_permissions' => $oldPermissions,
+            'nouvelles_permissions' => $rolePermissions,
+            'timestamp' => now()->toDateTimeString()
+        ]);
     }
 
     public function update(Request $request, $id)
