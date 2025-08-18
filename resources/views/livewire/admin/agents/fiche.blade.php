@@ -1004,59 +1004,49 @@
                                                 <h2 class="mb-2">Permissions octroyées à l'agent</h2>
                                             </div>
                                             <div class="col-12">
-                                                <ul class="permissions checkbox list-unstyled" wire:ignore>
+                                                <div wire:ignore>
                                                     @php
                                                         $userPermissions = $agent?->user?->permissions->pluck('name')->toArray() ?? [];
                                                         $modules = \App\Models\Module::with('permissions')->get();
                                                     @endphp
-                                                    @foreach ($modules as $module)
-                                                        <li class="mb-3 li">
-                                                            @php
-                                                                $modulePermissions = $module->permissions->pluck('name')->toArray();
-                                                                $allModulePermissionsChecked = !empty($modulePermissions) && count(array_intersect($modulePermissions, $userPermissions)) === count($modulePermissions);
-                                                            @endphp
-                                                            <input type="checkbox" 
-                                                                id="module_{{ $module->id }}"
-                                                                class="permission-group form-check-input"
-                                                                {{ $allModulePermissionsChecked ? 'checked' : '' }}
-                                                                data-module-id="{{ $module->id }}">
-                                                            <label for="module_{{ $module->id }}">
-                                                                <strong>{{ Str::upper(str_replace('_', ' ', $module->titre)) }}</strong>
-                                                            </label>
-                                                            <ul class="list-unstyled ms-4">
-                                                                @foreach ($module->permissions as $permission)
-                                                                    <li class="d-flex align-items-center justify-content-between li-check">
-                                                                        <label class="mb-0" for="permission-{{ $permission->id }}">
+                                                    
+                                                    @foreach($modules as $module)
+                                                        <div class="card mb-3">
+                                                            <div class="card-header bg-light">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input module-checkbox" 
+                                                                           type="checkbox" 
+                                                                           id="module-{{ $module->id }}"
+                                                                           data-module-id="{{ $module->id }}">
+                                                                    <label class="form-check-label fw-bold" for="module-{{ $module->id }}">
+                                                                        {{ Str::upper($module->titre) }}
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                @foreach($module->permissions as $permission)
+                                                                    <div class="form-check mb-2">
+                                                                        <input class="form-check-input permission-checkbox" 
+                                                                               type="checkbox" 
+                                                                               id="permission-{{ $permission->id }}"
+                                                                               value="{{ $permission->name }}"
+                                                                               data-module-id="{{ $module->id }}"
+                                                                               {{ in_array($permission->name, $userPermissions) ? 'checked' : '' }}>
+                                                                        <label class="form-check-label" for="permission-{{ $permission->id }}">
                                                                             {{ Str::ucfirst(str_replace('_', ' ', $permission->name)) }}
                                                                         </label>
-                                                                        <input type="checkbox" 
-                                                                            id="permission-{{ $permission->id }}"
-                                                                            name="permissions[]"
-                                                                            class="the-permission form-check-input me-1 mt-0"
-                                                                            value="{{ $permission->name }}"
-                                                                            data-module-id="{{ $module->id }}"
-                                                                            {{ in_array($permission->name, $userPermissions) ? 'checked' : '' }}
-                                                                            wire:model.defer="permissions">
-                                                                    </li>
+                                                                    </div>
                                                                 @endforeach
-                                                            </ul>
-                                                        </li>
+                                                            </div>
+                                                        </div>
                                                     @endforeach
-                                                </ul>
+                                                </div>
                                             </div>
                                             <div class="mt-4 col-12 text-end">
                                                 <button type="button" 
                                                     class="btn btn-primary"
-                                                    wire:click="$set('isSavingPermissions', true)"
-                                                    wire:loading.attr="disabled"
-                                                    wire:target="updatePermissions">
-                                                    <span wire:loading.remove wire:target="updatePermissions">
-                                                        <i class="fas fa-save me-1"></i> Enregistrer les permissions
-                                                    </span>
-                                                    <span wire:loading wire:target="updatePermissions">
-                                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                                        Enregistrement en cours...
-                                                    </span>
+                                                    id="savePermissionsBtn">
+                                                    <i class="fas fa-save me-1"></i> Enregistrer les permissions
                                                 </button>
                                             </div>
                                         </div>
@@ -1222,25 +1212,88 @@
                     .trigger('change');
             });
 
-            // Gestion de l'événement de clic sur le bouton d'enregistrement
-            $(document).on('click', '[wire\\:click*="isSavingPermissions"]', function(e) {
-                e.preventDefault();
+            // Gestion des cases à cocher des modules (coche/décoche toutes les permissions du module)
+            $(document).on('change', '.module-checkbox', function() {
+                const moduleId = $(this).data('module-id');
+                const isChecked = $(this).is(':checked');
                 
-                // Récupérer toutes les permissions cochées
+                // Coche/décoche toutes les permissions du module
+                $(`.permission-checkbox[data-module-id="${moduleId}"]`).prop('checked', isChecked);
+                
+                // Met à jour l'état du module si nécessaire
+                updateModuleCheckboxState(moduleId);
+            });
+            
+            // Gestion des cases à cocher des permissions
+            $(document).on('change', '.permission-checkbox', function() {
+                const moduleId = $(this).data('module-id');
+                updateModuleCheckboxState(moduleId);
+            });
+            
+            // Met à jour l'état de la case à cocher du module
+            function updateModuleCheckboxState(moduleId) {
+                const $moduleCheckbox = $(`#module-${moduleId}`);
+                const $permissionCheckboxes = $(`.permission-checkbox[data-module-id="${moduleId}"]`);
+                const total = $permissionCheckboxes.length;
+                const checked = $permissionCheckboxes.filter(':checked').length;
+                
+                if (checked === 0) {
+                    $moduleCheckbox.prop('checked', false).prop('indeterminate', false);
+                } else if (checked === total) {
+                    $moduleCheckbox.prop('checked', true).prop('indeterminate', false);
+                } else {
+                    $moduleCheckbox.prop('indeterminate', true);
+                }
+            }
+            
+            // Initialisation des états des cases à cocher des modules
+            $('.module-checkbox').each(function() {
+                const moduleId = $(this).data('module-id');
+                updateModuleCheckboxState(moduleId);
+            });
+            
+            // Gestion de l'enregistrement des permissions
+            $('#savePermissionsBtn').on('click', function() {
+                const $btn = $(this);
+                const originalText = $btn.html();
+                
+                // Désactive le bouton et affiche un indicateur de chargement
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1" role="status"></span> Enregistrement...');
+                
+                // Récupère toutes les permissions cochées
                 const permissions = [];
-                $('.the-permission:checked').each(function() {
+                $('.permission-checkbox:checked').each(function() {
                     permissions.push($(this).val());
                 });
                 
                 console.log('Permissions à mettre à jour :', permissions);
                 
-                // Appeler directement la méthode updatePermissions
+                // Appelle la méthode Livewire pour mettre à jour les permissions
                 @this.call('updatePermissions', permissions)
                     .then(() => {
-                        console.log('Mise à jour des permissions réussie');
+                        // Réactive le bouton et affiche un message de succès
+                        $btn.html('<i class="fas fa-check me-1"></i> Enregistré !');
+                        setTimeout(() => {
+                            $btn.html(originalText).prop('disabled', false);
+                        }, 2000);
+                        
+                        // Affiche une notification de succès
+                        Livewire.dispatch('show-toast', {
+                            type: 'success',
+                            message: 'Les permissions ont été mises à jour avec succès.'
+                        });
                     })
                     .catch(error => {
                         console.error('Erreur lors de la mise à jour des permissions :', error);
+                        
+                        // Réactive le bouton en cas d'erreur
+                        $btn.html(originalText).prop('disabled', false);
+                        
+                        // Affiche une notification d'erreur
+                        Livewire.dispatch('show-toast', {
+                            type: 'error',
+                            message: 'Une erreur est survenue lors de la mise à jour des permissions.'
+                        });
                     });
             });
 

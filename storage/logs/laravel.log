@@ -1,0 +1,8 @@
+[2025-08-18 14:36:26] local.ERROR: Cannot use Illuminate\Support\Facades\Log as Log because the name is already in use {"userId":1,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use Illuminate\\Support\\Facades\\Log as Log because the name is already in use at C:\\wamp64\\www\\maxidoc-projet-origine\\app\\Http\\Livewire\\Admin\\Agents\\Fiche.php:36)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Cannot use Ill...', code: '0', error: '['type' => 64, ...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 64, ...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
