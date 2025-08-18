@@ -32,6 +32,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use \App\Helpers\Helpers;
 use App\Models\Historique;
+use Illuminate\Support\Facades\Log;
 
 class Fiche extends Component
 {
@@ -61,6 +62,7 @@ class Fiche extends Component
     public $fonctions = [];
     public $grades = [];
     public $permissions = [];
+    public $isSavingPermissions = false;
     public $lieu_id;
     public $direction_id;
     public $service_id;
@@ -95,7 +97,28 @@ class Fiche extends Component
         'toggelPermission',
         'updateHistoriquesPage',
         'resetRoleForm' => 'resetRoleForm',
+        'updatePermissions' => 'updatePermissions',
+        'savePermissions' => 'savePermissions',
     ];
+    
+    public function savePermissions()
+    {
+        $this->isSavingPermissions = true;
+        $permissions = [];
+        
+        // Récupérer les permissions cochées depuis le DOM
+        $this->dispatchBrowserEvent('get-checked-permissions', [
+            'callback' => 'setCheckedPermissions'
+        ]);
+    }
+    
+    public function setCheckedPermissions($permissions)
+    {
+        $this->isSavingPermissions = false;
+        if (is_array($permissions)) {
+            $this->updatePermissions($permissions);
+        }
+    }
 
     protected $rules = [
         'roleName' => 'required|string|min:3|unique:roles,name',
@@ -497,7 +520,7 @@ class Fiche extends Component
 
     public function changeRole()
     {
-        \Log::info('Méthode changeRole appelée', [
+        Log::info('Méthode changeRole appelée', [
             'agent_id' => $this->agent->id,
             'user_id' => $this->agent->user->id,
             'nouveau_role' => $this->role,
@@ -521,7 +544,7 @@ class Fiche extends Component
             
             $this->emit('alert', 'success', 'Rôle mis à jour avec succès');
             
-            \Log::info('Rôle mis à jour avec succès', [
+            Log::info('Rôle mis à jour avec succès', [
                 'agent_id' => $this->agent->id,
                 'user_id' => $this->agent->user->id,
                 'nouveau_role' => $this->role,
@@ -532,7 +555,7 @@ class Fiche extends Component
             $this->emit('refreshComponent');
             
         } catch (\Exception $e) {
-            \Log::error('Erreur lors de la mise à jour du rôle', [
+            Log::error('Erreur lors de la mise à jour du rôle', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -560,7 +583,16 @@ class Fiche extends Component
 
     public function selectPermission($value)
     {
-        array_push($this->permissions, $value);
+        if (!in_array($value, $this->permissions)) {
+            $this->permissions[] = $value;
+        }
+    }
+    
+    public function changePermission()
+    {
+        // Cette méthode est appelée après la sélection des permissions
+        // Pas besoin de logique supplémentaire ici car les permissions sont déjà mises à jour
+        // via la méthode updatePermissions qui est appelée directement depuis le JavaScript
     }
 
     public function updateAgent()
@@ -704,5 +736,85 @@ class Fiche extends Component
         }
 
         return $filename;
+    }
+
+    /**
+     * Met à jour les permissions de l'utilisateur
+     *
+     * @param array $permissionsToUpdate Tableau des noms de permissions à activer
+     * @return void
+     */
+    public function updatePermissions($permissionsToUpdate = [])
+    {
+        try {
+            Log::info('Début de la mise à jour des permissions', ['permissions' => $permissionsToUpdate]);
+            
+            if (!$this->agent || !$this->agent->user) {
+                throw new \Exception('Aucun agent ou utilisateur sélectionné');
+            }
+            
+            DB::beginTransaction();
+            
+            $user = $this->agent->user;
+            
+            // Vérifier que les permissions existent
+            $validPermissions = [];
+            foreach ($permissionsToUpdate as $permissionName) {
+                if (Permission::where('name', $permissionName)->exists()) {
+                    $validPermissions[] = $permissionName;
+                } else {
+                    Log::warning("Permission non trouvée : " . $permissionName);
+                }
+            }
+            
+            Log::info('Permissions valides à synchroniser', ['valid_permissions' => $validPermissions]);
+            
+            // Synchroniser toutes les permissions en une seule opération
+            $user->syncPermissions($validPermissions);
+            
+            // Mettre à jour la liste des permissions
+            $this->permissions = $user->getPermissionNames()->toArray();
+            
+            // Rafraîchir les données de l'utilisateur
+            $user->load('permissions');
+            
+            DB::commit();
+            
+            // Journalisation pour le débogage
+            Log::info('Permissions mises à jour avec succès', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'permissions_count' => count($validPermissions),
+                'permissions' => $validPermissions
+            ]);
+            
+            // Afficher un message de succès
+            $this->dispatchBrowserEvent('show-toast', [
+                'type' => 'success',
+                'message' => 'Les permissions ont été mises à jour avec succès.'
+            ]);
+            
+            return true;
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            $errorMessage = 'Erreur lors de la mise à jour des permissions : ' . $e->getMessage();
+            
+            // Journaliser l'erreur
+            Log::error($errorMessage, [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'permissions_attempted' => $permissionsToUpdate
+            ]);
+            
+            // Afficher un message d'erreur à l'utilisateur
+            $this->dispatchBrowserEvent('show-toast', [
+                'type' => 'error',
+                'message' => $errorMessage
+            ]);
+            
+            throw $e; // Propager l'erreur pour la gestion des promesses JavaScript
+        }
     }
 }

@@ -1006,36 +1006,37 @@
                                             <div class="col-12">
                                                 <ul class="permissions checkbox list-unstyled" wire:ignore>
                                                     @php
-                                                        $role_permissions = $agent?->user?->permissions->count()
-                                                            ? $agent?->user?->permissions->pluck('key')->toArray()
-                                                            : [];
-                                                        $modules = \App\Models\Module::all();
+                                                        $userPermissions = $agent?->user?->permissions->pluck('name')->toArray() ?? [];
+                                                        $modules = \App\Models\Module::with('permissions')->get();
                                                     @endphp
-                                                    @foreach ($modules as $modKey => $module)
+                                                    @foreach ($modules as $module)
                                                         <li class="mb-3 li">
-                                                            <input type="checkbox" id="{{ 'module_' . $module->id }}"
+                                                            @php
+                                                                $modulePermissions = $module->permissions->pluck('name')->toArray();
+                                                                $allModulePermissionsChecked = !empty($modulePermissions) && count(array_intersect($modulePermissions, $userPermissions)) === count($modulePermissions);
+                                                            @endphp
+                                                            <input type="checkbox" 
+                                                                id="module_{{ $module->id }}"
                                                                 class="permission-group form-check-input"
-                                                                value="{{ $module->id }}">
-                                                            {{-- wire:change='toggelPermission'wire:model='selected_modules' --}}
-                                                            <label for="{{ 'module_' . $module->id }}">
+                                                                {{ $allModulePermissionsChecked ? 'checked' : '' }}
+                                                                data-module-id="{{ $module->id }}">
+                                                            <label for="module_{{ $module->id }}">
                                                                 <strong>{{ Str::upper(str_replace('_', ' ', $module->titre)) }}</strong>
                                                             </label>
                                                             <ul class="list-unstyled ms-4">
-                                                                @foreach ($module->permissions as $key => $perm)
-                                                                    <li
-                                                                        class="d-flex align-items-center justify-content-between li-check">
-                                                                        <label class="mb-0"
-                                                                            for="permission-{{ $perm->id }}">
-                                                                            {{ Str::ucfirst(str_replace('_', ' ', $perm->name)) }}
+                                                                @foreach ($module->permissions as $permission)
+                                                                    <li class="d-flex align-items-center justify-content-between li-check">
+                                                                        <label class="mb-0" for="permission-{{ $permission->id }}">
+                                                                            {{ Str::ucfirst(str_replace('_', ' ', $permission->name)) }}
                                                                         </label>
-                                                                        <input type="checkbox" style="flex: 0 0 auto"
-                                                                            id="permission-{{ $perm->id }}"
-                                                                            name="permissions[{{ $perm->id }}]"
+                                                                        <input type="checkbox" 
+                                                                            id="permission-{{ $permission->id }}"
+                                                                            name="permissions[]"
                                                                             class="the-permission form-check-input me-1 mt-0"
-                                                                            value="{{ $perm->name }}"
-                                                                            wire:model='permissions'>
-
-                                                                        {{-- @checked($agent?->user->hasPermissionTo($perm->id) --}}
+                                                                            value="{{ $permission->name }}"
+                                                                            data-module-id="{{ $module->id }}"
+                                                                            {{ in_array($permission->name, $userPermissions) ? 'checked' : '' }}
+                                                                            wire:model.defer="permissions">
                                                                     </li>
                                                                 @endforeach
                                                             </ul>
@@ -1043,16 +1044,18 @@
                                                     @endforeach
                                                 </ul>
                                             </div>
-                                            <div class="mt-4 col-lg-112 text-end">
-                                                <button class="btn btn-add float-end save-permission">
-                                                    Enregistrer
-                                                    <span
-                                                        class="spinner-border spinner-border-white text-success ms-1 d-none btn-loader"
-                                                        role="status"
-                                                        style="font-size: 10px !important; width:14px;height:14px"
-                                                        wire:loading wire:target="changePermission"
-                                                        wire:loading.class.remove="d-none">
-                                                        <span class="sr-only"></span>
+                                            <div class="mt-4 col-12 text-end">
+                                                <button type="button" 
+                                                    class="btn btn-primary"
+                                                    wire:click="$set('isSavingPermissions', true)"
+                                                    wire:loading.attr="disabled"
+                                                    wire:target="updatePermissions">
+                                                    <span wire:loading.remove wire:target="updatePermissions">
+                                                        <i class="fas fa-save me-1"></i> Enregistrer les permissions
+                                                    </span>
+                                                    <span wire:loading wire:target="updatePermissions">
+                                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                                        Enregistrement en cours...
                                                     </span>
                                                 </button>
                                             </div>
@@ -1207,59 +1210,67 @@
 
 @section('scripts')
     <script>
-        $('document').ready(function() {
-
-            $('.permission-group').on('change', function() {
-                var parentChecked = this.checked;
-                var input = $(this).siblings('ul').find("input[type='checkbox']");
-                input.prop('checked', parentChecked);
+        document.addEventListener('livewire:initialized', () => {
+            // Gestion du changement d'état d'une case à cocher de module
+            $(document).on('change', '.permission-group', function() {
+                const moduleId = $(this).data('module-id');
+                const isChecked = this.checked;
+                
+                // Coche/décoche toutes les permissions du module
+                $(`input[type='checkbox'][data-module-id='${moduleId}'].the-permission`)
+                    .prop('checked', isChecked)
+                    .trigger('change');
             });
 
-            $('.save-permission').on('click', function() {
-                var input = $('.permission-group').siblings('ul').find("input[type='checkbox']");
-                input.each(function() {
-                    if (this.checked) {
-                        @this.call('selectPermission', $(this).val())
-                    }
+            // Gestion de l'événement de clic sur le bouton d'enregistrement
+            $(document).on('click', '[wire\\:click*="isSavingPermissions"]', function(e) {
+                e.preventDefault();
+                
+                // Récupérer toutes les permissions cochées
+                const permissions = [];
+                $('.the-permission:checked').each(function() {
+                    permissions.push($(this).val());
                 });
-                @this.call('changePermission')
-
-            });
-
-            $('.permission-select-all').on('click', function() {
-                $('ul.permissions').find("input[type='checkbox']").prop('checked', true);
-                return false;
-            });
-
-            $('.permission-deselect-all').on('click', function() {
-                $('ul.permissions').find("input[type='checkbox']").prop('checked', false);
-                return false;
-            });
-
-            function parentChecked() {
-                $('.permission-group').each(function() {
-                    var allChecked = true;
-                    $(this).siblings('ul').find("input[type='checkbox']").each(function() {
-                        if (!this.checked) allChecked = false;
+                
+                console.log('Permissions à mettre à jour :', permissions);
+                
+                // Appeler directement la méthode updatePermissions
+                @this.call('updatePermissions', permissions)
+                    .then(() => {
+                        console.log('Mise à jour des permissions réussie');
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors de la mise à jour des permissions :', error);
                     });
+            });
+
+            // Mise à jour de l'état des cases à cocher parentes
+            function updateParentCheckboxes() {
+                $('.permission-group').each(function() {
+                    const moduleId = $(this).data('module-id');
+                    const allChecked = $(`input[type='checkbox'][data-module-id='${moduleId}'].the-permission`).length === 
+                                     $(`input[type='checkbox'][data-module-id='${moduleId}'].the-permission:checked`).length;
+                    
                     $(this).prop('checked', allChecked);
                 });
             }
 
-            parentChecked();
+            // Mise à jour initiale
+            updateParentCheckboxes();
 
-            $('.the-permission').on('change', function() {
-                parentChecked();
+            // Écouter les changements sur les cases à cocher de permission
+            $(document).on('change', '.the-permission', function() {
+                updateParentCheckboxes();
             });
 
-            livewire.on('tab2Change', function() {
-                parentChecked();
+            // Réinitialiser les sélections lors du changement d'onglet
+            Livewire.on('tab2Change', function() {
+                updateParentCheckboxes();
             });
 
             $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(event) {
                 parentChecked();
             })
-
         });
         $('.link-user-tab').click(function() {
             $('.link-user-tab').removeClass('active')
