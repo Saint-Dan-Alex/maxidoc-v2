@@ -148,6 +148,47 @@ class Fiche extends Component
         $this->resetValidation();
     }
 
+    /**
+     * Attribue un rôle à un utilisateur avec les permissions par défaut du rôle
+     *
+     * @param int $userId
+     * @param int $roleId
+     * @return void
+     */
+    public function assignRoleToUser($userId, $roleId)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Récupérer l'utilisateur et le rôle
+            $user = \App\Models\User::findOrFail($userId);
+            $role = \Spatie\Permission\Models\Role::findOrFail($roleId);
+
+            // Récupérer les permissions par défaut du rôle
+            $defaultPermissions = $role->permissions->pluck('name')->toArray();
+
+            // Synchroniser le rôle de l'utilisateur
+            $user->syncRoles([$role->name]);
+
+            // Si le rôle a des permissions par défaut, les attribuer à l'utilisateur
+            if (!empty($defaultPermissions)) {
+                $user->syncPermissions($defaultPermissions);
+            }
+
+            DB::commit();
+
+            // Afficher un message de succès
+            session()->flash('message', 'Rôle et permissions attribués avec succès.');
+            
+            // Rafraîchir la page
+            $this->emit('refreshComponent');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Une erreur est survenue lors de l\'attribution du rôle : ' . $e->getMessage());
+        }
+    }
+
     public function updateHistoriquesPage($page)
     {
         $this->historiquesPage = $page;

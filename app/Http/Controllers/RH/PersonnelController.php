@@ -317,14 +317,43 @@ class PersonnelController extends Controller
                 'statut_id' => 1, // Statut actif
             ]);
 
-            // Attribution du rôle sélectionné
+            // Attribution du rôle sélectionné et des permissions associées
             if ($request->has('role_id') && $role = \Spatie\Permission\Models\Role::find($request->role_id)) {
+                // Attribuer le rôle à l'utilisateur
                 $user->assignRole($role);
+                
+                // Récupérer les permissions actuelles de l'utilisateur
+                $currentPermissions = $user->permissions->pluck('name')->toArray();
+                
+                // Récupérer les permissions associées au rôle
+                $rolePermissions = $role->permissions->pluck('name')->toArray();
+                
+                // Combiner les permissions existantes avec celles du rôle (sans doublons)
+                $allPermissions = array_unique(array_merge($currentPermissions, $rolePermissions));
+                
+                // Mettre à jour les permissions de l'utilisateur
+                if (!empty($allPermissions)) {
+                    $user->syncPermissions($allPermissions);
+                }
             } else {
                 // Rôle par défaut si aucun rôle n'est sélectionné
                 $defaultRole = \Spatie\Permission\Models\Role::where('name', 'utilisateur')->first();
                 if ($defaultRole) {
                     $user->assignRole($defaultRole);
+                    
+                    // Récupérer les permissions actuelles de l'utilisateur
+                    $currentPermissions = $user->permissions->pluck('name')->toArray();
+                    
+                    // Récupérer les permissions du rôle par défaut
+                    $rolePermissions = $defaultRole->permissions->pluck('name')->toArray();
+                    
+                    // Combiner les permissions existantes avec celles du rôle (sans doublons)
+                    $allPermissions = array_unique(array_merge($currentPermissions, $rolePermissions));
+                    
+                    // Mettre à jour les permissions de l'utilisateur
+                    if (!empty($allPermissions)) {
+                        $user->syncPermissions($allPermissions);
+                    }
                 }
             }
 
@@ -394,6 +423,43 @@ class PersonnelController extends Controller
         return view('rh.personnels', compact('users', 'divisions', 'departements', 'postes', 'user', 'etats', 'roles', 'plannings', 'villes', 'statuts', 'contrats', 'conges'));
     }
 
+    /**
+     * Met à jour le rôle d'un utilisateur et ses permissions associées
+     *
+     * @param User $user L'utilisateur à mettre à jour
+     * @param int $roleId L'ID du rôle à attribuer
+     * @return void
+     */
+    private function updateUserRole($user, $roleId)
+    {
+        if (!$roleId) {
+            return;
+        }
+
+        $role = \Spatie\Permission\Models\Role::findOrFail($roleId);
+        $currentRoles = $user->roles->pluck('id')->toArray();
+        
+        // Si l'utilisateur n'a pas déjà ce rôle
+        if (!in_array($roleId, $currentRoles)) {
+            // On retire tous les rôles existants
+            $user->syncRoles([$role->name]);
+            
+            // On récupère les permissions du rôle
+            $rolePermissions = $role->permissions->pluck('name')->toArray();
+            
+            // On récupère les permissions personnalisées actuelles de l'utilisateur
+            $userDirectPermissions = $user->getDirectPermissions()->pluck('name')->toArray();
+            
+            // On combine les permissions du rôle avec les permissions personnalisées
+            $allPermissions = array_unique(array_merge($rolePermissions, $userDirectPermissions));
+            
+            // On met à jour les permissions de l'utilisateur
+            if (!empty($allPermissions)) {
+                $user->syncPermissions($allPermissions);
+            }
+        }
+    }
+
     public function update(Request $request, $id)
     {
         try {
@@ -406,6 +472,7 @@ class PersonnelController extends Controller
                 'direction_id' => 'required|exists:directions,id',
                 'fonction_id' => 'required|exists:fonctions,id',
                 'sexe' => 'required',
+                'role_id' => 'nullable|exists:roles,id',
             ]);
 
             $agent = Agent::findOrFail($id);
@@ -462,8 +529,10 @@ class PersonnelController extends Controller
                 'residence' => $request->adresse,
             ])->save();
 
-            // Traitement du rôle selon la fonction
-            $this->updateResponsabilite($agent, $request);
+            // Mise à jour du rôle et des permissions si un rôle est spécifié
+            if ($request->has('role_id')) {
+                $this->updateUserRole($user, $request->role_id);
+            }
 
             return redirect()->route('regidoc.personnels.index')->with('success', 'Agent modifié avec succès.');
         } catch (\Throwable $th) {
