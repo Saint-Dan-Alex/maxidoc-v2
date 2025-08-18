@@ -10072,3 +10072,79 @@
 [2025-08-15 15:36:52] local.INFO: Rôle mis à jour avec succès {"agent_id":4,"user_id":4,"nouveau_role":"Archiviste","roles_apres_maj":{"Illuminate\\Support\\Collection":["Archiviste"]}} 
 [2025-08-15 15:36:57] local.INFO: Méthode changeRole appelée {"agent_id":4,"user_id":4,"nouveau_role":"Agent","anciens_roles":{"Illuminate\\Support\\Collection":["Archiviste"]}} 
 [2025-08-15 15:36:57] local.INFO: Rôle mis à jour avec succès {"agent_id":4,"user_id":4,"nouveau_role":"Agent","roles_apres_maj":{"Illuminate\\Support\\Collection":["Agent"]}} 
+[2025-08-18 09:37:45] local.INFO: Méthode changeRole appelée {"agent_id":3,"user_id":3,"nouveau_role":"imprimeur","anciens_roles":{"Illuminate\\Support\\Collection":[]}} 
+[2025-08-18 09:37:45] local.INFO: Rôle mis à jour avec succès {"agent_id":3,"user_id":3,"nouveau_role":"imprimeur","roles_apres_maj":{"Illuminate\\Support\\Collection":["imprimeur"]}} 
+[2025-08-18 09:39:08] local.INFO: Méthode changeRole appelée {"agent_id":3,"user_id":3,"nouveau_role":"imprimeur","anciens_roles":{"Illuminate\\Support\\Collection":["imprimeur"]}} 
+[2025-08-18 09:39:09] local.INFO: Rôle mis à jour avec succès {"agent_id":3,"user_id":3,"nouveau_role":"imprimeur","roles_apres_maj":{"Illuminate\\Support\\Collection":["imprimeur"]}} 
+[2025-08-18 10:45:19] local.ERROR: Trait "App\Models\HasPermissions" not found {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Trait \"App\\Models\\HasPermissions\" not found at C:\\wamp64\\www\\maxidoc-projet-origine\\app\\Models\\User.php:16)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Trait \"App\\\\\\\\Mo...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
+[2025-08-18 10:50:05] local.ERROR: Spatie\Permission\PermissionRegistrar::getRoleClass(): Return value must be of type Spatie\Permission\Contracts\Role, App\Models\Role returned {"exception":"[object] (TypeError(code: 0): Spatie\\Permission\\PermissionRegistrar::getRoleClass(): Return value must be of type Spatie\\Permission\\Contracts\\Role, App\\Models\\Role returned at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\PermissionRegistrar.php:242)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\PermissionRegistrar.php(363): Spatie\\Permission\\PermissionRegistrar->getRoleClass()
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\PermissionRegistrar.php(187): Spatie\\Permission\\PermissionRegistrar->hydrateRolesCache()
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\PermissionRegistrar.php(199): Spatie\\Permission\\PermissionRegistrar->loadPermissions()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\Models\\Permission.php(145): Spatie\\Permission\\PermissionRegistrar->getPermissions(Array, true)
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\Models\\Permission.php(155): Spatie\\Permission\\Models\\Permission::getPermissions(Array, true)
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\Models\\Permission.php(94): Spatie\\Permission\\Models\\Permission::getPermission(Array)
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\Traits\\HasPermissions.php(449): Spatie\\Permission\\Models\\Permission::findByName('G\\xC3\\xA9rer le perso...', 'web')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\Traits\\HasPermissions.php(349): Spatie\\Permission\\Models\\Role->getStoredPermission('G\\xC3\\xA9rer le perso...')
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Collections\\Traits\\EnumeratesValues.php(734): Spatie\\Permission\\Models\\Role->Spatie\\Permission\\Traits\\{closure}(Array, 'G\\xC3\\xA9rer le perso...', 0)
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\Traits\\HasPermissions.php(344): Illuminate\\Support\\Collection->reduce(Object(Closure), Array)
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\Traits\\HasPermissions.php(371): Spatie\\Permission\\Models\\Role->collectPermissions(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\spatie\\laravel-permission\\src\\Traits\\HasPermissions.php(409): Spatie\\Permission\\Models\\Role->givePermissionTo(Array)
+#12 C:\\wamp64\\www\\maxidoc-projet-origine\\database\\seeders\\AdminSeeder.php(66): Spatie\\Permission\\Models\\Role->syncPermissions(Array)
+#13 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Database\\Seeders\\AdminSeeder->run()
+#14 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#15 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#16 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#17 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#18 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(184): Illuminate\\Container\\Container->call(Array, Array)
+#19 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(193): Illuminate\\Database\\Seeder->Illuminate\\Database\\{closure}()
+#20 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(61): Illuminate\\Database\\Seeder->__invoke(Array)
+#21 C:\\wamp64\\www\\maxidoc-projet-origine\\database\\seeders\\DatabaseSeeder.php(35): Illuminate\\Database\\Seeder->call('Database\\\\Seeder...')
+#22 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Database\\Seeders\\DatabaseSeeder->run()
+#23 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#24 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#25 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#26 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#27 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(184): Illuminate\\Container\\Container->call(Array, Array)
+#28 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(193): Illuminate\\Database\\Seeder->Illuminate\\Database\\{closure}()
+#29 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Seeds\\SeedCommand.php(81): Illuminate\\Database\\Seeder->__invoke()
+#30 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Concerns\\GuardsAttributes.php(155): Illuminate\\Database\\Console\\Seeds\\SeedCommand->Illuminate\\Database\\Console\\Seeds\\{closure}()
+#31 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Seeds\\SeedCommand.php(80): Illuminate\\Database\\Eloquent\\Model::unguarded(Object(Closure))
+#32 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Seeds\\SeedCommand->handle()
+#33 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#34 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#35 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#36 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#37 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(183): Illuminate\\Container\\Container->call(Array)
+#38 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArrayInput), Object(Illuminate\\Console\\OutputStyle))
+#39 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(152): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArrayInput), Object(Illuminate\\Console\\OutputStyle))
+#40 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Concerns\\CallsCommands.php(67): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArrayInput), Object(Illuminate\\Console\\OutputStyle))
+#41 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Concerns\\CallsCommands.php(28): Illuminate\\Console\\Command->runCommand('db:seed', Array, Object(Illuminate\\Console\\OutputStyle))
+#42 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\FreshCommand.php(93): Illuminate\\Console\\Command->call('db:seed', Array)
+#43 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\FreshCommand.php(69): Illuminate\\Database\\Console\\Migrations\\FreshCommand->runSeeder(NULL)
+#44 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\FreshCommand->handle()
+#45 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#46 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#47 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#48 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#49 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(183): Illuminate\\Container\\Container->call(Array)
+#50 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#51 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(152): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#52 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\symfony\\console\\Application.php(1078): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#53 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\FreshCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#54 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#55 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Application.php(102): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#56 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(155): Illuminate\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#57 C:\\wamp64\\www\\maxidoc-projet-origine\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#58 {main}
+"} 
+[2025-08-18 10:55:14] local.INFO: Méthode changeRole appelée {"agent_id":3,"user_id":3,"nouveau_role":"Service Accueil","anciens_roles":{"Illuminate\\Support\\Collection":[]}} 
+[2025-08-18 10:55:14] local.INFO: Rôle mis à jour avec succès {"agent_id":3,"user_id":3,"nouveau_role":"Service Accueil","roles_apres_maj":{"Illuminate\\Support\\Collection":["Service Accueil"]}} 
