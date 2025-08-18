@@ -254,46 +254,26 @@
                     
                     <div class="form-group mb-3">
                         <label class="form-label">Permissions</label>
-                        <div class="border rounded p-3" style="max-height: 500px; overflow-y: auto;">
-                            @php
-                                $permissions = \Spatie\Permission\Models\Permission::all();
-                                $groupedPermissions = $permissions->groupBy(function($item) {
-                                    return explode(' ', $item->name)[0];
-                                });
-                            @endphp
-                            
-                            <div class="row">
-                                @foreach($groupedPermissions as $group => $permissions)
-                                    <div class="col-md-6 col-lg-4 mb-4">
-                                        <div class="card h-100">
-                                            <div class="card-header bg-light py-2">
-                                                <h6 class="mb-0 fw-bold">{{ ucfirst($group) }}</h6>
-                                            </div>
-                                            <div class="card-body p-3">
-                                                @foreach($permissions->chunk(5) as $chunk)
-                                                    <div class="row g-2 mb-2">
-                                                        @foreach($chunk as $permission)
-                                                            <div class="col-12">
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input" type="checkbox" 
-                                                                           wire:model.defer="selectedPermissions" 
-                                                                           value="{{ $permission->name }}" 
-                                                                           id="perm-{{ $permission->id }}">
-                                                                    <label class="form-check-label small d-block text-truncate" 
-                                                                           for="perm-{{ $permission->id }}"
-                                                                           title="{{ $permission->name }}">
-                                                                        {{ Str::after($permission->name, $group . ' ') }}
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                @endforeach
-                                            </div>
+                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            @foreach(\Spatie\Permission\Models\Permission::all()->groupBy(function($item) {
+                                return explode(' ', $item->name)[0];
+                            }) as $group => $permissions)
+                                <div class="mb-3">
+                                    <h6 class="mb-2">{{ ucfirst($group) }}</h6>
+                                    @foreach($permissions as $permission)
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   wire:model.defer="selectedPermissions" 
+                                                   value="{{ $permission->name }}" 
+                                                   id="perm-{{ $permission->id }}">
+                                            <label class="form-check-label" for="perm-{{ $permission->id }}">
+                                                {{ $permission->name }}
+                                            </label>
                                         </div>
-                                    </div>
-                                @endforeach
-                            </div>
+
+                                    @endforeach
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                     
