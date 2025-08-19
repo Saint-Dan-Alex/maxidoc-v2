@@ -25,6 +25,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use App\Jobs\SendEmail;
 use App\Mail\AgentsPasswordMail;
 use Carbon\Carbon;
@@ -34,21 +35,18 @@ use Illuminate\Support\Facades\Storage;
 use \App\Helpers\Helpers;
 use App\Models\Historique;
 
-
 class Fiche extends Component
 {
     use WithPagination;
     use WithFileUploads;
 
-    // Propriétés pour la gestion des rôles
-    // Propriétés pour la gestion des rôles
+    // Propriétés pour la gestion des rôles et permissions
     public $role;
     public $selectedPermissions = [];
     public $showRoleSection = true;
     public $roleName = '';
     
-    public $historiquesPage = 1; // Propriété pour gérer la pagination des activités
-
+    public $historiquesPage = 1;
     public $archivedAgents;
     public $agent;
     public $email;
@@ -63,13 +61,17 @@ class Fiche extends Component
     public $fonctions = [];
     public $grades = [];
     public $permissions = [];
-    public $isSavingPermissions = false;
+    public $isSaving = false;
     public $lieu_id;
     public $direction_id;
     public $service_id;
     public $fonction_id;
     public $photo;
     public $selected_modules = [];
+    public $userPermissions = [];
+    public $allPermissions = [];
+    public $permissionModules = [];
+    
     public $isReadyOnly = [
         'service' => false,
         'fonction' => false,
@@ -99,132 +101,18 @@ class Fiche extends Component
         'updateHistoriquesPage',
         'resetRoleForm' => 'resetRoleForm',
         'updatePermissions' => 'updatePermissions',
-        'savePermissions' => 'savePermissions',
     ];
     
-    public function savePermissions()
-    {
-        $this->isSavingPermissions = true;
-        $permissions = [];
-        
-        // Récupérer les permissions cochées depuis le DOM
-        $this->dispatchBrowserEvent('get-checked-permissions', [
-            'callback' => 'setCheckedPermissions'
-        ]);
-    }
-    
-    public function setCheckedPermissions($permissions)
-    {
-        $this->isSavingPermissions = false;
-        if (is_array($permissions)) {
-            $this->updatePermissions($permissions);
-        }
-    }
-
     protected $rules = [
         'roleName' => 'required|string|min:3|unique:roles,name',
         'selectedPermissions' => 'array',
     ];
 
-    public function createRole()
-    {
-        $this->validate();
-
-        try {
-            DB::beginTransaction();
-
-            // Créer le nouveau rôle
-            $role = \Spatie\Permission\Models\Role::create([
-                'name' => strtolower(Str::slug($this->roleName, '_')),
-                'display_name' => $this->roleName,
-                'guard_name' => 'web'
-            ]);
-
-            // Assigner les permissions au rôle
-            if (!empty($this->selectedPermissions)) {
-                $role->syncPermissions($this->selectedPermissions);
-            }
-
-            DB::commit();
-
-            // Réinitialiser le formulaire
-            $this->resetRoleForm();
-            
-            // Fermer la modale
-            $this->dispatchBrowserEvent('close-modal', ['modal' => 'modal-new-role']);
-            
-            // Afficher un message de succès
-            session()->flash('message', 'Rôle créé avec succès.');
-            
-            // Rafraîchir la liste des rôles
-            $this->emit('roleCreated');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            session()->flash('error', 'Une erreur est survenue lors de la création du rôle : ' . $e->getMessage());
-        }
-    }
-    
-    public function resetRoleForm()
-    {
-        $this->reset(['roleName', 'selectedPermissions']);
-        $this->resetErrorBag();
-        $this->resetValidation();
-    }
-
-    /**
-     * Attribue un rôle à un utilisateur avec les permissions par défaut du rôle
-     *
-     * @param int $userId
-     * @param int $roleId
-     * @return void
-     */
-    public function assignRoleToUser($userId, $roleId)
-    {
-        try {
-            DB::beginTransaction();
-
-            // Récupérer l'utilisateur et le rôle
-            $user = \App\Models\User::findOrFail($userId);
-            $role = \Spatie\Permission\Models\Role::findOrFail($roleId);
-
-            // Récupérer les permissions par défaut du rôle
-            $defaultPermissions = $role->permissions->pluck('name')->toArray();
-
-            // Synchroniser le rôle de l'utilisateur
-            $user->syncRoles([$role->name]);
-
-            // Si le rôle a des permissions par défaut, les attribuer à l'utilisateur
-            if (!empty($defaultPermissions)) {
-                $user->syncPermissions($defaultPermissions);
-            }
-
-            DB::commit();
-
-            // Afficher un message de succès
-            session()->flash('message', 'Rôle et permissions attribués avec succès.');
-            
-            // Rafraîchir la page
-            $this->emit('refreshComponent');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            session()->flash('error', 'Une erreur est survenue lors de l\'attribution du rôle : ' . $e->getMessage());
-        }
-    }
-
-    public function updateHistoriquesPage($page)
-    {
-        $this->historiquesPage = $page;
-    }
-
     protected $paginationTheme = 'bootstrap';
 
     protected $queryString = [
-        // 'search' => ['except' => ''],
         'page' => ['except' => 1],
     ];
-
 
     public function mount()
     {
@@ -232,12 +120,20 @@ class Fiche extends Component
         if ($this->agent && $this->agent->user) {
             $this->role = $this->agent->user->roles->first()?->name;
         }
-        // $this->actifAgents = Agent::actif()->orderBy('nom');
-        // $this->inactifAgents = Agent::inactif()->orderBy('nom')->limit(5)->get();
-        // $this->archivedAgents = Agent::archived()->orderBy('nom')->limit(5)->get();
-        // $this->statuts = Statut::all();
-
+        
         $this->statuts = DB::table('statuts')->select('id', 'libelle')->get();
+        $this->initializePermissions();
+    }
+
+    protected function initializePermissions()
+    {
+        if ($this->agent && $this->agent->user) {
+            $this->userPermissions = $this->agent->user->getPermissionNames()->toArray();
+        }
+        
+        // Charger tous les modules avec leurs permissions
+        $this->permissionModules = Module::with('permissions')->get();
+        $this->allPermissions = Permission::pluck('name')->toArray();
     }
 
     public function hydrate()
@@ -248,38 +144,40 @@ class Fiche extends Component
     public function showUser($id)
     {
         $this->agent = Agent::where('id', $id)->first();
-        $this->email = $this->agent->user->email;
-        $this->statut = $this->agent->statut_id;
-        $this->role = isset($this->agent->user->getRoleNames()[0]) ? $this->agent->user->getRoleNames()[0] : null;
-        $this->permissions = $this->agent->user->getPermissionNames()->toArray() ?? [];
+        
+        if ($this->agent) {
+            $this->email = $this->agent->user->email;
+            $this->statut = $this->agent->statut_id;
+            $this->role = isset($this->agent->user->getRoleNames()[0]) ? $this->agent->user->getRoleNames()[0] : null;
+            $this->permissions = $this->agent->user->getPermissionNames()->toArray() ?? [];
 
-        $this->form_stat = [
-            'nom' => $this->agent->nom,
-            'post_nom' => $this->agent->post_nom,
-            'prenom' => $this->agent->prenom,
-            'sexe' => $this->agent->sexe,
-            'matricule' => $this->agent->matricule,
-            'lieu_id' => $this->agent->lieu_id,
-            'direction_id' => $this->agent->direction_id,
-            'service_id' => $this->agent->service_id,
-            'fonction_id' => $this->agent->fonction_id,
-            'grade_id' => $this->agent->grade_id,
-            'image' => '',
-        ];
+            $this->form_stat = [
+                'nom' => $this->agent->nom,
+                'post_nom' => $this->agent->post_nom,
+                'prenom' => $this->agent->prenom,
+                'sexe' => $this->agent->sexe,
+                'matricule' => $this->agent->matricule,
+                'lieu_id' => $this->agent->lieu_id,
+                'direction_id' => $this->agent->direction_id,
+                'service_id' => $this->agent->service_id,
+                'fonction_id' => $this->agent->fonction_id,
+                'grade_id' => $this->agent->grade_id,
+                'image' => '',
+            ];
 
-        $this->lieus = LieuAffectation::select('id', 'titre')->get();
-        // if ($this->form_stat['direction_id']) {
-        //     $this->fonctions = Fonction::where('direction_id', $this->form_stat['direction_id'])->orderBy('titre')->get();
-        // } elseif ($this->form_stat['service_id']) {
-        //     $this->fonctions = Fonction::where('service_id', $this->form_stat['service_id'])->orderBy('titre')->get();
-        // }
-        $this->directions = Direction::select('id', 'titre')->where('lieu_id', $this->form_stat['lieu_id'])->orderBy('titre')->get();
-        $this->services = Service::select('id', 'titre')->where('direction_id', $this->form_stat['direction_id'])->get();
-        $this->grades = Grade::select('id', 'titre')->get();
+            $this->lieus = LieuAffectation::select('id', 'titre')->get();
+            $this->directions = Direction::select('id', 'titre')->where('lieu_id', $this->form_stat['lieu_id'])->orderBy('titre')->get();
+            $this->services = Service::select('id', 'titre')->where('direction_id', $this->form_stat['direction_id'])->get();
+            $this->grades = Grade::select('id', 'titre')->get();
+            
+            // Initialiser les permissions
+            $this->initializePermissions();
+        }
 
         // Réinitialiser la pagination
         $this->resetPage('historiquesPage');
     }
+
     public function changeLieu($id)
     {
         $this->form_stat['direction_id'] = "";
@@ -296,14 +194,11 @@ class Fiche extends Component
         }
     }
 
-
     public function changeService($id)
     {
         $this->form_stat['service_id'] = $id;
-        // Les fonctions sont indépendantes du service, on charge toutes les fonctions
         $this->fonctions = Fonction::orderBy('titre')->get();
     }
-
 
     public function changeGrade($id)
     {
@@ -312,7 +207,6 @@ class Fiche extends Component
 
     public function saveFonction($titre)
     {
-        // dd($titre);
         $fonction = Fonction::firstOrCreate([
             'titre' => $titre,
         ], [
@@ -331,24 +225,17 @@ class Fiche extends Component
 
     public function changeTab($tab)
     {
-
         if ($this->tab !== $tab) {
             $this->resetPage();
             $this->tab = $tab;
-            // $this->emit('tabChange');
         }
     }
 
     public function updatedSearch()
     {
         $this->isSearching = true;
-        
-        // Réinitialiser la pagination lors d'une nouvelle recherche
         $this->resetPage();
-        
-        // Simuler un délai pour montrer l'indicateur de chargement
-        usleep(300000); // 300ms de délai
-        
+        usleep(300000);
         $this->isSearching = false;
     }
 
@@ -363,56 +250,17 @@ class Fiche extends Component
         return $query;
     }
 
-
-    public function render()
-    {
-        $queryAgents = Agent::query();
-
-        // Initialisation des variables avec des requêtes Eloquent vides
-        $actifAgents = $queryAgents;
-        $inactifAgents = $queryAgents;
-
-        switch ($this->tab) {
-            case 1:
-                $actifAgents = $this->searchFilter($queryAgents)->actif();
-                break;
-            case 2:
-                $inactifAgents = $this->searchFilter($queryAgents)->inactif();
-                break;
-        }
-
-        // Récupération des activités avec pagination
-        $historiques = $this->agent
-            ? Historique::where('user_id', $this->agent->user->id)
-                ->orderByDesc('id')
-                ->paginate(20, ['*'], 'historiquesPage', $this->historiquesPage)
-            : collect();
-
-        return view('livewire.admin.agents.fiche')->with([
-            'actifAgents' => $actifAgents->orderBy('nom')->simplePaginate(25),
-            'inactifAgents' => $inactifAgents->orderBy('nom')->simplePaginate(25),
-            'historiques' => $historiques,
-        ]);
-    }
-
     public function updatedDirectionId()
     {
         if ($this->direction_id != null && $this->direction_id != '') {
-            # code...
             $this->isReadyOnly['service'] = false;
-            // Pas de divisions
             $this->fonctions = Direction::findOrFail($this->direction_id)->fonctions ?? collect();
         }
     }
 
-
-
     public function updatedServiceId()
     {
         // Pas de sections
-        // if ($this->service_id != null && $this->service_id != '') {
-        //     $this->sections = Service::findOrFail($this->service_id)->sections ?? collect();
-        // }
     }
 
     public function generateRandomPassword($length = 8)
@@ -433,7 +281,7 @@ class Fiche extends Component
             'email' => 'required|email',
         ]);
 
-        $password = Str::random(9); //$this->generateRandomPassword();
+        $password = Str::random(9);
 
         $user = $this->agent->user;
         $user->password = Hash::make($password);
@@ -442,15 +290,15 @@ class Fiche extends Component
 
         SendEmail::dispatch($user->email, new AgentsPasswordMail($password));
 
-        $this->emit('alert', 'success', "Mot de passe de l'agent " . $this->agent->prenom . " " . $this->agent->nom . "a été regénéré avec succès");
+        $this->emit('alert', 'success', "Mot de passe de l'agent " . $this->agent->prenom . " " . $this->agent->nom . " a été regénéré avec succès");
     }
 
     public function archiveAgent($id)
     {
         $agent = Agent::findOrFail($id);
         $classer = Classeur::where('direction_id', Auth::user()->agent?->direction_id)->where('reference', Auth::user()->agent?->direction?->code)->first();
+        
         if ($classer == null) {
-            # code...
             $classer = Classeur::firstOrCreate(
                 [
                     'direction_id' => $agent?->direction_id,
@@ -464,9 +312,9 @@ class Fiche extends Component
                 ]
             );
         }
+        
         $dossier = Dossier::where('reference', 'DAA/' . $agent?->matricule,)->first();
         if ($dossier == null) {
-            # code...
             $dossier = Dossier::firstOrCreate(
                 [
                     'classeur_id' => $classer->id,
@@ -481,6 +329,7 @@ class Fiche extends Component
                 ]
             );
         }
+        
         $document = Document::create([
             'dossier_id' => $dossier->id,
             'libelle' => $agent->nom . '.' . $agent->prenom . '.' . $agent->matricule,
@@ -498,9 +347,11 @@ class Fiche extends Component
             'agent' => $agent->id,
             'doc' => $document->id,
         ]);
+        
         $document->update([
             'document' => $url,
         ]);
+        
         $agent->update([
             'statut_id' => '3',
         ]);
@@ -536,7 +387,7 @@ class Fiche extends Component
             if ($this->role === 'Admin') {
                 $permissions = Permission::get();
                 $this->agent->user->syncPermissions($permissions);
-                $this->permissions = $permissions->pluck('name')->toArray();
+                $this->userPermissions = $permissions->pluck('name')->toArray();
             }
 
             // Rafraîchir les données de l'utilisateur
@@ -551,9 +402,6 @@ class Fiche extends Component
                 'nouveau_role' => $this->role,
                 'roles_apres_maj' => $this->agent->user->getRoleNames()
             ]);
-            
-            // Forcer le rafraîchissement du composant
-            $this->emit('refreshComponent');
             
         } catch (\Exception $e) {
             Log::error('Erreur lors de la mise à jour du rôle', [
@@ -589,18 +437,62 @@ class Fiche extends Component
         }
     }
     
-    public function changePermission()
+    public function togglePermission($permissionName, $isChecked)
     {
-        // Cette méthode est appelée après la sélection des permissions
-        // Pas besoin de logique supplémentaire ici car les permissions sont déjà mises à jour
-        // via la méthode updatePermissions qui est appelée directement depuis le JavaScript
+        $permissions = $this->userPermissions;
+        
+        if ($isChecked && !in_array($permissionName, $permissions)) {
+            $permissions[] = $permissionName;
+        } elseif (!$isChecked && ($key = array_search($permissionName, $permissions)) !== false) {
+            unset($permissions[$key]);
+        }
+        
+        $this->userPermissions = array_values($permissions);
+    }
+    
+    public function toggleModule($moduleId, $isChecked)
+    {
+        $module = Module::with('permissions')->find($moduleId);
+        
+        if (!$module) return;
+        
+        $permissionNames = $module->permissions->pluck('name')->toArray();
+        $currentPermissions = $this->userPermissions;
+        
+        if ($isChecked) {
+            // Ajouter toutes les permissions du module
+            foreach ($permissionNames as $permission) {
+                if (!in_array($permission, $currentPermissions)) {
+                    $currentPermissions[] = $permission;
+                }
+            }
+        } else {
+            // Retirer toutes les permissions du module
+            $currentPermissions = array_diff($currentPermissions, $permissionNames);
+        }
+        
+        $this->userPermissions = array_values($currentPermissions);
+    }
+    
+    public function updateUserPermissions()
+    {
+        try {
+            $this->isSaving = true;
+            
+            if ($this->agent && $this->agent->user) {
+                $this->agent->user->syncPermissions($this->userPermissions);
+                $this->emit('alert', 'success', 'Permissions mises à jour avec succès!');
+            }
+        } catch (\Exception $e) {
+            $this->emit('alert', 'error', 'Erreur lors de la mise à jour des permissions: ' . $e->getMessage());
+        } finally {
+            $this->isSaving = false;
+        }
     }
 
     public function updateAgent()
     {
         try {
-            // $data = collect($this->form_stat);
-
             $request = Validator::make(
                 [
                     "nom" => $this->form_stat['nom'],
@@ -638,7 +530,6 @@ class Fiche extends Component
             )->validate();
 
             $request = json_decode(json_encode($request));
-            //dd($request->photo !== null ?  $this->photo->storeAs($path, $filename,'public') : $this->agent->image);
 
             $this->agent->user->update([
                 'name' => $request->prenom . ' ' . $request->nom,
@@ -661,8 +552,7 @@ class Fiche extends Component
             $this->agent->slug = Str::slug($request->nom . ' ' . $request->post_nom . ' ' . $request->prenom);
             $this->agent->matricule = $request->matricule;
             $this->agent->direction_id = $request->direction_id ?? null;
-            $this->agent->service_id = $request->service_id ?? null; // Correction de 'sevice_id' à 'service_id'
-            // $this->agent->section_id = $request->section_id ?? null; // Supprimé
+            $this->agent->service_id = $request->service_id ?? null;
             $this->agent->grade_id = $request->grade_id ?? null;
             $this->agent->lieu_id = $request->lieu_id ?? null;
             $this->agent->updated_by = Auth::user()->id;
@@ -674,15 +564,13 @@ class Fiche extends Component
                     $dir = Direction::find($request->direction_id);
                     $dir->responsable_id = $this->agent->id;
                     $dir->save();
-                } // Suppression des conditions pour 'Chef Division' et 'Chef Section'
-                elseif (Str::startsWith($titre, 'Chef Service')) {
+                } elseif (Str::startsWith($titre, 'Chef Service')) {
                     $ser = Service::find($request->service_id);
                     if ($ser) {
                         $ser->responsable_id = $this->agent->id;
                         $ser->save();
                     }
-                } // Suppression des conditions pour 'Secrétaire Division' et 'Secrétaire Section'
-                elseif (Str::startsWith($titre, 'Secrétaire Direction') || Str::startsWith($titre, 'Secretaire Direction')) {
+                } elseif (Str::startsWith($titre, 'Secrétaire Direction') || Str::startsWith($titre, 'Secretaire Direction')) {
                     $direction = Direction::find($request->direction_id);
                     if ($direction) {
                         Secretariat::firstOrCreate([
@@ -739,42 +627,85 @@ class Fiche extends Component
         return $filename;
     }
 
-    /**
-     * Met à jour les permissions de l'utilisateur
-     *
-     * @param array $permissionsToUpdate Tableau des noms de permissions à activer
-     * @return void
-     */
-    public function updatePermissions($permissionsToUpdate = [])
+    public function updateHistoriquesPage($page)
     {
+        $this->historiquesPage = $page;
+    }
+
+    public function createRole()
+    {
+        $this->validate();
+
         try {
             DB::beginTransaction();
-            
-            $user = $this->agent->user;
-            
-            // Convertir en tableau si ce n'est pas déjà le cas
-            $permissions = is_array($permissionsToUpdate) ? $permissionsToUpdate : [];
-            
-            // Synchroniser les permissions
-            $user->syncPermissions($permissions);
-            
-            // Rafraîchir les données
-            $user->load('permissions');
-            $this->permissions = $user->getPermissionNames()->toArray();
-            
+
+            // Créer le nouveau rôle
+            $role = Role::create([
+                'name' => strtolower(Str::slug($this->roleName, '_')),
+                'display_name' => $this->roleName,
+                'guard_name' => 'web'
+            ]);
+
+            // Assigner les permissions au rôle
+            if (!empty($this->selectedPermissions)) {
+                $role->syncPermissions($this->selectedPermissions);
+            }
+
             DB::commit();
+
+            // Réinitialiser le formulaire
+            $this->resetRoleForm();
             
-            return true;
+            // Fermer la modale
+            $this->dispatchBrowserEvent('close-modal', ['modal' => 'modal-new-role']);
             
+            // Afficher un message de succès
+            session()->flash('message', 'Rôle créé avec succès.');
+            
+            // Rafraîchir la liste des rôles
+            $this->emit('roleCreated');
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            // Journaliser l'erreur
-            Log::error('Erreur updatePermissions: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            throw $e;
+            session()->flash('error', 'Une erreur est survenue lors de la création du rôle : ' . $e->getMessage());
         }
+    }
+    
+    public function resetRoleForm()
+    {
+        $this->reset(['roleName', 'selectedPermissions']);
+        $this->resetErrorBag();
+        $this->resetValidation();
+    }
+
+    public function render()
+    {
+        $queryAgents = Agent::query();
+
+        // Initialisation des variables avec des requêtes Eloquent vides
+        $actifAgents = $queryAgents;
+        $inactifAgents = $queryAgents;
+
+        switch ($this->tab) {
+            case 1:
+                $actifAgents = $this->searchFilter($queryAgents)->actif();
+                break;
+            case 2:
+                $inactifAgents = $this->searchFilter($queryAgents)->inactif();
+                break;
+        }
+
+        // Récupération des activités avec pagination
+        $historiques = $this->agent
+            ? Historique::where('user_id', $this->agent->user->id)
+                ->orderByDesc('id')
+                ->paginate(20, ['*'], 'historiquesPage', $this->historiquesPage)
+            : collect();
+
+        return view('livewire.admin.agents.fiche')->with([
+            'actifAgents' => $actifAgents->orderBy('nom')->simplePaginate(25),
+            'inactifAgents' => $inactifAgents->orderBy('nom')->simplePaginate(25),
+            'historiques' => $historiques,
+        ]);
     }
 }
