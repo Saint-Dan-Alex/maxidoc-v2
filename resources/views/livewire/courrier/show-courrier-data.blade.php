@@ -142,7 +142,7 @@
             @endif
 
             @if (!Auth::user()->agent->isSecretaire())
-                @if (Auth::user()->can('Partager un courrier') ||
+                @if (Auth::user()->can('Partager un document') ||
                         (Auth::user()->can('Modifier un courrier') && $etape->pivot->view_by == null) ||
                         (Auth::user()->can('Assigner une tâche') && $courrier->document != null) ||
                         Auth::user()->can('Suivi des courriers'))
@@ -154,7 +154,7 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton1"
                                 data-popper-placement="bottom-end">
-                                @can('Partager un courrier')
+                                @can('Partager un document')
                                     <li>
                                         <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                             data-bs-target="#modal-new-task-ass">

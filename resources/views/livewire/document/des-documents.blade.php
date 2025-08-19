@@ -241,7 +241,7 @@
                                                             <i class="fi fi-rr-eye" class="me-1"></i>
                                                             <div class="tooltip-btn">Voir détails</div>
                                                         </a>
-                                                        @can('Signer un courrier')
+                                                        @can('Signer un document')
                                                             <a href="{{ route('regidoc.documents.sign', ['doc_id' => $document?->id, 'is_original' => true, 'courrier_id' => $document->courrier?->id]) }}"
                                                                 class="btn">
                                                                 <i class="fi fi-rr-feather" class="me-1"></i>
@@ -410,7 +410,7 @@
                                                         <i class="fi fi-rr-eye" class="me-1"></i>
                                                         <div class="tooltip-btn">Voir détails</div>
                                                     </a>
-                                                    @can('Signer un courrier')
+                                                    @can('Signer un document')
                                                         <a href="{{ route('regidoc.documents.sign', ['doc_id' => $document?->id, 'is_original' => true, 'courrier_id' => $document->courrier?->id]) }}"
                                                             class="btn">
                                                             <i class="fi fi-rr-feather" class="me-1"></i>

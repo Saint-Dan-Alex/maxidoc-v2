@@ -432,7 +432,7 @@
             </div>
         </div>
     </div> --}}
-    @can('Signer un courrier')
+    @can('Signer un document')
         <a href="{{ route('regidoc.courriers.signer', $find_document->id) }}" class="btn btn-primary btn-float-single" style="position: fixed; z-index: 999;">Signer ce document</a>
     @endcan
 @endsection

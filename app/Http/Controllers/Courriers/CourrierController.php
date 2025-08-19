@@ -290,11 +290,11 @@ class CourrierController extends Controller
 public function traitement($courrier)
 {
     try {
-        \Log::info('🟢 Début du traitement');
+        Log::info('🟢 Début du traitement');
 
         // Récupération du courrier s'il s'agit d'un ID
         $courrier = $courrier instanceof Courrier ? $courrier : Courrier::find($courrier);
-        \Log::info('📩 Courrier chargé', ['courrier_id' => optional($courrier)->id]);
+        Log::info('📩 Courrier chargé', ['courrier_id' => optional($courrier)->id]);
 
         if (!$courrier) {
             throw new \Exception('Courrier introuvable.');
@@ -302,30 +302,30 @@ public function traitement($courrier)
 
         // 📥 Courrier entrant
         if ($courrier->type_id == 1) {
-            \Log::info('➡️ Traitement du courrier entrant');
+            Log::info('➡️ Traitement du courrier entrant');
 
             $courrier->mark_as_done = 1;
             $courrier->save();
-            \Log::info('✅ Courrier marqué comme traité');
+            Log::info('✅ Courrier marqué comme traité');
 
             if ($courrier->document) {
                 $courrier->document->statut_id = 5; // 5 = "Traité"
                 $courrier->document->save();
-                \Log::info('🗂️ Document marqué comme traité', ['document_id' => $courrier->document->id]);
+                Log::info('🗂️ Document marqué comme traité', ['document_id' => $courrier->document->id]);
             }
 
             $agentId = Auth::user()->agent->id;
-            \Log::info('👤 Agent identifié', ['agent_id' => $agentId]);
+            Log::info('👤 Agent identifié', ['agent_id' => $agentId]);
 
             $traitement = new CourrierTraitement();
             $traitement->agent_id = $agentId;
             $traitement->note = 'Document traité';
             $traitement->save();
-            \Log::info('📝 Traitement enregistré', ['traitement_id' => $traitement->id]);
+            Log::info('📝 Traitement enregistré', ['traitement_id' => $traitement->id]);
 
             $courrier->traitements()->attach($traitement);
             $courrier->etapes()->attach(3); // Étape assistant
-            \Log::info('🔁 Traitement et étape ajoutés');
+            Log::info('🔁 Traitement et étape ajoutés');
 
             // 📤 Création du courrier sortant
             $oldata = $courrier->getAttributes();
@@ -341,7 +341,7 @@ public function traitement($courrier)
 
             if (!$nouveau_destinataire) {
                 $extern_destinataire->save();
-                \Log::info('📦 Nouveau destinataire externe créé', ['dest_id' => $extern_destinataire->id]);
+                Log::info('📦 Nouveau destinataire externe créé', ['dest_id' => $extern_destinataire->id]);
             }
 
             $oldata['type_id'] = 2; // Sortant
@@ -355,7 +355,7 @@ public function traitement($courrier)
             $oldata['dest_externe_id'] = $extern_destinataire->id;
 
             $newCourrier = $this->saveCourrierSortant(new Courrier($oldata));
-            \Log::info('📨 Courrier sortant créé', ['new_courrier_id' => $newCourrier->id]);
+            Log::info('📨 Courrier sortant créé', ['new_courrier_id' => $newCourrier->id]);
 
             foreach ($courrier->traitements as $t) {
                 $newCourrier->traitements()->attach($t);
@@ -364,7 +364,7 @@ public function traitement($courrier)
             $dgResponsables = Auth::user()->agent->direction->dgAssistanats->pluck('responsable_id');
             if ($dgResponsables->count()) {
                 $newCourrier->destinateurs()->attach($dgResponsables);
-                \Log::info('👥 Responsables attachés', ['ids' => $dgResponsables]);
+                Log::info('👥 Responsables attachés', ['ids' => $dgResponsables]);
             }
 
             $newCourrier->etapes()->attach(3);
@@ -379,17 +379,17 @@ public function traitement($courrier)
 
             if ($notifyAgents->count() > 0) {
                 event(new CourrierCreated($courrier, $notifyAgents, 'Un nouveau courrier traité vous a été transmis !'));
-                \Log::info('📢 Notification envoyée', ['agents' => $notifyAgents->pluck('id')]);
+                Log::info('📢 Notification envoyée', ['agents' => $notifyAgents->pluck('id')]);
             }
 
             $courrier->statut_id = 3;
             $courrier->save();
-            \Log::info('🟩 Statut du courrier entrant mis à jour');
+            Log::info('🟩 Statut du courrier entrant mis à jour');
         }
 
         // 📨 Courrier interne
         elseif ($courrier->type_id == 3) {
-            \Log::info('➡️ Traitement du courrier interne');
+            Log::info('➡️ Traitement du courrier interne');
 
             $courrier->mark_as_done = 1;
             $courrier->save();
@@ -397,7 +397,7 @@ public function traitement($courrier)
             if ($courrier->document) {
                 $courrier->document->statut_id = 5;
                 $courrier->document->save();
-                \Log::info('🗂️ Document interne marqué comme traité');
+                Log::info('🗂️ Document interne marqué comme traité');
             }
 
             $traitement = new CourrierTraitement();
@@ -408,7 +408,7 @@ public function traitement($courrier)
             $courrier->traitements()->attach($traitement);
             $courrier->statut_id = 3;
             $courrier->save();
-            \Log::info('🟩 Courrier interne mis à jour avec traitement');
+            Log::info('🟩 Courrier interne mis à jour avec traitement');
         }
 
         $response = [
@@ -417,7 +417,7 @@ public function traitement($courrier)
             'message' => 'Le courrier a été marqué comme traité',
         ];
 
-        \Log::info('✅ Fin du traitement avec succès');
+        Log::info('✅ Fin du traitement avec succès');
 
         if (request()->ajax()) {
             return response()->json($response, 200, ['Content-Type' => 'application/json']);
@@ -427,7 +427,7 @@ public function traitement($courrier)
         }
 
     } catch (\Throwable $th) {
-        \Log::error('❌ Erreur lors du traitement du courrier', [
+        Log::error('❌ Erreur lors du traitement du courrier', [
             'message' => $th->getMessage(),
             'file' => $th->getFile(),
             'line' => $th->getLine(),
@@ -985,7 +985,7 @@ public function createDocument($request, $destinateur, $doc = null)
     {
         // Vérifier que le type est valide
         if (!in_array($type, [1, 2, 3])) {
-            \Log::error('Type de courrier invalide:', ['type' => $type]);
+            Log::error('Type de courrier invalide:', ['type' => $type]);
             throw new \InvalidArgumentException('Type de courrier invalide. Doit être 1, 2 ou 3.');
         }
         
@@ -1590,7 +1590,7 @@ public function update(Request $request, $id)
     }
 
     /**
-     * Valider un courrier
+     * Valider un document
      *
      * @param  \App\Models\Courrier  $courrier
      * @return \Illuminate\Http\Response
@@ -1712,7 +1712,7 @@ public function update(Request $request, $id)
         ]);
 
     } catch (\Throwable $e) {
-        \Log::error('Erreur lors de la validation du courrier', [
+        Log::error('Erreur lors de la validation du courrier', [
             'message' => $e->getMessage(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),
@@ -1728,7 +1728,7 @@ public function update(Request $request, $id)
 
     
     /**
-     * Rejeter un courrier
+     * Rejeter un document
      *
      * @param  \App\Models\Courrier  $courrier
      * @return \Illuminate\Http\Response
@@ -1834,7 +1834,7 @@ public function rejeter(Courrier $courrier)
             'message' => 'Le courrier a été rejeté avec succès.'
         ]);
     } catch (\Throwable $e) {
-        \Log::error('Erreur lors du rejet du courrier', [
+        Log::error('Erreur lors du rejet du courrier', [
             'message' => $e->getMessage(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),
