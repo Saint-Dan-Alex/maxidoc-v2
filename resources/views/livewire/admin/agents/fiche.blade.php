@@ -13,6 +13,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
         </div>
     @endif
+    
     <div class="sidebar sidebar-mobile">
         <div class="content-sidebar d-flex flex-column" style="overflow: hidden">
             <div class="logo normal">
@@ -100,10 +101,8 @@
                                             @php
                                                 $isCurrentUser = false;
                                                 if (Auth::user()->id==1) {
-                                                    // Pour le superadmin, on compare directement avec l'ID de l'utilisateur
                                                     $isCurrentUser = Auth::id() == $actifAgent?->user_id;
                                                 } else if (Auth::user()->agent) {
-                                                    // Pour les autres utilisateurs, on vérifie l'agent associé
                                                     $isCurrentUser = Auth::user()->agent->id == $actifAgent?->id;
                                                 }
                                             @endphp
@@ -160,13 +159,11 @@
                         </ul>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
     <div class="container-fluid px-lg-2">
-
         <div class="d-flex   align-items-center mb-lg-3 mb-2">
             <a href="{{ route('regidoc.home') }}" class="back mb-0">
                 <i class="fi fi-rr-angle-left"></i>
@@ -180,7 +177,6 @@
         </div>
 
         <div class="tab-content" id="myTabContent" wire:ignore.self>
-
             <div class="tab-pane fade show active" id="block-details-person" role="tabpanel" aria-labelledby="home-tab"
                 wire:ignore.self>
                 <div class="row g-lg-2 g-2">
@@ -194,46 +190,21 @@
                         </div>
                     </div>
 
-                    {{-- @if ($agent == null) --}}
                     <div class="col-12 @if ($agent != null) d-none @endif">
                         <div class="card card-table justify-content-center align-items-center"
                             style="height: calc(100vh - 200px); background: transparent;box-shadow: none;">
-                            {{-- <img src="{{ asset('assets/img/icons/icon-employes.png') }}" alt=""
-                                class="img-icon"> --}}
-
                             <img src="{{ asset('assets/regidoc/default.png') }}" alt=""
                                 class="img-icon  img-personnal-details-none">
-
-
-
-
-                            {{-- <span class="svg-personnal-details-none-box">
-
-                                <svg class="svg-personnal-details-none" xmlns="http://www.w3.org/2000/svg"
-                                    width="1em" height="1em" viewBox="0 0 32 32">
-                                    <path fill="currentColor"
-                                        d="M28.523 23.813c-.518-.51-6.795-2.938-7.934-3.396c-1.133-.45-1.585-1.697-1.585-1.697s-.51.282-.51-.51c0-.793.51.51 1.02-2.548c0 0 1.415-.397 1.134-3.68h-.34s.85-3.51 0-4.698c-.853-1.188-1.187-1.98-3.06-2.548c-1.87-.567-1.19-.454-2.548-.396c-1.36.057-2.492.793-2.492 1.188c0 0-.85.057-1.188.397c-.34.34-.906 1.924-.906 2.32s.283 3.06.566 3.624l-.337.11c-.283 3.284 1.132 3.682 1.132 3.682c.51 3.058 1.02 1.755 1.02 2.548c0 .792-.51.51-.51.51s-.453 1.246-1.585 1.697c-1.132.453-7.416 2.887-7.927 3.396c-.51.52-.453 2.896-.453 2.896h26.954s.063-2.378-.453-2.897zm-6.335 2.25h-4.562v-1.25h4.562z" />
-                                </svg>
-
-                            </span> --}}
-
                             <p class="mb-0 mt-3" style="font-size: 12px;">Cliquez sur le nom d'un agent pour voir les
                                 détails
                             </p>
                         </div>
                     </div>
-                    {{-- @else --}}
-                    {{-- <div class="col-lg-12 @if ($agent == null) d-none @endif">
-                        <div class="card card-table card-profil card-profil-sm h-100 card-profil-agent">
-
-                        </div>
-                    </div> --}}
 
                     <div class="col-lg-12 @if ($agent == null) d-none @endif">
                         <div class="d-flex" wire:ignore>
                             <ul class="nav-user nav nav-tabs mt-3 mb-0 " role="tablist" wire:ignore>
                                 <li class="nav-item" role="presentation">
-
                                     <button class="nav-link" id="profile-tab" data-bs-toggle="tab"
                                         data-bs-target="#edit-profil" type="button" role="tab" wire:ignore
                                         aria-controls="edit-profil" aria-selected="false">
@@ -245,19 +216,12 @@
                                                 d="M3.34 17a10 10 0 0 1-.979-2.326a3 3 0 0 0 .003-5.347a10 10 0 0 1 2.5-4.337a3 3 0 0 0 4.632-2.674a10 10 0 0 1 5.007.003a3 3 0 0 0 4.632 2.671a10.06 10.06 0 0 1 2.503 4.336a3 3 0 0 0-.002 5.347a10 10 0 0 1-2.501 4.337a3 3 0 0 0-4.632 2.674a10 10 0 0 1-5.007-.002a3 3 0 0 0-4.631-2.672A10 10 0 0 1 3.339 17m5.66.196a5 5 0 0 1 2.25 2.77q.75.07 1.499.002a5 5 0 0 1 2.25-2.772a5 5 0 0 1 3.526-.564q.435-.614.748-1.298A5 5 0 0 1 18 12c0-1.26.47-2.437 1.273-3.334a8 8 0 0 0-.75-1.298A5 5 0 0 1 15 6.804a5 5 0 0 1-2.25-2.77q-.75-.071-1.5-.001A5 5 0 0 1 9 6.804a5 5 0 0 1-3.526.564q-.436.614-.747 1.298A5 5 0 0 1 6 12c0 1.26-.471 2.437-1.273 3.334a8 8 0 0 0 .75 1.298A5 5 0 0 1 9 17.196M12 15a3 3 0 1 1 0-6a3 3 0 0 1 0 6m0-2a1 1 0 1 0 0-2a1 1 0 0 0 0 2" />
                                         </svg>
                                     </button>
-
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link active" id="agent-tab" data-bs-toggle="tab"
                                         data-bs-target="#fiche-agent" type="button" role="tab" wire:ignore
                                         aria-controls="fiche-agent" aria-selected="false">Fiche agent</button>
                                 </li>
-
-                                {{-- <li class="nav-item " role="presentation">
-                                    <button class="nav-link " id="home-tab" data-bs-toggle="tab"
-                                        data-bs-target="#departement" type="button" role="tab" wire:ignore
-                                        aria-controls="departement" aria-selected="false">Detail personnel</button>
-                                </li> --}}
 
                                 <li class="nav-item " role="presentation">
                                     <button class="nav-link" id="profile-tab" data-bs-toggle="tab"
@@ -272,7 +236,6 @@
                                         aria-selected="false">Authentification</button>
                                 </li>
                             </ul>
-
                         </div>
 
                         <div class="card card-table card-profil" wire:ignore.self>
@@ -316,15 +279,10 @@
                                                                 x-on:livewire-upload-error="isUploading = false"
                                                                 x-on:livewire-upload-progress="progress = $event.detail.progress">
 
-                                                                <!-- File Input -->
-
                                                                 <input type="file" wire:model="photo"
                                                                     id="file-img-profil" accept=".jpg,.png">
 
-                                                                <!-- Progress Bar -->
-
                                                                 <div x-show="isUploading">
-                                                                    {{-- <progress max="100" x-bind:value="progress"></progress> --}}
                                                                     <div class="progress mt-2" role="progressbar"
                                                                         aria-label="Example with label"
                                                                         aria-valuenow="0" aria-valuemin="0"
@@ -336,7 +294,6 @@
                                                                             x-text="progress + '%'"></div>
                                                                     </div>
                                                                 </div>
-
                                                             </div>
                                                         </label>
                                                     </div>
@@ -420,8 +377,6 @@
                                                     </select>
                                                 </div>
 
-                                                
-
                                                 <div class="col-lg-4">
                                                     <label>Service</label>
                                                     <select class="form-select select2" name="sevice_id"
@@ -438,8 +393,6 @@
                                                         @endforeach
                                                     </select>
                                                 </div>
-
-                                               
 
                                                 <div class="col-lg-4">
                                                     <label>Fonction</label>
@@ -503,8 +456,6 @@
                                         <div class="block-user-info">
                                             <div
                                                 class=" mb-3  d-flex justify-content-between align-items-center flex-wrap flex-sm-nowrap @if ($agent == null) d-none @endif">
-                                                {{-- <h2 class="mb-0" style="flex: 0 0 auto;">Informations personnelles
-                                                    de l'agent </h2> --}}
                                                 <div
                                                     class="block-btns btns-actions mt-sm-0  w-100 justify-content-end  agent-detail-infos">
                                                     @if ($agent?->isDG() == false)
@@ -525,35 +476,22 @@
                                                                 </div>
                                                             </div>
                                                         </button>
-
-                                                        {{-- <button class="btn" wire:click='archiveAgent({{ $agent?->id }})'>
-                                                        <i class="fi fi-rr-box"></i> Archiver l'agent
-                                                    </button> --}}
                                                     @endif
-
                                                 </div>
                                             </div>
                                             <div class="row g-3 align-items-start pb-4">
                                                 <div class="col-lg-4">
                                                     <div class="d-flex">
-
                                                         <div class="avatar-user avatar-user-agent-detail">
                                                             <span
                                                                 class="statut {{ $agent?->statut_id == 1 ? 'on' : 'off' }}"></span>
                                                             <img src="{{ imageOrDefault($agent?->image) }}"
                                                                 alt="photo profil">
                                                         </div>
-
                                                         <div class="text-star">
                                                             <h4>{{ $agent?->prenom }} {{ $agent?->nom }}</h4>
                                                             <p class="mb-0">{{ $agent?->poste?->titre }}</p>
                                                             <p class="mb-0">Matricule: {{ $agent?->matricule }}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row justify-content-center">
-                                                        <div class="col-6 text-star">
-                                                            <h5></h5>
-
                                                         </div>
                                                     </div>
                                                 </div>
@@ -602,13 +540,11 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-
 
                                         <div class="tab-pane fade show active" id="infos-personnal-tab"
                                             wire:ignore.self role="tabpanel" aria-labelledby="infos-personnal-tab">
@@ -639,51 +575,6 @@
                                                             <h6>{{ $agent?->sexe ?: 'Non Specifié' }}</h6>
                                                         </div>
                                                     </div>
-                                                    {{-- <div class="col-lg-3">
-                                            <div class="items">
-                                                <p>Lieu de naissance</p>
-                                                <h6>{{ $agent?->lieu_naiss ?? 'Non Specifié' }}</h6>
-                                            </div>
-
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <div class="items">
-                                                <p>Date de naissance</p>
-                                                <h6>{{ date('d/m/Y', strtotime($agent?->date_naiss)) ?? 'Non Specifié' }}
-                                                </h6>
-                                            </div>
-
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <div class="items">
-                                                <p>Province d'origine</p>
-                                                <h6>{{ $agent?->province ?? 'Non Specifié' }}</h6>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <div class="items">
-                                                <p>Ville d'origine</p>
-                                                <h6>{{ $agent?->ville ?? 'Non Specifié' }}</h6>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <div class="items">
-                                                <p>Nationalité</p>
-                                                <h6>{{ $agent?->nationalite ?? 'Non Specifié' }}</h6>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <div class="items">
-                                                <p>Etat civil</p>
-                                                <h6>{{ $agent?->etat_civil ?? 'Non Specifié' }}</h6>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <div class="items">
-                                                <p>Nombre d'enfants</p>
-                                                <h6>{{ $agent?->nbr_enfant ?? 'Non Specifié' }}</h6>
-                                            </div>
-                                        </div> --}}
                                                 </div>
                                             </div>
                                             <div class="info-lg">
@@ -696,13 +587,6 @@
                                                             </h6>
                                                         </div>
                                                     </div>
-                                                    {{-- <div class="col-lg-3">
-                                                        <div class="items">
-                                                            <p>Division</p>
-                                                            <h6>{{ $agent?->division?->libelle ?? 'Non Specifié' }}
-                                                            </h6>
-                                                        </div>
-                                                    </div> --}}
                                                     <div class="col-lg-3">
                                                         <div class="items">
                                                             <p>Service </p>
@@ -722,62 +606,12 @@
                                                             <h6>{{ $agent?->grade?->titre ?: 'Non Specifié' }}</h6>
                                                         </div>
                                                     </div>
-
                                                 </div>
                                             </div>
                                         </div>
-
                                     </div>
-
                                 </div>
-                                {{-- <div class="tab-pane fade" id="activite" wire:ignore.self role="tabpanel"
-                                    aria-labelledby="activite-tab">
-                                    <div class="info-lg">
-                                        <h2>L'historique complet des activités de l'agent {{ $agent?->nom }}</h2>
-
-                                        <div class="row g-3">
-                                            @if ($agent && $historiques->isNotEmpty())
-                                                <table class="table mt-lg-3 mt-2">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th style="text-align: left;">Type</th>
-                                                            <th style="text-align: left;">Titre</th>
-                                                            <th style="text-align: left;">Actions réalisées</th>
-                                                            <th style="text-align: left;">Date et Heure</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($historiques as $key => $item)
-                                                            <tr>
-                                                                <td>{{ $key + 1 }}</td>
-                                                                <td>{{ class_basename($item->historiquecable_type) }}
-                                                                </td>
-                                                                <td>{{ $item->historiquecable->titre ?? 'Non Spécifié' }}
-                                                                </td>
-                                                                <td>{{ $item->description ?? 'Non Spécifié' }}</td>
-                                                                <td>{{ $item->created_at->isoFormat('ddd l') }} à
-                                                                    {{ $item->created_at->format('H:i:s') }}</td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                                <div class="d-flex justify-content-center mt-4">
-
-                                                    <div wire:key="historiques-pagination-{{ $historiquesPage }}">
-                                                        {!! $historiques->links() !!}
-                                                    </div>
-                                                </div>
-                                            @else
-                                                <div class="text-center col-12">
-                                                    <img src="{{ asset('assets/images/sad.gif') }}"
-                                                        alt="Aucune activité" width="35px">
-                                                    <p>Aucune activité à signaler</p>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div> --}}
+                                
                                 <div class="tab-pane fade" id="activite" wire:ignore.self role="tabpanel"
                                     aria-labelledby="activite-tab">
                                     <div class="info-lg">
@@ -811,15 +645,12 @@
                                                     </tbody>
                                                 </table>
 
-                                                <!-- Inclure la pagination personnalisée ici -->
                                                 <div class="d-flex justify-content-center mt-4">
                                                     @if ($historiques->hasPages())
                                                         <nav aria-label="Pagination">
                                                             <ul class="pagination">
-                                                                <!-- Lien "Précédent" -->
                                                                 @if ($historiques->onFirstPage())
                                                                     <li class="page-item disabled">
-                                                                        {{-- <span class="page-link">Précédent</span> --}}
                                                                         <span class="page-link" aria-hidden="true">
                                                                             <i class="fi fi-rr-angle-left"></i>
                                                                         </span>
@@ -832,7 +663,6 @@
                                                                     </li>
                                                                 @endif
 
-                                                                <!-- Liens des pages -->
                                                                 @foreach ($historiques->getUrlRange(1, $historiques->lastPage()) as $page => $url)
                                                                     @if ($page == $historiques->currentPage())
                                                                         <li class="page-item active">
@@ -847,7 +677,6 @@
                                                                     @endif
                                                                 @endforeach
 
-                                                                <!-- Lien "Suivant" -->
                                                                 @if ($historiques->hasMorePages())
                                                                     <li class="page-item">
                                                                         <a class="page-link" href="#"
@@ -856,14 +685,9 @@
                                                                     </li>
                                                                 @else
                                                                     <li class="page-item disabled">
-                                                                        {{-- <span class="page-link">Suivant</span> --}}
-
                                                                         <span class="page-link">
                                                                             <i class="fi fi-rr-angle-right"></i>
-
-
                                                                         </span>
-
                                                                     </li>
                                                                 @endif
                                                             </ul>
@@ -933,7 +757,6 @@
                                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                                             <label class="form-label mb-0 fw-bold">Rôles de l'utilisateur</label>
                                                             <button type="button" class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-new-role">
-                                                                {{-- <i class="fi fi-rr-plus"></i> --}}
                                                                 <span>Ajouter un rôle</span>
                                                             </button>
                                                         </div>
@@ -1004,20 +827,16 @@
                                                 <h2 class="mb-2">Permissions octroyées à l'agent</h2>
                                             </div>
                                             <div class="col-12">
-                                                <div wire:ignore>
-                                                    @php
-                                                        $userPermissions = $agent?->user?->permissions->pluck('name')->toArray() ?? [];
-                                                        $modules = \App\Models\Module::with('permissions')->get();
-                                                    @endphp
-                                                    
-                                                    @foreach($modules as $module)
+                                                <div wire:ignore.self>
+                                                    @foreach($permissionModules as $module)
                                                         <div class="card mb-3">
                                                             <div class="card-header bg-light">
                                                                 <div class="form-check">
                                                                     <input class="form-check-input module-checkbox" 
                                                                            type="checkbox" 
                                                                            id="module-{{ $module->id }}"
-                                                                           data-module-id="{{ $module->id }}">
+                                                                           data-module-id="{{ $module->id }}"
+                                                                           wire:change="toggleModule('{{ $module->id }}', $event.target.checked)">
                                                                     <label class="form-check-label fw-bold" for="module-{{ $module->id }}">
                                                                         {{ Str::upper($module->titre) }}
                                                                     </label>
@@ -1031,7 +850,8 @@
                                                                                id="permission-{{ $permission->id }}"
                                                                                value="{{ $permission->name }}"
                                                                                data-module-id="{{ $module->id }}"
-                                                                               {{ in_array($permission->name, $userPermissions) ? 'checked' : '' }}>
+                                                                               wire:model="userPermissions"
+                                                                               wire:change="togglePermission('{{ $permission->name }}', $event.target.checked)">
                                                                         <label class="form-check-label" for="permission-{{ $permission->id }}">
                                                                             {{ Str::ucfirst(str_replace('_', ' ', $permission->name)) }}
                                                                         </label>
@@ -1044,9 +864,17 @@
                                             </div>
                                             <div class="mt-4 col-12 text-end">
                                                 <button type="button" 
-                                                    class="btn btn-primary"
-                                                    id="savePermissionsBtn">
-                                                    <i class="fas fa-save me-1"></i> Enregistrer les permissions
+                                                        class="btn btn-add"
+                                                        wire:click="updateUserPermissions"
+                                                        wire:loading.attr="disabled"
+                                                        wire:target="updateUserPermissions">
+                                                    <span wire:loading.remove wire:target="updateUserPermissions">
+                                                        <i class="fi fi-rr-disk me-1"></i> Enregistrer les permissions
+                                                    </span>
+                                                    <span wire:loading wire:target="updateUserPermissions">
+                                                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                                        Enregistrement...
+                                                    </span>
                                                 </button>
                                             </div>
                                         </div>
@@ -1055,144 +883,9 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- <div class="col-lg-12 @if ($agent == null) d-none @endif">
-                        <div class="d-flex" wire:ignore>
-                            <ul class="nav-user nav nav-tabs mt-3 mb-0 " role="tablist" wire:ignore>
-
-                                <li class="nav-item " role="presentation">
-                                    <button class="nav-link active" id="infos-personnal-tab" data-bs-toggle="tab"
-                                        data-bs-target="#infos-personnal" type="button" role="tab" wire:ignore
-                                        aria-controls="infos-personnal" aria-selected="false">Detail
-                                        personnel
-                                    </button>
-                                </li>
-                            </ul>
-
-                        </div>
-
-                        <div class="card card-table card-profil" wire:ignore.self>
-                            <div class="tab-content" id="infos-personnal-tab" wire:ignore.self>
-
-                                <div class="tab-pane fade show active" id="infos-personnal-tab" wire:ignore.self
-                                    role="tabpanel" aria-labelledby="infos-personnal-tab">
-                                    <div class="info-lg">
-                                        <h2>Infos personnelles</h2>
-                                        <div class="row g-3">
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Prenom </p>
-                                                    <h6>{{ $agent?->prenom ?? 'Non Specifié' }}</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Nom</p>
-                                                    <h6>{{ $agent?->nom ?? 'Non Specifié' }}</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Post-nom</p>
-                                                    <h6>{{ $agent?->post_nom ?? 'Non Specifié' }}</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Sexe</p>
-                                                    <h6>{{ $agent?->sexe ?? 'Non Specifié' }}</h6>
-                                                </div>
-                                            </div>
-                                            {{-- <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Lieu de naissance</p>
-                                                    <h6>{{ $agent?->lieu_naiss ?? 'Non Specifié' }}</h6>
-                                                </div>
-
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Date de naissance</p>
-                                                    <h6>{{ date('d/m/Y', strtotime($agent?->date_naiss)) ?? 'Non Specifié' }}
-                                                    </h6>
-                                                </div>
-
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Province d'origine</p>
-                                                    <h6>{{ $agent?->province ?? 'Non Specifié' }}</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Ville d'origine</p>
-                                                    <h6>{{ $agent?->ville ?? 'Non Specifié' }}</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Nationalité</p>
-                                                    <h6>{{ $agent?->nationalite ?? 'Non Specifié' }}</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Etat civil</p>
-                                                    <h6>{{ $agent?->etat_civil ?? 'Non Specifié' }}</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Nombre d'enfants</p>
-                                                    <h6>{{ $agent?->nbr_enfant ?? 'Non Specifié' }}</h6>
-                                                </div>
-                                            </div> --}}
-                                        </div>
-                                    </div>
-                                    <div class="info-lg">
-                                        <h2>Informations professionnelles</h2>
-                                        <div class="row g-3">
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Direction </p>
-                                                    <h6>{{ $agent?->direction?->titre ?? 'Non Specifié' }}
-                                                    </h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Division</p>
-                                                    <h6>{{ $agent?->division?->libelle ?? 'Non Specifié' }}
-                                                    </h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Service </p>
-                                                    <h6>{{ $agent?->service?->titre ?? 'Non Specifié' }}
-                                                    </h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-3">
-                                                <div class="items">
-                                                    <p>Fonction</p>
-                                                    <h6>{{ $agent?->poste?->titre ?? 'Non Specifié' }}</h6>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div> -->
-
-
                 </div>
-
             </div>
         </div>
-
     </div>
 
     @include('components.admin.modals.personals', [ 'fonctions' => $fonctions])
@@ -1201,33 +894,15 @@
 @section('scripts')
     <script>
         document.addEventListener('livewire:initialized', () => {
-            // Gestion du changement d'état d'une case à cocher de module
-            $(document).on('change', '.permission-group', function() {
-                const moduleId = $(this).data('module-id');
-                const isChecked = this.checked;
-                
-                // Coche/décoche toutes les permissions du module
-                $(`input[type='checkbox'][data-module-id='${moduleId}'].the-permission`)
-                    .prop('checked', isChecked)
-                    .trigger('change');
-            });
-
-            // Gestion des cases à cocher des modules (coche/décoche toutes les permissions du module)
+            // Gestion des cases à cocher des modules
             $(document).on('change', '.module-checkbox', function() {
                 const moduleId = $(this).data('module-id');
                 const isChecked = $(this).is(':checked');
                 
                 // Coche/décoche toutes les permissions du module
-                $(`.permission-checkbox[data-module-id="${moduleId}"]`).prop('checked', isChecked);
-                
-                // Met à jour l'état du module si nécessaire
-                updateModuleCheckboxState(moduleId);
-            });
-            
-            // Gestion des cases à cocher des permissions
-            $(document).on('change', '.permission-checkbox', function() {
-                const moduleId = $(this).data('module-id');
-                updateModuleCheckboxState(moduleId);
+                $(`.permission-checkbox[data-module-id="${moduleId}"]`)
+                    .prop('checked', isChecked)
+                    .trigger('change');
             });
             
             // Met à jour l'état de la case à cocher du module
@@ -1242,112 +917,27 @@
                 } else if (checked === total) {
                     $moduleCheckbox.prop('checked', true).prop('indeterminate', false);
                 } else {
-                    $moduleCheckbox.prop('indeterminate', true);
+                    $moduleCheckbox.prop('checked', false).prop('indeterminate', true);
                 }
             }
+            
+            // Met à jour l'état des modules lorsqu'une permission change
+            $(document).on('change', '.permission-checkbox', function() {
+                const moduleId = $(this).data('module-id');
+                updateModuleCheckboxState(moduleId);
+            });
             
             // Initialisation des états des cases à cocher des modules
             $('.module-checkbox').each(function() {
                 const moduleId = $(this).data('module-id');
                 updateModuleCheckboxState(moduleId);
             });
-            
-            // Gestion de l'enregistrement des permissions
-            $('#savePermissionsBtn').on('click', function() {
-                const $btn = $(this);
-                const originalText = $btn.html();
-                
-                // Désactive le bouton et affiche un indicateur de chargement
-                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1" role="status"></span> Enregistrement...');
-                
-                // Récupère toutes les permissions cochées
-                const permissions = [];
-                $('.permission-checkbox:checked').each(function() {
-                    permissions.push($(this).val());
-                });
-                
-                console.log('Permissions à mettre à jour :', permissions);
-                
-                // Appelle la méthode Livewire pour mettre à jour les permissions
-                @this.call('updatePermissions', permissions)
-                    .then(() => {
-                        // Réactive le bouton et affiche un message de succès
-                        $btn.html('<i class="fas fa-check me-1"></i> Enregistré !');
-                        setTimeout(() => {
-                            $btn.html(originalText).prop('disabled', false);
-                        }, 2000);
-                        
-                        // Affiche une notification de succès
-                        Livewire.dispatch('show-toast', {
-                            type: 'success',
-                            message: 'Les permissions ont été mises à jour avec succès.'
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Erreur lors de la mise à jour des permissions :', error);
-                        
-                        // Réactive le bouton en cas d'erreur
-                        $btn.html(originalText).prop('disabled', false);
-                        
-                        // Affiche une notification d'erreur
-                        Livewire.dispatch('show-toast', {
-                            type: 'error',
-                            message: 'Une erreur est survenue lors de la mise à jour des permissions.'
-                        });
-                    });
-            });
-
-            // Mise à jour de l'état des cases à cocher parentes
-            function updateParentCheckboxes() {
-                $('.permission-group').each(function() {
-                    const moduleId = $(this).data('module-id');
-                    const allChecked = $(`input[type='checkbox'][data-module-id='${moduleId}'].the-permission`).length === 
-                                     $(`input[type='checkbox'][data-module-id='${moduleId}'].the-permission:checked`).length;
-                    
-                    $(this).prop('checked', allChecked);
-                });
-            }
-
-            // Mise à jour initiale
-            updateParentCheckboxes();
-
-            // Écouter les changements sur les cases à cocher de permission
-            $(document).on('change', '.the-permission', function() {
-                updateParentCheckboxes();
-            });
-
-            // Réinitialiser les sélections lors du changement d'onglet
-            Livewire.on('tab2Change', function() {
-                updateParentCheckboxes();
-            });
-
-            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(event) {
-                parentChecked();
-            })
         });
+
         $('.link-user-tab').click(function() {
             $('.link-user-tab').removeClass('active')
             $(this).addClass('active')
         })
-
-        // const nvImg_profil = document.querySelector('.file-img-profil');
-        // var nsr = document.getElementById('img_profil');
-        // // console.log(nvImg_profil);
-        // nvImg_profil.addEventListener('change', function() {
-        //     const fichier_img = this.files[0];
-        //     if (fichier_img) {
-        //         const analyseur_file = new FileReader();
-        //         analyseur_file.readAsDataURL(fichier_img);
-        //         analyseur_file.addEventListener('load', function() {
-        //             nsr.setAttribute('src', this.result);
-        //             $(nsr).addClass('fade')
-        //             $("#label-2").addClass('active')
-        //         })
-        //     }
-        //     setTimeout(() => {
-        //         $(nsr).removeClass('fade')
-        //     }, 3000);
-        // })
     </script>
 
     <script>
@@ -1374,7 +964,6 @@
         });
 
         $('select[name=sevice_id]').on('change', function(e) {
-            // console.log(e);
             livewire.emit('changeService', e.target.value);
         });
 
@@ -1386,7 +975,6 @@
             $('.select2').each(function() {
                 var old = $('.select2-container.select2-container--default.select2-container--open');
                 if (old.length > 0) {
-                    // console.log(old);
                     old.remove();
                 }
 
@@ -1394,11 +982,6 @@
                     width: '100%',
                     placeholder: 'Selectionnez'
                 });
-                // $(this).on('select2:open', event =>
-                //     setTimeout(() =>
-                //         $(event.target).data('select2').dropdown.$search.get(0).focus(), 10
-                //     )
-                // );
             });
 
             $('select[name=fonction_id]').select2({
@@ -1426,7 +1009,6 @@
                 var data = e.params.data;
 
                 if (data.id == '') {
-                    // "None" was selected. Clear all selected options
                     $(this).val([]).trigger('change');
                 } else {
                     $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected', 'selected');
@@ -1440,10 +1022,6 @@
 
             $('select[name=fonction_id]').on('select2:selecting', function(e) {
                 var $el = $(this);
-                // var route = $el.data('route');
-                // var label = $el.data('label');
-                // var relativeId = $el.data('relative-id');
-                // var errorMessage = $el.data('error-message');
                 var newTag = e.params.args.data.newTag;
 
                 if (!newTag) return;
@@ -1461,7 +1039,6 @@
             livewire.emit('changeGrade', e.target.value);
         });
 
-
         $('.btn-switch input').on('change', function() {
             $('.btn-switch').toggleClass('active')
         })
@@ -1476,7 +1053,7 @@
 
         // Ajouter un événement pour cacher le tooltip au clic
         tooltipTrigger.addEventListener('click', function() {
-            tooltip.hide(); // Cache le tooltip
+            tooltip.hide();
         });
     });
 </script>

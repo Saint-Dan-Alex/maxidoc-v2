@@ -6,3 +6,5 @@
 #3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
 #4 {main}
 "} 
+[2025-08-19 12:16:36] local.INFO: Méthode changeRole appelée {"agent_id":2,"user_id":2,"nouveau_role":"Directeur Générale","anciens_roles":{"Illuminate\\Support\\Collection":["imprimeur_2"]}} 
+[2025-08-19 12:16:36] local.INFO: Rôle mis à jour avec succès {"agent_id":2,"user_id":2,"nouveau_role":"Directeur Générale","roles_apres_maj":{"Illuminate\\Support\\Collection":["Directeur Générale"]}} 
