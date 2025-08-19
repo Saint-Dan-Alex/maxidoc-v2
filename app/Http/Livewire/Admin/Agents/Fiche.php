@@ -119,6 +119,8 @@ class Fiche extends Component
         // Initialiser le rôle de l'utilisateur si un agent est sélectionné
         if ($this->agent && $this->agent->user) {
             $this->role = $this->agent->user->roles->first()?->name;
+            // Charger les permissions de l'utilisateur (héritées du rôle + permissions directes)
+            $this->userPermissions = $this->agent->user->getAllPermissions()->pluck('name')->toArray();
         }
         
         $this->statuts = DB::table('statuts')->select('id', 'libelle')->get();
@@ -148,8 +150,10 @@ class Fiche extends Component
         if ($this->agent) {
             $this->email = $this->agent->user->email;
             $this->statut = $this->agent->statut_id;
-            $this->role = isset($this->agent->user->getRoleNames()[0]) ? $this->agent->user->getRoleNames()[0] : null;
-            $this->permissions = $this->agent->user->getPermissionNames()->toArray() ?? [];
+            $this->role = $this->agent->user->roles->first()?->name;
+            
+            // Charger les permissions de l'utilisateur (héritées du rôle + permissions directes)
+            $this->userPermissions = $this->agent->user->getAllPermissions()->pluck('name')->toArray();
 
             $this->form_stat = [
                 'nom' => $this->agent->nom,
@@ -170,8 +174,12 @@ class Fiche extends Component
             $this->services = Service::select('id', 'titre')->where('direction_id', $this->form_stat['direction_id'])->get();
             $this->grades = Grade::select('id', 'titre')->get();
             
-            // Initialiser les permissions
-            $this->initializePermissions();
+            // Initialiser les modules de permissions
+            $this->permissionModules = Module::with('permissions')->get();
+            $this->allPermissions = Permission::pluck('name')->toArray();
+            
+            // Mettre à jour l'interface utilisateur
+            $this->dispatchBrowserEvent('permissions-updated', ['permissions' => $this->userPermissions]);
         }
 
         // Réinitialiser la pagination
@@ -365,55 +373,6 @@ class Fiche extends Component
         $this->statut = $this->statut == 1 ? 2 : 1;
         $agent = Agent::findOrFail($this->agent->id);
         $agent->update(['statut_id' => $this->statut]);
-        $this->mount();
-        $this->showUser($agent->id);
-        $this->emit('alert', 'success', "Le statut de l'agent " . $this->agent->prenom . " " . $this->agent->nom . " a été changé avec succès");
-    }
-
-    public function changeRole()
-    {
-        Log::info('Méthode changeRole appelée', [
-            'agent_id' => $this->agent->id,
-            'user_id' => $this->agent->user->id,
-            'nouveau_role' => $this->role,
-            'anciens_roles' => $this->agent->user->getRoleNames()
-        ]);
-
-        try {
-            // Supprimer tous les rôles existants et attribuer le nouveau rôle
-            $this->agent->user->syncRoles([$this->role]);
-            
-            // Si le rôle est Admin, on ajoute toutes les permissions
-            if ($this->role === 'Admin') {
-                $permissions = Permission::get();
-                $this->agent->user->syncPermissions($permissions);
-                $this->userPermissions = $permissions->pluck('name')->toArray();
-            }
-
-            // Rafraîchir les données de l'utilisateur
-            $this->agent->refresh();
-            $this->agent->user->refresh();
-            
-            $this->emit('alert', 'success', 'Rôle mis à jour avec succès');
-            
-            Log::info('Rôle mis à jour avec succès', [
-                'agent_id' => $this->agent->id,
-                'user_id' => $this->agent->user->id,
-                'nouveau_role' => $this->role,
-                'roles_apres_maj' => $this->agent->user->getRoleNames()
-            ]);
-            
-        } catch (\Exception $e) {
-            Log::error('Erreur lors de la mise à jour du rôle', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            $this->emit('alert', 'error', 'Une erreur est survenue lors de la mise à jour du rôle');
-        }
-    }
-
-    public function toggelPermission()
-    {
         $permissions = $this->permissions;
         foreach ($this->selected_modules as $modKey => $module_id) {
             $module = Module::find($module_id);
@@ -676,6 +635,50 @@ class Fiche extends Component
         $this->reset(['roleName', 'selectedPermissions']);
         $this->resetErrorBag();
         $this->resetValidation();
+    }
+
+    public function changeRole()
+    {
+        try {
+            if (!$this->agent || !$this->agent->user) {
+                $this->emit('alert', 'error', 'Aucun utilisateur sélectionné');
+                return;
+            }
+            
+            // Mettre à jour le rôle de l'utilisateur
+            $this->agent->user->syncRoles([$this->role]);
+            
+            // Récupérer le rôle sélectionné
+            $role = Role::where('name', $this->role)->first();
+            
+            if ($role) {
+                // Si c'est un admin, on lui donne toutes les permissions
+                if ($this->role === 'Admin') {
+                    $permissions = Permission::pluck('name')->toArray();
+                    $this->agent->user->syncPermissions($permissions);
+                    $this->userPermissions = $permissions;
+                } else {
+                    // Sinon, on lui donne les permissions du rôle
+                    $permissions = $role->permissions->pluck('name')->toArray();
+                    $this->agent->user->syncPermissions($permissions);
+                    $this->userPermissions = $permissions;
+                }
+                
+                // Rafraîchir les données de l'utilisateur
+                $this->agent->refresh();
+                $this->agent->user->refresh();
+                
+                // Mettre à jour l'interface utilisateur
+                $this->dispatchBrowserEvent('permissions-updated', ['permissions' => $this->userPermissions]);
+                
+                $this->emit('alert', 'success', 'Rôle et permissions mis à jour avec succès');
+            } else {
+                $this->emit('alert', 'error', 'Rôle non trouvé');
+            }
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du changement de rôle: ' . $e->getMessage());
+            $this->emit('alert', 'error', 'Une erreur est survenue lors de la mise à jour du rôle');
+        }
     }
 
     public function render()

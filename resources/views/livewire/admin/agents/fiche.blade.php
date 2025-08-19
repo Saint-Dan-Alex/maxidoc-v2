@@ -894,6 +894,44 @@
 @section('scripts')
     <script>
         document.addEventListener('livewire:initialized', () => {
+            // Mettre à jour les cases à cocher des permissions
+            window.updatePermissionCheckboxes = function(permissions) {
+                // Décocher toutes les cases à cocher
+                $('.permission-checkbox').prop('checked', false);
+                
+                // Cocher les cases correspondant aux permissions
+                permissions.forEach(permission => {
+                    $(`input.permission-checkbox[value="${permission}"]`).prop('checked', true);
+                });
+                
+                // Mettre à jour les cases à cocher des modules
+                $('.module-checkbox').each(function() {
+                    const moduleId = $(this).data('module-id');
+                    const modulePermissions = [];
+                    
+                    // Récupérer toutes les permissions du module
+                    $(`input.permission-checkbox[data-module-id="${moduleId}"]`).each(function() {
+                        if ($(this).is(':checked')) {
+                            modulePermissions.push($(this).val());
+                        }
+                    });
+                    
+                    // Vérifier si toutes les permissions du module sont cochées
+                    const allModulePermissions = $(`input.permission-checkbox[data-module-id="${moduleId}"]`);
+                    const allChecked = allModulePermissions.length > 0 && 
+                                    allModulePermissions.length === modulePermissions.length;
+                    
+                    // Mettre à jour la case à cocher du module
+                    $(this).prop('checked', allChecked);
+                    $(this).prop('indeterminate', modulePermissions.length > 0 && !allChecked);
+                });
+            };
+            
+            // Écouter l'événement de mise à jour des permissions
+            window.addEventListener('permissions-updated', event => {
+                updatePermissionCheckboxes(event.detail.permissions);
+            });
+            
             // Gestion des cases à cocher des modules
             $(document).on('change', '.module-checkbox', function() {
                 const moduleId = $(this).data('module-id');
