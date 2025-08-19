@@ -615,18 +615,24 @@ class Fiche extends Component
             // Réinitialiser le formulaire
             $this->resetRoleForm();
             
-            // Fermer la modale
-            $this->dispatchBrowserEvent('close-modal', ['modal' => 'modal-new-role']);
-            
             // Afficher un message de succès
-            session()->flash('message', 'Rôle créé avec succès.');
+            session()->flash('message', 'Rôle créé avec succès !');
             
-            // Rafraîchir la liste des rôles
-            $this->emit('roleCreated');
+            // Rafraîchir le composant pour afficher le message
+            $this->emit('refreshComponent');
+            
+            // Émettre l'événement pour fermer la modale
+            $this->dispatchBrowserEvent('role-created');
+            
+            return true;
 
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Une erreur est survenue lors de la création du rôle : ' . $e->getMessage());
+            
+            // Envoyer un message d'erreur
+            $this->emit('alert', 'error', 'Erreur lors de la création du rôle : ' . $e->getMessage());
+            
+            return false;
         }
     }
     

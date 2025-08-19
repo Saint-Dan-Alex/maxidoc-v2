@@ -894,6 +894,37 @@
 @section('scripts')
     <script>
         document.addEventListener('livewire:initialized', () => {
+            // Écouter l'événement de rafraîchissement du composant
+            Livewire.on('refreshComponent', () => {
+                // Cette action va forcer le rafraîchissement du composant
+                Livewire.emit('$refresh');
+            });
+            
+            // Gérer la création de rôle réussie
+            window.addEventListener('role-created', () => {
+                // Fermer la modale avec une légère temporisation pour s'assurer qu'elle est prête
+                setTimeout(() => {
+                    const modalElement = document.getElementById('modal-new-role');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (!modal) {
+                            // Si l'instance n'existe pas, en créer une nouvelle
+                            const bsModal = new bootstrap.Modal(modalElement);
+                            bsModal.hide();
+                        } else {
+                            modal.hide();
+                        }
+                    }
+                }, 100);
+            });
+            
+            // Réinitialiser le formulaire quand la modale est fermée
+            const roleModal = document.getElementById('modal-new-role');
+            if (roleModal) {
+                roleModal.addEventListener('hidden.bs.modal', function () {
+                    Livewire.emit('resetRoleForm');
+                });
+            }
             // Mettre à jour les cases à cocher des permissions
             window.updatePermissionCheckboxes = function(permissions) {
                 // Décocher toutes les cases à cocher

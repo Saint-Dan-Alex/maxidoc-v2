@@ -279,7 +279,7 @@
                     
                     <div class="d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" id="create-role-btn">
                             <span wire:loading wire:target="createRole" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                             Créer le rôle
                         </button>
