@@ -544,7 +544,7 @@
                         @endif
                     @endcan
 
-                    @can('Signer un courrier')
+                    @can('Signer un document')
                         @if (!Auth::user()->agent->isSecretaire())
                             <li>
                                 <a href="{{ route('regidoc.documents.sign', ['doc_id' => $courrier->document?->id, 'is_original' => true, 'courrier_id' => $courrier->id]) }}"
@@ -563,7 +563,7 @@
                         @endif
                     @endcan
 
-                    @can('Valider un courrier')
+                    @can('Valider un document')
                         @if($courrier->statut_id != 3 && $courrier->statut_id != 4)
                             <li>
                                 <a href="javascript:void(0)" class="dropdown-item btn-valider-courrier" data-id="{{ $courrier->id }}">
@@ -580,7 +580,7 @@
                         @endif
                     @endcan
 
-                    @can('Partager un courrier')
+                    @can('Partager un document')
                         @if (!Auth::user()->agent->isSecretaire())
                             <li>
                                 <a href="#" data-bs-toggle="modal" data-bs-target="#modal-new-task-ass"
@@ -592,7 +592,7 @@
                         @endif
                     @endcan
 
-                    @can('Rejeter un courrier')
+                    @can('Rejeter un document')
                         @if($courrier->statut_id != 3 && $courrier->statut_id != 4)
                             <li>
                                 <a href="javascript:void(0)" class="dropdown-item btn-rejeter-courrier" data-id="{{ $courrier->id }}">
@@ -610,7 +610,7 @@
                         @endif
                     @endcan
 
-                    @can('Annoter un courrier')
+                    @can('Annoter un document')
                         @if (
                             $hasSeen &&
                             (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) &&
@@ -679,7 +679,7 @@
                             </a>
                         </li>
                     @endcan
-                    @can('Signer un courrier')
+                    @can('Signer un document')
                         <li>
                             <a href="{{ route('regidoc.documents.sign', ['doc_id' => $courrier->document?->id, 'is_original' => true, 'courrier_id' => $courrier->id]) }}"
                                 @class(['dropdown-item signature_btn', 'btn disabled' => $aTraite]) @disabled($aTraite)>
@@ -696,7 +696,7 @@
                         </li>   
                     @endcan
         
-                    @can('Valider un courrier')
+                    @can('Valider un document')
                         <li>
                             <a href="javascript:void(0)" class="dropdown-item btn-valider-courrier" data-id="{{ $courrier->id }}">
                                 <span class="d-flex align-items-center">
@@ -711,7 +711,7 @@
                         </li>
                     @endcan
 
-                    @can('Partager un courrier')
+                    @can('Partager un document')
                         <li>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#modal-new-task-ass"
                                 @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
@@ -721,7 +721,7 @@
                         </li>
                     @endcan
     
-                    @can('Rejeter un courrier')
+                    @can('Rejeter un document')
                         <li>
                                 <a href="javascript:void(0)" class="dropdown-item btn-rejeter-courrier" data-id="{{ $courrier->id }}">
                                     <span class="d-flex align-items-center">
@@ -736,7 +736,7 @@
                                 </a>
                             </li>
                     @endcan 
-                    @can('Annoter un courrier')
+                    @can('Annoter un document')
                         <li>
                                 <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-annotation"
                                     @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
@@ -940,7 +940,7 @@
                 </div>
                 <div class="col-lg-8">
                     <div class="gap-2 pb-2 gap-lg-3 d-flex justify-content-end align-items-center pb-sm-0">
-                        @can('Annoter un courrier')
+                        @can('Annoter un document')
                             @if (!Auth::user()->agent->isSecretaire())
                                 <a href="#" class="link-action" data-bs-toggle="modal"
                                     data-bs-target="#modal-add-annotation">
@@ -1721,7 +1721,7 @@
         </div>
     </div>
 
-    @can('Valider un courrier')
+    @can('Valider un document')
         <div class="modal fade" id="modal-validation" tabindex="-1" aria-labelledby="exampleModalLabel">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -1761,7 +1761,7 @@
         </div>
     @endcan
 
-    {{-- @can('Rejeter un courrier')
+    {{-- @can('Rejeter un document')
         <div class="modal fade" id="modal-reject" tabindex="-1" aria-labelledby="exampleModalLabel">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -1810,7 +1810,7 @@
             </div>
         </div>
     @endcan--}}
-    @can('Rejeter un courrier')
+    @can('Rejeter un document')
     <!-- Modal Rejet -->
     <div class="modal fade" id="modal-reject" tabindex="-1" aria-labelledby="modalRejectLabel">
         <div class="modal-dialog modal-dialog-centered">
@@ -1861,11 +1861,11 @@
     </div>
 @endcan
 
-    @can('Partager un courrier')
+    @can('Partager un document')
         @livewire('taches.add-courrier-tache-modal', ['courrier' => $courrier])
     @endcan
 
-    {{-- @can('Annoter un courrier') --}}
+    {{-- @can('Annoter un document') --}}
     @livewire('courrier.annotation-modal', ['courrier' => $courrier])
 
     @livewire('courrier.annotation-modal-add', ['courrier' => $courrier])
