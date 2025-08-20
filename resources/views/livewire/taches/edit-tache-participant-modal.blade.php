@@ -30,11 +30,11 @@
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div> --}}
-                            {{-- <div class="col-lg-12 text-center">
+                            <div class="col-lg-12 text-center">
                                 <a href="#" class="btn btn-danger text-end"
                                     wire:click='deleteParticipant({{ $objectif->id }})' data-bs-dismiss="modal"><i
                                         class="fi fi-rr-trash"></i></a>
-                            </div> --}}
+                            </div>
                             {{-- <div class="col-lg-12 text-end mb-3">
                                 <button type="submit" class="btn btn-add mt-3"
                                     data-bs-dismiss="modal">Enregistrer</button>

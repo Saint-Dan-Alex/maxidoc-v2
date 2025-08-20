@@ -47,7 +47,14 @@ class AddTacheParticipantModal extends Component
                 'statut' => 0,
             ]);
 
-            if (!in_array($this->agent_id,$tache->agents->pluck('id')->toArray())) {
+            // Émettre un événement pour rafraîchir les composants parents
+            $this->emit('participantAdded');
+            $this->emit('alert', 'success', 'Participant ajouté avec succès');
+            
+            // Réinitialiser le formulaire
+            $this->reset(['agent_id', 'libelle']);
+            
+            if (!in_array($this->agent_id, $tache->agents->pluck('id')->toArray())) {
                 $tache->agents()->attach($this->agent_id);
             }
 

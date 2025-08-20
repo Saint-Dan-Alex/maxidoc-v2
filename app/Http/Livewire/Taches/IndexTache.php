@@ -20,7 +20,11 @@ class IndexTache extends Component
     // public $endTaches;
     public $users;
 
-    protected $listeners = ['reloadComponent' => '$refresh'];
+    protected $listeners = [
+        'reloadComponent' => '$refresh',
+        'participantUpdated' => 'handleParticipantUpdated',
+        'participantAdded' => 'handleParticipantAdded'
+    ];
     protected $paginationTheme = 'bootstrap-5';
     protected $queryString = [
         'tab',
@@ -44,6 +48,16 @@ class IndexTache extends Component
     public function refresh()
     {
         $this->reset();
+    }
+    
+    public function handleParticipantUpdated()
+    {
+        $this->emit('reloadComponent');
+    }
+    
+    public function handleParticipantAdded()
+    {
+        $this->emit('reloadComponent');
     }
 
     public function updateStatut($id, $key = null)

@@ -30,7 +30,11 @@ class TachePane extends Component
     public $activec = true;
     public $activef = true;
     public $pan = 1;
-    protected $listeners = ['reloadPane' => '$refresh'];
+    protected $listeners = [
+        'reloadPane' => '$refresh',
+        'participantUpdated' => 'handleParticipantUpdated',
+        'participantAdded' => 'handleParticipantAdded'
+    ];
     protected $rules = [
         'message' => 'required|string',
         'file' => 'required|file',
@@ -39,6 +43,18 @@ class TachePane extends Component
     {
         $this->tache = $tache;
         $this->pourcentage = $tache->pourcentage;
+    }
+    
+    public function handleParticipantUpdated()
+    {
+        $this->tache->refresh();
+        $this->emit('reloadPane');
+    }
+    
+    public function handleParticipantAdded()
+    {
+        $this->tache->refresh();
+        $this->emit('reloadPane');
     }
 
     public function objetcifChangeStatut($id)
