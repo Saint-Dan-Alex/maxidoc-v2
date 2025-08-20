@@ -1523,3 +1523,12 @@
 [2025-08-20 17:15:29] local.INFO: Documents traités pour la tâche {"tache_id":12,"nb_documents":0,"documents":[]} 
 [2025-08-20 17:21:36] local.INFO: Documents traités pour la tâche {"tache_id":15,"nb_documents":0,"documents":[]} 
 [2025-08-20 17:23:13] local.INFO: Documents traités pour la tâche {"tache_id":16,"nb_documents":0,"documents":[]} 
+[2025-08-20 17:25:10] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/WSeVGu807wQZOsYv7Ajt.pdf","nom_original":"historique-courrier-1-2025-08-14.pdf"} 
+[2025-08-20 17:25:18] local.INFO: Génération URL document {"document_id":10,"document_data":"[{\"download_link\":\"documents\\/August2025\\/WSeVGu807wQZOsYv7Ajt.pdf\",\"original_name\":\"historique-courrier-1-2025-08-14.pdf\"}]","url_generée":"http://127.0.0.1:8000/storage/documents/August2025/WSeVGu807wQZOsYv7Ajt.pdf","tache_id":16} 
+[2025-08-20 17:25:18] local.INFO: Documents traités pour la tâche {"tache_id":16,"nb_documents":1,"documents":[{"link":"http://127.0.0.1:8000/storage/documents/August2025/WSeVGu807wQZOsYv7Ajt.pdf","id":10,"tache_id":16,"original_name":"historique-courrier-1-2025-08-14.pdf"}]} 
+[2025-08-20 17:26:43] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-20 17:26:48] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-20 17:26:48] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":5,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
+[2025-08-20 17:27:01] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/2bM0iVn9c564mnIN5ybg.pdf","nom_original":"GUIDE DUTILISATION - Premiers pas avec MAXIDOC®.pdf"} 
+[2025-08-20 17:36:39] local.INFO: Documents traités pour la tâche {"tache_id":15,"nb_documents":0,"documents":[]} 
+[2025-08-20 17:36:43] local.INFO: Documents traités pour la tâche {"tache_id":15,"nb_documents":0,"documents":[]} 
