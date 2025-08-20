@@ -924,7 +924,7 @@
                                 Retour
                             </div>
                         </a> --}}
-                        <a href="{{ url()->previous() }}" class="mb-0 back me-3">
+                        <a href="{{ route('regidoc.courriers.index') }}" class="mb-0 back me-3">
                             <i class="fi fi-rr-angle-left"></i>
                             <div class="tooltip-indicator">
                                 Retour
