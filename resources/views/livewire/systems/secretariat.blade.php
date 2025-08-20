@@ -154,13 +154,13 @@
                             <div class="col-12">
                                 <div class="d-flex gap-3">
                                     <div>
-                                        <label for="dg">Secretaire DG</label>
+                                        <label for="dg">Service Accueil</label>
                                         <input type="radio" name="for" id="dg" value="1">
                                     </div>
-                                    <div>
+                                    {{-- <div>
                                         <label for="dga">Secretaire DGA</label>
                                         <input type="radio" name="for" id="dga" value="2">
-                                    </div>
+                                    </div> --}}
                                     <div>
                                         <label for="direction">Secretaire Direction</label>
                                         <input type="radio" name="for" id="direction" value="3">

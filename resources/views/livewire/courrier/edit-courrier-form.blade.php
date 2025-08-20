@@ -350,16 +350,20 @@
                             <label class="col-5 col-form-label">Priorité</label>
                             <div class="col-7" wire:ignore>
                                 <select class="form-select form-control select2" aria-label="Default select example"
-                                    name="priorite" data-placeholder="Selectionner"
+                                    name="priorite" data-placeholder="Sélectionnez"
                                     data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
                                     data-get-items-field="titre" data-method="get" data-label="titre"
                                     data-related-model="Priorite">
+                                    
+                                    <option value="" disabled selected>Sélectionnez</option>
+                                
                                     @foreach ($priorites as $priorite)
                                         <option value="{{ $priorite->id }}" @selected($priorite->id == $courrier->priorite_id)>
                                             {{ $priorite->titre }}
                                         </option>
                                     @endforeach
                                 </select>
+                            
                             </div>
                         </div>
                     </div>
