@@ -79,8 +79,17 @@ class Tache extends Model
 
     public static function getTachesForCurrentUser()
     {
+        $agent = Auth::user()->agent;
         
-        return Auth::user()->agent->taches->unique('id');
+        // Récupérer les tâches via la relation many-to-many
+        $taches = $agent->taches()
+            ->with(['agents', 'objectifs', 'tache_statut']) // Charger les relations nécessaires
+            ->wherePivot('type', 'App\Models\Agent') // S'assurer que le type est bien Agent
+            ->wherePivot('type_id', $agent->id) // Filtrer par l'ID de l'agent
+            ->get()
+            ->unique('id');
+            
+        return $taches;
     }
 
 

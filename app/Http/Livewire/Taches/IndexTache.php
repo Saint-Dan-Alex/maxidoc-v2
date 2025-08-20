@@ -13,8 +13,10 @@ class IndexTache extends Component
     use WithPagination;
     // public $taches;
     public $assignees;
-    public $tab;
-    // public $newTaches;
+    public $tab = 1;
+    /** @var \Illuminate\Support\Collection */
+    public $newTaches;
+    public $newTachesCount = 0;
     // public $tacheEncours;
     // public $horsDelais;
     // public $endTaches;
@@ -23,11 +25,17 @@ class IndexTache extends Component
     protected $listeners = [
         'reloadComponent' => '$refresh',
         'participantUpdated' => 'handleParticipantUpdated',
-        'participantAdded' => 'handleParticipantAdded'
+        'participantAdded' => 'handleParticipantAdded',
+        'refreshTacheInfo' => 'refreshTacheInfo',
+        'refreshTaches' => '$refresh'
     ];
+    
+    public $isInitialized = false;
+    
     protected $paginationTheme = 'bootstrap-5';
+    
     protected $queryString = [
-        'tab',
+        'tab' => ['except' => 1],
         // 'new_taches_page' => ['except' => 1],
         // 'tache_encours_page' => ['except' => 1],
         // 'end_taches_page' => ['except' => 1],
@@ -36,13 +44,19 @@ class IndexTache extends Component
 
     public function mount()
     {
+        // Initialiser la propriété newTaches comme une collection vide
+        $this->newTaches = collect();
+        
         if (!$this->tab) {
-            if (Auth::user()->agent->isDG()) {
+            if (Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()) {
                 $this->tab = 1;
             } else {
                 $this->tab = 2;
             }
         }
+        
+        // Charger les données initiales
+        $this->loadNewTaches();
     }
 
     public function refresh()
@@ -55,9 +69,27 @@ class IndexTache extends Component
         $this->emit('reloadComponent');
     }
     
+    public function refreshTacheInfo()
+    {
+        // Force le rechargement complet des données
+        $this->resetPage();
+        $this->emit('$refresh');
+        
+        // Rafraîchir les données après un court délai pour s'assurer que tout est chargé
+        $this->dispatchBrowserEvent('refresh-taches');
+        
+        // Si l'onglet actuel est l'onglet des tâches assignées, forcer le rafraîchissement
+        if ($this->tab == 2) {
+            $this->changeTab(2);
+        }
+    }
+    
     public function handleParticipantAdded()
     {
+        // Rafraîchir les données et forcer le rechargement des composants
         $this->emit('reloadComponent');
+        $this->emit('refreshTacheInfo');
+        $this->emit('$refresh');
     }
 
     public function updateStatut($id, $key = null)
@@ -99,52 +131,78 @@ class IndexTache extends Component
 
     }
 
-    public function changeTab($value)
+    public function changeTab($tab)
     {
-        $this->tab = $value;
+        $this->tab = $tab;
+        
+        // Si l'onglet est l'onglet des tâches assignées, forcer un rechargement complet
+        if ($tab == 2) {
+            $this->loadNewTaches();
+        }
+        
+        // Forcer le rechargement des données pour l'onglet sélectionné
+        $this->emit('$refresh');
+    }
+    
+    protected function loadNewTaches()
+    {
+        // Charger les nouvelles tâches assignées à l'utilisateur
+        $assignees = Tache::whereHas('agents', function($query) {
+                $query->where('agent_id', Auth::user()->agent->id)
+                      ->where('type', 'App\\Models\\Agent')
+                      ->where('type_id', Auth::user()->agent->id);
+            })
+            ->with(['agents', 'objectifs', 'tache_statut'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        // S'assurer que newTaches est toujours une collection
+        $filteredTaches = $assignees->where('tache_statut_id', '1');
+        $this->newTaches = $filteredTaches->sortByDesc('id');
+        $this->newTachesCount = $this->newTaches->count();
     }
 
     public function render()
     {
-        $newTaches = collect();
         $tacheEncours = collect();
         $endTaches = collect();
         $horsDelais = collect();
-        $newTachesCount = 0;
         $taches = collect();
+        $newTaches = collect();
+        $newTachesCount = 0;
 
         if (Auth::user()->agent->isDG()) {
-            $taches = Tache::where('user_id', Auth::user()->id)->orderBy('id', 'DESC')->paginate(10);
-            // $this->taches = $taches;
+            $taches = Tache::where('user_id', Auth::user()->id)
+                ->with(['agents', 'objectifs', 'tache_statut'])
+                ->orderBy('id', 'DESC')
+                ->paginate(10);
         } else {
-            // $taches = Tache::where('user_id', Auth::user()->id)->where('statut_id', 1)->orderBy('id', 'DESC')->get();
-
-            $taches = Tache::where('user_id', Auth::user()->id)->orderBy('id', 'DESC')->paginate(10);
-            $assignees = Tache::getTachesForCurrentUser();
-
-            // $this->assignees = $assignees;
-
-            $newTaches = $assignees->where('tache_statut_id', '1')->sortByDesc('id');
-            $tacheEncours = $assignees->where('tache_statut_id', '2')->sortByDesc('id');
-            $endTaches = $assignees->where('tache_statut_id', '3')->sortByDesc('id');
-            $horsDelais = $assignees->where('tache_statut_id', '4')->sortByDesc('id');
-
-            if (Auth::user()->agent->isSecretaire() && $newTaches->where('pourcentage', 0)->count()){
-                $newTachesCount = $newTaches->where('pourcentage', 0)->count();
-            }elseif(!Auth::user()->agent->isSecretaire() && $newTaches->where('pourcentage', '<', 2)->count()){
-                $newTachesCount = $newTaches->where('pourcentage', '<', 2)->count();
+            // Récupérer les tâches créées par l'utilisateur
+            $taches = Tache::where('user_id', Auth::user()->id)
+                ->with(['agents', 'objectifs', 'tache_statut'])
+                ->orderBy('id', 'DESC')
+                ->paginate(10);
+                
+            // Charger les tâches assignées si nécessaire
+            if ($this->tab == 2) {
+                $assignees = Tache::getTachesForCurrentUser();
+                $newTaches = $assignees->where('tache_statut_id', '1')->sortByDesc('id');
+                $tacheEncours = $assignees->where('tache_statut_id', '2')->sortByDesc('id');
+                $endTaches = $assignees->where('tache_statut_id', '3')->sortByDesc('id');
+                $horsDelais = $assignees->where('tache_statut_id', '4')->sortByDesc('id');
+                
+                // Mettre à jour le compteur de nouvelles tâches
+                $newTachesCount = $newTaches->count();
             }
         }
 
-        // dd(customPaginate($newTaches, 9, 1,['pageName' =>'new_taches_page']));
-
-        return view('livewire.taches.index-tache')->with([
+        return view('livewire.taches.index-tache', [
             'taches' => $taches,
             'newTachesCount' => $newTachesCount,
-            'newTaches' => $newTaches, //customPaginate($newTaches, 9, 1,['pageName' =>'new_taches_page']),
-            'tacheEncours' => $tacheEncours, //customPaginate($tacheEncours,9,  1,['pageName' =>'tache_encours_page']),
-            'endTaches' => $endTaches, //customPaginate($endTaches,9,  1,['pageName' =>'end_taches_page']),
-            'horsDelais' => $horsDelais, //customPaginate($horsDelais,9,  1,['pageName' =>'hors_delais_page']),
+            'newTaches' => $newTaches,
+            'tacheEncours' => $tacheEncours,
+            'endTaches' => $endTaches,
+            'horsDelais' => $horsDelais,
         ]);
     }
 }
