@@ -31,8 +31,17 @@ class EditTacheParticipantModal extends Component
     public function loadObjectif($objectifId)
     {
         try {
-            $this->objectif = TacheObjectif::with(['agent', 'agent.objectifs'])->findOrFail($objectifId);
-            $this->objectifs = $this->objectif->agent ? $this->objectif->agent->objectifs : [];
+            // Charger l'objectif avec ses relations
+            $this->objectif = TacheObjectif::with(['agent', 'tache'])->findOrFail($objectifId);
+            
+            // Charger uniquement les objectifs de cet agent pour cette tâche spécifique
+            if ($this->objectif->agent && $this->objectif->tache) {
+                $this->objectifs = TacheObjectif::where('agent_id', $this->objectif->agent_id)
+                    ->where('tache_id', $this->objectif->tache_id)
+                    ->get();
+            } else {
+                $this->objectifs = [];
+            }
             
             // Déclencher un rendu pour mettre à jour l'interface utilisateur
             $this->emitSelf('$refresh');
