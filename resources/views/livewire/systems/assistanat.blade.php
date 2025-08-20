@@ -157,10 +157,10 @@
                                         <label for="dg">Assistant DG</label>
                                         <input type="radio" name="for" id="dg" value="1">
                                     </div>
-                                    <div>
+                                    {{-- <div>
                                         <label for="dga">Assistant DGA</label>
                                         <input type="radio" name="for" id="dga" value="2">
-                                    </div>
+                                    </div> --}}
                                     <div>
                                         <label for="direction">Assistant Direction</label>
                                         <input type="radio" name="for" id="direction" value="3">
