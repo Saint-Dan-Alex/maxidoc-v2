@@ -1,5 +1,26 @@
 <div class="row g-lg-3 mt-3">
-    <div class="col-lg-12" wire:poll>
+    <div class="col-lg-12" 
+         wire:poll
+         wire:init="$set('isInitialized', true)"
+         x-data="{ isPolling: true }"
+         x-init="
+            Livewire.on('refreshTacheInfo', () => {
+                console.log('Rafraîchissement des tâches...');
+                $wire.call('$refresh');
+                setTimeout(() => {
+                    $wire.call('changeTab', $wire.tab);
+                }, 500);
+            });
+            
+            // Désactiver temporairement le polling pendant les mises à jour
+            Livewire.hook('message.processed', (message, component) => {
+                if (message.updateQueue.some(update => update.payload.event === 'refreshTacheInfo')) {
+                    isPolling = false;
+                    setTimeout(() => { isPolling = true; }, 3000);
+                }
+            });
+         "
+         x-on:refresh-taches.window="$wire.call('changeTab', $wire.tab)">
 
         @if (Auth::user()->agent->isDG() == false || Auth::user()->agent->isDelegue() == false)
             <div class="mb-0 mb-lg-2 d-flex justify-content-between align-items-center content-list">

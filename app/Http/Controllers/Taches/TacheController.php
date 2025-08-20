@@ -87,16 +87,41 @@ class TacheController extends Controller
     }
     public function index()
     {
-       
-         if (Auth::user()->agent->isDG()) {
-             $taches = Tache::where('user_id', Auth::user()->id)->orderBy('id', 'desc')->paginate(10);
-         } else {
-             $taches = collect();
-             $y = Tache::getTachesForCurrentUser();
-             $z = Tache::where('user_id', Auth::user()->id)->orderBy('id', 'desc')->get();
-             $taches = $taches->merge($y)->merge($z);
-             $taches = $taches->unique('id');
-         }
+        $user = Auth::user();
+        
+        if ($user->agent->isDG() || $user->agent->isDelegue()) {
+            // Pour les DG et délégués, afficher toutes les tâches
+            $taches = Tache::with(['agents', 'objectifs', 'tache_statut'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            // Pour les autres utilisateurs, afficher leurs tâches assignées et celles qu'ils ont créées
+            $tachesAssignees = Tache::whereHas('agents', function($query) use ($user) {
+                    $query->where('agent_id', $user->agent->id)
+                          ->where('type', 'App\\Models\\Agent')
+                          ->where('type_id', $user->agent->id);
+                })
+                ->with(['agents', 'objectifs', 'tache_statut'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+                
+            $tachesCreees = Tache::where('user_id', $user->id)
+                ->with(['agents', 'objectifs', 'tache_statut'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+                
+            // Fusionner et éliminer les doublons
+            $taches = $tachesAssignees->merge($tachesCreees)->unique('id');
+            
+            // Convertir en paginate manuellement
+            $taches = new \Illuminate\Pagination\LengthAwarePaginator(
+                $taches->forPage(\Illuminate\Pagination\Paginator::resolveCurrentPage(), 10),
+                $taches->count(),
+                10,
+                null,
+                ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+            );
+        }
 
          $num = $taches->count();
 
