@@ -140,8 +140,10 @@
                                                 <div class="mt-3 d-flex justify-content-end mt-lg-4">
                                                     <a href="{{ url()->previous() }}" class="btn me-3"
                                                         style="padding: 10px 24px; font-size: 14px">Annuler</a>
-                                                    <button class="btn btn-add"
-                                                        style="padding: 10px 24px">Enregistrer les modifications</button>
+                                                    <button type="submit" class="btn btn-add" id="updateTaskBtn" style="padding: 10px 24px">
+                                                        <span class="btn-text">Enregistrer les modifications</span>
+                                                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -161,9 +163,24 @@
     <script src="{{ asset('vendor/jdikasaDropZone/dist/js/jdikasaDropZone.js') }}"></script>
     <script>
         $(document).ready(function() {
-
+            // Initialisation de Select2
             $('.select2').select2({
-                width: "100%",
+                width: "100%"
+            });
+
+            // Gestion de la soumission du formulaire
+            $('form').on('submit', function(e) {
+                const submitBtn = $('#updateTaskBtn');
+                if (submitBtn.length) {
+                    const spinner = submitBtn.find('.spinner-border');
+                    const btnText = submitBtn.find('.btn-text');
+                    
+                    // Désactiver le bouton et afficher le spinner
+                    submitBtn.prop('disabled', true);
+                    btnText.text('Enregistrement en cours...');
+                    spinner.removeClass('d-none');
+                }
+                // La soumission continue normalement
             });
 
             // Initialize select2 for existing assignation items
