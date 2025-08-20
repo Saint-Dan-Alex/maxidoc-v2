@@ -44,7 +44,9 @@
                 @foreach ($tache->objectifs->sortByDesc('id')->unique('agent_id') as $objectif)
                     @if ($loop->index < 3)
                         <div class="avatar-membre" data-bs-toggle="modal"
-                            data-bs-target="#modal-edit-participants-{{ $tache->id }}">
+                            data-bs-target="#modal-edit-participants-{{ $objectif->id }}"
+                            data-objectif-id="{{ $objectif->id }}"
+                            onclick="event.stopPropagation();">
                             <img src="{{ imageOrDefault($objectif->agent?->image) }}" alt="image profil">
                             <div class="tooltip-name">
                                 {{ $objectif->agent?->prenom . ' ' . $objectif->agent?->nom }}
@@ -84,7 +86,8 @@
                 @endif
                 @if ($tache->pourcentage < 100 && $tache->statut_id != '3')
                     <div class="avatar-membre" data-bs-toggle="modal"
-                        data-bs-target="#modal-add-participants-{{ $tache->id }}">
+                        data-bs-target="#modal-add-participants-{{ $tache->id }}" 
+                        style="cursor: pointer;">
                         <i class="fi fi-rr-plus"></i>
                     </div>
                 @endif
@@ -108,4 +111,38 @@
             </div>
         </div>
     </div> --}}
+    
+    @include('livewire.taches._modals', ['tache' => $tache])
+    
+    <style>
+        .modal {
+            z-index: 1060; /* Assure que la modale s'affiche au-dessus des autres éléments */
+        }
+    </style>
+    
+    <script>
+        // Gestion de l'ouverture des modales
+        document.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const modal = event.target;
+            
+            // Vérifier si c'est une modale d'édition de participant
+            if (modal.id && modal.id.startsWith('modal-edit-participants-')) {
+                const objectifId = button.getAttribute('data-objectif-id');
+                
+                // Émettre l'événement Livewire pour charger les données
+                if (window.Livewire) {
+                    window.Livewire.emit('editParticipant', objectifId);
+                }
+            }
+        });
+        
+        // Gestion du rechargement de la page après suppression
+        window.addEventListener('reload-page', function(event) {
+            const delay = event.detail?.delay || 0;
+            setTimeout(() => {
+                window.location.reload();
+            }, delay);
+        });
+    </script>
 </div>

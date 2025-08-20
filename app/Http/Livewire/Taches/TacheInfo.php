@@ -10,7 +10,12 @@ class TacheInfo extends Component
     public $tache;
     public $traitementTime = null;
 
-    protected $listeners = ['reloadInfo' => '$refresh'];
+    protected $listeners = [
+        'reloadInfo' => '$refresh',
+        'participantUpdated' => 'handleParticipantUpdated',
+        'participantAdded' => 'handleParticipantAdded'
+    ];
+    
     protected $rules = [
         'message' => 'required|string',
         'file' => 'required|file',
@@ -106,6 +111,18 @@ class TacheInfo extends Component
             //     'trace' => $e->getTraceAsString()
             // ]);
         }
+    }
+
+    public function handleParticipantUpdated()
+    {
+        $this->tache->refresh();
+        $this->emit('reloadInfo');
+    }
+    
+    public function handleParticipantAdded()
+    {
+        $this->tache->refresh();
+        $this->emit('reloadInfo');
     }
 
     public function render()
