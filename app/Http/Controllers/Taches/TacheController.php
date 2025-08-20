@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Taches;
 
 use App\Events\TacheCreated;
+use App\Events\TacheConsulted;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\File;
 use App\Models\Agent;
@@ -21,6 +22,7 @@ use App\Models\Courrier;
 use App\Models\TacheObjectif;
 use App\Mail\DocumentPasswordMail;
 use App\Models\TachesStatut;
+use App\Models\TacheView;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -685,6 +687,48 @@ class TacheController extends Controller
     {
         $tache = Tache::with(['documents', 'objectifs.agent'])->find($id);
         $documents = $tache->documents ?? collect();
+        
+        // Vérifier si c'est la première consultation de la tâche par l'utilisateur
+        $view = TacheView::firstOrNew([
+            'tache_id' => $tache->id,
+            'user_id' => auth()->id(),
+            'agent_id' => auth()->user()->agent->id
+        ]);
+
+        // Si c'est une nouvelle vue
+        if (!$view->exists) {
+            $view->is_first_view = true;
+            $view->save();
+            
+            // Récupérer tous les agents concernés par la tâche
+            $agentsConcernes = collect();
+            
+            // Ajouter le créateur de la tâche
+            if ($tache->user && $tache->user->agent) {
+                $agentsConcernes->push($tache->user->agent);
+            }
+            
+            // Ajouter les agents assignés aux objectifs
+            foreach ($tache->objectifs as $objectif) {
+                if ($objectif->agent && !$agentsConcernes->contains('id', $objectif->agent->id)) {
+                    $agentsConcernes->push($objectif->agent);
+                }
+            }
+            
+            // Déclencher l'événement de consultation
+            if ($agentsConcernes->isNotEmpty()) {
+                event(new TacheConsulted(
+                    $tache,
+                    auth()->user()->agent,
+                    $agentsConcernes
+                ));
+            }
+        } else if ($view->is_first_view) {
+            // Mettre à jour la vue existante
+            $view->is_first_view = false;
+            $view->viewed_at = now();
+            $view->save();
+        }
         
         // Préparer les URLs des documents
         $documents->each(function($document) {
