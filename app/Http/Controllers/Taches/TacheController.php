@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Taches;
 
 use App\Events\TacheCreated;
+use App\Models\Fichier;
 use App\Events\TacheConsulted;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\File;
@@ -216,11 +217,12 @@ class TacheController extends Controller
 
                 if ($newDoc->confidentiel) {
                     if (is_countable($followers)) {
-                        $users = $followers->map(function ($agent) {
-                            if ($agent) {
-                                return $agent->user;
+                        $users = [];
+                        foreach ($followers as $follower) {
+                            if ($follower && $follower->user) {
+                                $users[] = $follower->user;
                             }
-                        });
+                        }
                         // foreach ($users as $user) {
                         //     # code...
                         //     Mail::to($user)->send(new DocumentPasswordMail($newDoc->password, $user));
@@ -248,9 +250,12 @@ class TacheController extends Controller
 
             if ($newDoc->confidentiel) {
                 if (is_countable($followers)) {
-                    $users = $followers->map(function ($agent) {
-                        return $agent->user;
-                    });
+                    $users = [];
+                    foreach ($followers as $follower) {
+                        if ($follower && $follower->user) {
+                            $users[] = $follower->user;
+                        }
+                    }
                     // foreach ($users as $user) {
                     //     # code...
                     //     Mail::to($user)->send(new DocumentPasswordMail($newDoc->password, $user));
@@ -489,21 +494,30 @@ class TacheController extends Controller
 
             } elseif ($request->has('division_id')) {
                 $divisions = Division::find($request->input('division_id'));
+                
+                // Créer une seule tâche pour toutes les divisions
+                $tache = $this->createTache($request, $followers);
+                
+                // Ajouter toutes les divisions à la tâche
                 foreach ($divisions as $division) {
                     $responsable = $division->responsable;
                     $followers->push($responsable);
+                    
+                    // Mettre à jour le titre de la tâche pour inclure toutes les divisions
+                    if (strpos($tache->titre, ' pour ') === false) {
+                        $tache->titre = $tache->titre . ' pour ' . $division->titre;
+                    } else {
+                        $tache->titre = str_replace(' pour ', ', ', $tache->titre) . ', ' . $division->titre;
+                    }
+                    $tache->save();
 
                     if ($responsable) {
-                        $tache = $this->createTache($request, $followers);
-                        $tache->titre = $tache->titre . ' pour ' . $division->libelle;
-                        $tache->save();
                         $tache->agents()->attach($responsable, [
                             'type' => Division::class,
                             'type_id' => $division->id,
                         ]);
 
-                        event(new TacheCreated($tache, $responsable->id, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
-
+                        // Créer les objectifs pour chaque division
                         if (isset($request->input('objects')[$division->id])) {
                             $objects = $request->input('objects')[$division->id];
                             foreach ($objects as $object) {
@@ -526,29 +540,40 @@ class TacheController extends Controller
                                 'agent_id' => $responsable->id,
                             ]);
                         }
+                        
+                        // Envoyer une notification à chaque responsable de division
+                        if ($responsable->id != Auth::user()->agent->id) {
+                            event(new TacheCreated($tache, $responsable->id, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
+                        }
                     }
                 }
-
             } elseif ($request->has('service_id')) {
 
                 $services = Service::find($request->input('service_id'));
-
+                
+                // Créer une seule tâche pour tous les services
+                $tache = $this->createTache($request, $followers);
+                
+                // Ajouter tous les services à la tâche
                 foreach ($services as $service) {
-
                     $responsable = $service->responsable;
                     $followers->push($responsable);
-
-                    if ($responsable) {
-                        $tache = $this->createTache($request, $followers);
+                    
+                    // Mettre à jour le titre de la tâche pour inclure tous les services
+                    if (strpos($tache->titre, ' / ') === false) {
                         $tache->titre = $tache->titre . ' / ' . $service->titre;
-                        $tache->save();
+                    } else {
+                        $tache->titre = str_replace(' / ', ', ', $tache->titre) . ', ' . $service->titre;
+                    }
+                    $tache->save();
+                    
+                    if ($responsable) {
                         $tache->agents()->attach($responsable, [
                             'type' => Service::class,
                             'type_id' => $service->id,
                         ]);
 
-                        event(new TacheCreated($tache, $responsable->id, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
-
+                        // Créer les objectifs pour chaque service
                         if (isset($request->input('objects')[$service->id])) {
                             $objects = $request->input('objects')[$service->id];
                             foreach ($objects as $object) {
@@ -571,68 +596,73 @@ class TacheController extends Controller
                                 'agent_id' => $responsable->id,
                             ]);
                         }
+                        
+                        // Envoyer une notification au responsable du service
+                        event(new TacheCreated($tache, $responsable->id, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
                     }
+                    
+                    // Envoyer une notification à chaque responsable de service
+                    event(new TacheCreated($tache, $service->responsable, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
                 }
-
             } elseif ($request->has('section_id')) {
                 $sections = Section::find($request->input('section_id'));
-
+                
+                // Créer une seule tâche pour toutes les sections
+                $tache = $this->createTache($request, $followers);
+                
+                // Ajouter toutes les sections à la tâche
                 foreach ($sections as $section) {
+                    $followers->push($section->responsable);
+                    $tache->agents()->attach($section->responsable, [
+                        'type' => Section::class,
+                        'type_id' => $section->id,
+                    ]);
 
-                    $responsable = $section->responsable;
-                    $followers->push($responsable);
-
-                    if ($responsable) {
-                        $tache = $this->createTache($request, $followers);
-                        $tache->titre = $tache->titre . ' / ' . $section->titre;
-                        $tache->save();
-                        $tache->agents()->attach($responsable, [
-                            'type' => Section::class,
-                            'type_id' => $section->id,
-                        ]);
-
-                        event(new TacheCreated($tache, $responsable->id, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
-
-                        if (isset($request->input('objects')[$section->id])) {
-                            $objects = $request->input('objects')[$section->id];
-                            foreach ($objects as $object) {
-                                if ($object) {
-                                    TacheObjectif::create([
-                                        'libelle' => $object,
-                                        'tache_id' => $tache->id,
-                                        'user_id' => Auth::user()->id,
-                                        'statut' => 0,
-                                        'agent_id' => $responsable->id,
-                                    ]);
-                                }
+                    // Créer les objectifs pour chaque section
+                    if (isset($request->input('objects')[$section->id])) {
+                        $objects = $request->input('objects')[$section->id];
+                        foreach ($objects as $object) {
+                            if ($object) {
+                                TacheObjectif::create([
+                                    'libelle' => $object,
+                                    'tache_id' => $tache->id,
+                                    'user_id' => Auth::user()->id,
+                                    'statut' => 0,
+                                    'agent_id' => $section->responsable->id,
+                                ]);
                             }
-                        } else {
-                            TacheObjectif::create([
-                                'libelle' => $request->description ?? " ",
-                                'tache_id' => $tache->id,
-                                'user_id' => Auth::user()->id,
-                                'statut' => 0,
-                                'agent_id' => $responsable->id,
-                            ]);
                         }
+                    } else {
+                        TacheObjectif::create([
+                            'libelle' => $request->description ?? " ",
+                            'tache_id' => $tache->id,
+                            'user_id' => Auth::user()->id,
+                            'statut' => 0,
+                            'agent_id' => $section->responsable->id,
+                        ]);
                     }
+                    
+                    // Envoyer une notification à chaque responsable de section
+                    event(new TacheCreated($tache, $section->responsable, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
                 }
             }
 
             if (!$request->has('direction_id') && !$request->has('division_id') && !$request->has('section_id') && !$request->has('service_id')) {
                 $agents = Agent::find($request->input('agent_id'));
-
+                
+                // Créer une seule tâche pour tous les participants
+                $tache = $this->createTache($request, $agents);
+                
+                // Ajouter tous les participants à la tâche
                 foreach ($agents as $agent) {
                     $followers->push($agent);
                     if ($agent) {
-                        $tache = $this->createTache($request, $followers);
                         $tache->agents()->attach($agent, [
                             'type' => Agent::class,
                             'type_id' => $agent->id,
                         ]);
 
-                        event(new TacheCreated($tache, $agent, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
-
+                        // Créer les objectifs pour chaque participant
                         if (isset($request->input('objects')[$agent->id])) {
                             $objects = $request->input('objects')[$agent->id];
                             foreach ($objects as $object) {
@@ -655,6 +685,9 @@ class TacheController extends Controller
                                 'agent_id' => $agent->id,
                             ]);
                         }
+                        
+                        // Envoyer une notification à chaque participant
+                        event(new TacheCreated($tache, $agent, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
                     }
                 }
             }
