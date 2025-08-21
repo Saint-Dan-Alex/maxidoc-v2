@@ -1095,6 +1095,30 @@ class TacheController extends Controller
         }
 
         if ($updated) {
+            // Récupérer tous les agents assignés à cette tâche
+            $agents = $tache->agents()->get();
+            
+            $userName = Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom;
+            $message = "Mise à jour effectuée par $userName sur la tâche " ;
+            
+            // Envoyer une notification à chaque agent assigné
+            foreach ($agents as $agent) {
+                if ($agent->id != Auth::user()->agent->id) {
+                    event(new TacheCreated($tache, $agent->id, $message));
+                }
+            }
+            
+            // Enregistrer dans l'historique
+            Historique::create([
+                'action' => 'Mise à jour de la tâche',
+                'description' => $message,
+                'user_id' => Auth::id(),
+                'entity_type' => Tache::class,
+                'entity_id' => $tache->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
             $content = json_encode([
                 'name' => 'Gestion de tâche',
                 'statut' => 'success',
