@@ -4,9 +4,19 @@
         <h5 id="offcanvasRightLabel">Notifications</h5>
         {{-- <hr> --}}
 
-        <button class="btn btn-primary btn-notification-delete" data-tooltip="Vider les notifications"
-            style="color: var(--bgBtnPrimary)">
-            Vider toutes les notifications
+        <button type="button" class="btn btn-notification-delete" data-tooltip="Vider les notifications"
+            wire:click="clearAllNotifications"
+            wire:loading.attr="disabled"
+            wire:loading.class="disabled"
+            wire:target="clearAllNotifications">
+            <span wire:loading.remove wire:target="clearAllNotifications">
+                <i class="fi fi-rr-trash me-1"></i>
+                Vider toutes les notifications
+            </span>
+            <span wire:loading wire:target="clearAllNotifications">
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                <span>Traitement...</span>
+            </span>
         </button>
         {{-- <button class="btn btn-primary btn-notification-delete" title="vider les notification"
             style="color: var(--bgBtnPrimary) ">
