@@ -200,8 +200,9 @@
                         <div class="row">
                             @foreach($defaultPdfs as $pdf)
                                 @php
-                                    $documentData = json_decode($pdf->document, true);
-                                    $documentLink = isset($documentData[0]['download_link']) ? asset('storage/' . $documentData[0]['download_link']) : '#';
+                                    // Vérifier si $pdf->document est déjà un tableau ou une chaîne JSON
+                                    $documentData = is_array($pdf->document) ? $pdf->document : json_decode($pdf->document, true);
+                                    $documentLink = !empty($documentData[0]['download_link']) ? asset('storage/' . $documentData[0]['download_link']) : '#';
                                 @endphp
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100">
