@@ -25,10 +25,14 @@
                             </div>
                             
                             <div class="d-flex gap-2 w-100 mt-3">
-                                <button type="button" class="btn btn-cansel w-50" data-bs-dismiss="modal">Fermer</button>
-                                <button type="button" class="btn btn-danger w-50" wire:click='deleteParticipant({{ $objectif->id }})' data-bs-dismiss="modal">
-                                    <i class="fi fi-rr-trash me-1"></i> Supprimer
+                                <button type="button" class="btn btn-cansel {{ $objectif->tache->tache_statut_id == 3 ? 'w-100' : 'w-50' }}" data-bs-dismiss="modal">
+                                    Fermer
                                 </button>
+                                @if($objectif->tache->tache_statut_id != 3)
+                                    <button type="button" class="btn btn-danger w-50" wire:click='deleteParticipant({{ $objectif->id }})' data-bs-dismiss="modal">
+                                        <i class="fi fi-rr-trash me-1"></i> Supprimer
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     </form>
