@@ -141,7 +141,7 @@
                 <div class="footer-sidebar">
                     {{-- <a href="#" class="btn" data-bs-toggle="modal"
                         data-bs-target="#modal-delete-document">Supprimer</a> --}}
-                    @can('Archiver les documents')
+                    @can('Archiver')
                         <a href="#" class="btn btn-valid" data-bs-toggle="modal"
                             data-bs-target="#modal-new-archive">Archiver</a>
                     @endcan
