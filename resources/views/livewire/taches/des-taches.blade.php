@@ -169,10 +169,13 @@
                                                         </div>
                                                     </div>
                                                 @endif
-                                                <div class="user badge-plus ms-0" data-bs-toggle="modal"
-                                                    data-bs-target="#modal-add-participants-{{ $tache->id }}">
+                                                <div class="user badge-plus ms-0 {{ $tache->tache_statut_id == 3 ? 'disabled' : '' }}" 
+                                                    @if($tache->tache_statut_id != 3)
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modal-add-participants-{{ $tache->id }}"
+                                                    @endif>
                                                     <div class="tooltip-team">
-                                                        Ajouter un agent
+                                                        {{ $tache->tache_statut_id == 3 ? 'Modification désactivée (tâche terminée)' : 'Ajouter un agent' }}
                                                     </div>
                                                     <i class="fi fi-rr-plus"></i>
                                                 </div>
