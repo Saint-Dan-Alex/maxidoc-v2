@@ -226,7 +226,7 @@
                                                 {{ Str::ucfirst($document->author?->nom ?? '') }}
                                             </td>
                                             <td>
-                                                @if (
+                                                @if (($document->is_default === 1) ||
                                                     ($document->courrier?->isIntern() &&
                                                         is_array($document->courrier?->destinateurs->pluck('id')->toArray()) &&
                                                         in_array(Auth::user()->agent->id, $document->courrier?->destinateurs->pluck('id')->toArray())) ||
