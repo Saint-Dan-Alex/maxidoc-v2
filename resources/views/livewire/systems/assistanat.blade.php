@@ -228,10 +228,10 @@
                                             <label for="dg-{{ $assistant->id }}">Assistant DG</label>
                                             <input type="radio" name="for" id="dg-{{ $assistant->id }}" value="1" {{ $assistant->for_dg ? 'checked' : '' }}>
                                         </div>
-                                        <div>
+                                        {{-- <div>
                                             <label for="dga-{{ $assistant->id }}">Assistant DGA</label>
                                             <input type="radio" name="for" id="dga-{{ $assistant->id }}" value="2" {{ $assistant->for_dga ? 'checked' : '' }}>
-                                        </div>
+                                        </div> --}}
                                         <div>
                                             <label for="direction-{{ $assistant->id }}">Assistant Direction</label>
                                             <input type="radio" name="for" id="direction-{{ $assistant->id }}" value="3" {{ !$assistant->for_dg && !$assistant->for_dga ? 'checked' : '' }}>
