@@ -89,4 +89,24 @@ class NotificationDrawer extends Component
                 ->markAsRead();
         }
     }
+
+    /**
+     * Supprime toutes les notifications de l'utilisateur connecté
+     */
+    public function clearAllNotifications()
+    {
+        $user = Auth::user();
+        
+        // Marquer toutes les notifications comme lues si l'utilisateur a un agent
+        if ($user->agent && $user->agent->notifications) {
+            $user->agent->unreadNotifications->markAsRead();
+        }
+        // Pour l'utilisateur super admin, marquer directement depuis l'utilisateur
+        elseif ($user->id === 1 && method_exists($user, 'unreadNotifications')) {
+            $user->unreadNotifications->markAsRead();
+        }
+        
+        // Rafraîchir la liste des notifications
+        $this->notifications = collect();
+    }
 }
