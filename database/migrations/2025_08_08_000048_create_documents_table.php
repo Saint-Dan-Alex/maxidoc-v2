@@ -39,8 +39,8 @@ return new class extends Migration
             $table->index(['statut_id']);
         });
 
-        // Format du mois : "F Y" → "August 2025"
-        $yearMonth = now()->format('F Y');
+        // 🔴 Format du mois : "FY" → "August2025" (pas d'espace)
+        $yearMonth = now()->format('FY'); // Ex: August2025
         $destinationPath = storage_path('app/public/documents/' . $yearMonth);
 
         // Créer le dossier s'il n'existe pas
@@ -49,7 +49,6 @@ return new class extends Migration
         }
 
         // Fonction pour copier le fichier et générer les infos
-        // 🔴 Correction ici : ajout de $destinationPath dans le `use`
         $copyFile = function ($sourceFile) use ($yearMonth, $destinationPath) {
             $sourcePath = storage_path('app/public/documents_defaut/' . $sourceFile);
 
@@ -63,6 +62,7 @@ return new class extends Migration
             // Copie du fichier
             File::copy($sourcePath, $fullDestinationPath);
 
+            // 🔴 download_link : sans espace, donc pas de %20 dans l'URL
             return [
                 'download_link' => 'documents/' . $yearMonth . '/' . $fileName,
                 'original_name' => $sourceFile,

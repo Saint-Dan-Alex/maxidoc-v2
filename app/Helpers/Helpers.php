@@ -112,6 +112,17 @@ if (!function_exists('files')) {
             $fileObj->original_name = basename($file);
             $decoded = [$fileObj];
         }
+        // Si c'est une chaîne JSON valide mais avec des caractères échappés
+        elseif (is_string($file) && strpos($file, '\\/') !== false) {
+            $file = str_replace('\/', '/', $file);
+            $decoded = json_decode($file);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $fileObj = new stdClass;
+                $fileObj->download_link = $file;
+                $fileObj->original_name = basename($file);
+                $decoded = [$fileObj];
+            }
+        }
         // Si le décodage réussit mais que c'est un objet simple, on le met dans un tableau
         elseif (is_object($decoded) && !empty($decoded->download_link)) {
             $decoded = [$decoded];
