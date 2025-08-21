@@ -3555,3 +3555,28 @@
 #51 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\wamp64\\\\www\\\\m...')
 #52 {main}
 "} 
+[2025-08-21 16:41:39] local.ERROR: Erreur lors de la mise à jour de l'assistant: SQLSTATE[42S22]: Column not found: 1054 Champ 'direction_id' inconnu dans field list (SQL: insert into `fonctions` (`titre`, `direction_id`, `updated_at`, `created_at`) values (Assistant du DG, 1, 2025-08-21 16:41:38, 2025-08-21 16:41:38))  
+[2025-08-21 16:41:41] local.ERROR: Erreur lors de la mise à jour de l'assistant: SQLSTATE[42S22]: Column not found: 1054 Champ 'direction_id' inconnu dans field list (SQL: insert into `fonctions` (`titre`, `direction_id`, `updated_at`, `created_at`) values (Assistant du DG, 1, 2025-08-21 16:41:40, 2025-08-21 16:41:40))  
+[2025-08-21 16:41:41] local.ERROR: Erreur lors de la mise à jour de l'assistant: SQLSTATE[42S22]: Column not found: 1054 Champ 'direction_id' inconnu dans field list (SQL: insert into `fonctions` (`titre`, `direction_id`, `updated_at`, `created_at`) values (Assistant du DG, 1, 2025-08-21 16:41:41, 2025-08-21 16:41:41))  
+[2025-08-21 16:44:42] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-21 16:44:44] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-21 16:44:44] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":0,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
+[2025-08-21 16:44:53] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/VlkEyyi5QgVakVS9GnHD.pdf","nom_original":"historique-courrier-1-2025-08-14.pdf"} 
+[2025-08-21 16:46:18] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-21 16:46:19] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-21 16:46:19] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":1,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
+[2025-08-21 16:47:32] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/bykjV9QDWgqJEHHkkEGH.pdf","nom_original":"Cv actuel.pdf"} 
+[2025-08-21 16:49:42] local.INFO: 🟢 Début du traitement  
+[2025-08-21 16:49:42] local.INFO: 📩 Courrier chargé {"courrier_id":1} 
+[2025-08-21 16:49:42] local.INFO: ➡️ Traitement du courrier entrant  
+[2025-08-21 16:49:42] local.INFO: ✅ Courrier marqué comme traité  
+[2025-08-21 16:49:42] local.INFO: 🗂️ Document marqué comme traité {"document_id":3} 
+[2025-08-21 16:49:42] local.INFO: 👤 Agent identifié {"agent_id":2} 
+[2025-08-21 16:49:42] local.INFO: 📝 Traitement enregistré {"traitement_id":2} 
+[2025-08-21 16:49:42] local.INFO: 🔁 Traitement et étape ajoutés  
+[2025-08-21 16:49:42] local.INFO: 📦 Nouveau destinataire externe créé {"dest_id":1} 
+[2025-08-21 16:49:42] local.INFO: 📨 Courrier sortant créé {"new_courrier_id":3} 
+[2025-08-21 16:49:42] local.INFO: 👥 Responsables attachés {"ids":{"Illuminate\\Support\\Collection":[3]}} 
+[2025-08-21 16:49:42] local.INFO: 📢 Notification envoyée {"agents":{"Illuminate\\Support\\Collection":[3]}} 
+[2025-08-21 16:49:43] local.INFO: 🟩 Statut du courrier entrant mis à jour  
+[2025-08-21 16:49:43] local.INFO: ✅ Fin du traitement avec succès  

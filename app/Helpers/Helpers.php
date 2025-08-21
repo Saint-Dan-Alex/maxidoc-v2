@@ -95,78 +95,85 @@ if (!function_exists('getYear')) {
 // }
 
 if (!function_exists('files')) {
+    /**
+     * Transforme un champ 'document' (JSON ou string) en objet ou collection d'objets
+     * contenant l'URL publique et le nom du fichier.
+     * 
+     * @param mixed $file  JSON, string ou array représentant un ou plusieurs fichiers
+     * @param bool  $multiple  Si true, retourne une collection même pour un seul fichier
+     * @return \stdClass|Collection  Objet (si !multiple) ou collection de fichiers
+     */
     function files($file, $multiple = false)
     {
-        // Si le fichier est déjà un tableau, on le convertit en JSON
+        // 1. Si c'est un tableau PHP, on l'encode en JSON
         if (is_array($file)) {
-            $file = json_encode($file);
+            $file = json_encode($file, JSON_UNESCAPED_SLASHES);
         }
 
-        // Si le fichier est une chaîne JSON, on le décode
+        // 2. Si ce n'est pas une chaîne, on ne peut pas traiter
+        if (!is_string($file) || empty(trim($file))) {
+            return $multiple ? collect() : (object)['link' => '', 'name' => ''];
+        }
+
+        // 3. Décodage du JSON
         $decoded = json_decode($file);
-        
-        // Si le décodage échoue et que c'est une chaîne (ancien format), on crée un objet avec les propriétés attendues
-        if (json_last_error() !== JSON_ERROR_NONE && is_string($file)) {
+
+        // 4. Gestion des erreurs de décodage ou format brut
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            // Cas : chaîne brute (ex: "documents/August2025/file.pdf")
             $fileObj = new stdClass;
-            $fileObj->download_link = $file;
-            $fileObj->original_name = basename($file);
+            $fileObj->download_link = trim($file);
+            $fileObj->original_name = basename($fileObj->download_link);
             $decoded = [$fileObj];
-        }
-        // Si c'est une chaîne JSON valide mais avec des caractères échappés
-        elseif (is_string($file) && strpos($file, '\\/') !== false) {
-            $file = str_replace('\/', '/', $file);
-            $decoded = json_decode($file);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $fileObj = new stdClass;
-                $fileObj->download_link = $file;
-                $fileObj->original_name = basename($file);
-                $decoded = [$fileObj];
-            }
-        }
-        // Si le décodage réussit mais que c'est un objet simple, on le met dans un tableau
-        elseif (is_object($decoded) && !empty($decoded->download_link)) {
+        } elseif (is_object($decoded) && isset($decoded->download_link)) {
+            // Cas : objet unique
             $decoded = [$decoded];
-        }
-        // Si c'est déjà un tableau d'objets, on le laisse tel quel
-        elseif (is_array($decoded) && !empty($decoded[0]->download_link)) {
-            // Tout va bien, on garde tel quel
-        }
-        // Sinon, on crée un objet vide
-        else {
-            $fileObj = new stdClass;
-            $fileObj->download_link = '';
-            $fileObj->original_name = '';
-            $decoded = [$fileObj];
+        } elseif (!is_array($decoded)) {
+            // Cas inattendu
+            $decoded = [];
         }
 
         $results = collect();
 
-        foreach ($decoded as $file) {
-            // S'assurer que l'objet a les propriétés attendues
-            if (!isset($file->download_link)) $file->download_link = '';
-            if (!isset($file->original_name)) $file->original_name = basename($file->download_link);
-            
-            // Nettoyer les chemins (remplacer les antislashs par des slashs)
-            $link = str_replace('\\', '/', $file->download_link);
-            
-            // Supprimer les préfixes inutiles
-            $link = preg_replace('#^/+#', '', $link); // Supprimer les slashes en début de chaîne
-            $link = preg_replace('#^storage/#', '', $link); // Supprimer le préfixe storage/ s'il existe
-            
-            // Construire l'URL complète
-            $url = asset('storage/' . $link);
-            
+        foreach ($decoded as $item) {
+            if (!isset($item->download_link) || empty(trim($item->download_link))) {
+                continue;
+            }
+
+            $link = trim($item->download_link);
+            $name = $item->original_name ?? basename($link);
+
+            // 🔧 Normalisation du chemin
+            $link = str_replace(['\\/', '\\\\', '\\'], '/', $link);  // Remplace les séparateurs échappés
+            $link = urldecode($link);                                // Décodage des %20
+            $link = preg_replace('#^[/]+#', '', $link);              // Supprime les / en début
+            $link = preg_replace('#^storage[/]#i', '', $link);       // Évite storage/storage
+
+            // 📁 Chemin dans le disque 'public'
+            $storagePath = rtrim($link, '/');
+
+            // 🔍 Vérifie que le fichier existe physiquement dans storage/app/public
+            if (!Storage::disk('public')->exists($storagePath)) {
+                \Log::warning("Fichier introuvable : storage/app/public/{$storagePath}");
+                continue; // Ignore si le fichier n'existe pas
+            }
+
+            // ✅ Construit l'URL publique via asset()
+            // Ex: http://maxidoc.test/storage/documents/August2025/file.pdf
+            $url = asset('storage/' . $storagePath);
+
             $fichier = new stdClass;
             $fichier->link = $url;
-            $fichier->name = $file->original_name;
+            $fichier->name = $name;
             $results->push($fichier);
         }
 
-        // Si on ne veut qu'un seul résultat, on retourne le premier élément
+        // 🔚 Retourne le premier élément si !multiple
         if (!$multiple && $results->isNotEmpty()) {
             return $results->first();
         }
 
+        // Retourne la collection ou un objet vide
         return $results->isNotEmpty() ? $results : (object)['link' => '', 'name' => ''];
     }
 }
