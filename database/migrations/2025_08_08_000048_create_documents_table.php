@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
 
 return new class extends Migration
 {
@@ -20,7 +19,7 @@ return new class extends Migration
             $table->string('libelle', 255)->nullable();
             $table->foreignId('type')->nullable()->constrained('document_types')->nullOnDelete();
             $table->text('description')->nullable();
-            $table->text('document')->nullable();
+            $table->text('document')->nullable(); // Stockera une chaîne JSON
             $table->boolean('confidentiel')->default(false);
             $table->string('password', 255)->nullable();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
@@ -40,38 +39,37 @@ return new class extends Migration
             $table->index(['statut_id']);
         });
 
-        // Insertion des 2 documents dans la table avec le format JSON contenant download_link
-        // Créer le dossier de destination pour les documents s'il n'existe pas
+        // Format du mois : "F Y" → "August 2025"
         $yearMonth = now()->format('F Y');
         $destinationPath = storage_path('app/public/documents/' . $yearMonth);
+
+        // Créer le dossier s'il n'existe pas
         if (!File::exists($destinationPath)) {
             File::makeDirectory($destinationPath, 0755, true);
         }
 
-        // Fonction pour copier un fichier et retourner ses informations
-        $copyFile = function($sourceFile) use ($yearMonth) {
+        // Fonction pour copier le fichier et générer les infos
+        // 🔴 Correction ici : ajout de $destinationPath dans le `use`
+        $copyFile = function ($sourceFile) use ($yearMonth, $destinationPath) {
             $sourcePath = storage_path('app/public/documents_defaut/' . $sourceFile);
-            
+
             if (!File::exists($sourcePath)) {
-                throw new \Exception("Le fichier source n'existe pas: " . $sourcePath);
+                throw new \Exception("Le fichier source n'existe pas : " . $sourcePath);
             }
-            
+
             $fileName = Str::random(20) . '.pdf';
-            $destinationPath = storage_path('app/public/documents/' . $yearMonth . '/' . $fileName);
-            
-            // Copier le fichier
-            File::copy($sourcePath, $destinationPath);
-            
+            $fullDestinationPath = $destinationPath . '/' . $fileName;
+
+            // Copie du fichier
+            File::copy($sourcePath, $fullDestinationPath);
+
             return [
                 'download_link' => 'documents/' . $yearMonth . '/' . $fileName,
                 'original_name' => $sourceFile,
-                'file_name' => $fileName,
-                'file_size' => File::size($destinationPath),
-                'mime_type' => 'application/pdf'
             ];
         };
 
-        // Définir les documents par défaut
+        // Préparation des documents par défaut
         $documents = [
             [
                 'dossier_id' => 1,
@@ -83,19 +81,19 @@ return new class extends Migration
                 'document' => json_encode([
                     $copyFile("Bienvenue sur MAXIDOC®.pdf")
                 ]),
-                'confidentiel' => 0,
+                'confidentiel' => false,
                 'password' => null,
                 'user_id' => 1,
-                'statut_id' => 5, // Statut par défaut
+                'statut_id' => 5,
                 'created_by' => 1,
                 'archived_at' => null,
                 'desarchive_by' => null,
                 'desarchive_at' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
-                'is_piece_jointe' => 0,
-                'is_default' => 1,
-                'reference_document_id' => null
+                'is_piece_jointe' => false,
+                'is_default' => true,
+                'reference_document_id' => null,
             ],
             [
                 'dossier_id' => 1,
@@ -107,25 +105,24 @@ return new class extends Migration
                 'document' => json_encode([
                     $copyFile("GUIDE DUTILISATION - Premiers pas avec MAXIDOC®.pdf")
                 ]),
-                'confidentiel' => 0,
+                'confidentiel' => false,
                 'password' => null,
                 'user_id' => 1,
-                'statut_id' => 5, // Statut par défaut
+                'statut_id' => 5,
                 'created_by' => 1,
                 'archived_at' => null,
                 'desarchive_by' => null,
                 'desarchive_at' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
-                'is_piece_jointe' => 0,
-                'is_default' => 1,
-                'reference_document_id' => null
+                'is_piece_jointe' => false,
+                'is_default' => true,
+                'reference_document_id' => null,
             ]
         ];
 
-        // Insérer les documents dans la base de données
+        // Insertion en base
         DB::table('documents')->insert($documents);
-        
     }
 
     public function down()
