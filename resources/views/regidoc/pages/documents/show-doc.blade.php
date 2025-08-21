@@ -1,6 +1,11 @@
 @extends('regidoc.layouts.layout-doc')
 
 @section('content')
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
     <div class="block-scanner">
         <div class="sidebar-doc">
             <div class="header-sidebar">
@@ -103,7 +108,7 @@
                                 <label for="inputPassword" class="col-5 col-form-label">Objet</label>
                                 <div class="col-7">
                                     <p class="items">
-                                        {{ $find_document->courrier ? $find_document->courrier->objet : 'Aucun objet' }}
+                                        {{ $find_document->description }}
                                     </p>
                                 </div>
                             </div>
@@ -130,43 +135,6 @@
                             </div>
                         </div>
 
-                        @if($find_document->archived_at)
-                        <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Date d'archivage</label>
-                                <div class="col-7">
-                                    <p class="items">
-                                        {{ $find_document->archived_at ? \Carbon\Carbon::parse($find_document->archived_at)->isoFormat('LL [à] HH:mm') : '' }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
-
-                        @if($find_document->desarchive_by)
-                        <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Date de désarchivage</label>
-                                <div class="col-7">
-                                    <p class="items">
-                                        {{ $find_document->updated_at ? \Carbon\Carbon::parse($find_document->updated_at)->isoFormat('LL [à] HH:mm') : '' }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Désarchivé par</label>
-                                <div class="col-7">
-                                    <p class="items">
-                                        {{ $find_document->desarchiveBy?->name?? '' }} {{ $find_document->desarchiveBy?->nom ?? '' }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
-
                     </div>
 
                 </div>
@@ -183,43 +151,8 @@
         </div>
         <div class="content-scanner">
             <div class="container-fluid">
-                <!-- Document principal -->
-                <div class="mb-4">
-                    <h5>Document actuel</h5>
-                    <iframe src="{{ files($find_document?->document)->link ? files($find_document?->document)->link.'#toolbar=0&navpanes=0&page=1' : '#' }}" 
-                            frameborder="0" 
-                            class="w-100" 
-                            style="height: 600px;">
-                    </iframe>
-                </div>
-                
-                <!-- Documents par défaut -->
-                @if(isset($defaultPdfs) && $defaultPdfs->count() > 0)
-                    <div class="mt-5">
-                        <h5>Documents par défaut</h5>
-                        <div class="row">
-                            @foreach($defaultPdfs as $pdf)
-                                @php
-                                    // Vérifier si $pdf->document est déjà un tableau ou une chaîne JSON
-                                    $documentData = is_array($pdf->document) ? $pdf->document : json_decode($pdf->document, true);
-                                    $documentLink = !empty($documentData[0]['download_link']) ? asset('storage/' . $documentData[0]['download_link']) : '#';
-                                @endphp
-                                <div class="col-md-6 mb-4">
-                                    <div class="card h-100">
-                                        <div class="card-body">
-                                            <h6 class="card-title">{{ $pdf->libelle }}</h6>
-                                            <iframe src="{{ $documentLink }}#toolbar=0&navpanes=0&page=1" 
-                                                    frameborder="0" 
-                                                    class="w-100" 
-                                                    style="height: 400px;">
-                                            </iframe>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
+                <iframe src="{{ files($find_document?->document)->link ? files($find_document?->document)->link.'#toolbar=0&navpanes=0&page=1' : '#' }}" frameborder="0"
+                    class="w-100"></iframe>
             </div>
         </div>
 
