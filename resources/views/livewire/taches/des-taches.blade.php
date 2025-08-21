@@ -178,7 +178,10 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td> {{ $tache->created_at->format('d/m/Y') }} </td>
+                                        <td>
+                                            {{ $tache->date_fin ? $tache->date_fin->format('d/m/Y H:i') : 'Non Défini' }}
+                                        </td>
+                                        
                                         <td>
                                             <div
                                                 class="progress-tache {{ $tache->pourcentage >= 80 ? 'green' : '' }} {{ $tache->pourcentage >= 50 && $tache->pourcentage < 80 ? 'orange' : '' }} ">

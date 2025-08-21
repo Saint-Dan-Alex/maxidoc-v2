@@ -932,7 +932,7 @@ use Illuminate\Support\Facades\Storage;
                                 </div>
                                 <div class="col-lg-12">
                                     <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                        {{ $tache->created_at?->isoFormat('LL') }}
+                                        {{ $tache->created_at?->isoFormat('LL [à] HH:mm') }}
                                     </p>
                                 </div>
                             </div>
@@ -951,7 +951,7 @@ use Illuminate\Support\Facades\Storage;
                                     </div>
                                     <div class="col-lg-12">
                                         <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                            {{ $tache->date_fin?->isoFormat('LL') }}
+                                            {{ $tache->date_fin?->isoFormat('LL [à] HH:mm') }}
                                         </p>
                                     </div>
                                 </div>
