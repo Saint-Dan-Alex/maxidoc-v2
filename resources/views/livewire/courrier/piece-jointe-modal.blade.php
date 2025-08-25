@@ -1,11 +1,11 @@
 <div>
-    <div class="modal fade" id="modal-new-annotation" aria-labelledby="exampleModalLabel" aria-modal="true"
+    <div class="modal fade" id="modal-new-piece" aria-labelledby="exampleModalLabel" aria-modal="true"
         role="dialog" wire:ignore>
         <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title d-flex align-items-center" id="exampleModalLabel">
-                        <span>Annotationsss</span>
+                        <span>Ajouter une pièce jointe</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
