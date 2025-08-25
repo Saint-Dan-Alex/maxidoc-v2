@@ -82,15 +82,53 @@ class AjaxController extends Controller
         return $this->relation($request, 'courrier-expediteur');
     }
 
+    public function contactsExpediteur(Request $request)
+    {
+        $expediteurId = $request->input('expediteur_id');
+        
+        $contacts = CourrierExpediteur::where('id', $expediteurId)
+            ->whereNotNull('contact')
+            ->pluck('contact')
+            ->unique()
+            ->map(function($contact) {
+                return ['id' => $contact, 'text' => $contact];
+            })
+            ->values();
+            
+        return response()->json([
+            'results' => $contacts
+        ]);
+    }
+
     public function expediteurCourriersSave(Request $request)
     {
         $expediteur = new CourrierExpediteur();
         $expediteur->nom = $request->nom;
+        $expediteur->contact = $request->contact;
         $expediteur->category_id = $request->relative_id;
         $expediteur->save();
         return response()->json([
             'results' => $expediteur,
         ]);
+    }
+    
+    public function contactExpediteurSave(Request $request)
+    {
+        $expediteur = CourrierExpediteur::find($request->expediteur_id);
+        if ($expediteur) {
+            $expediteur->contact = $request->contact;
+            $expediteur->save();
+            
+            return response()->json([
+                'success' => true,
+                'contact' => $request->contact
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Expéditeur non trouvé'
+        ], 404);
     }
 
     public function destinatairecourriers(Request $request)

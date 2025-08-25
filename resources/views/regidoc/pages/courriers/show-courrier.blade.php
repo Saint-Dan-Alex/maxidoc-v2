@@ -610,7 +610,7 @@
                         @endif
                     @endcan --}}
 
-                    {{-- @can('Annoter un document')
+                    @can('Annoter un document')
                         @if (
                             $hasSeen &&
                             (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) &&
@@ -631,11 +631,11 @@
                                 </a>
                             </li>
                         @endif
-                    @endcan --}}
+                    @endcan
 
                 @elseif ($courrier->type_id == 2)
                     {{-- Logique pour type_id == 2 : Retire tous les CAN et IF, sauf $aTraite --}}
-                    @can('Assigner une tâche')
+                    {{-- @can('Assigner une tâche')
                         <li>
                             <a href="javascript:void(0)" data-bs-target="#dga-modal" data-bs-toggle="modal"
                                 @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
@@ -678,8 +678,8 @@
                                 </span>
                             </a>
                         </li>
-                    @endcan
-                    @can('Signer un document')
+                    @endcan --}}
+                    {{-- @can('Signer un document')
                         <li>
                             <a href="{{ route('regidoc.documents.sign', ['doc_id' => $courrier->document?->id, 'is_original' => true, 'courrier_id' => $courrier->id]) }}"
                                 @class(['dropdown-item signature_btn', 'btn disabled' => $aTraite]) @disabled($aTraite)>
@@ -694,9 +694,9 @@
                                 </span>
                             </a>
                         </li>   
-                    @endcan
+                    @endcan --}}
         
-                    @can('Valider un document')
+                    {{-- @can('Valider un document')
                         <li>
                             <a href="javascript:void(0)" class="dropdown-item btn-valider-courrier" data-id="{{ $courrier->id }}">
                                 <span class="d-flex align-items-center">
@@ -709,7 +709,7 @@
                                 </span>
                             </a>
                         </li>
-                    @endcan
+                    @endcan --}}
 
                     @can('Partager un document')
                         <li>
@@ -721,7 +721,7 @@
                         </li>
                     @endcan
     
-                    @can('Rejeter un document')
+                    {{-- @can('Rejeter un document')
                         <li>
                                 <a href="javascript:void(0)" class="dropdown-item btn-rejeter-courrier" data-id="{{ $courrier->id }}">
                                     <span class="d-flex align-items-center">
@@ -735,7 +735,7 @@
                                     </span>
                                 </a>
                             </li>
-                    @endcan 
+                    @endcan  --}}
                     @can('Annoter un document')
                         <li>
                                 <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-annotation"
@@ -748,6 +748,21 @@
                                     </span>
                                     <span class="title">
                                                 Annotations
+                                    </span>
+                                </a>
+                            </li>
+
+                    @endcan
+
+                    @can('Numériser un document sortant')
+                            <li>
+                                <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-piece"
+                                    @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                    <span class="d-flex align-items-center">
+                                        <i class="fi fi-rr-file"></i>
+                                    </span>
+                                    <span class="title">
+                                                Joindre une pièce jointe
                                     </span>
                                 </a>
                             </li>
