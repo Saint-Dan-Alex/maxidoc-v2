@@ -28,6 +28,16 @@
     @yield('styles')
     @livewireStyles()
     @livewireScripts()
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+        rel="stylesheet">
+
+    
+    
+    
+    
     
     <style>
         .settings-nav-item {
@@ -210,6 +220,68 @@
         
         <div class="backdropFilter"></div>
     </div>
+    @if (session()->has('session'))
+        @if (json_decode(session()->get('session'))->statut == 'success')
+            <div class="message-flash success">
+                <div class="content-text d-flex justify-content-center  gap-2">
+                    <div class="content-text-imageBox d-flex justify-content-center align-items-center">
+                        <img src="{{ asset('assets/images/icons/iconvert-maxidoc.svg') }}" alt="icon success">
+                    </div>
+                    <div class="text-star">
+                        <h6>{{ json_decode(session()->get('session'))->name }}</h6>
+                        <p>{{ json_decode(session()->get('session'))->message }}</p>
+                    </div>
+                </div>
+            </div>
+        @elseif(json_decode(session()->get('session'))->statut == 'warnig')
+            <div class="message-flash warning">
+                <div class="content-text d-flex justify-content-center  gap-2">
+                    <div class="content-text-imageBox d-flex justify-content-center align-items-center">
+                        <img src="{{ asset('assets/images/icons/iconorange-maxidoc.svg') }}" alt="icon warning">
+                    </div>
+                    <div class="text-star">
+                        <h6>{{ json_decode(session()->get('session'))->name }}</h6>
+                        <p>{{ json_decode(session()->get('session'))->message }}</p>
+                    </div>
+                </div>
+            </div>
+        @elseif(json_decode(session()->get('session'))->statut == 'error')
+            <div class="message-flash error">
+                <div class="content-text d-flex justify-content-center  gap-2">
+                    <div class="content-text-imageBox d-flex justify-content-center align-items-center">
+                        <img src="{{ asset('assets/images/icons/error-icon.png') }}" alt="icon error">
+                    </div>
+                    <div class="text-star">
+                        <h6>{{ json_decode(session()->get('session'))->name }}</h6>
+                        <p>{{ json_decode(session()->get('session'))->message }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+        @php
+            Session::forget('session');
+        @endphp
+    @endif
+
+    @if ($errors->any())
+        <div class="message-flash error">
+            <div class="content-text d-flex">
+                <div class="icon">
+                    <i data-feather="x-circle"></i>
+                </div>
+                <div class="text-star">
+                    <h6>{{ __('Whoops! Something went wrong.') }}</h6>
+                    <ul class="mt-3 list-unstyled error-list">
+                        @foreach ($errors->all() as $error)
+                            <li class="text-danger">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @livewire('livewire-alert')
 
     <!-- Scripts -->
     @include('regidoc.layouts.partials.head.scripts')
