@@ -1357,7 +1357,9 @@ public function createDocument($request, $destinateur, $doc = null)
         $classeurs = Classeur::all();
         $dossiers = Dossier::all();
         $directions = Direction::all();
-        $traitements = Auth::user()->agent->isDG()|| Auth::user()->agent->isDGA()  ? CourrierTypesTraitement::select('id', 'titre')->get() : CourrierTypesTraitement::select('id', 'titre')->where('id','!=',3)->get();
+        $traitements = Auth::user()->agent->isDG() || Auth::user()->agent->isDGA()  
+            ? CourrierTypesTraitement::withTrashed()->select('id', 'titre')->get() 
+            : CourrierTypesTraitement::withTrashed()->select('id', 'titre')->get();
         $priorites = Priorite::select('id', 'titre')->get();
 
         return view('regidoc.pages.courriers.show-courrier', compact('directions', 'courrier', 'classeurs', 'dossiers','traitements','priorites'));
