@@ -13,6 +13,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('category_id')->nullable();
             $table->string('nom', 25)->nullable();
+            $table->string('contact', 255)->nullable();
             $table->timestamps();
             $table->softDeletes();
 

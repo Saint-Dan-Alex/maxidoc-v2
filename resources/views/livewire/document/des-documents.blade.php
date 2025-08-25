@@ -185,7 +185,7 @@
                                     <tr>
                                         <th scope="col">Nom</th>
                                         <th scope="col">Référence</th>
-                                        <th scope="col">Type de courrier</th>
+                                        <th scope="col">Type de document</th>
                                         <th scope="col">Service initiateur</th>
                                         <th scope="col">Date de création</th>
                                         <th scope="col">Ajouté par</th>
