@@ -19,34 +19,34 @@ class CreateCourrierTypesTraitementsTable extends Migration
         // Insérer les données par défaut
         DB::table('courrier_types_traitements')->insert([
             [
-                'titre' => 'Signer',
-                'created_at' => '2023-09-25 10:34:09',
-                'updated_at' => '2023-09-25 00:00:00',
-                'deleted_at' => null,
-            ],
-            [
-                'titre' => 'Valider',
-                'created_at' => '2022-11-14 14:22:39',
-                'updated_at' => '2022-11-14 14:22:39',
-                'deleted_at' => '2023-09-25 00:00:00',
-            ],
-            [
-                'titre' => 'Assigner',
-                'created_at' => '2022-11-14 14:22:39',
-                'updated_at' => '2022-11-14 14:22:39',
-                'deleted_at' => null,
-            ],
-            [
                 'titre' => 'Traiter',
                 'created_at' => '2022-11-14 14:22:39',
                 'updated_at' => '2022-11-14 14:22:39',
                 'deleted_at' => null,
             ],
             [
+                'titre' => 'Assigner pour traitement',
+                'created_at' => '2022-11-14 14:22:39',
+                'updated_at' => '2022-11-14 14:22:39',
+                'deleted_at' => null,
+            ],
+            [
+                'titre' => 'Valider',
+                'created_at' => '2022-11-14 14:22:39',
+                'updated_at' => '2022-11-14 14:22:39',
+                'deleted_at' => null,
+            ],            
+            [
                 'titre' => 'Consulter',
                 'created_at' => '2022-11-14 14:34:24',
                 'updated_at' => '2022-11-14 14:34:24',
-                'deleted_at' => '2023-09-25 10:35:39',
+                'deleted_at' => null,
+            ],
+            [
+                'titre' => 'Signer',
+                'created_at' => '2023-09-25 10:34:09',
+                'updated_at' => '2023-09-25 00:00:00',
+                'deleted_at' => null,
             ],
         ]);
     }

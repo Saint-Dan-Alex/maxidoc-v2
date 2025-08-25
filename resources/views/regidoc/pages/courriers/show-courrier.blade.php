@@ -386,7 +386,7 @@
 
     <div class="sidebar">
         <div class="px-3 py-3 logo text-start d-flex align-items-center justify-content-between">
-            <h6 class="mb-0" style="color: var(--colorTitre)">Aperçu du courrier</h6>
+            <h6 class="mb-0" style="color: var(--colorTitre)">Aperçu du document</h6>
         </div>
 
         <div class="content-sidebar">
@@ -472,7 +472,7 @@
                                 </svg>
                             </span>
                             <span class="title">
-                                Détails du courrier 
+                                Détails du document
                             </span>
                         </a>
                     </li>
@@ -493,7 +493,7 @@
                    @if ($courrier->type_id == 1)
                     {{-- Logique pour type_id == 1 (Courrier Entrant) : Garde toutes les conditions et les CAN --}}
 
-                    @can('Assigner une tâche')
+                    {{-- @can('Assigner une tâche')
                         @if ($courrier->document)
                             @if (!Auth::user()->agent->isSecretaire())
                                 @if (!Auth::user()->agent->isDGA())
@@ -542,9 +542,9 @@
                                 </li>
                             @endif
                         @endif
-                    @endcan
+                    @endcan --}}
 
-                    @can('Signer un document')
+                    {{-- @can('Signer un document')
                         @if (!Auth::user()->agent->isSecretaire())
                             <li>
                                 <a href="{{ route('regidoc.documents.sign', ['doc_id' => $courrier->document?->id, 'is_original' => true, 'courrier_id' => $courrier->id]) }}"
@@ -561,9 +561,9 @@
                                 </a>
                             </li>
                         @endif
-                    @endcan
+                    @endcan --}}
 
-                    @can('Valider un document')
+                    {{-- @can('Valider un document')
                         @if($courrier->statut_id != 3 && $courrier->statut_id != 4)
                             <li>
                                 <a href="javascript:void(0)" class="dropdown-item btn-valider-courrier" data-id="{{ $courrier->id }}">
@@ -578,7 +578,7 @@
                                 </a>
                             </li>
                         @endif
-                    @endcan
+                    @endcan --}}
 
                     @can('Partager un document')
                         @if (!Auth::user()->agent->isSecretaire())
@@ -592,7 +592,7 @@
                         @endif
                     @endcan
 
-                    @can('Rejeter un document')
+                    {{-- @can('Rejeter un document')
                         @if($courrier->statut_id != 3 && $courrier->statut_id != 4)
                             <li>
                                 <a href="javascript:void(0)" class="dropdown-item btn-rejeter-courrier" data-id="{{ $courrier->id }}">
@@ -608,9 +608,9 @@
                                 </a>
                             </li>
                         @endif
-                    @endcan
+                    @endcan --}}
 
-                    @can('Annoter un document')
+                    {{-- @can('Annoter un document')
                         @if (
                             $hasSeen &&
                             (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) &&
@@ -631,7 +631,7 @@
                                 </a>
                             </li>
                         @endif
-                    @endcan
+                    @endcan --}}
 
                 @elseif ($courrier->type_id == 2)
                     {{-- Logique pour type_id == 2 : Retire tous les CAN et IF, sauf $aTraite --}}
@@ -987,15 +987,29 @@
                                 (Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()) &&
                                 $courrier->traitements->where('agent_id', Auth::user()->agent->id)->count() <= 0)
                             <div class="d-flex  align-items-center block-action-doc mt-2" style="max-width: 100%">
-                                <p class="mb-0 d-inline-flex g-2 align-items-center">
-                                <div class="content-scanner-iconFileBox">
-                                    <img class="content-scanner-iconFileBox-image me-4"
-                                        src="{{ asset('assets/images/icons/accuse-reception--.png') }}"
-                                        alt="file icon" />
-                                </div>
-                                {{-- <i class="fi fi-rr-magic-wand"></i> --}}
-                                Document transmis pour {{ Str::ucfirst($courrier->traitement->titre ?? '') }}
+                                @php
+                                    $titres = [
+                                        'Valider' => 'validation',
+                                        'Signer' => 'signature',
+                                        'Consulter' => 'consultation',
+                                        'Traiter' => 'traitement',
+                                        'Assigner' => 'assignation',
+                                    ];
+
+                                    $titre = $courrier->traitement->titre ?? '';
+                                    $affichage = $titres[$titre] ?? strtolower($titre);
+                                @endphp
+
+                                <p class="mb-0 d-inline-flex g-2 align-items-center"> 
+                                    <div class="content-scanner-iconFileBox">
+                                        <img class="content-scanner-iconFileBox-image me-4"
+                                            src="{{ asset('assets/images/icons/accuse-reception--.png') }}"
+                                            alt="file icon" />
+                                    </div>
+                                    Document transmis pour&nbsp;<span style="color: #2C62C3">{{ $affichage }}</span>
+
                                 </p>
+
                                 <div class="d-flex align-items-center ms-auto">
                                     @php
                                         $url = 'javascript:void(0)';
@@ -1983,7 +1997,7 @@
             <div class="modal-content">
                 <div class="modal-header ">
                     <h5 class="modal-title d-flex align-items-center" id="exampleModalLabel">
-                        <span>Traitements</span>
+                        <span>Traitements du document</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -1997,6 +2011,25 @@
                         </div>
                     </div>
                     <div class="row g-lg-3 g-2">
+                        <div class="col-6">
+                            <button class="btn btn-action-doc d-flex flex-column h-100 w-100"
+                                data-bs-target="#modal-validation" data-bs-toggle="modal">
+                                <i class="fi fi-rr-check"></i>
+                                Valider le document
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-action-doc d-flex flex-column h-100 w-100"
+                                data-bs-target="#modal-reject" data-bs-toggle="modal">
+                                <svg viewBox="0 0 24 24" width="512" height="512" class="mx-auto mb-2">
+                                    <path
+                                        d="M16,8a1,1,0,0,0-1.414,0L12,10.586,9.414,8A1,1,0,0,0,8,9.414L10.586,12,8,14.586A1,1,0,0,0,9.414,16L12,13.414,14.586,16A1,1,0,0,0,16,14.586L13.414,12,16,9.414A1,1,0,0,0,16,8Z" />
+                                    <path
+                                        d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z" />
+                                </svg>
+                                Rejeter
+                            </button>
+                        </div>
                         <div class="col-6">
                             <a href="{{ $courrier->document ? route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) : '#' }}"
                                 id="download"
@@ -2036,7 +2069,7 @@
             <div class="modal-content">
                 <div class="modal-header ">
                     <h5 class="modal-title d-flex align-items-center" id="exampleModalLabel">
-                        <span>Traitements</span>
+                        <span>Traitements  </span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
