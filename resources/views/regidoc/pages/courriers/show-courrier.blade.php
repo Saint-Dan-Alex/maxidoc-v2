@@ -759,7 +759,7 @@
                                 <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-piece"
                                     @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
                                     <span class="d-flex align-items-center">
-                                        <i class="fi fi-rr-file"></i>
+                                        <i class="fi fi-rr-clip"></i>
                                     </span>
                                     <span class="title">
                                                 Joindre une pièce jointe

@@ -19101,3 +19101,18 @@
 [2025-08-25 14:32:54] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
 [2025-08-25 14:32:57] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
 [2025-08-25 14:32:57] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":12,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
+[2025-08-25 15:08:32] local.ERROR: Cannot use Illuminate\Database\Eloquent\Relations\HasMany as HasMany because the name is already in use {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use Illuminate\\Database\\Eloquent\\Relations\\HasMany as HasMany because the name is already in use at C:\\wamp64\\www\\maxidoc-projet-origine\\app\\Models\\Courrier.php:20)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Cannot use Ill...', code: '0', error: '['type' => 64, ...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 64, ...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
+[2025-08-25 15:10:46] local.INFO: Documents traités pour la tâche {"tache_id":1,"nb_documents":0,"documents":[]} 
+[2025-08-25 15:10:52] local.INFO: Documents traités pour la tâche {"tache_id":1,"nb_documents":0,"documents":[]} 
+[2025-08-25 15:11:01] local.INFO: Documents traités pour la tâche {"tache_id":1,"nb_documents":0,"documents":[]} 
+[2025-08-25 16:25:30] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-25 16:25:33] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-25 16:25:33] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":12,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
+[2025-08-25 16:25:46] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/n54Iyng6DENpmV2KH0vp.pdf","nom_original":"Sujet _ Les 7 sphères d’influence.pdf"} 
