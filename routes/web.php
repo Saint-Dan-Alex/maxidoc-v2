@@ -264,7 +264,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 
                 Route::get('/sessions/logs/session', [LogSessionController::class, 'index'])->name('session');
             });
-
+            Route::get('expediteur/contacts', [AjaxController::class, 'contactsExpediteur'])->name('ajax.expediteur.contacts');
+                Route::post('expediteur/contact/save', [AjaxController::class, 'contactExpediteurSave'])->name('ajax.expediteur.contact.save');
             Route::prefix('ajax')->group(function () {
                 Route::get('types/courriers', [AjaxController::class, 'typescourriers'])->name('ajax.typescourriers'); 
                 Route::get('/priorites', [AjaxController::class, 'priorites'])->name('ajax.priorites');

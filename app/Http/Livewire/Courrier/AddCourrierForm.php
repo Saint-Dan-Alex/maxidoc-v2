@@ -190,11 +190,11 @@ class AddCourrierForm extends Component
         $this->priorites = Priorite::select('id', 'titre')->get();
         $this->types = $this->types->filter(function ($type) {
             if ($type->id == 2) {
-                return Auth::user()->can('Enregistrer un courrier sortant');
+                return Auth::user()->can('Numériser un document sortant');
             } elseif ($type->id == 1) {
-                return Auth::user()->can('Enregistrer un courrier entrant');
+                return Auth::user()->can('Numériser un document entrant');
             } else {
-                return Auth::user()->can('Enregistrer un courrier interne');
+                return Auth::user()->can('Numériser un document interne');
             }
         });
         // $this->agents = $this->agents->where('id', '!=', Auth::user()->agent->id);

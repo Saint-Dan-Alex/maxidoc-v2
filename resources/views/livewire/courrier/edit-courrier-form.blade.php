@@ -101,6 +101,27 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-12 contact_field" wire:ignore>
+                        <div class="row">
+                            <label class="col-5 col-form-label">Contact</label>
+                            <div class="col-7" wire:ignore>
+                                <select class="form-select form-control select2-contact" 
+                                    name="contact" 
+                                    id="contact_id"
+                                    data-placeholder="Sélectionnez"
+                                    data-expediteur-id="{{ $courrier->exped_externe }}"
+                                    data-route="{{ route('regidoc.ajax.expediteur.contact.save') }}"
+                                    data-tags="true"
+                                    data-allow-clear="true">
+                                    @if($courrier->externExpediteur && $courrier->externExpediteur->contact)
+                                        <option value="{{ $courrier->externExpediteur->contact }}" selected>
+                                            {{ $courrier->externExpediteur->contact }}
+                                        </option>
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+
                     @endif
                     <div class="col-12">
                         <div class="row">
@@ -695,7 +716,121 @@
             }
 
             // code jl to open scanner device to importe a file
-
+             // Initialisation du champ de contact
+             function initContactField(expediteurId) {
+                if (!expediteurId) {
+                    $('.contact_field').addClass('d-none');
+                    return;
+                }
+                
+                $('.contact_field').removeClass('d-none');
+                
+                // Détruire l'instance Select2 existante si elle existe
+                if ($('.select2-contact').hasClass('select2-hidden-accessible')) {
+                    $('.select2-contact').select2('destroy');
+                }
+                
+                // Initialiser le select2 pour le contact
+                $('.select2-contact').select2({
+                    placeholder: 'Sélectionnez ou ajoutez un contact',
+                    allowClear: true,
+                    tags: true,
+                    language: 'fr',
+                    ajax: {
+                        url: '{{ route("regidoc.ajax.expediteur.contacts") }}',
+                        data: function (params) {
+                            return {
+                                expediteur_id: expediteurId,
+                                search: params.term,
+                                page: params.page || 1
+                            };
+                        },
+                        processResults: function (data, params) {
+                            params.page = params.page || 1;
+                            return {
+                                results: data.results,
+                                pagination: {
+                                    more: (params.page * 30) < data.total_count
+                                }
+                            };
+                        },
+                        cache: true
+                    },
+                    createTag: function (params) {
+                        var term = $.trim(params.term);
+                        if (term === '') {
+                            return null;
+                        }
+                        return {
+                            id: term,
+                            text: term,
+                            newTag: true
+                        };
+                    }
+                });
+                
+                // Mettre à jour l'ID de l'expéditeur dans le data-attribute
+                $('.select2-contact').data('expediteur-id', expediteurId);
+                $('.select2-contact').attr('data-expediteur-id', expediteurId);
+            }
+            
+            // Écouteur pour le changement d'expéditeur
+            $('select[name="exp"]').on('select2:select', function (e) {
+                var expediteurId = e.params.data.id;
+                initContactField(expediteurId);
+                
+                // Réinitialiser le champ de contact
+                $('.select2-contact').val(null).trigger('change');
+                
+                // Charger les contacts existants pour cet expéditeur
+                if (expediteurId) {
+                    $.ajax({
+                        url: '{{ route("regidoc.ajax.expediteur.contacts") }}',
+                        data: { expediteur_id: expediteurId },
+                        dataType: 'json',
+                        success: function (data) {
+                            if (data.results && data.results.length > 0) {
+                                var options = '';
+                                $.each(data.results, function(index, contact) {
+                                    options += '<option value="' + contact.id + '" selected>' + contact.text + '</option>';
+                                });
+                                $('.select2-contact').html(options).trigger('change');
+                            }
+                        }
+                    });
+                }
+            });
+            
+            // Sauvegarder un nouveau contact
+            $('.select2-contact').on('select2:select', function (e) {
+                var contact = e.params.data;
+                var expediteurId = $(this).data('expediteur-id');
+                
+                if (contact.newTag && expediteurId) {
+                    $.ajax({
+                        url: '{{ route("regidoc.ajax.expediteur.contact.save") }}',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            expediteur_id: expediteurId,
+                            contact: contact.text
+                        },
+                        success: function(response) {
+                            var newOption = new Option(contact.text, contact.text, true, true);
+                            $('.select2-contact').append(newOption).trigger('change');
+                        },
+                        error: function(xhr) {
+                            console.error('Erreur lors de la sauvegarde du contact', xhr);
+                        }
+                    });
+                }
+            });
+            
+            // Initialiser le champ de contact si un expéditeur est déjà sélectionné
+            var initialExpediteurId = $('select[name="exp"]').val();
+            if (initialExpediteurId) {
+                initContactField(initialExpediteurId);
+            }
         });
     </script>
 @endpush

@@ -11,18 +11,18 @@
             <div class="d-flex">
                 <ul class="mb-0 nav nav-tabs nav-user" id="myTab" role="tablist" wire:ignore>
                     @if (
-                        (Auth::user()->can('Enregistrer un courrier entrant') && Auth::user()->can('Enregistrer un courrier sortant')) ||
-                            (Auth::user()->can('Enregistrer un courrier entrant') &&
-                                Auth::user()->can('Enregistrer un courrier interne')) ||
-                            (Auth::user()->can('Enregistrer un courrier sortant') &&
-                                Auth::user()->can('Enregistrer un courrier interne')) ||
+                        (Auth::user()->can('Numériser un document entrant') && Auth::user()->can('Numériser un document sortant')) ||
+                            (Auth::user()->can('Numériser un document entrant') &&
+                                Auth::user()->can('Numériser un document interne')) ||
+                            (Auth::user()->can('Numériser un document sortant') &&
+                                Auth::user()->can('Numériser un document interne')) ||
                             (!(
-                                (Auth::user()->can('Enregistrer un courrier entrant') &&
-                                    Auth::user()->can('Enregistrer un courrier sortant')) ||
-                                (Auth::user()->can('Enregistrer un courrier entrant') &&
-                                    Auth::user()->can('Enregistrer un courrier interne')) ||
-                                (Auth::user()->can('Enregistrer un courrier sortant') &&
-                                    Auth::user()->can('Enregistrer un courrier interne'))
+                                (Auth::user()->can('Numériser un document entrant') &&
+                                    Auth::user()->can('Numériser un document sortant')) ||
+                                (Auth::user()->can('Numériser un document entrant') &&
+                                    Auth::user()->can('Numériser un document interne')) ||
+                                (Auth::user()->can('Numériser un document sortant') &&
+                                    Auth::user()->can('Numériser un document interne'))
                             ) &&
                                 Auth::user()->can('Voir les courriers')))
                         <li class="nav-item" role="presentation">
@@ -34,7 +34,7 @@
                     @endif
 
                     @if (!$isSec)
-                        @can('Enregistrer un courrier entrant')
+                        @can('Numériser un document entrant')
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
                                     data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
@@ -45,7 +45,7 @@
                         
                     @endif
 
-                    @can('Enregistrer un courrier sortant')
+                    @can('Numériser un document sortant')
                         <li class="nav-item" role="presentation">
                             <button class="nav-link {{ $active_tab == 3 ? 'active' : '' }}" id="sortant-tab"
                                 data-bs-toggle="tab" data-bs-target="#sortant" type="button" role="tab"
@@ -54,7 +54,7 @@
                         </li>
                     @endcan
 
-                    @can('Enregistrer un courrier interne')
+                    @can('Numériser un document interne')
                         <li class="nav-item" role="presentation">
                             <button class="nav-link {{ $active_tab == 4 ? 'active' : '' }}" id="interne-tab"
                                 data-bs-toggle="tab" data-bs-target="#interne" type="button" role="tab"
@@ -83,18 +83,18 @@
 
     <div class="bg-white tab-content" id="myTabContent" style="border-radius: 12px">
         @if (
-            (Auth::user()->can('Enregistrer un courrier entrant') && Auth::user()->can('Enregistrer un courrier sortant')) ||
-                (Auth::user()->can('Enregistrer un courrier entrant') &&
-                    Auth::user()->can('Enregistrer un courrier interne')) ||
-                (Auth::user()->can('Enregistrer un courrier sortant') &&
-                    Auth::user()->can('Enregistrer un courrier interne')) ||
+            (Auth::user()->can('Numériser un document entrant') && Auth::user()->can('Numériser un document sortant')) ||
+                (Auth::user()->can('Numériser un document entrant') &&
+                    Auth::user()->can('Numériser un document interne')) ||
+                (Auth::user()->can('Numériser un document sortant') &&
+                    Auth::user()->can('Numériser un document interne')) ||
                 (!(
-                    (Auth::user()->can('Enregistrer un courrier entrant') &&
-                        Auth::user()->can('Enregistrer un courrier sortant')) ||
-                    (Auth::user()->can('Enregistrer un courrier entrant') &&
-                        Auth::user()->can('Enregistrer un courrier interne')) ||
-                    (Auth::user()->can('Enregistrer un courrier sortant') &&
-                        Auth::user()->can('Enregistrer un courrier interne'))
+                    (Auth::user()->can('Numériser un document entrant') &&
+                        Auth::user()->can('Numériser un document sortant')) ||
+                    (Auth::user()->can('Numériser un document entrant') &&
+                        Auth::user()->can('Numériser un document interne')) ||
+                    (Auth::user()->can('Numériser un document sortant') &&
+                        Auth::user()->can('Numériser un document interne'))
                 ) &&
                     Auth::user()->can('Voir les courriers')))
             <!-- Tous Tab -->
@@ -331,7 +331,7 @@
         @endif
 
        @if (!$isSec)
-       @can('Enregistrer un courrier entrant')
+       @can('Numériser un document entrant')
        <!-- Entrants Tab -->
        <div class="tab-pane fade {{ $active_tab == 2 ? 'show active' : '' }}" id="entrant" role="tabpanel"
            aria-labelledby="entrant-tab">
@@ -510,7 +510,7 @@
            
        @endif
 
-        @can('Enregistrer un courrier sortant')
+        @can('Numériser un document sortant')
             <!-- Sortants Tab -->
             <div class="tab-pane fade {{ $active_tab == 3 ? 'show active' : '' }}" id="sortant" role="tabpanel"
                 aria-labelledby="sortant-tab">
@@ -661,7 +661,7 @@
             </div>
         @endcan
 
-        @can('Enregistrer un courrier interne')
+        @can('Numériser un document interne')
             <div class="tab-pane fade {{ $active_tab == 4 ? 'show active' : '' }}" id="interne" role="tabpanel"
                 aria-labelledby="interne-tab">
                 <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
