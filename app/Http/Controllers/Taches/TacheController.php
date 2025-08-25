@@ -1253,8 +1253,13 @@ class TacheController extends Controller
             'session',
             $content
         );
-
+        if($tache->courrier_id){
+            return redirect()->route('regidoc.courriers.show',$tache->courrier_id);
+        }
+        else
+        {
         return redirect()->route('regidoc.taches.index');
+        }
     }
 
     public function remettreEncours($id)

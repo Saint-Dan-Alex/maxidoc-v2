@@ -9,7 +9,7 @@ class CourrierExpediteur extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['category_id', 'nom'];
+    protected $fillable = ['category_id', 'nom', 'contact'];
 
     /**
      * Get the category that owns the expediteur.
