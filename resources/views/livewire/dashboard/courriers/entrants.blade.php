@@ -3,7 +3,7 @@
     <div class="px-0  card card-table">
         <div class="row px-lg-3 px-2 align-items-center g-2 g-lg-3">
             <div class="col-lg-7 col-sm-6">
-                <h4 class="no-padding no-margin badge-card badge-red">Courriers entrants</h4>
+                <h4 class="no-padding no-margin badge-card badge-red">Documents entrants</h4>
             </div>
             <div class="col-lg-5 d-flex align-items-center justify-content-end col-sm-6">
 
@@ -163,7 +163,7 @@
                                 </td>
                             @empty
                                 <td colspan="8" class="text-center">
-                                    Aucun courrier entrant
+                                    Aucun document entrant
                                 </td>
                             </tr>
                         @endforelse

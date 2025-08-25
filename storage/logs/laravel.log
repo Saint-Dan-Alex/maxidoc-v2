@@ -3746,3 +3746,27 @@
 [2025-08-25 09:52:02] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
 [2025-08-25 09:52:02] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":9,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
 [2025-08-25 09:52:10] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/xUMr7zWFitloBRkbbwWj.pdf","nom_original":"Cv actuel.pdf"} 
+[2025-08-25 11:13:25] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-25 11:13:28] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-25 11:13:28] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":10,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
+[2025-08-25 11:13:39] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/E1521FLA6w1gdEqzWucF.pdf","nom_original":"MAXIDOC® - Boostez la productivité.pdf"} 
+[2025-08-25 11:22:43] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-25 11:22:48] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-08-25 11:22:48] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":11,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
+[2025-08-25 11:23:07] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/8F2w45PlUMTSVowoqx35.pdf","nom_original":"ECOTRIE # EXAMEN.pdf"} 
+[2025-08-25 11:40:07] local.ERROR: Out of memory (allocated 8388608 bytes) (tried to allocate 495616 bytes) {"userId":3,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Out of memory (allocated 8388608 bytes) (tried to allocate 495616 bytes) at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\php-debugbar\\php-debugbar\\src\\DebugBar\\JavascriptRenderer.php:1319)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Out of memory ...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
+[2025-08-25 11:41:26] local.ERROR: Out of memory (allocated 4194304 bytes) (tried to allocate 98304 bytes) {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Out of memory (allocated 4194304 bytes) (tried to allocate 98304 bytes) at C:\\wamp64\\www\\maxidoc-projet-origine\\app\\Models\\User.php:16)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Out of memory ...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 

@@ -1469,7 +1469,7 @@ public function update(Request $request, $id)
         $courrier->confidentiel = $isConfidentiel ? '1' : '0';
         $courrier->priorite_id = $request->get('priorite');
         $courrier->date_du_courrier = $request->get('date-doc');
-        $courrier->date_arrive = $request->get('date-arriv');
+        // $courrier->date_arrive = $request->get('date-arriv');
         $courrier->date_fin = $request->get('date-limite');
         $courrier->nature_id = $request->get('nature');
         $courrier->objet = $request->get('objet');
@@ -1490,17 +1490,17 @@ public function update(Request $request, $id)
         }
 
         Historique::create([
-            "key" => "Modification du courrier",
+            "key" => "Mise à jour du courrier",
             "historiquecable_id" => $courrier->id,
             "historiquecable_type" => Courrier::class,
-            "description" => "A modifié le courrier.",
+            "description" => "A mis à jour le courrier.",
             "user_id" => Auth::user()->id,
         ]);
 
         $content = json_encode([
             'name' => 'Courriers',
             'statut' => 'success',
-            'message' => 'Courrier modifié avec succès !',
+            'message' => 'Courrier mis à jour avec succès !',
         ]);
     } catch (\Throwable $th) {
         dd([
