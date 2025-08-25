@@ -20,7 +20,7 @@
                 </div>
             </div> --}}
             <div class="col-lg-6 col-sm-6 col-xl-8">
-                <h4>Nouveaux courriers en attente de traitement</h4>
+                <h4>Nouveaux documents numérisés</h4>
             </div>
             {{-- Filtres --}}
             <div class="row g-3 align-items-center">
@@ -117,7 +117,7 @@
                         <th scope="col">N° d'enregistrement</th>
                         <th scope="col">Expediteur</th>
                         <th scope="col">Destinataire</th>
-                        <th scope="col">Date du courrier</th>
+                        <th scope="col">Date du document</th>
                         <th scope="col">Type</th>
                         <th scope="col">Statut</th>
                         <th scope="col">Action</th>
@@ -216,7 +216,7 @@
                                 <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
                                     class="">
                                 <br>
-                                Aucun courrier numérisé
+                                Aucun document numérisé
                             </td>
                         </tr>
                     @endforelse

@@ -1097,7 +1097,7 @@
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasInfoDoc" aria-labelledby="offcanvasRightLabel"
         style="width: 550px;">
         <div class="offcanvas-header align-items-center">
-            <h5 class="offcanvas-title" id="offcanvasRightLabel">Détails du courrier {!! $courrier->status_badge !!}</h5>
+            <h5 class="offcanvas-title" id="offcanvasRightLabel">Détails du document {!! $courrier->status_badge !!}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
                 <i class="fi fi-rr-cross"></i>
             </button>
@@ -1290,6 +1290,64 @@
                             </div>
                         </div>
                     @endif
+                    @if($courrier->reference_interne)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            N° d'enregistrement
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                            {{ Str::ucfirst($courrier->reference_interne ?? '') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    @endif
+
+                    @if($courrier->nature)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            Nature
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                            {{ Str::ucfirst($courrier->nature->titre ?? '') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    @if ($courrier->copie)
+                    <div class="col-12">
+                        <div class="item">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <span style="font-size: 13px; color: var(--colorParagraph)">
+                                        En copie
+                                    </span>
+                                </div>
+                                <div class="col-lg-6">
+                                    <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                        {{ Str::ucfirst($courrier->copie ?? '') }}
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>  
+                        
+                    @endif
 
                     @if ($courrier->traitement)
                         <div class="col-12">
@@ -1378,7 +1436,7 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                            {{ $courrier->date_arrive?->isoFormat('LL') }}
+                                            {{ $courrier->date_arrive?->isoFormat('LL à HH:mm') }}
                                         </p>
                                     </div>
                                 </div>
@@ -1430,7 +1488,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <span style="font-size: 13px; color: var(--colorParagraph)">
-                                            Objet
+                                            Remarques
                                         </span>
                                     </div>
                                     <div class="col-lg-6">
@@ -1449,12 +1507,14 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <span style="font-size: 13px; color: var(--colorParagraph)">
-                                            Ajouté par
+                                            Numérisé par
                                         </span>
                                     </div>
                                     <div class="col-lg-6">
                                         <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                            {{ Str::ucfirst($courrier->author->poste?->titre ?? '') }}
+                                            {{ $courrier->author->prenom . ' ' . $courrier->author->nom}}
+                                            <small
+                                                        class="d-block">{{ Str::ucfirst($courrier->author->poste?->titre ?? '') }}</small>
                                         </p>
                                     </div>
                                 </div>

@@ -9,10 +9,10 @@
                     Retour
                 </div>
             </a>
-            <h1 class="mb-0 ms-2">Courriers en retard</h1>
+            <h1 class="mb-0 ms-2">Documents en retard</h1>
             <a href='{{ route('regidoc.courriers.create') }}' class="btn btn-add btn-add-hover ms-auto"
                 style="flex: 0 0 auto;">
-                Numériser un courrier
+                Numériser un document
             </a>
         </div>
         {{-- <div class="block-circle">
