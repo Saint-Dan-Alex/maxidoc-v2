@@ -298,6 +298,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     });
 });
 Route::post('courriers/scan', [CourrierController::class, 'scan'])->name('courriers.scan');
+
+// Route pour le téléversement des pièces jointes
+Route::post('courriers/{courrier}/upload-piece', [\App\Http\Controllers\Courriers\CourrierController::class, 'uploadPieceJointe'])
+    ->name('courriers.upload-piece');
 Route::post('documents/save-pdf', [DocumentController::class, 'storeNew'])->name('documents.storeNew'); 
 Route::post('documents/save-as-doc', [DocumentController::class, 'saveDoc'])->name('documents.saveDoc');
 Route::post('taches/generate-pdf-preview', [TacheDocumentController::class, 'generatePdfPreview'])->name('taches.generatePdfPreview');

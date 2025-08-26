@@ -2227,6 +2227,32 @@
     @include('regidoc.layouts.partials.head.scripts')
     @yield('scripts')
     @stack('livewireScripts')
+    
+    <!-- Modal pour ajouter une pièce jointe -->
+    <div class="modal fade" id="modal-new-piece" tabindex="-1" aria-labelledby="modalNewPieceLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNewPieceLabel">Joindre une pièce jointe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulaire pour téléverser une pièce jointe -->
+                    <form action="{{ route('courriers.upload-piece', $courrier) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="piece-jointe" class="form-label">Sélectionner un fichier</label>
+                            <input class="form-control" type="file" id="piece-jointe" name="piece_jointe" required>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Téléverser</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @if (session()->get('session') && json_decode(session()->get('session'))->name != '')
         @if (json_decode(session()->get('session'))->statut == 'success')

@@ -6,12 +6,12 @@ use CyrildeWit\EloquentViewable\Contracts\Viewable;
 use CyrildeWit\EloquentViewable\InteractsWithViews;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Scout\Searchable;
 use Venturecraft\Revisionable\RevisionableTrait;
 use Illuminate\Database\Eloquent\Builder;
 use CyrildeWit\EloquentViewable\Support\Period;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use App\Models\Personel;
 use App\Models\Historique;
@@ -359,6 +359,16 @@ class Courrier extends Model implements Viewable
     public function accuseReceptions(): HasMany
     {
         return $this->hasMany(AccuseReception::class, 'courrier_id')->orderBy('id','desc');
+    }
+
+    /**
+     * Get all of the pieces jointes for the Courrier
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function piecesJointes(): HasMany
+    {
+        return $this->hasMany(PieceJointe::class, 'courrier_id');
     }
 
     /**
