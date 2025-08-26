@@ -215,6 +215,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::prefix('courriers')->group(function () {
                 // Routes sans ID
                 Route::post('partages', [CourrierController::class, 'partages'])->name('courriers.partages');
+                Route::post('update-traitement', [CourrierController::class, 'updateTraitement'])->name('courriers.updateTraitement');
                 Route::get('receptions', [CourrierController::class, 'receivedMails'])->name('courriers.received');
                 Route::get('envoyes', [CourrierController::class, 'sendMails'])->name('courriers.sent');
                 Route::get('nouveau', [CourrierController::class, 'create'])->name('courriers.add');

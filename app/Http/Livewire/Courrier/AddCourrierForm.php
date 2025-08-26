@@ -45,9 +45,14 @@ class AddCourrierForm extends Component
     public $num;
     public $isFormValid = false;
     public $isDestinateur;
-
+    public $title = '';
 
     protected $listeners = ['selectDoc'];
+    
+    public function updatedTitle($value)
+    {
+        $this->isFormValid = !empty(trim($value));
+    }
 
     public function mount()
     {
