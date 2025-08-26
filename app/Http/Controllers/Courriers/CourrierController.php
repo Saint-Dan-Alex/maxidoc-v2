@@ -404,6 +404,7 @@ class CourrierController extends Controller
             // Mettre à jour le statut du courrier
             $courrier->statut_id = 3; // Statut "Traité"
             $courrier->mark_as_done = 1; // Marquer comme traité
+            $courrier->updated_at = now(); 
             
             // Mettre à jour le statut du document associé s'il existe
             if ($courrier->document) {
@@ -422,10 +423,14 @@ class CourrierController extends Controller
                 'user_id' => $user->id,
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Le courrier a été transmis avec succès.'
+            $content = json_encode([
+                'name' => 'Courriers',
+                'statut' => 'success',
+                'message' => 'Le courrier a été transmis avec succès',
             ]);
+
+            session()->flash('session', $content);
+            return redirect()->route('regidoc.courriers.index');
 
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la transmission du courrier: ' . $e->getMessage());
