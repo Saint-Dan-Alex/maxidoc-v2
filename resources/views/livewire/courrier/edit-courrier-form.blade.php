@@ -121,7 +121,7 @@
                                 </select>
                             </div>
                         </div>
-
+                    </div>
                     @endif
                     <div class="col-12">
                         <div class="row">
@@ -487,6 +487,7 @@
             </div>
         </form>
     </div>
+</div>
     <div class="content-scanner">
         <div class="container-fluid">
             <iframe

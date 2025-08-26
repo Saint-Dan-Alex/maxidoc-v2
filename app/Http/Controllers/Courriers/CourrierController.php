@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use App\Models\CourrierDestinateurExterne;
 use App\Models\PieceJointe;
+use App\Models\AccuseReception;
 use Illuminate\Support\Facades\View; // Import manquant ajouté
 
 class CourrierController extends Controller
@@ -1429,6 +1430,21 @@ public function createDocument($request, $destinateur, $doc = null)
         $this->authorize('view', $courrier);
 
         views($courrier)->once($viewsForThisUser > 0)->record();
+
+        // Vérifier si l'utilisateur est DG et créer un accusé de réception si nécessaire
+        $user = Auth::user();
+        if ($user->agent && $user->agent->isDG()) {
+            $existingAccuse = AccuseReception::where('user_id', $user->id)
+                ->where('courrier_id', $courrier->id)
+                ->first();
+
+            if (!$existingAccuse) {
+                AccuseReception::create([
+                    'user_id' => $user->id,
+                    'courrier_id' => $courrier->id,
+                ]);
+            }
+        }
 
         $classeurs = Classeur::all();
         $dossiers = Dossier::all();
