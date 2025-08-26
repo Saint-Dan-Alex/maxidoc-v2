@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Courrier;
 
 use Livewire\Component;
+use App\Models\PieceJointe;
 
 class TraitementDocSelect extends Component
 {
@@ -30,18 +31,39 @@ class TraitementDocSelect extends Component
 
     public function render()
     {
-        return view('livewire.courrier.traitement-doc-select');
+        $piecesJointes = $this->courrier->piecesJointes()->get();
+        return view('livewire.courrier.traitement-doc-select', [
+            'piecesJointes' => $piecesJointes
+        ]);
     }
 
-    public function selectDoc($document, $id, $is_original = false) {
+    public function selectDoc($document, $id, $is_original = false, $is_piece_jointe = false) {
         $this->document = $document;
-        $this->selected = files($this->document)->link == files($this->courrier->document?->document)->link ? files($this->document)->name.' (original)' : files($this->document)->name;
-        $this->is_original = $is_original;
-        $this->emit('documentChanged', [
-            'doc' => files($this->document)->link,
-            'doc_id' => $id,
-            'is_original' => $this->is_original,
-            'courrier_id' => $this->courrier->id,
-        ]);
+        
+        if ($is_piece_jointe) {
+            // Si c'est une pièce jointe, $document est un tableau (déjà décodé depuis JSON)
+            $pieceJointe = is_string($document) ? json_decode($document, true) : (array)$document;
+            $this->selected = $pieceJointe['nom'];
+            $this->is_original = false;
+            $this->emit('documentChanged', [
+                'doc' => asset('storage/' . $pieceJointe['chemin']),
+                'doc_id' => $pieceJointe['id'],
+                'is_original' => false,
+                'is_piece_jointe' => true,
+                'courrier_id' => $this->courrier->id,
+            ]);
+        } else {
+            $this->selected = files($this->document)->link == files($this->courrier->document?->document)->link 
+                ? files($this->document)->name.' (original)' 
+                : files($this->document)->name;
+            $this->is_original = $is_original;
+            $this->emit('documentChanged', [
+                'doc' => files($this->document)->link,
+                'doc_id' => $id,
+                'is_original' => $this->is_original,
+                'is_piece_jointe' => false,
+                'courrier_id' => $this->courrier->id,
+            ]);
+        }
     }
 }
