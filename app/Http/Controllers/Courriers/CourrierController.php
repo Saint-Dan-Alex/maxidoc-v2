@@ -377,6 +377,14 @@ class CourrierController extends Controller
             // Vérifier que l'utilisateur est bien l'assistant du DG
             $user = auth()->user();
             $isDGAssistant = $user->agent && $user->agent->isAssistant();
+            
+            \Log::info('Vérification des droits d\'accès', [
+                'user_id' => $user->id,
+                'agent_id' => $user->agent?->id,
+                'is_assistant' => $isDGAssistant,
+                'courrier_type' => $courrier->type_id,
+                'courrier_statut' => $courrier->statut_id
+            ]);
 
             if (!$isDGAssistant) {
                 return response()->json([

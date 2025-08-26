@@ -579,7 +579,7 @@
                                     <th scope="col">Date de traitement</th>
                                     <th scope="col">Date d'émission</th>
                                     <th scope="col">Statut</th>
-                                    <th scope="col" class="text-center">Accusés</th>
+                                    {{-- <th scope="col" class="text-center">Accusés</th> --}}
                                     <th scope="col">Action</th>
                                 </tr>
                             </thead>
@@ -624,6 +624,16 @@
                                             @else
                                                 <span>Aucune</span>
                                             @endif
+                                        </td>
+                                        <td>
+                                                <div @class([
+                                                'badge',
+                                            'badge-gray' => $sortant->statut_id == 1,
+                                            'badge-yellow' => $sortant->statut_id == 2,
+                                            'badge-green' => $sortant->statut_id == 3,
+                                        ])>
+                                           {{ $sortant->statut?->libelle ?? 'Inconnu' }}
+                                       </div>
                                         </td>
 
                                         
