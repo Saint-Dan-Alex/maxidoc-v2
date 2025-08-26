@@ -6,6 +6,9 @@ use App\Events\CourrierCreated;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\File;
 use App\Http\Controllers\ScanFile;
+use Illuminate\Support\Facades\File as FileFacade;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use App\Models\Agent;
 use App\Models\Classeur;
 use App\Models\Courrier;
@@ -25,17 +28,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Nette\Utils\Random;
-use App\Mail\DocumentPasswordMail;
 use App\Models\CourrierDestinateurExterne;
-use Illuminate\Support\Collection;
-
-use Illuminate\Support\Facades\Log;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\PieceJointe;
+use Illuminate\Support\Facades\View; // Import manquant ajouté
 
 class CourrierController extends Controller
 {
@@ -61,8 +56,20 @@ class CourrierController extends Controller
         try {
             if ($request->hasFile('piece_jointe')) {
                 $file = $request->file('piece_jointe');
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs('pieces-jointes', $fileName, 'public');
+                $year = now()->format('Y');
+                $month = now()->format('m');
+                $fileName = time() . '_' . Str::random(8) . '_' . $file->getClientOriginalName();
+                
+                // Créer la structure de dossiers si elle n'existe pas
+                $basePath = "pieces-jointes/{$year}/{$month}/courrier-{$courrier->id}";
+                $destinationPath = storage_path('app/public/' . $basePath);
+                
+                if (!FileFacade::exists($destinationPath)) {
+                    FileFacade::makeDirectory($destinationPath, 0755, true);
+                }
+                
+                // Déplacer le fichier téléversé
+                $path = $file->storeAs($basePath, $fileName, 'public');
                 
                 // Enregistrer la pièce jointe dans la base de données
                 $pieceJointe = new PieceJointe([
@@ -76,14 +83,36 @@ class CourrierController extends Controller
                 
                 $courrier->piecesJointes()->save($pieceJointe);
                 
-                return back()->with('success', 'Pièce jointe ajoutée avec succès.');
+                // Retourner la réponse au format JSON attendu
+                $content = json_encode([
+                    'name' => 'Courrier',
+                    'statut' => 'error',
+                    'message' => 'Ajout d\'une pièce jointe'
+                ]);
+            
+        
+            session()->flash('session', $content);
+            return redirect()->back();
+            
             }
             
-            return back()->with('error', 'Aucun fichier n\'a été téléversé.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucun fichier n\'a été téléversé.'
+            ], 400);
         } catch (\Exception $e) {
             Log::error('Erreur lors du téléversement de la pièce jointe : ' . $e->getMessage());
-            return back()->with('error', 'Une erreur est survenue lors du téléversement de la pièce jointe.');
+            $content = json_encode([
+                'name' => 'Courrier',
+                'statut' => 'error',
+                'message' => 'Impossible d\'ajouter une pièce jointe'
+            ]);
+        
+    
+        session()->flash('session', $content);
+        return redirect()->back();
         }
+        
     }
 
     /**
