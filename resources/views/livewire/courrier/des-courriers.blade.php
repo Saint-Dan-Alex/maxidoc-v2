@@ -50,7 +50,7 @@
                             <button class="nav-link {{ $active_tab == 3 ? 'active' : '' }}" id="sortant-tab"
                                 data-bs-toggle="tab" data-bs-target="#sortant" type="button" role="tab"
                                 aria-controls="sortant" aria-selected="{{ $active_tab == 3 }}"
-                                wire:click='changeTab(3)'>Courriers sortants</button>
+                                wire:click='changeTab(3)'>Courriers traités</button>
                         </li>
                     @endcan
 
@@ -576,7 +576,9 @@
                                     <th scope="col">Destinataire</th>
                                     <th scope="col">Accusées réceptions</th>
                                     <th scope="col">Date du courrier</th>
-                                    <th scope="col">Date de création</th>
+                                    <th scope="col">Date de traitement</th>
+                                    <th scope="col">Date d'émission</th>
+                                    <th scope="col">Statut</th>
                                     <th scope="col" class="text-center">Accusés</th>
                                     <th scope="col">Action</th>
                                 </tr>
@@ -614,6 +616,7 @@
                                                 @endforelse
                                             </div>
                                         </td>
+                                        <td>{{ $sortant->date_du_courrier->format('d/m/Y') ?? 'Non defini' }}</td>
                                         <td>{{ $sortant->created_at->format('d/m/Y') }}</td>
                                         <td>
                                             @if ($sortant->accuseReceptions->isNotEmpty())
@@ -622,6 +625,8 @@
                                                 <span>Aucune</span>
                                             @endif
                                         </td>
+
+                                        
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 @if (

@@ -307,49 +307,49 @@ class AccuserReception extends Component
         "user_id" => Auth::user()->id,
     ]);
 
-    if (Auth::user()->agent->isSecretaire()) {
+    // if (Auth::user()->agent->isSecretaire()) {
 
-        // ✅ Met à jour le statut directement
-        $this->courrier->statut_id = 3;
-        $this->courrier->save();
+    //     // ✅ Met à jour le statut directement
+    //     $this->courrier->statut_id = 2;
+    //     $this->courrier->save();
 
-        $this->validerTraitementSecretaire();
+    //     $this->validerTraitementSecretaire();
 
-    } elseif (Auth::user()->agent->isAssistant()) {
+    // } elseif (Auth::user()->agent->isAssistant()) {
 
-        $this->courrier->statut_id = 3;
-        $this->courrier->save();
+    //     $this->courrier->statut_id = 2;
+    //     $this->courrier->save();
 
-        $this->validerTraitementSecretaire();
+    //     $this->validerTraitementSecretaire();
 
-        // Pour l'assistant du DG, on marque le courrier comme terminé
-        $this->courrier->etapes()->detach();
-        $this->courrier->etapes()->attach(1, ['view_by' => Auth::user()->id]);
+    //     // Pour l'assistant du DG, on marque le courrier comme terminé
+    //     $this->courrier->etapes()->detach();
+    //     $this->courrier->etapes()->attach(1, ['view_by' => Auth::user()->id]);
         
-        $this->courrier->statut_id = 3; // Statut "Traité"
-        $this->courrier->mark_as_done = 1;
-        $this->courrier->save();
+    //     $this->courrier->statut_id = 2; // Statut "Traité"
+    //     // $this->courrier->mark_as_done = 1;
+    //     $this->courrier->save();
 
-        if ($this->courrier->document) {
-            $this->courrier->document->statut_id = 5;
-            $this->courrier->document->save();
-        }
+    //     if ($this->courrier->document) {
+    //         $this->courrier->document->statut_id = 1;
+    //         $this->courrier->document->save();
+    //     }
 
-        Historique::create([
-            "key" => "Traitement terminé",
-            "historiquecable_id" => $this->courrier->id,
-            "historiquecable_type" => Courrier::class,
-            "description" => "Le traitement du courrier sortant est terminé par l'assistant du DG",
-            "user_id" => Auth::user()->id,
-        ]);
+    //     Historique::create([
+    //         "key" => "Traitement terminé",
+    //         "historiquecable_id" => $this->courrier->id,
+    //         "historiquecable_type" => Courrier::class,
+    //         "description" => "Le traitement du courrier sortant est terminé par l'assistant du DG",
+    //         "user_id" => Auth::user()->id,
+    //     ]);
 
-        $this->emit('alert', 'success', 'Le courrier a été marqué comme traité avec succès.');
+    //     $this->emit('alert', 'success', 'Le courrier a été marqué comme traité avec succès.');
 
-    } else {
-        $courrier = Courrier::find($this->courrier->id);
-        $courrier->statut_id = 3;
-        $courrier->save();
-    }
+    // } else {
+    //     $courrier = Courrier::find($this->courrier->id);
+    //     $courrier->statut_id = 2;
+    //     $courrier->save();
+    // }
     }
     else {
 
