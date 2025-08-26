@@ -9,6 +9,7 @@
         @if($courrier->type_id == 1)
             <ul class="dropdown-menu dropdown-menu-start" aria-labelledby="dropdownMenuButton1" style="">
                 @if ($courrier->document?->document)
+                    <li class="dropdown-header">Document principal</li>
                     <li>
                         <a class="dropdown-item btn-doc" href="javascript:void(0)"
                             data-url="{{ files($courrier->document?->document)->link }}"
@@ -20,36 +21,60 @@
                     </li>
                 @endif
 
-                @foreach ($courrier->traitements as $traitement)
-                    @if ($traitement->document_url)
+                @if($courrier->traitements->count() > 0)
+                    <li class="dropdown-header mt-2">Versions du document</li>
+                    @foreach ($courrier->traitements as $traitement)
+                        @if ($traitement->document_url)
+                            <li>
+                                <a class="dropdown-item btn-doc btn-doc-list" href="javascript:void(0)"
+                                    data-url="{{ files($traitement->document_url)->link }}"
+                                    data-name="{{ files($traitement->document_url)->name }}"
+                                    wire:click="selectDoc({{ $traitement->document_url }},{{ $traitement->id }}, false)">
+                                    <i class="fi fi-rr-file me-1"></i>
+                                    {{ files($traitement->document_url)->name }}
+                                </a>
+                            </li>
+                        @endif
+                    @endforeach
+                @endif
+
+                @if($piecesJointes->count() > 0)
+                    <li class="dropdown-divider"></li>
+                    <li class="dropdown-header">Pièces jointes</li>
+                    @foreach ($piecesJointes as $pieceJointe)
                         <li>
                             <a class="dropdown-item btn-doc btn-doc-list" href="javascript:void(0)"
-                                data-url="{{ files($traitement->document_url)->link }}"
-                                data-name="{{ files($traitement->document_url)->name }}"
-                                wire:click="selectDoc({{ $traitement->document_url }},{{ $traitement->id }}, false)">
-                                <i class="fi fi-rr-file me-1"></i>
-                                {{ files($traitement->document_url)->name }}
+                                data-url="{{ asset('storage/' . $pieceJointe->chemin) }}"
+                                data-name="{{ $pieceJointe->nom }}"
+                                wire:click="selectDoc({{ json_encode($pieceJointe) }}, {{ $pieceJointe->id }}, false, true)">
+                                <i class="fi fi-rr-paperclip me-1"></i>
+                                {{ $pieceJointe->nom }}
                             </a>
                         </li>
-                    @endif
-                @endforeach
+                    @endforeach
+                @endif
             </ul>
         @elseif ($courrier->type_id == 2)
             <ul class="dropdown-menu dropdown-menu-start" aria-labelledby="dropdownMenuButton1" style="">
-                @foreach ($courrier->traitements as $traitement)
-                    @if ($traitement->document_url)
-                        <li>
-                            <a class="dropdown-item btn-doc btn-doc-list" href="javascript:void(0)"
-                                data-url="{{ files($traitement->document_url)->link }}"
-                                data-name="{{ files($traitement->document_url)->name }}"
-                                wire:click="selectDoc({{ $traitement->document_url }},{{ $traitement->id }}, false)">
-                                <i class="fi fi-rr-file me-1"></i>
-                                {{ files($traitement->document_url)->name }}
-                            </a>
-                        </li>
-                    @endif
-                @endforeach
+                @if($courrier->traitements->count() > 0)
+                    <li class="dropdown-header">Versions du document</li>
+                    @foreach ($courrier->traitements as $traitement)
+                        @if ($traitement->document_url)
+                            <li>
+                                <a class="dropdown-item btn-doc btn-doc-list" href="javascript:void(0)"
+                                    data-url="{{ files($traitement->document_url)->link }}"
+                                    data-name="{{ files($traitement->document_url)->name }}"
+                                    wire:click="selectDoc({{ $traitement->document_url }},{{ $traitement->id }}, false)">
+                                    <i class="fi fi-rr-file me-1"></i>
+                                    {{ files($traitement->document_url)->name }}
+                                </a>
+                            </li>
+                        @endif
+                    @endforeach
+                @endif
+                
                 @if ($courrier->document?->document)
+                    <li class="dropdown-header mt-2">Document principal</li>
                     <li>
                         <a class="dropdown-item btn-doc" href="javascript:void(0)"
                             data-url="{{ files($courrier->document?->document)->link }}"
@@ -59,6 +84,22 @@
                             {{ files($courrier->document?->document)->name }} (original)
                         </a>
                     </li>
+                @endif
+
+                @if($piecesJointes->count() > 0)
+                    <li class="dropdown-divider"></li>
+                    <li class="dropdown-header">Pièces jointes</li>
+                    @foreach ($piecesJointes as $pieceJointe)
+                        <li>
+                            <a class="dropdown-item btn-doc btn-doc-list" href="javascript:void(0)"
+                                data-url="{{ asset('storage/' . $pieceJointe->chemin) }}"
+                                data-name="{{ $pieceJointe->nom }}"
+                                wire:click="selectDoc({{ json_encode($pieceJointe) }}, {{ $pieceJointe->id }}, false, true)">
+                                <i class="fi fi-rr-paperclip me-1"></i>
+                                {{ $pieceJointe->nom }}
+                            </a>
+                        </li>
+                    @endforeach
                 @endif
             </ul>
         @endif

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Scout\Searchable;
 use Venturecraft\Revisionable\RevisionableTrait;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\PieceJointe;
 use CyrildeWit\EloquentViewable\Support\Period;
 use Illuminate\Support\Facades\DB;
 use App\Models\Personel;
@@ -40,6 +41,11 @@ class Courrier extends Model implements Viewable
         return $this->morphMany(Historique::class, 'historiquecable');
     }
 
+    /**
+     * Get all of the piecesJointes for the Courrier
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     /**
      * The attributes that are mass assignable.
      *
@@ -366,7 +372,7 @@ class Courrier extends Model implements Viewable
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function piecesJointes(): HasMany
+    public function piecesJointes()
     {
         return $this->hasMany(PieceJointe::class, 'courrier_id');
     }
