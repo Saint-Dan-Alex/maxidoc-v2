@@ -52,6 +52,7 @@ class AccuserReception extends Component
 
     public function render()
     {
+        $this->courrier->load(['accuseReceptions.user.agent']);
         return view('livewire.courrier.accuser-reception');
     }
 

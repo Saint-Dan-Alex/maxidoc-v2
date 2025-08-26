@@ -1419,7 +1419,7 @@ public function createDocument($request, $destinateur, $doc = null)
 
     public function show($id)
     {
-        $courrier = Courrier::with(['document', 'views', 'type'])->where('id', $id)->firstOrFail();
+        $courrier = Courrier::with(['document', 'views', 'type', 'accuseReceptions.user.agent'])->where('id', $id)->firstOrFail();
         
         if (!$courrier) {
             abort(404, 'Courrier non trouvé');

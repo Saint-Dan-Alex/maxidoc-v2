@@ -155,7 +155,13 @@ class DesCourriers extends Component
 
     public function render()
     {
-        $courriersQuery = Courrier::with('expediteur','externExpediteur','externDestinateur','destinateurs');
+        $courriersQuery = Courrier::with([
+            'expediteur',
+            'externExpediteur',
+            'externDestinateur',
+            'destinateurs',
+            'accuseReceptions.user.agent'  // Chargement des accusés avec les relations user et agent
+        ]);
         // $courriersQuery = $this->applyFilters($courriersQuery);
 
         // Gestion des différents onglets

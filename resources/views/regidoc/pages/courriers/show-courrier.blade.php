@@ -1148,32 +1148,39 @@
                         <div class="item">
                             <div class="row">
                                 <div class="col-lg-6">
-                                    <span style="font-size: 13px; color: var(--colorParagraph)">Accusées
-                                        réceptions</span>
+                                    <span style="font-size: 13px; color: var(--colorParagraph)">Accusés de réception</span>
                                 </div>
                                 <div class="col-lg-6">
-                                    {{-- @foreach ($courrierViewers->accuseReceptions() as $agentViewed) --}}
-                                    @forelse ($courrier->accuseReceptions as $accuseReception)
-                                        @if ($accuseReception->user && $accuseReception->user->agent)
-                                            <div class="detailCourierUserInfosBox">
-                                                <div class="avatarDetailCourier">
-                                                    <img class="avatarDetailCourier-avatar"
-                                                        src="{{ imageOrDefault($accuseReception->user->agent?->image) }}"
-                                                        alt="image profil">
+                                    @if($courrier->accuseReceptions->count() > 0)
+                                        @foreach($courrier->accuseReceptions as $accuseReception)
+                                            @if($accuseReception->user && $accuseReception->user->agent)
+                                                <div class="detailCourierUserInfosBox">
+                                                    <div class="avatarDetailCourier">
+                                                        <img class="avatarDetailCourier-avatar"
+                                                            src="{{ imageOrDefault($accuseReception->user->agent?->image) }}"
+                                                            alt="image profil">
+                                                    </div>
+                                                    <div>
+                                                        <p style="font-size: 14px; color: var(--colorTitre); margin-bottom: 5px;">
+                                                            {{ Str::ucfirst($accuseReception->user->agent->prenom ?? '') . ' ' . Str::ucfirst($accuseReception->user->agent->nom ?? '') }}
+                                                            @if($accuseReception->user->agent->poste)
+                                                                <small class="d-block text-muted">
+                                                                    {{ $accuseReception->user->agent->poste->titre }}
+                                                                </small>
+                                                            @endif
+                                                            <small class="d-block text-muted">
+                                                                {{ $accuseReception->created_at->format('d/m/Y H:i') }}
+                                                            </small>
+                                                        </p>
+                                                    </div>
                                                 </div>
-
-                                                <p style="font-size: 14px; color: var(--colorTitre)" class="mb-2">
-                                                    {{ Str::ucfirst($accuseReception->user->agent->prenom ?? '') . ' ' . Str::ucfirst($accuseReception->user->agent->nom ?? '') }}
-                                                    <small
-                                                        class="d-block">({{ $accuseReception->user->agent->poste?->titre }})</small>
-                                                </p>
-                                            </div>
-                                        @endif
-                                    @empty
-
-                                        <p style="font-size: 13px; color: var(--colorTitre)">Pas d'accusé de réception
-                                            pour le moment.</p>
-                                    @endforelse
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <p style="font-size: 13px; color: var(--colorTitre); margin-bottom: 0;">
+                                            Aucun accusé de réception pour le moment.
+                                        </p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -1240,6 +1247,25 @@
                             </div>
                         </div>
                     @endif
+                    @if ($courrier->categorie)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            Catégorie
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                            {{ Str::ucfirst($courrier->categorie->title) }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    @endif
 
                     @if ($courrier->expediteur || $courrier->externExpediteur)
                         <div class="col-12">
@@ -1265,26 +1291,25 @@
                         </div>
                     @endif
 
-                    @if ($courrier->categorie)
+                    @if ($courrier->externExpediteur)
                         <div class="col-12">
                             <div class="item">
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <span style="font-size: 13px; color: var(--colorParagraph)">
-                                            Catégorie
+                                            Contact
                                         </span>
                                     </div>
                                     <div class="col-lg-6">
                                         <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                            {{ Str::ucfirst($courrier->categorie->title) }}
+                                            {{ $courrier->externExpediteur?->contact ?? 'Non défini' }}
                                         </p>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     @endif
-
+                    
                     @if ($courrier->type)
                         <div class="col-12">
                             <div class="item">
@@ -1519,6 +1544,7 @@
                     @if ($courrier->author)
                         <div class="col-12">
                             <div class="item">
+                                @if($courrier->statut_id==1 || $courrier->statut_id==3)
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <span style="font-size: 13px; color: var(--colorParagraph)">
@@ -1533,6 +1559,23 @@
                                         </p>
                                     </div>
                                 </div>
+                                @elseif ($courrier->statut_id==2)
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            Emetteur
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                            {{ $courrier->author->prenom . ' ' . $courrier->author->nom}}
+                                            <small
+                                                        class="d-block">{{ Str::ucfirst($courrier->author->poste?->titre ?? '') }}</small>
+                                        </p>
+                                    </div>
+                                </div>
+                                @endif
+
                             </div>
                         </div>
                     @endif
