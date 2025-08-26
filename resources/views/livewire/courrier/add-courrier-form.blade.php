@@ -194,7 +194,7 @@
                                 data-route="{{ route('regidoc.ajax.naturecourriers.save') }}"
                                 data-get-items-field="title" data-method="get" data-label="title"
                                 data-related-model="CourrierCategory" data-tags="true" data-max-selection="1"
-                                multiple @if ($type == [1]) required @endif>
+                                multiple @if ($type == [1,3]) required @endif>
                             </select>
                         </div>
                     </div>
@@ -261,7 +261,7 @@
                 </div>
 
                 @can('Mettre en copie')
-                    <div class="col-12">
+                    <div class="col-12 copie_field" wire:ignore>
                         <div class="row">
                             <label class="col-5 col-form-label">En copie</label>
                             <div class="col-7" wire:ignore>
@@ -297,7 +297,7 @@
                     </div>
                 </div>
                 
-                <div class="col-12">
+                <div class="col-12 ref_field" wire:ignore>
                     <div class="row">
                         <label class="col-5 col-form-label">Référence courrier</label>
                         <div class="col-7">
@@ -373,7 +373,7 @@
                     </div>
                 @endcan
 
-                <div class="col-12">
+                <div class="col-12 dateCourrier_field" wire:ignore>
                     <div class="row">
                         <label class="col-5 col-form-label">Date du courrier</label>
                         <div class="col-7">
@@ -417,7 +417,7 @@
                 @endcan
 
                 @can('Definir le traitement')
-                    <div class="col-12">
+                    <div class="col-12 remarques_field" wire:ignore>
                         <div class="row">
                             <label class="col-5 col-form-label">Remarques</label>
                             <div class="col-7">
@@ -548,14 +548,20 @@
                     $('.exped_extern').addClass('d-none');
                     $('.exped_intern').removeClass('d-none');
                     $('.block_traitant').removeClass('d-none');
-                    $('.block_initiateur').removeClass('d-none');
-                    $('.block_echeance').removeClass('d-none');
+                    $('.block_initiateur').addClass('d-none');
+                    $('.block_echeance').addClass('d-none');
+                    $('.ref_field').addClass('d-none');
+                    $('.copie_field').addClass('d-none');
+                    $('.dateCourrier_field').addClass('d-none');
 
-                    $('.categorie_field').addClass('d-none');
-                    $('.priote_field').removeClass('d-none');
+                    
+
+                    //$('.categorie_field').addClass('d-none');
+                    $('.priote_field').addClass('d-none');
                     // $('.datearrive_field').removeClass('d-none');
                     $('.datearrive_field').addClass('d-none');
-                    $('.nature_field').removeClass('d-none');
+                    $('.nature_field').addClass('d-none');
+                    $('.remarques_field').addClass('d-none');
 
                     $('#destination2').removeClass('d-none');
 
