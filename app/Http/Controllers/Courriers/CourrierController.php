@@ -35,10 +35,57 @@ use Illuminate\Support\Collection;
 
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\PieceJointe;
 
 class CourrierController extends Controller
 {
     use SoftDeletes;
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    /**
+     * Téléverse une pièce jointe pour un courrier
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Courrier  $courrier
+     * @return \Illuminate\Http\Response
+     */
+    public function uploadPieceJointe(Request $request, Courrier $courrier)
+    {
+        $request->validate([
+            'piece_jointe' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:10240', // 10MB max
+        ]);
+
+        try {
+            if ($request->hasFile('piece_jointe')) {
+                $file = $request->file('piece_jointe');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('pieces-jointes', $fileName, 'public');
+                
+                // Enregistrer la pièce jointe dans la base de données
+                $pieceJointe = new PieceJointe([
+                    'nom' => $file->getClientOriginalName(),
+                    'chemin' => $path,
+                    'taille' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'courrier_id' => $courrier->id,
+                    'uploaded_by' => auth()->id(),
+                ]);
+                
+                $courrier->piecesJointes()->save($pieceJointe);
+                
+                return back()->with('success', 'Pièce jointe ajoutée avec succès.');
+            }
+            
+            return back()->with('error', 'Aucun fichier n\'a été téléversé.');
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du téléversement de la pièce jointe : ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors du téléversement de la pièce jointe.');
+        }
+    }
+
     /**
      * Display a listing of the resource.
      *
