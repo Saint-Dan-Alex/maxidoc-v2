@@ -958,7 +958,7 @@ use Illuminate\Support\Facades\Storage;
                             </div>
                         </div>
                     @endif
-
+                    @if($tache->description)
                     <div class="col-12">
                         <div class="item">
                             <div class="row">
@@ -975,7 +975,7 @@ use Illuminate\Support\Facades\Storage;
                             </div>
                         </div>
                     </div>
-
+                    @endif
                     <div class="col-12">
                         <div class="item">
                             <div class="row">
@@ -986,7 +986,7 @@ use Illuminate\Support\Facades\Storage;
                                 </div>
                                 <div class="col-lg-12">
                                     <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                        {{ Str::ucfirst($tache->user?->agent?->nom . ' ' . $tache->user?->agent?->post_nom ?? ('' . $tache->user?->agent?->prenom ?? '')) }}
+                                        {{ Str::ucfirst($tache->user?->agent?->nom . ' ' . $tache->user?->agent?->prenom ?? ('' . $tache->user?->agent?->prenom ?? '')) }}
                                     </p>
                                 </div>
                             </div>

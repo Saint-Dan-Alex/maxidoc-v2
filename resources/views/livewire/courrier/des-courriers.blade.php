@@ -220,51 +220,44 @@
                                             @endif
                                             @if (!$isSec)
                                             <td class="text-nowrap">
-                                                @if ($courrier->followers->unique()->count())
+                                                @if ($courrier->accuseReceptions->count() > 0)
                                                     <div class="box-avatar d-flex align-items-center">
                                                         @php
-                                                            $others = collect();
+                                                            $shownAccuses = $courrier->accuseReceptions->take(4);
+                                                            $otherAccuses = $courrier->accuseReceptions->slice(4);
                                                         @endphp
-                                                        @foreach ($courrier->followers->unique() as $follower)
-                                                            @if ($loop->index < 4)
-                                                                <div class="cursor-pointer avatar-team"
-                                                                    data-bs-toggle="offcanvas"
-                                                                    data-bs-target="#detail-personnel"
-                                                                    aria-controls="offcanvasRight">
-                                                                    <div class="tooltip-team">
-                                                                        {{ $follower->poste?->titre }}</div>
-                                                                    <img src="{{ imageOrDefault($follower->image) }}"
-                                                                        alt="">
-                                                                </div>
-                                                            @else
-                                                                @php
-                                                                    $others->push($follower);
-                                                                @endphp
-                                                            @endif
+                                                        
+                                                        @foreach($shownAccuses as $accuse)
+                                                            <div class="cursor-pointer avatar-team"
+                                                                data-bs-toggle="tooltip" 
+                                                                data-bs-placement="top"
+                                                                title="{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}">
+                                                                <img src="{{ imageOrDefault($accuse->user->agent->image) }}" 
+                                                                    alt="{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}"
+                                                                    class="avatar-img">
+                                                            </div>
                                                         @endforeach
-                                                        @if (count($others))
+                                                        
+                                                        @if($otherAccuses->count() > 0)
                                                             <div class="dropdown">
                                                                 <div class="cursor-pointer avatar-team plus d-flex align-items-center justify-content-center"
-                                                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                                                    data-bs-toggle="dropdown" 
+                                                                    aria-expanded="false"
                                                                     style="margin-right: 0">
-                                                                    <span>4+</span>
+                                                                    <span>+{{ $otherAccuses->count() }}</span>
                                                                 </div>
-                                                                <div class="dropdown-menu dropdown-menu-end"
-                                                                    aria-labelledby="dropdownMenuButton2"
-                                                                    style="">
+                                                                <div class="dropdown-menu dropdown-menu-end p-2">
                                                                     <div class="list-users">
-                                                                        @foreach ($others as $agent)
-                                                                            <div
-                                                                                class="content-user d-flex align-items-center">
-                                                                                <div class="avatar"
-                                                                                    style="flex: 0 0 auto">
-                                                                                    <img src="{{ imageOrDefault($agent?->image) }}"
-                                                                                        alt="{{ $agent->prenom }} {{ $agent->nom }}">
+                                                                        @foreach($otherAccuses as $accuse)
+                                                                            <div class="content-user d-flex align-items-center mb-2">
+                                                                                <div class="avatar me-2">
+                                                                                    <img src="{{ imageOrDefault($accuse->user->agent->image) }}" 
+                                                                                        alt="{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}"
+                                                                                        class="avatar-img">
                                                                                 </div>
                                                                                 <div class="name">
-                                                                                    {{ $agent->prenom }}
-                                                                                    {{ $agent->nom }} <br>
-                                                                                    {{ $agent->poste?->libelle }}
+                                                                                    <div>{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}</div>
+                                                                                    <small class="text-muted">{{ $accuse->created_at->format('d/m/Y H:i') }}</small>
                                                                                 </div>
                                                                             </div>
                                                                         @endforeach
@@ -274,13 +267,14 @@
                                                         @endif
                                                     </div>
                                                 @else
-                                                    Aucun
+                                                    <span class="badge bg-secondary">Aucun accusé</span>
                                                 @endif
                                             </td>
                                                 
                                             @endif
                                             
                                             <td>{{ $courrier->created_at->format('d/m/Y H:i:s') }}</td>
+                                            
                                             <td>{{ $courrier->type ? $courrier->type->titre : 'Inconnu' }}</td>
                                             @if (!$isSec)
                                                 <td>
@@ -582,7 +576,8 @@
                                     <th scope="col">Destinataire</th>
                                     <th scope="col">Accusées réceptions</th>
                                     <th scope="col">Date du courrier</th>
-                                    <th scope="col">Date d'émission</th>
+                                    <th scope="col">Date de création</th>
+                                    <th scope="col" class="text-center">Accusés</th>
                                     <th scope="col">Action</th>
                                 </tr>
                             </thead>
@@ -846,7 +841,32 @@
 </div>
 
 <script>
+    function initTooltips() {
+        // Détruire les tooltips existants
+        var tooltipList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipList.forEach(function(tooltipEl) {
+            var tooltip = bootstrap.Tooltip.getInstance(tooltipEl);
+            if (tooltip) {
+                tooltip.dispose();
+            }
+            // Créer un nouveau tooltip
+            new bootstrap.Tooltip(tooltipEl, {
+                trigger: 'hover',
+                placement: 'top',
+                container: 'body'
+            });
+        });
+    }
+
     document.addEventListener('livewire:load', function() {
+        // Initialisation initiale des tooltips
+        initTooltips();
+        
+        // Réinitialiser les tooltips après chaque mise à jour Livewire
+        document.addEventListener('livewire:update', function() {
+            initTooltips();
+        });
+        
         Echo.channel('addedcourriers')
             .listen('CourrierCreated', (e) => {
                 Livewire.emit('courrierCreated', e.courrier);
