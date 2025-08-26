@@ -36,6 +36,90 @@ use Illuminate\Support\Facades\View; // Import manquant ajouté
 class CourrierController extends Controller
 {
     use SoftDeletes;
+    
+    /**
+     * Met à jour le traitement d'un courrier
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updateTraitement(Request $request)
+    {
+        try {
+            $request->validate([
+                'courrier_id' => 'required|exists:courriers,id',
+                'traitement_id' => 'required|exists:courriers_types_traitements,id',
+                'priorite_id' => 'nullable|exists:priorites,id',
+                'date_limite' => 'nullable|date',
+                'commentaire' => 'nullable|string|max:1000'
+            ]);
+            
+            $courrier = Courrier::findOrFail($request->courrier_id);
+            $user = Auth::user();
+            
+            // Vérifier si l'utilisateur a déjà un traitement en cours pour ce courrier
+            $existingTraitement = CourrierTraitement::where('courrier_id', $courrier->id)
+                ->where('agent_id', $user->agent->id)
+                ->first();
+                
+            if ($existingTraitement) {
+                // Mettre à jour le traitement existant
+                $existingTraitement->update([
+                    'traitement_id' => $request->traitement_id,
+                    'priorite_id' => $request->priorite_id,
+                    'date_limite' => $request->date_limite,
+                    'commentaire' => $request->commentaire,
+                    'statut' => 'en_cours',
+                    'date_debut' => now(),
+                    'date_fin' => null
+                ]);
+                
+                $traitement = $existingTraitement;
+            } else {
+                // Créer un nouveau traitement
+                $traitement = CourrierTraitement::create([
+                    'courrier_id' => $courrier->id,
+                    'agent_id' => $user->agent->id,
+                    'traitement_id' => $request->traitement_id,
+                    'priorite_id' => $request->priorite_id,
+                    'date_limite' => $request->date_limite,
+                    'commentaire' => $request->commentaire,
+                    'statut' => 'en_cours',
+                    'date_debut' => now(),
+                    'date_fin' => null
+                ]);
+            }
+            
+            // Mettre à jour la priorité du courrier si une priorité est spécifiée
+            if ($request->priorite_id) {
+                $courrier->priorite_id = $request->priorite_id;
+                $courrier->save();
+            }
+            
+            // Enregistrer l'historique
+            $traitementLibelle = $traitement->traitement->titre ?? 'Traitement';
+            $prioriteLibelle = $traitement->priorite->titre ?? 'Non défini';
+            
+            Historique::create([
+                'action' => 'Traitement du courrier',
+                'description' => "Traitement: $traitementLibelle, Priorité: $prioriteLibelle",
+                'user_id' => $user->id,
+                'courrier_id' => $courrier->id
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Traitement enregistré avec succès',
+                'data' => $traitement
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de l\'enregistrement du traitement: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     /**
      * Display a listing of the resource.
      *

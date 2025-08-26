@@ -11,7 +11,7 @@
             <h4 class="ms-0 ms-2">Numérisation du courrier</h4>
         </div>
         {{--  --}}
-        <form action="{{ route('regidoc.courriers.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="courrier-form" action="{{ route('regidoc.courriers.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="body-siderbar">
         <div class="form-group row g-3">
@@ -21,12 +21,27 @@
             {{-- =================================================================== --}}
 
             @if ($this->isDestinateur  )
-                @if ($type ==1 )
-                    
-                @endif
-                {{-- AFFICHAGE POUR LE DESTINATEUR : UNIQUEMENT SCAN/UPLOAD --}}
-                <input type="hidden" value="1" name="type">
-                
+                {{-- AFFICHAGE POUR LE DESTINATAIRE : UNIQUEMENT SCAN/UPLOAD --}}
+                <!-- Le type est défini par le select ci-dessous -->
+
+                <div class="col-12">
+                    <div class="row" wire:ignore>
+                        <label class="col-5 col-form-label">Type de document</label>
+                        <div class="col-7">
+                            <select class="form-select form-control select autreSelect2"
+                                aria-label="Default select example" name="type" id="type_id" required>
+                                <option value="" selected disabled>Selectionnez</option>
+                                @foreach ($types as $type)
+                                    @if ($type->id != 2)
+                                        <option value="{{ $type->id }}" @selected($loop->first)>
+                                            {{ $type->titre }}
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="col-12 select_doc" onclick="scanToPdf();" wire:ignore>
                     <div class="block-file block-import-doc">
@@ -321,7 +336,7 @@
                     <div class="row">
                         <label class="col-5 col-form-label">Titre</label>
                         <div class="col-7">
-                            <textarea name="title" class="form-control" id="title" cols="30" rows="2"
+                            <textarea wire:model.live="title" name="title" class="form-control" id="title" cols="30" rows="2"
                                 placeholder="Titre / objet" required></textarea>
                         </div>
                     </div>
@@ -439,7 +454,7 @@
     
     <div class="footer-sidebar">
         <a href="{{ route('regidoc.courriers.index') }}" class="btn btn-concel">Annuler</a>
-        <button class="btn btn-valid" @disabled(!$isFormValid)>Numériser</button>
+        <button type="button" class="btn btn-valid" @disabled(!$isFormValid) id="submit-btn">Numériser</button>
     </div>
 </form>
     </div>
@@ -478,6 +493,120 @@
     </div>
 </div>
 {{-- @dd(Storage::get('public/tmp/file.pdf')) --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestionnaire de clic pour le bouton de soumission
+        document.getElementById('submit-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Bouton cliqué - Début de la soumission');
+            
+            const form = document.getElementById('courrier-form');
+            const formData = new FormData(form);
+            const fileInput = document.querySelector('input[type="file"]');
+            const isScan = document.getElementById('server_response').value === 'true';
+            
+            // Vérifier si un fichier est sélectionné ou si le scan a été effectué
+            if (fileInput.files.length === 0 && !isScan) {
+                console.error('Aucun fichier sélectionné');
+                alert('Veuillez sélectionner un fichier ou effectuer une numérisation');
+                return false;
+            }
+            
+            if (isScan) {
+                console.log('Utilisation du fichier scanné');
+                // Ajouter le fichier scanné au FormData
+                formData.append('is_scan', 'true');
+            } else {
+                console.log('Fichier sélectionné:', fileInput.files[0].name);
+            }
+            
+            // Valider les champs requis
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return false;
+            }
+            
+            // Afficher un indicateur de chargement
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...';
+            
+            // Soumettre le formulaire
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erreur lors de la soumission du formulaire');
+                }
+                
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else if (data.message) {
+                    alert(data.message);
+                }
+                
+                return data;
+            })
+            .catch(error => {
+                console.error('Erreur lors de la soumission:', error);
+                alert(error.message || 'Une erreur est survenue lors de la soumission du formulaire');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Numériser';
+            });
+        });
+        
+        // Gestion des erreurs de validation du serveur
+        @if($errors->any())
+            console.error('Erreurs de validation:', @json($errors->all()));
+            @foreach($errors->all() as $error)
+                console.error('- {{ $error }}');
+            @endforeach
+        @endif
+        
+        // Afficher les messages de session
+        @if(session('success'))
+            console.log('Succès:', '{{ session('success') }}');
+        @endif
+        
+        @if(session('error'))
+            console.error('Erreur:', '{{ session('error') }}');
+        @endif
+        
+        // Ajouter la classe is-invalid aux champs en erreur
+        document.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.add('is-invalid');
+        });
+    });
+</script>
+
 @push('livewireScripts')
     <script src="{{ asset('vendor/scannerjs/scanner.js') }}"></script>
 
@@ -607,8 +736,29 @@
                 }
 
                 if (data == 3) {
+                    // Pour les courriers internes, on ne garde que les champs essentiels
                     $('.exped_intern select').val("{{ Auth::user()->agent->id }}");
                     $('.exped_intern select').attr("disabled", true);
+                    
+                    // Définir la date et l'heure actuelles
+                    const now = new Date();
+                    const formattedDate = now.toISOString().slice(0, 16);
+                    $('input[name="date-doc"]').val(formattedDate);
+                    
+                    // Afficher uniquement les champs nécessaires
+                    $('.categorie_field').removeClass('d-none');
+                    $('.nature_field').addClass('d-none');
+                    $('.dateCourrier_field').removeClass('d-none');
+                    
+                    // Cacher les champs non nécessaires
+                    $('.isConfidentiel').addClass('d-none');
+                    $('.copie_field').addClass('d-none');
+                    $('.priote_field').addClass('d-none');
+                    $('.datearrive_field').addClass('d-none');
+                    $('.remarques_field').addClass('d-none');
+                    $('.block_echeance').addClass('d-none');
+                    
+                    // Gestion des destinations
                     $('#destination2').parent().parent().parent().removeClass('d-none');
                     $('#destination').parent().parent().parent().addClass('d-none');
                 }
