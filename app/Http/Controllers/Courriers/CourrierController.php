@@ -428,8 +428,10 @@ public function traitement($courrier)
             $oldata['parent_id'] = $courrier->id;
             $oldata['traitement_id'] = null;
             $oldata['mark_as_done'] = null;
+            $oldata['date_du_courrier'] = $courrier->date_du_courrier;
             $oldata['reference_interne'] = $this->changeNumRef(2);
             $oldata['dest_externe_id'] = $extern_destinataire->id;
+            
 
             $newCourrier = $this->saveCourrierSortant(new Courrier($oldata));
             Log::info('📨 Courrier sortant créé', ['new_courrier_id' => $newCourrier->id]);
@@ -1740,7 +1742,8 @@ public function update(Request $request, $id)
             $oldata['parent_id'] = $courrier->id;
             $oldata['traitement_id'] = null;
             $oldata['mark_as_done'] = null;
-            // Use type_id 2 for outgoing mail (Sortant)
+            $oldata['date_du_courrier'] = $courrier->date_du_courrier;
+             // Use type_id 2 for outgoing mail (Sortant)
             $oldata['reference_interne'] = $this->changeNumRef(2);
             $oldata['dest_externe_id'] = $extern_destinataire->id;
 
