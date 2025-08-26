@@ -736,7 +736,7 @@
                                 </a>
                             </li>
                     @endcan  --}}
-                    @can('Annoter un document')
+                    {{-- @can('Annoter un document')
                         <li>
                                 <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-annotation"
                                     @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
@@ -752,7 +752,7 @@
                                 </a>
                             </li>
 
-                    @endcan
+                    @endcan --}}
 
                     @can('Numériser un document sortant')
                             <li>
