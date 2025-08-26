@@ -363,6 +363,72 @@ class CourrierController extends Controller
         return $courrier;
     }
 
+    /**
+     * Transmet un courrier sortant (marqué comme traité)
+     * 
+     * @param int $id ID du courrier
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function transmettreCourrier($id)
+    {
+        try {
+            $courrier = Courrier::findOrFail($id);
+            
+            // Vérifier que l'utilisateur est bien l'assistant du DG
+            $user = auth()->user();
+            $isDGAssistant = $user->agent && $user->agent->isAssistant();
+
+            if (!$isDGAssistant) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Action non autorisée. Seul l\'assistant du DG peut effectuer cette action.'
+                ], 403);
+            }
+
+            // Vérifier que c'est bien un courrier sortant
+            if ($courrier->type_id != 2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cette action ne peut être effectuée que sur un courrier sortant.'
+                ], 400);
+            }
+
+            // Mettre à jour le statut du courrier
+            $courrier->statut_id = 3; // Statut "Traité"
+            $courrier->mark_as_done = 1; // Marquer comme traité
+            
+            // Mettre à jour le statut du document associé s'il existe
+            if ($courrier->document) {
+                $courrier->document->statut_id = 5; // Statut "Traité"
+                $courrier->document->save();
+            }
+            
+            $courrier->save();
+
+            // Ajouter une entrée dans l'historique
+            Historique::create([
+                'key' => 'courrier_transmis',
+                'historiquecable_id' => $courrier->id,
+                'historiquecable_type' => Courrier::class,
+                'description' => 'Le courrier a été transmis par l\'assistant du DG',
+                'user_id' => $user->id,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Le courrier a été transmis avec succès.'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de la transmission du courrier: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la transmission du courrier: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     
 public function traitement($courrier)
 {
@@ -1451,12 +1517,23 @@ public function createDocument($request, $destinateur, $doc = null)
         $classeurs = Classeur::all();
         $dossiers = Dossier::all();
         $directions = Direction::all();
-        $traitements = Auth::user()->agent->isDG() || Auth::user()->agent->isDGA()  
-            ? CourrierTypesTraitement::withTrashed()->select('id', 'titre')->get() 
+        $traitements = $user->agent->isDG() || $user->agent->isDGA()
+            ? CourrierTypesTraitement::withTrashed()->select('id', 'titre')->get()
             : CourrierTypesTraitement::withTrashed()->select('id', 'titre')->get();
         $priorites = Priorite::select('id', 'titre')->get();
 
-        return view('regidoc.pages.courriers.show-courrier', compact('directions', 'courrier', 'classeurs', 'dossiers','traitements','priorites'));
+        // Vérifier si l'utilisateur est l'assistant du DG
+        $isDGAssistant = $user->agent && $user->agent->isAssistant();
+
+        return view('regidoc.pages.courriers.show-courrier', compact(
+            'courrier',
+            'classeurs',
+            'dossiers',
+            'directions',
+            'traitements',
+            'priorites',
+            'isDGAssistant'
+        ));
     }
 
  

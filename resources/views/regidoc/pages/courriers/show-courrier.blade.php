@@ -988,6 +988,14 @@
                                 </a>
                             @endif
                         @endif
+                        @if(Auth::user()->agent->isAssistant() && $courrier->type_id == 2 && $courrier->statut_id == 2)
+                                        <div class="text-end mb-2">
+                                            <button id="btn-transmettre" class="btn btn-primary" 
+                                                    data-courrier-id="{{ $courrier->id }}">
+                                                <i class="fi fi-rr-paper-plane me-2"></i>Transmettre
+                                            </button>
+                                        </div>
+                                    @endif
                     </div>
                 </div>
             </div>
@@ -1084,9 +1092,9 @@
                                 @endphp
 
                                 @if($courrier->document && $courrier->document->document && $fileExists)
-                                    @php
-                                        $documentUrl = asset($publicPath);
-                                    @endphp
+                                                              
+                                   
+                                    
                                     <iframe src="{{ $documentUrl }}" frameborder="0" style="width: 100%; height: 100%; min-height: 80vh;"></iframe>
                                 @endif
                             </div>
@@ -2659,6 +2667,10 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js?v=1"></script>
     <script src="{{ asset('assets/js/showPDF.js') }}"></script>
     
+    @if($isDGAssistant && $courrier->type_id == 2 && $courrier->statut_id != 3)
+        <script src="{{ asset('js/courrier-transmission.js') }}"></script>
+    @endif
+    
     <script>
         // Gestion du clic sur le bouton Traiter
         $(document).on('click', '.btn-traiter', function() {
@@ -2745,6 +2757,60 @@
 
         Livewire.on('assistantSeen', function(evt) {
             $('.assistant-trait').removeClass('d-none');
+        });
+    </script>
+
+    <script>
+        // Gestion de la transmission du courrier
+        document.addEventListener('DOMContentLoaded', function() {
+            // Écouter l'événement de clic sur le bouton de transmission
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'btn-transmettre') {
+                    e.preventDefault();
+                    
+                    // Afficher un message de confirmation
+                    if (confirm('Êtes-vous sûr de vouloir transmettre ce courrier ? Cette action est irréversible.')) {
+                        const courrierId = '{{ $courrier->id }}';
+                        const button = e.target;
+                        const originalText = button.innerHTML;
+                        button.disabled = true;
+                        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Transmission en cours...';
+                        
+                        // Appeler la route de transmission
+                        fetch(`/courriers/${courrierId}/transmettre`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Afficher un message de succès
+                                toastr.success(data.message || 'Le courrier a été transmis avec succès.');
+                                 
+                                // Recharger la page après un court délai
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1500);
+                            } else {
+                                // Afficher un message d'erreur
+                                toastr.error(data.message || 'Une erreur est survenue lors de la transmission du courrier.');
+                                button.disabled = false;
+                                button.innerHTML = originalText;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de la transmission du courrier:', error);
+                            toastr.error('Une erreur est survenue lors de la transmission du courrier.');
+                            button.disabled = false;
+                            button.innerHTML = originalText;
+                        });
+                    }
+                }
+            });
         });
     </script>
 
