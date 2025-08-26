@@ -2667,9 +2667,15 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js?v=1"></script>
     <script src="{{ asset('assets/js/showPDF.js') }}"></script>
     
-    @if($isDGAssistant && $courrier->type_id == 2 && $courrier->statut_id != 3)
-        <script src="{{ asset('js/courrier-transmission.js') }}"></script>
-    @endif
+    <!-- Inclusion du script de transmission pour débogage -->
+    <script src="{{ asset('js/courrier-transmission.js') }}"></script>
+    <script>
+        console.log('Variables de condition de transmission:', {
+            isDGAssistant: {{ $isDGAssistant ? 'true' : 'false' }},
+            type_id: {{ $courrier->type_id }},
+            statut_id: {{ $courrier->statut_id }}
+        });
+    </script>
     
     <script>
         // Gestion du clic sur le bouton Traiter
@@ -2760,59 +2766,7 @@
         });
     </script>
 
-    <script>
-        // Gestion de la transmission du courrier
-        document.addEventListener('DOMContentLoaded', function() {
-            // Écouter l'événement de clic sur le bouton de transmission
-            document.addEventListener('click', function(e) {
-                if (e.target && e.target.id === 'btn-transmettre') {
-                    e.preventDefault();
-                    
-                    // Afficher un message de confirmation
-                    if (confirm('Êtes-vous sûr de vouloir transmettre ce courrier ? Cette action est irréversible.')) {
-                        const courrierId = '{{ $courrier->id }}';
-                        const button = e.target;
-                        const originalText = button.innerHTML;
-                        button.disabled = true;
-                        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Transmission en cours...';
-                        
-                        // Appeler la route de transmission
-                        fetch(`/courriers/${courrierId}/transmettre`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json',
-                            },
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Afficher un message de succès
-                                toastr.success(data.message || 'Le courrier a été transmis avec succès.');
-                                 
-                                // Recharger la page après un court délai
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 1500);
-                            } else {
-                                // Afficher un message d'erreur
-                                toastr.error(data.message || 'Une erreur est survenue lors de la transmission du courrier.');
-                                button.disabled = false;
-                                button.innerHTML = originalText;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Erreur lors de la transmission du courrier:', error);
-                            toastr.error('Une erreur est survenue lors de la transmission du courrier.');
-                            button.disabled = false;
-                            button.innerHTML = originalText;
-                        });
-                    }
-                }
-            });
-        });
-    </script>
+    <!-- Le script de transmission est géré par courrier-transmission.js -->
 
     <script>
         // Initialisation des tooltips Bootstrap pour les boutons de la barre d'outils PDF

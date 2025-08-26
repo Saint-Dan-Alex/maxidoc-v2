@@ -50,10 +50,10 @@ use App\Http\Livewire\Systems\CourrierNature;
  */
 
 //config('jetstream.auth_session')
-Route::post('/authentification/connexion', [AuthController::class, 'login'])->name('auth.login');
-Route::get('/authentification/mot-de-passe/oublie', [AuthController::class, 'forgotpassword'])->name('auth.forgot.password');
-Route::post('/authentification/mot-de-passe/code/confirmation', [AuthController::class, 'confirmationpassword'])->name('auth.confirmation.code');
-Route::post('/authentification/mot-de-passe/code/verification', [AuthController::class, 'verificationcode'])->name('auth.verification.code');
+// Route::post('/authentification/connexion', [AuthController::class, 'login'])->name('auth.login');
+// Route::get('/authentification/mot-de-passe/oublie', [AuthController::class, 'forgotpassword'])->name('auth.forgot.password');
+// Route::post('/authentification/mot-de-passe/code/confirmation', [AuthController::class, 'confirmationpassword'])->name('auth.confirmation.code');
+// Route::post('/authentification/mot-de-passe/code/verification', [AuthController::class, 'verificationcode'])->name('auth.verification.code');
 
 
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
@@ -230,6 +230,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                     Route::post('valider', [CourrierController::class, 'valider'])->name('courriers.valider');
                     Route::post('rejeter', [CourrierController::class, 'rejeter'])->name('courriers.rejeter');
                     Route::post('traiter', [CourrierController::class, 'traiter'])->name('courriers.traiter');
+                    Route::post('transmettre', [CourrierController::class, 'transmettreCourrier'])->name('courriers.transmettre');
                     Route::get('export-historique', [CourrierController::class, 'exportHistoriquePdf'])->name('courriers.export-historique');
 
 
