@@ -1544,7 +1544,7 @@
                     @if ($courrier->author)
                         <div class="col-12">
                             <div class="item">
-                                @if($courrier->statut_id==1 || $courrier->statut_id==3)
+                                @if($courrier->type_id==1 || $courrier->type_id==3)
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <span style="font-size: 13px; color: var(--colorParagraph)">
@@ -1559,7 +1559,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                @elseif ($courrier->statut_id==2)
+                                @elseif ($courrier->type_id==2)
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <span style="font-size: 13px; color: var(--colorParagraph)">
