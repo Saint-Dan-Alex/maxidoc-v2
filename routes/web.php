@@ -230,7 +230,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                     Route::post('valider', [CourrierController::class, 'valider'])->name('courriers.valider');
                     Route::post('rejeter', [CourrierController::class, 'rejeter'])->name('courriers.rejeter');
                     Route::post('traiter', [CourrierController::class, 'traiter'])->name('courriers.traiter');
-                    Route::post('transmettre', [CourrierController::class, 'transmettreCourrier'])->name('courriers.transmettre');
+                    Route::get('transmettre', [CourrierController::class, 'transmettreCourrier'])->name('courriers.transmettre');
                     Route::get('export-historique', [CourrierController::class, 'exportHistoriquePdf'])->name('courriers.export-historique');
 
 

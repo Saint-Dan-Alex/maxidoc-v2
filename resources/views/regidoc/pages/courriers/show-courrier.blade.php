@@ -989,13 +989,14 @@
                             @endif
                         @endif
                         @if(Auth::user()->agent->isAssistant() && $courrier->type_id == 2 && $courrier->statut_id == 2)
-                                        <div class="text-end mb-2">
-                                            <button id="btn-transmettre" class="btn btn-primary" 
-                                                    data-courrier-id="{{ $courrier->id }}">
-                                                <i class="fi fi-rr-paper-plane me-2"></i>Transmettre
-                                            </button>
-                                        </div>
-                                    @endif
+                            <div class="text-end mb-2">
+                                <a href="{{ route('regidoc.courriers.transmettre', $courrier) }}" 
+                                   class="btn btn-primary"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir transmettre ce courrier ?')">
+                                    <i class="fi fi-rr-paper-plane me-2"></i>Transmettre
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

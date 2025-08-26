@@ -34026,3 +34026,13 @@
 #22 {main}
 "} 
 [2025-08-26 15:15:37] local.INFO: Vérification des droits d'accès {"user_id":3,"agent_id":3,"is_assistant":true,"courrier_type":2,"courrier_statut":2} 
+[2025-08-26 15:44:01] local.INFO: Vérification des droits d'accès {"user_id":3,"agent_id":3,"is_assistant":true,"courrier_type":2,"courrier_statut":2} 
+[2025-08-26 15:48:05] local.INFO: Vérification des droits d'accès {"user_id":3,"agent_id":3,"is_assistant":true,"courrier_type":2,"courrier_statut":2} 
+[2025-08-26 15:53:41] local.ERROR: Out of memory (allocated 23068672 bytes) (tried to allocate 32768 bytes) {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Out of memory (allocated 23068672 bytes) (tried to allocate 32768 bytes) at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Broadcasting\\BroadcastServiceProvider.php:1)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Out of memory ...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
