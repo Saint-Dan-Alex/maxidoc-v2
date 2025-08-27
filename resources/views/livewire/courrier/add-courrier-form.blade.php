@@ -544,25 +544,45 @@
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...';
             
             // Soumettre le formulaire
+            console.log('Envoi de la requête à:', form.action);
+            console.log('Données du formulaire:', Object.fromEntries(formData.entries()));
+            
             fetch(form.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-Debug': 'true' // Pour le débogage côté serveur
+                },
+                credentials: 'same-origin' // Important pour les cookies de session
             })
             .then(async response => {
-                const data = await response.json().catch(() => ({}));
+                console.log('Réponse reçue, statut:', response.status);
+                
+                // Essayer de parser la réponse JSON même en cas d'erreur
+                let data = {};
+                try {
+                    const text = await response.text();
+                    data = text ? JSON.parse(text) : {};
+                    console.log('Réponse JSON:', data);
+                } catch (e) {
+                    console.error('Erreur lors du parsing de la réponse:', e);
+                    throw new Error('Réserve du serveur invalide');
+                }
                 
                 if (response.redirected) {
+                    console.log('Redirection vers:', response.url);
                     window.location.href = response.url;
                     return;
                 }
                 
                 if (!response.ok) {
-                    throw new Error(data.message || 'Erreur lors de la soumission du formulaire');
+                    const errorMsg = data.message || 
+                                   data.error || 
+                                   `Erreur serveur (${response.status} ${response.statusText})`;
+                    throw new Error(errorMsg);
                 }
                 
                 if (data.redirect) {
@@ -574,8 +594,18 @@
                 return data;
             })
             .catch(error => {
-                console.error('Erreur lors de la soumission:', error);
-                alert(error.message || 'Une erreur est survenue lors de la soumission du formulaire');
+                console.error('Erreur lors de la soumission:', {
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack
+                });
+                
+                // Afficher un message d'erreur plus détaillé
+                const errorMsg = error.message.includes('Failed to fetch') 
+                    ? 'Impossible de se connecter au serveur. Vérifiez votre connexion et réessayez.'
+                    : error.message;
+                    
+                alert('Erreur: ' + errorMsg);
             })
             .finally(() => {
                 submitBtn.disabled = false;

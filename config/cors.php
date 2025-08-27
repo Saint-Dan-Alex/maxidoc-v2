@@ -15,20 +15,58 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => [
+        'api/*',
+        'sanctum/csrf-cookie',
+        'courriers/*',
+        'regidoc/courriers/*'
+    ],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => [
+        'POST',
+        'GET',
+        'OPTIONS',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'HEAD'
+    ],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'http://localhost',
+        'http://localhost:8000',
+        'http://127.0.0.1',
+        'http://127.0.0.1:8000',
+        'http://localhost:3000',
+        env('APP_URL', 'http://localhost')
+    ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '/^https?:\/\/localhost(:[0-9]+)?$/',
+        '/^https?:\/\/127\.0\.0\.1(:[0-9]+)?$/',
+    ],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => [
+        'Content-Type',
+        'X-Requested-With',
+        'X-CSRF-TOKEN',
+        'X-XSRF-TOKEN',
+        'Authorization',
+        'Accept',
+        'X-Debug-Token',
+        'X-Debug'
+    ],
 
-    'exposed_headers' => [],
+    'exposed_headers' => [
+        'Authorization',
+        'X-CSRF-TOKEN',
+        'X-XSRF-TOKEN',
+        'X-Debug-Token',
+        'X-Debug-Token-Link'
+    ],
 
-    'max_age' => 0,
+    'max_age' => 60 * 60 * 24, // 24 heures
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];

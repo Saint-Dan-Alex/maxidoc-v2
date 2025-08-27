@@ -1061,102 +1061,132 @@ public function traitement($courrier)
    
 
 
+/**
+ * Crée un document pour un courrier
+ * 
+ * @param mixed $request La requête ou un tableau de données
+ * @param mixed $destinateur L'ID ou l'objet Agent destinataire
+ * @param mixed $doc Document existant ou null
+ * @return \App\Models\Document|null
+ * @throws \Exception
+ */
 public function createDocument($request, $destinateur, $doc = null) 
 {
-    // 1. Création ou récupération du classeur
-    $classeur = Classeur::firstOrCreate(
-        ['titre' => Auth::user()->agent->direction?->lieu?->titre ?? 'Region inconnu'], 
-        [
-            'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
-            'direction_id' => Agent::find($destinateur)?->direction_id,
-            'created_by' => Auth::user()->agent->id
-        ]
-    );
+    try {
+        // Gestion du paramètre $destinateur qui peut être un ID ou un objet Agent
+        $agentDestinataire = is_numeric($destinateur) ? Agent::find($destinateur) : $destinateur;
+        
+        if (!$agentDestinataire) {
+            throw new \Exception('Agent destinataire introuvable');
+        }
 
-    // 2. Création ou récupération du dossier 'Courriers'
-    $dossier = Dossier::firstOrCreate(
-        ['titre' => 'Courriers', 'classeur_id' => $classeur->id], 
-        [
-            'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
-            'created_by' => Auth::user()->agent->id,
-            'updated_by' => Auth::user()->agent->id,
-        ]
-    );
+        // 1. Création ou récupération du classeur
+        $classeur = Classeur::firstOrCreate(
+            ['titre' => $agentDestinataire->direction?->lieu?->titre ?? 'Region inconnu'], 
+            [
+                'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
+                'direction_id' => $agentDestinataire->direction_id,
+                'created_by' => Auth::user()->agent->id,
+                'updated_by' => Auth::user()->agent->id,
+            ]
+        );
+        
+        if (!$classeur) {
+            throw new \Exception('Impossible de créer ou récupérer le classeur');
+        }
+        
+        // 2. Création ou récupération du dossier 'Courriers'
+        $dossier = Dossier::firstOrCreate(
+            ['titre' => 'Courriers', 'classeur_id' => $classeur->id],
+            [
+                'reference' => 'COUR/' . Str::padLeft(Dossier::where('classeur_id', $classeur->id)->count() + 1, 4, '0'),
+                'created_by' => Auth::user()->agent->id,
+                'updated_by' => Auth::user()->agent->id,
+            ]
+        );
+        
+        if (!$dossier) {
+            throw new \Exception('Impossible de créer ou récupérer le dossier');
+        }
 
-    // 3. Si pas de document existant passé en paramètre
-    if ($doc == null) {
+        // 3. Si pas de document existant passé en paramètre
+        if ($doc === null) {
+            // Cas où c'est un scan ou un document déjà sélectionné
+            if (($request?->is_scan ?? false) == "true" || ($request?->has('selected_doc') && !empty($request->selected_doc))) {
+                $document = new Document();
+                $document->dossier_id = $dossier->id;
+                $document->reference = is_array($request->get('ref')) ? implode(', ', $request->get('ref')) : ($request->get('ref') ?? '');
+                $document->category_id = $request->get('categorie');
+                $document->libelle = $request->get('title');
+                $document->type = $request->get('type');
 
-        // Cas où c’est un scan ou un document déjà sélectionné
-        if (($request?->is_scan ?? false) == "true" || ($request?->has('selected_doc') && !empty($request->selected_doc))) {
+                if (($request->is_scan ?? false) == "true") {
+                    $document->document = (new ScanFile())->handle('documents');
+                } else {
+                    $document->document = $this->moveCreatedDoc($request->selected_doc);
+                }
 
-            $document = new Document();
-            $document->dossier_id = $dossier->id;
-            $document->reference = is_array($request->get('ref')) ? implode(', ', $request->get('ref')) : $request->get('ref');
-            $document->category_id = $request->get('categorie');
-            $document->libelle = $request->get('title');
-            $document->type = $request->get('type');
+                $document->user_id = Auth::id();
+                $document->statut_id = 1;
+                $document->created_by = Auth::user()->agent->id;
+                $document->save();
 
-            if (($request->is_scan ?? false) == "true") {
-                // Stockage du fichier scanné (à adapter selon ta logique ScanFile)
-                $document->document = (new ScanFile())->handle('documents');
-            } else {
-                // Déplacer un fichier sélectionné déjà uploadé en temporaire
-                $document->document = $this->moveCreatedDoc($request->selected_doc);
+                return $document;
             }
 
-            $document->user_id = Auth::user()->id;
-            $document->statut_id = 1;
-            $document->created_by = Auth::user()->agent->id;
-            $document->save();
+            // Cas d'un upload via formulaire (input file)
+            if ($request->hasFile('document') && empty($request->document_id)) {
+                $document = new Document();
+                $document->dossier_id = $dossier->id;
+                $document->reference = $request->get('ref') ?? '';
+                $document->category_id = $request->get('categorie');
+                $document->libelle = $request->get('title');
+                $document->type = $request->get('type');
+                $document->document = (new File())->handle($request, 'document', 'documents');
+                $document->user_id = Auth::id();
+                $document->statut_id = 1;
+                $document->created_by = Auth::user()->agent->id;
+                $document->save();
 
-            return $document;
-        }
+                return $document;
+            } 
+            
+            // Cas où on utilise un document existant via son ID
+            if ($request->has('document_id') && !empty($request->document_id)) {
+                $document = Document::find($request->document_id);
+                if (!$document) {
+                    throw new \Exception('Document introuvable avec l\'ID fourni');
+                }
+                return $document;
+            }
 
-        // Cas d'un upload via formulaire (input file)
-        if ($request->hasFile('document') && (empty($request->document_id))) {
-
-            $document = new Document();
-            $document->dossier_id = $dossier->id;
-            $document->reference = $request->get('ref');
-            $document->category_id = $request->get('categorie');
-            $document->libelle = $request->get('title');
-            $document->type = $request->get('type');
-
-            // Utilisation de la classe File pour stocker le fichier
-            $document->document = (new File())->handle($request, 'document', 'documents');
-
-            $document->user_id = Auth::user()->id;
-            $document->statut_id = 1;
-            $document->created_by = Auth::user()->agent->id;
-            $document->save();
-
-            return $document;
+            throw new \Exception('Aucun document valide fourni');
         } 
         
-        // Cas où on utilise un document existant via son ID
-        elseif ($request->has('document_id') && !empty($request->document_id)) {
-            return Document::find($request->document_id);
-        }
-
-    } else {
-        // Cas où on crée un nouveau document à partir d’un autre objet $doc existant
+        // Cas où on crée un nouveau document à partir d'un autre objet $doc existant
         $document = Document::create([
             'dossier_id' => $dossier->id,
-            'reference' => is_array($doc->reference) ? implode(', ', $doc->reference) . '/R' : $doc->reference . '/R',
-            'category_id' => $doc->category_id,
-            'libelle' => $doc->libelle,
-            'type' => $doc->type,
-            'document' => $doc->document ?? (new File())->handle($request, 'document', 'documents'),
-            'user_id' => Auth::user()->id,
+            'reference' => (is_array($doc->reference) ? implode(', ', $doc->reference) : ($doc->reference ?? '')) . '/R',
+            'category_id' => $doc->category_id ?? null,
+            'libelle' => $doc->libelle ?? 'Nouveau document',
+            'type' => $doc->type ?? 'document',
+            'document' => $doc->document ?? ((new File())->handle($request, 'document', 'documents')),
+            'user_id' => Auth::id(),
             'statut_id' => 1,
             'created_by' => Auth::user()->agent->id,
         ]);
 
         return $document;
+        
+    } catch (\Exception $e) {
+        Log::error('Erreur dans createDocument: ' . $e->getMessage(), [
+            'exception' => $e,
+            'request' => $request ? $request->all() : null,
+            'destinateur' => $destinateur,
+            'user_id' => Auth::id()
+        ]);
+        throw $e; // Relancer l'exception pour qu'elle soit gérée plus haut
     }
-
-    // Par défaut, rien à retourner si aucune condition remplie
-    return null;
 }
 
 
@@ -1374,18 +1404,36 @@ public function createDocument($request, $destinateur, $doc = null)
 
     public function store(Request $request)
     {
-        // dd($request);
-        // Initialiser $content pour s'assurer qu'il est toujours défini.
-        $content = json_encode([
-            'name' => 'Courrier',
-            'statut' => 'error',
-            'message' => 'Type de courrier non supporté pour la numérisation.', // Message par défaut
-        ]);
+        // Activer le débogage si l'en-tête X-Debug est présent
+        if ($request->header('X-Debug')) {
+            \DB::enableQueryLog();
+            \Log::info('Début du traitement de la requête store', [
+                'input' => $request->all(),
+                'files' => $request->allFiles(),
+                'user' => auth()->user() ? auth()->user()->id : 'guest'
+            ]);
+        }
 
         try {
+            // Valider les champs requis
+            $validated = $request->validate([
+                'type' => 'required|in:1,2,3',
+                'categorie' => 'required|exists:courrier_categories,id',
+                'title' => 'required|string|max:255',
+                'objet' => 'required|string',
+                'date-doc' => 'required|date',
+                'date-arriv' => 'required|date',
+            ]);
+
+            // Initialiser la réponse
+            $response = [
+                'success' => false,
+                'message' => 'Type de courrier non supporté pour la numérisation.',
+                'data' => []
+            ];
+
             // Récupérer la valeur de 'copie' si elle est présente dans la requête.
-            // On l'initialise à un tableau vide si elle n'existe pas.
-            $copie = $request->get('copie', []); 
+            $copie = $request->get('copie', []);
 
             if ($request->get('type') == 1) { // Logique pour Courrier Entrant
                 // Récupérer les assistants du DG via la relation assistanats()
@@ -1451,129 +1499,158 @@ public function createDocument($request, $destinateur, $doc = null)
                 ]);
 
             } elseif ($request->get('type') == 3) { // Logique pour Courrier Interne (Destinataire est un agent)
+                $type = $request->get('type');
+        
+                if (!in_array($type, [1, 2, 3])) {
+                    throw new \InvalidArgumentException('Type de courrier invalide.');
+                }
+        
+                $copie = $request->get('copie', []);
+                
+                \Log::info('🔄 Création d\'un courrier interne', ['request' => $request->all()]);
                 $destinataireAgentId = $request->get('destination2');
-                // dd( $destinataireAgentId);
-                // Vérifier si l'agent destinataire existe
+    
+                if (!$destinataireAgentId) {
+                    throw new \Exception('Le destinataire interne est requis pour un courrier interne.');
+                }
+    
                 $destinataireAgent = Agent::find($destinataireAgentId);
                 if (!$destinataireAgent) {
-                    $content = json_encode([
-                        'name' => 'Courrier',
-                        'statut' => 'error',
-                        'message' => 'Agent destinataire interne introuvable.',
-                    ]);
-                    session()->flash('session', $content);
-                    return redirect()->route('regidoc.courriers.index');
+                    throw new \Exception('Agent destinataire introuvable.');
                 }
-
-                // Créer le document avec l'agent destinataire comme responsable
-                $document = $this->createDocument($request, $destinataireAgent->id);
-
-                $courrier = new Courrier;
-                $courrier->type_id = $request->get('type');
+    
+                // Créer le document
+                $document = $this->createDocument($request, $destinataireAgent, null);
+                if (!$document) {
+                    throw new \Exception('Échec de création du document.');
+                }
+    
+                // Créer le courrier
+                $courrier = new Courrier();
+                $courrier->type_id = 3;
                 $courrier->category_id = $request->get('categorie');
-                $courrier->traitement_id = $request->get('traitement_id');
-                $courrier->exped_interne_id = $request->get('exp_int');
-                $courrier->dest_interne_id = $destinataireAgent->id; // L'ID de l'agent est le destinataire interne
-                // Vous pouvez déduire le département/service de l'agent si nécessaire, ou le prendre de la requête
-                $courrier->departement_id = $destinataireAgent->departement_id ?? $request->get('service_init');
-                $courrier->service_id = $destinataireAgent->service_id ?? $request->get('service_init');
-                $courrier->service_traitant_id = $destinataireAgent->direction_id ?? null; // ID de la direction de l'agent si applicable
-                $courrier->title = $request->get('title');
-                $courrier->reference_courrier = $request->get('ref');
-                $courrier->reference_interne = $request->get('ref_interne');
-                $courrier->confidentiel = $request->get('confidentiel') ? '1' : '0';
-                $courrier->priorite_id = $request->get('priorite');
-                $courrier->created_by = Auth::user()->id;
-                $courrier->date_du_courrier = $request->get('date-doc');
-                $courrier->date_arrive = $request->get('date-arriv');
-                $courrier->date_fin = $request->get('date-limite');
-                $courrier->nature_id = $request->get('nature');
-                $courrier->objet = $request->get('objet');
+                $courrier->reference_interne = $this->changeNumRef(3); // génère une référence
+                $courrier->confidentiel = $request->has('confidentiel') ? 1 : 0;
+                $courrier->title = $request->get('title') ?? 'Sans objet';
+                $courrier->objet = $request->get('objet') ?? null;
                 $courrier->document_id = $document->id;
-                $courrier->is_intern = 1; // Toujours 1 pour courrier interne
-                $courrier->statut_id = 1; // Statut initial
+                $courrier->created_by = Auth::user()->agent->id;
+                $courrier->statut_id = 1;
+                $courrier->date_du_courrier = now();               $
                 $courrier->save();
-
-                // Attacher l'agent destinataire principal
-                $courrier->destinateurs()->attach($destinataireAgent->id);
-
-                // Gérer les copies (followers) qui restent basées sur les directions
-                $secretairesCopie = collect();
-                $responsablesCopie = collect();
-
-                if (is_array($copie) && count($copie)) {
-                    $directionsCopie = Direction::find($copie);
-                    foreach ($directionsCopie as $directionItem) {
-                        if ($directionItem?->secretaires->count()) {
-                            $secretairesCopie->push($directionItem->secretaires->pluck('responsable_id')->toArray());
-                        }
-                        if ($directionItem?->responsable_id) {
-                            $responsablesCopie->push($directionItem->responsable_id);
-                        }
-                    }
-                    $secretairesCopie = $secretairesCopie->flatten()->unique();
-                    $responsablesCopie = $responsablesCopie->unique();
-                }
-
-                if ($secretairesCopie->count()) {
-                    $courrier->followers()->attach($secretairesCopie->toArray());
-                }
-                if ($responsablesCopie->count()) {
-                    $courrier->followers()->attach($responsablesCopie->toArray());
-                }
-
-                $courrier->etapes()->attach(2); // Étape 2 (si applicable)
-
-                // Notification à l'agent destinataire principal
-                $notifyAgents = collect([$destinataireAgent])->where('id', '!=', Auth::user()->agent->id); // On notifie l'agent destinataire s'il n'est pas le créateur
-                if ($notifyAgents->count()) {
-                    event(new CourrierCreated($courrier, $notifyAgents, 'Un nouveau courrier interne vous a été envoyé !'));
-                }
-
-                // Notification aux followers (ceux en copie) qui ne sont pas déjà notifiés
-                // On exclut l'agent créateur et l'agent destinataire principal
-                $idsToExclude = collect([Auth::user()->agent->id, $destinataireAgent->id])->unique()->toArray();
-                $notifyFollowers = $courrier->followers->whereNotIn('id', $idsToExclude);
-
-                if ($notifyFollowers->count()) {
-                    event(new CourrierCreated($courrier, $notifyFollowers, 'Votre direction a été mise en copie d\'un nouveau courrier interne !'));
-                }
-
+    
+                // Associer le destinataire
+                $courrier->destinateurs()->attach($destinataireAgentId);
+    
                 // Historique
                 Historique::create([
-                    "key" => "Numérisation du courrier interne",
+                    "key" => "Numérisation du courrier",
                     "historiquecable_id" => $courrier->id,
                     "historiquecable_type" => Courrier::class,
-                    "description" => "A numérisé le courrier interne destiné à l'agent " . $destinataireAgent->nom_complet, // Exemple d'amélioration
-                    "user_id" => Auth::user()->id
+                    "description" => "A numérisé un courrier interne",
+                    "user_id" => Auth::user()->id,
                 ]);
-
+    
                 $content = json_encode([
                     'name' => 'Courriers',
                     'statut' => 'success',
-                    'message' => 'Courrier interne numérisé et envoyé à l\'agent avec succès !',
+                    'message' => 'Courrier interne numérisé avec succès !',
                 ]);
-
-            }  else { // BLOC ELSE GÉNÉRAL : Pour tous les types non 1 ou 3
-                // Le message d'erreur par défaut défini au début sera utilisé.
+    
+                \Log::info('✅ Courrier interne créé', ['courrier_id' => $courrier->id]);
+            } else {
+                // Pour tous les types non 1 ou 3
+                $content = json_encode([
+                    'name' => 'Courrier',
+                    'statut' => 'error',
+                    'message' => 'Ce type de courrier n\'est pas encore géré.'
+                ]);
+                
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Ce type de courrier n\'est pas encore géré.'
+                    ], 400);
+                }
+                
+                return redirect()
+                    ->route('regidoc.courriers.index')
+                    ->with('error', 'Ce type de courrier n\'est pas encore géré.');
+            }
+            
+            // Si on arrive ici, c'est que tout s'est bien passé
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $response['message'] ?? 'Opération réussie',
+                    'redirect' => route('regidoc.courriers.index')
+                ]);
             }
 
-        } catch (\Throwable $th) {
-            Log::error("Erreur store courrier : " . $th->getMessage(), [
-                'file' => $th->getFile(),
-                'line' => $th->getLine(),
-                'trace' => $th->getTraceAsString(),
+            // Redirection pour les requêtes normales
+            return redirect()
+                ->route('regidoc.courriers.index')
+                ->with('success', $response['message'] ?? 'Opération réussie');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Erreur de validation
+            $errors = $e->validator->errors()->all();
+            $errorMessage = implode(' ', $errors);
+            
+            \Log::warning('Erreur de validation dans store()', [
+                'errors' => $errors,
+                'input' => $request->except(['_token', 'password'])
             ]);
 
-            $content = json_encode([
-                'name' => 'Courrier',
-                'statut' => 'error',
-                'message' => 'Impossible de numériser le courrier, une erreur s\'est produite.',
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur de validation: ' . $errorMessage,
+                    'errors' => $errors
+                ], 422);
+            }
+
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput();
+                
+        } catch (\Exception $e) {
+            // Erreur inattendue
+            $errorMessage = 'Une erreur est survenue lors du traitement de votre demande.';
+            
+            \Log::error('❌ Erreur dans store()', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->except(['_token', 'password'])
+            ]);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'debug' => config('app.debug') ? $e->getMessage() : null
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->with('error', $errorMessage)
+                ->withInput();
+        }
+
+        // Si on arrive ici, c'est que tout s'est bien passé
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $response['message'] ?? 'Opération réussie',
+                'redirect' => route('regidoc.courriers.index')
             ]);
         }
 
-        session()->flash('session', $content);
-        return redirect()->route('regidoc.courriers.index');
+        // Redirection pour les requêtes normales
+        return redirect()
+            ->route('regidoc.courriers.index')
+            ->with('success', $response['message'] ?? 'Opération réussie');
     }
 
     /**
