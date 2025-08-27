@@ -1112,7 +1112,10 @@ public function createDocument($request, $destinateur, $doc = null)
         // 3. Si pas de document existant passé en paramètre
         if ($doc === null) {
             // Cas où c'est un scan ou un document déjà sélectionné
-            if (($request?->is_scan ?? false) == "true" || ($request?->has('selected_doc') && !empty($request->selected_doc))) {
+            $isScan = ($request?->is_scan ?? 'false') === 'true';
+            $hasSelectedDoc = $request?->has('selected_doc') && !empty($request->selected_doc);
+            
+            if ($isScan || $hasSelectedDoc) {
                 $document = new Document();
                 $document->dossier_id = $dossier->id;
                 $document->reference = is_array($request->get('ref')) ? implode(', ', $request->get('ref')) : ($request->get('ref') ?? '');
@@ -1120,10 +1123,35 @@ public function createDocument($request, $destinateur, $doc = null)
                 $document->libelle = $request->get('title');
                 $document->type = $request->get('type');
 
-                if (($request->is_scan ?? false) == "true") {
-                    $document->document = (new ScanFile())->handle('documents');
+                if ($isScan) {
+                    try {
+                        $scanResult = (new ScanFile())->handle('documents');
+                        if (empty($scanResult)) {
+                            throw new \Exception('Le scan n\'a pas retourné de fichier valide');
+                        }
+                        $document->document = $scanResult;
+                    } catch (\Exception $e) {
+                        \Log::error('Erreur lors du scan du document', [
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        throw new \Exception('Erreur lors du scan du document : ' . $e->getMessage());
+                    }
                 } else {
-                    $document->document = $this->moveCreatedDoc($request->selected_doc);
+                    try {
+                        $movedDoc = $this->moveCreatedDoc($request->selected_doc);
+                        if (empty($movedDoc)) {
+                            throw new \Exception('Impossible de déplacer le document sélectionné');
+                        }
+                        $document->document = $movedDoc;
+                    } catch (\Exception $e) {
+                        \Log::error('Erreur lors du déplacement du document', [
+                            'error' => $e->getMessage(),
+                            'selected_doc' => $request->selected_doc,
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        throw new \Exception('Erreur lors du traitement du document : ' . $e->getMessage());
+                    }
                 }
 
                 $document->user_id = Auth::id();
@@ -1135,20 +1163,35 @@ public function createDocument($request, $destinateur, $doc = null)
             }
 
             // Cas d'un upload via formulaire (input file)
-            if ($request->hasFile('document') && empty($request->document_id)) {
-                $document = new Document();
-                $document->dossier_id = $dossier->id;
-                $document->reference = $request->get('ref') ?? '';
-                $document->category_id = $request->get('categorie');
-                $document->libelle = $request->get('title');
-                $document->type = $request->get('type');
-                $document->document = (new File())->handle($request, 'document', 'documents');
-                $document->user_id = Auth::id();
-                $document->statut_id = 1;
-                $document->created_by = Auth::user()->agent->id;
-                $document->save();
+            if ($request->hasFile('document') && $request->file('document')->isValid() && empty($request->document_id)) {
+                try {
+                    $document = new Document();
+                    $document->dossier_id = $dossier->id;
+                    $document->reference = $request->get('ref') ?? '';
+                    $document->category_id = $request->get('categorie');
+                    $document->libelle = $request->get('title');
+                    $document->type = $request->get('type');
+                    
+                    $uploadedFile = (new File())->handle($request, 'document', 'documents');
+                    if (empty($uploadedFile)) {
+                        throw new \Exception('Le fichier n\'a pas pu être téléversé correctement');
+                    }
+                    
+                    $document->document = $uploadedFile;
+                    $document->user_id = Auth::id();
+                    $document->statut_id = 1;
+                    $document->created_by = Auth::user()->agent->id;
+                    $document->save();
 
-                return $document;
+                    return $document;
+                } catch (\Exception $e) {
+                    \Log::error('Erreur lors de l\'upload du document', [
+                        'error' => $e->getMessage(),
+                        'file' => $request->file('document') ? $request->file('document')->getClientOriginalName() : null,
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    throw new \Exception('Erreur lors de l\'upload du document : ' . $e->getMessage());
+                }
             } 
             
             // Cas où on utilise un document existant via son ID
@@ -1418,11 +1461,11 @@ public function createDocument($request, $destinateur, $doc = null)
             // Valider les champs requis
             $validated = $request->validate([
                 'type' => 'required|in:1,2,3',
-                'categorie' => 'required|exists:courrier_categories,id',
-                'title' => 'required|string|max:255',
-                'objet' => 'required|string',
-                'date-doc' => 'required|date',
-                'date-arriv' => 'required|date',
+                // 'categorie' => 'required|exists:courrier_categories,id',
+                // 'title' => 'required|string|max:255',
+                // // 'objet' => 'required|string',
+                // 'date-doc' => 'required|date',
+                // 'date-arriv' => 'required|date',
             ]);
 
             // Initialiser la réponse
@@ -1508,8 +1551,9 @@ public function createDocument($request, $destinateur, $doc = null)
                 $copie = $request->get('copie', []);
                 
                 \Log::info('🔄 Création d\'un courrier interne', ['request' => $request->all()]);
+                
+                // Validation du destinataire
                 $destinataireAgentId = $request->get('destination2');
-    
                 if (!$destinataireAgentId) {
                     throw new \Exception('Le destinataire interne est requis pour un courrier interne.');
                 }
@@ -1518,11 +1562,38 @@ public function createDocument($request, $destinateur, $doc = null)
                 if (!$destinataireAgent) {
                     throw new \Exception('Agent destinataire introuvable.');
                 }
-    
-                // Créer le document
-                $document = $this->createDocument($request, $destinataireAgent, null);
-                if (!$document) {
-                    throw new \Exception('Échec de création du document.');
+                
+                // Vérification de l'existence d'un fichier ou d'un scan
+                $hasFile = $request->hasFile('document') && $request->file('document')->isValid();
+                $isScan = ($request->is_scan ?? 'false') === 'true';
+                $hasSelectedDoc = !empty($request->selected_doc);
+                
+                if (!$hasFile && !$isScan && !$hasSelectedDoc) {
+                    throw new \Exception('Veuillez sélectionner un fichier à téléverser ou effectuer une numérisation.');
+                }
+                
+                // Créer le document avec gestion d'erreur détaillée
+                try {
+                    $document = $this->createDocument($request, $destinataireAgent, null);
+                    if (!$document) {
+                        throw new \Exception('Échec de création du document.');
+                    }
+                    
+                    // Vérifier que le document a bien un fichier associé
+                    if (empty($document->document)) {
+                        // Supprimer le document partiellement créé
+                        if ($document->id) {
+                            $document->delete();
+                        }
+                        throw new \Exception('Aucun fichier n\'a pu être associé au document.');
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Erreur lors de la création du document pour un courrier interne', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'request_data' => $request->except(['_token', 'document'])
+                    ]);
+                    throw new \Exception('Erreur lors de la création du document : ' . $e->getMessage());
                 }
     
                 // Créer le courrier
@@ -1536,7 +1607,7 @@ public function createDocument($request, $destinateur, $doc = null)
                 $courrier->document_id = $document->id;
                 $courrier->created_by = Auth::user()->agent->id;
                 $courrier->statut_id = 1;
-                $courrier->date_du_courrier = now();               $
+                $courrier->date_du_courrier = now();               
                 $courrier->save();
     
                 // Associer le destinataire
@@ -2196,15 +2267,62 @@ public function rejeter(Courrier $courrier)
     }
 }
 
+    /**
+     * Traite un fichier PDF scanné et le stocke dans le dossier temporaire
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function scan(Request $request)
     {
-        return response(['status' => $request]);
         try {
-            $fileName = 'file.pdf';
-            $path = $request->file('pdf')->storeAs('public' . DIRECTORY_SEPARATOR . 'tmp_scanne', $fileName);
-            return response()->json(['message' => 'Fichier PDF téléchargé avec succès'], 200);
+            // Vérifier qu'un fichier a été envoyé
+            if (!$request->hasFile('pdf')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucun fichier PDF n\'a été envoyé.'
+                ], 400);
+            }
+
+            $file = $request->file('pdf');
+            
+            // Vérifier que le fichier est un PDF
+            if (strtolower($file->getClientOriginalExtension()) !== 'pdf') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le fichier doit être au format PDF.'
+                ], 400);
+            }
+
+            // Créer un nom de fichier unique
+            $fileName = 'scan_' . uniqid() . '.pdf';
+            $tmpPath = 'tmp' . DIRECTORY_SEPARATOR . $fileName;
+            
+            // Stocker le fichier dans le dossier temporaire
+            $file->storeAs('public' . DIRECTORY_SEPARATOR . 'tmp', $fileName);
+            
+            // Vérifier que le fichier a bien été enregistré
+            if (!Storage::disk('public')->exists($tmpPath)) {
+                throw new \Exception('Le fichier n\'a pas pu être enregistré.');
+            }
+            
+            // Retourner le nom du fichier (sans l'extension) pour une utilisation ultérieure avec moveCreatedDoc
+            return response()->json([
+                'success' => true,
+                'message' => 'Fichier PDF téléchargé avec succès',
+                'file_name' => pathinfo($fileName, PATHINFO_FILENAME)
+            ]);
+            
         } catch (\Exception $e) {
-            return response()->json(['error' => "Une erreur s'est produite lors du téléchargement du fichier PDF."], 500);
+            \Log::error('Erreur lors du scan du document', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors du traitement du fichier PDF: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -2226,21 +2344,60 @@ public function rejeter(Courrier $courrier)
         return $filename;
     }
 
+    /**
+     * Déplace un fichier temporaire vers son emplacement final
+     * 
+     * @param string $fileName Nom du fichier sans extension
+     * @return string Chemin du fichier au format JSON
+     * @throws \Exception Si le fichier ne peut pas être traité
+     */
     public function moveCreatedDoc($fileName)
     {
-        $filesPath = [];
-        $path = 'documents' . DIRECTORY_SEPARATOR . date('FY') . DIRECTORY_SEPARATOR;
-        $file = Storage::disk('public')->get('tmp/' . $fileName . '.pdf');
-
-        $filename = $this->generateFileName($file, 'pdf');
-
-        Storage::disk('public')->put($file, $path . $filename . '.pdf');
-
-        array_push($filesPath, [
-            'download_link' => $path . $filename . '.' . Str::afterLast($file, '.'),
-            'original_name' => 'ads ' . now()->format('dmYhms'),
-        ]);
-
-        return json_encode($filesPath);
+        try {
+            $filesPath = [];
+            $sourcePath = 'tmp/' . $fileName . '.pdf';
+            $destinationPath = 'documents/' . date('FY') . '/';
+            
+            // Vérifier si le fichier source existe
+            if (!Storage::disk('public')->exists($sourcePath)) {
+                throw new \Exception("Le fichier source n'existe pas: " . $sourcePath);
+            }
+            
+            // Générer un nom de fichier unique
+            $filename = $this->generateFileName('', 'pdf');
+            $fullDestinationPath = $destinationPath . $filename . '.pdf';
+            
+            // Déplacer le fichier
+            if (!Storage::disk('public')->exists($destinationPath)) {
+                Storage::disk('public')->makeDirectory($destinationPath);
+            }
+            
+            Storage::disk('public')->move($sourcePath, $fullDestinationPath);
+            
+            // Vérifier que le fichier a bien été déplacé
+            if (!Storage::disk('public')->exists($fullDestinationPath)) {
+                throw new \Exception("Échec du déplacement du fichier vers: " . $fullDestinationPath);
+            }
+            
+            $filesPath[] = [
+                'download_link' => $fullDestinationPath,
+                'original_name' => $fileName . '.pdf',
+                'file_name' => $filename . '.pdf',
+                'file_path' => $fullDestinationPath,
+                'file_type' => 'application/pdf',
+                'file_size' => Storage::disk('public')->size($fullDestinationPath),
+                'uploaded_at' => now()->toDateTimeString()
+            ];
+            
+            return json_encode($filesPath);
+            
+        } catch (\Exception $e) {
+            \Log::error('Erreur dans moveCreatedDoc', [
+                'error' => $e->getMessage(),
+                'file' => $fileName,
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw new \Exception('Impossible de traiter le fichier : ' . $e->getMessage());
+        }
     }
 }
