@@ -857,10 +857,9 @@
                     </div>
                 </div>
                 <div class="col-lg-8">
-                    @if($courrier->type_id == 3 && $courrier->dest_interne_id == Auth::user()->agent_id)
+                    @if($courrier->type_id == 3 )
                         <div class="gap-2 pb-2 gap-lg-3 d-flex justify-content-end align-items-center pb-sm-0">
-                            {{-- @can('Annoter un document') --}}
-                                {{-- @if (!Auth::user()->agent->isSecretaire()) --}}
+                           
                                     <a href="#" class="link-action" data-bs-toggle="modal"
                                         data-bs-target="#modal-add-annotation">
                                         <div class="card card-btnCourier ">
@@ -872,8 +871,7 @@
                                             </button>
                                         </div>
                                     </a>
-                                {{-- @endif --}}
-                            {{-- @endcan --}}
+                                
                             <div class=" annotation-btn-float">
                                 <button class="btn show-vignette">
                                     <i class="fi fi-rr-comment-quote"></i>
@@ -882,16 +880,21 @@
                                     </div>
                                 </button>
                             </div>
-                            {{-- @if ($courrier->type_id == 1) --}}
-                                {{-- @if ((Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()) && $courrier->mark_as_done != 1) --}}
+                                {{-- Débogage --}}
+                                {{-- <div style="">
+                                    Destinataire: {{ $courrier->dest_interne_id }}<br>
+                                    Utilisateur: {{ Auth::user()->id }}<br>
+                                    Agent lié: {{ optional(Auth::user()->agent)->id ?? 'Aucun' }}<br>
+                                    Marqué comme traité: {{ $courrier->mark_as_done }}
+                                </div> --}}
+                                @if($courrier->dest_interne_id == optional(Auth::user()->agent)->id && $courrier->mark_as_done != 1)
                                     <a href="{{ route('regidoc.courriers.traitement', $courrier) }}"
                                         class="save_pdf btn "><i class="fi fi-rr-check"></i>
                                         <span class="ms-1 d-none d-sm-inline-block">
                                             Marquer comme traité
                                         </span>
                                     </a>
-                                {{-- @endif --}}
-                            {{-- @endif --}}
+                                @endif
                         </div>
                     @else
                         <div class="gap-2 pb-2 gap-lg-3 d-flex justify-content-end align-items-center pb-sm-0">
@@ -947,7 +950,7 @@
                 <div class="row justify-content-end">
                     <div class="mx-auto text-center col-lg-9">
 
-                        @if (($courrier->type_id == 3 && $courrier->dest_interne_id == Auth::user()->agent_id) ||                      
+                        @if (($courrier->type_id == 3 && $courrier->dest_interne_id == (Auth::user()->agent)->id) ||                      
                             ($courrier->traitement && (Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()) &&
                             $courrier->traitements->where('agent_id', Auth::user()->agent->id)->count() <= 0))
                             <div class="d-flex  align-items-center block-action-doc mt-2" style="max-width: 100%">
@@ -979,26 +982,26 @@
                                         $url = 'javascript:void(0)';
                                         $attributs = '';
                                         $text = 'Exécuter';
-                                        switch ($courrier->traitement->id) {
-                                            case 1:
-                                                $url =
-                                                    '/system/documents/sign/task?doc_id=' .
-                                                    $courrier->document?->id .
-                                                    '&is_original=1&courrier_id=' .
-                                                    $courrier->id; //route('regidoc.courriers.signer', $courrier->id);
-                                                break;
-                                            case 2:
-                                                $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-asigner"';
-                                                break;
-                                            case 3:
-                                                $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-traiter"';
-                                                break;
-
-                                            default:
-                                                $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-traiter"';
-                                                break;
+                                        
+                                        if (isset($courrier->traitement) && $courrier->traitement) {
+                                            switch ($courrier->traitement->id) {
+                                                case 1:
+                                                    $url = '/system/documents/sign/task?doc_id=' . 
+                                                           ($courrier->document?->id ?? '') . 
+                                                           '&is_original=1&courrier_id=' . 
+                                                           $courrier->id;
+                                                    break;
+                                                case 2:
+                                                    $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-asigner"';
+                                                    break;
+                                                case 3:
+                                                    $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-traiter"';
+                                                    break;
+                                                default:
+                                                    $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-traiter"';
+                                                    break;
+                                            }
                                         }
-
                                     @endphp
                                     @if (!$aTraite)
                                         <a href="{{ $url != 'javascript:void(0)' ? url($url) : $url }}"
