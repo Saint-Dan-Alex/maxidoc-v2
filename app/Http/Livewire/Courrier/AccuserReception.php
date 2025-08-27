@@ -359,12 +359,11 @@ class AccuserReception extends Component
             $this->courrier->etapes->last()->pivot->save();
         } else {
             // Pour les courriers sans étapes, on crée un nouvel enregistrement dans la table views
-            View::create([
-                'viewable_id' => $this->courrier->id,
-                'viewable_type' => get_class($this->courrier),
+            AccuseReception::create([
                 'user_id' => Auth::user()->id,
-                'viewed_at' => now()
+                'courrier_id' => $this->courrier->id,
             ]);
+        
         }
 
         // Mise à jour du statut du courrier
