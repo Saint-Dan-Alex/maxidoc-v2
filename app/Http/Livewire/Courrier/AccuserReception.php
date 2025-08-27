@@ -6,6 +6,7 @@ use App\Events\CourrierCreated;
 use App\Models\AccuseReception;
 use App\Models\Agent;
 use App\Models\Historique;
+use App\Models\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use App\Models\Courrier;
@@ -352,17 +353,28 @@ class AccuserReception extends Component
     // }
     }
     else {
+        // Si le courrier a des étapes, on met à jour la dernière
+        if ($this->courrier->etapes->isNotEmpty() && $this->courrier->etapes->last()->pivot) {
+            $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
+            $this->courrier->etapes->last()->pivot->save();
+        } else {
+            // Pour les courriers sans étapes, on crée un nouvel enregistrement dans la table views
+            View::create([
+                'viewable_id' => $this->courrier->id,
+                'viewable_type' => get_class($this->courrier),
+                'user_id' => Auth::user()->id,
+                'viewed_at' => now()
+            ]);
+        }
 
-        $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
-        $this->courrier->etapes->last()->pivot->save();
-
+        // Mise à jour du statut du courrier
         $courrier = Courrier::find($this->courrier->id);
-        $courrier->statut_id = 2;
+        $courrier->statut_id = 2; // "En cours de traitement"
         $courrier->save();
 
+        // Détermination de l'agent concerné
         $agent = null;
-
-        if ($this->courrier->accuseReceptions->count() == 0) {
+        if ($this->courrier->accuseReceptions->isEmpty()) {
             $agent = $this->courrier->author;
         } else {
             $agent = $this->courrier->accuseReceptions->last()->user->agent;

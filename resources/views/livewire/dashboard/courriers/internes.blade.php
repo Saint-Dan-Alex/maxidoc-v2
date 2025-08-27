@@ -30,7 +30,7 @@
                             <th scope="col">N° d'enregistrement</th>
                             <th scope="col">Service initiateur</th>
                             <th scope="col">Destinataire</th>
-                            <th scope="col">Accusées réceptions</th>
+                            {{-- <th scope="col">Accusées réceptions</th> --}}
                             @can('Definir le traitement')
                                 <th scope="col">Priorité</th>
                             @endcan
@@ -56,13 +56,13 @@
                                 </td>
                                 <td> {{ $courrier->reference_interne ?? 'Non définie' }} </td>
                                 <td>
-                                    {{ $courrier->service->titre ?? 'N/D' }}
+                                    {{ $courrier->author->service->titre ?? 'N/D' }}
                                 </td>
                                 <td>
                                     {{ optional($courrier->destinateurs->first())->prenom }} {{ optional($courrier->destinateurs->first())->nom ?? 'N/D' }}
 
                                 </td>
-                                <td class="text-nowrap">
+                                {{-- <td class="text-nowrap">
                                     @if ($courrier->followers->unique()->count())
                                         <div class="box-avatar d-flex align-items-center">
                                             @php
@@ -74,7 +74,7 @@
                                                         data-bs-target="#detail-personnel"
                                                         aria-controls="offcanvasRight">
                                                         <div class="tooltip-team">
-                                                            {{-- {{ $follower->prenom }} {{ $follower->nom }} --}}
+                                                            {{ $follower->prenom }} {{ $follower->nom }}
                                                             {{ $follower->poste?->titre }}
                                                         </div>
                                                         <img src="{{ imageOrDefault($follower->image) }}"
@@ -118,7 +118,7 @@
                                     @else
                                         Aucun
                                     @endif
-                                </td>
+                                </td> --}}
 
                                 @can('Definir le traitement')
                                     <td>
