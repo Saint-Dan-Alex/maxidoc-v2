@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class CourrierCategory extends Model
 {
     use HasFactory;
-    protected $fillable = ['title'];
+    protected $fillable = ['title','type_id'];
 
 }
