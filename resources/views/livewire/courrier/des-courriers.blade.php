@@ -737,7 +737,7 @@
                                     <th scope="col">N° de reference</th>
                                     <th scope="col">Service initiateur</th>
                                     <th scope="col">Destinataire</th>
-                                    <th scope="col">Accusées réceptions</th>
+                                    {{-- <th scope="col">Accusées réceptions</th> --}}
                                     @can('Definir le traitement')
                                         <th scope="col">Priorité</th>
                                     @endcan
@@ -762,9 +762,9 @@
                                             {{ $interne->title }}
                                         </td>
                                         <td>{{ $interne->reference_interne ?? 'N/A' }}</td>
-                                        <td>{{ $interne->service->titre ?? 'N/D' }}</td>
-                                        <td>{{ $interne->toDirection->titre ?? 'N/D' }}</td>
-                                        <td class="text-nowrap">
+                                        <td>{{ optional($interne->author->service)->titre ?? 'N/D' }}</td>
+                                        <td>{{ optional($interne->destinateurs->first())->prenom }} {{ optional($interne->destinateurs->first())->nom ?? 'N/D' }}</td>
+                                        {{-- <td class="text-nowrap">
                                             <div class="box-avatar d-flex align-items-center">
                                                 @foreach ($interne->followers->unique() as $follower)
                                                     @if (!$follower->is(Auth::user()->agent))
@@ -779,7 +779,7 @@
                                                     @endif
                                                 @endforeach
                                             </div>
-                                        </td>
+                                        </td> --}}
                                         @can('Definir le traitement')
                                             <td>
                                                 <div @class([
