@@ -359,7 +359,7 @@
                 </div>
                 
                 @can('Definir le traitement')
-                    <div class="col-12 d-none">
+                    <div class="col-12 d-none traitement_field" wire:ignore>
                         <div class="row">
                             <label class="col-5 col-form-label">Traitement à effectuer</label>
                             <div class="col-7" wire:ignore>
@@ -367,7 +367,7 @@
                                     name="traitement_id" data-placeholder="Sélectionnez"
                                     data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
                                     data-get-items-field="titre" data-method="get" data-label="titre"
-                                    data-related-model="CourrierTypesTraitement">
+                                    data-related-model="CourrierTypesTraitement" @if ($type == [3]) required @endif>
                                 </select>
                             </div>
                         </div>
@@ -712,6 +712,8 @@
                     $('.ref_field').addClass('d-none');
                     $('.copie_field').addClass('d-none');
                     $('.dateCourrier_field').addClass('d-none');
+                    // $('.traitement_field').removeClass('d-none');
+                    // traitement_field
 
                     
 
@@ -779,14 +781,16 @@
                     $('.categorie_field').removeClass('d-none');
                     $('.nature_field').addClass('d-none');
                     $('.dateCourrier_field').removeClass('d-none');
+                    $('.traitement_field').removeClass('d-none');
+
                     
                     // Cacher les champs non nécessaires
                     $('.isConfidentiel').addClass('d-none');
                     $('.copie_field').addClass('d-none');
-                    $('.priote_field').addClass('d-none');
+                    $('.priote_field').removeClass('d-none');
                     $('.datearrive_field').addClass('d-none');
                     $('.remarques_field').addClass('d-none');
-                    $('.block_echeance').addClass('d-none');
+                    $('.block_echeance').removeClass('d-none');
                     
                     // Gestion des destinations
                     $('#destination2').parent().parent().parent().removeClass('d-none');

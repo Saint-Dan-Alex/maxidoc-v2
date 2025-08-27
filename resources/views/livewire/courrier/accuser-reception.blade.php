@@ -1,3 +1,4 @@
+{{-- @if($courrier->type_id != 3) --}}
 <div>
     @php
         $hasSeen = false;
@@ -27,3 +28,4 @@
         @endif
     @endif
 </div>
+{{-- @endif --}}
