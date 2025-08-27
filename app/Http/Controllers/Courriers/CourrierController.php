@@ -1607,7 +1607,17 @@ public function createDocument($request, $destinateur, $doc = null)
                 $courrier->document_id = $document->id;
                 $courrier->created_by = Auth::user()->agent->id;
                 $courrier->statut_id = 1;
-                $courrier->date_du_courrier = now();               
+                $courrier->traitement_id = $request->get('traitement_id');
+                $courrier->date_du_courrier = now();  
+                $courrier->priorite_id = $request->get('priorite');
+                $courrier->date_fin = $request->get('date-limite');
+                $courrier->exped_interne_id = $request->get('exp_int');
+                $courrier->dest_interne_id = $request->get('destination2');
+
+
+
+
+
                 $courrier->save();
     
                 // Associer le destinataire
