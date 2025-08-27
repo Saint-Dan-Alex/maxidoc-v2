@@ -203,7 +203,7 @@
                                                     @if ($courrier->type_id == 1)
                                                         {{ $courrier->externExpediteur->nom ?? 'N/D' }}
                                                     @elseif($courrier->type_id == 3)
-                                                        {{ $courrier->service->titre ?? 'N/D' }}
+                                                    {{ optional($courrier->author->service)->titre ?? 'N/D' }}
                                                 @else
                                                     Lerexcom Petroleum
                                                 @endif
@@ -212,7 +212,7 @@
                                                 @if ($courrier->type_id == 2)
                                                     {{ $courrier->externDestinateur->nom ?? 'N/D' }}
                                                 @elseif($courrier->type_id == 3)
-                                                    {{ $courrier->toDirection->titre ?? 'N/D' }}
+                                                {{ optional($courrier->destinateurs->first())->prenom }} {{ optional($courrier->destinateurs->first())->nom ?? 'N/D' }}
                                                 @else
                                                     Lerexcom Petroleum
                                                 @endif
