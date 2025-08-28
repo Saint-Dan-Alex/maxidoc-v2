@@ -92124,3 +92124,24 @@
 [2025-08-28 09:48:56] local.INFO: Début du traitement de la requête store {"input":{"_token":"PYaR4Pj6vmhtkNcIMKJy0GimtyUX50MisT60TKSj","type":"1","is_scan":null,"ref_interne":"K-0009-ENT","date-arriv":"2025-08-28T09:48","document":{"Illuminate\\Http\\UploadedFile":"C:\\wamp64\\tmp\\php33BD.tmp"}},"files":{"document":{"Illuminate\\Http\\UploadedFile":"C:\\wamp64\\tmp\\php33BD.tmp"}},"user":6} 
 [2025-08-28 09:48:56] local.INFO: Fichier stocké avec succès {"chemin":"documents/August2025/t2sZgr1FZ5xymAz1j9Iy.pdf","nom_original":"Rapport de Réunion – 22 juillet 2025.pdf"} 
 [2025-08-28 09:55:43] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":3} 
+[2025-08-28 09:57:44] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":1,"user_id":3} 
+[2025-08-28 09:59:05] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":1,"user_id":3} 
+[2025-08-28 10:04:39] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":1,"user_id":3} 
+[2025-08-28 10:13:20] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":1,"user_id":3} 
+[2025-08-28 10:13:44] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":1,"user_id":3} 
+[2025-08-28 10:18:07] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":2} 
+[2025-08-28 10:24:40] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":2} 
+[2025-08-28 10:24:55] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":2} 
+[2025-08-28 10:43:41] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":2} 
+[2025-08-28 10:44:45] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":2} 
+[2025-08-28 10:44:57] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":2} 
+[2025-08-28 10:45:29] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":2} 
+[2025-08-28 10:46:52] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":2} 
+[2025-08-28 10:51:05] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":2,"user_id":3} 
+[2025-08-28 10:51:08] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":2,"user_id":3} 
+[2025-08-28 10:53:14] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":2,"user_id":3} 
+[2025-08-28 10:53:37] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":2,"user_id":3} 
+[2025-08-28 10:53:52] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":2,"user_id":2} 
+[2025-08-28 10:54:05] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":2,"user_id":2} 
+[2025-08-28 10:54:28] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":10,"user_id":3} 
+[2025-08-28 10:54:32] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":10,"user_id":3} 
