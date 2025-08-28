@@ -197,6 +197,12 @@ class Courrier extends Model implements Viewable
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
+
+    /**
+     * The destinateurs that belong to the Courrier
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function destinateurs()
     {
         return $this->belongsToMany(Agent::class, CourrierDestinateur::class, 'courrier_id', 'agent_id');
