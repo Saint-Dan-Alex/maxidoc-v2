@@ -8,6 +8,7 @@ use App\Models\Document;
 use App\Models\Dossier;
 use App\Models\Tache;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -80,18 +81,39 @@ class TacheDocumentPane extends Component
                 ]
             );
         }
-        $is_piece_jointe = 1;
-        $document = Document::create([
+        // Vérifier que le type de document existe
+        $documentType = \App\Models\DocumentType::find(3);
+        if (!$documentType) {
+            throw new \Exception("Le type de document avec l'ID 3 n'existe pas dans la base de données");
+        }
+        
+        // Créer le document avec les champs de base d'abord
+        $document = new \App\Models\Document([
             'dossier_id' => $dossier->id,
             'libelle' => Str::beforeLast($this->file->getClientOriginalName(), '.'),
-            'category_id' => 6,
+            'category_id' => 6, // ID de la catégorie
             'reference' => 'DT/' . Auth::user()->agent?->matricule,
-            'type' => 3,
             'document' => (new File)->handle($this->file, 'document', 'documents'),
             'user_id' => Auth::user()->id,
-            'statut_id' => 1,
+            'statut_id' => 1, // Statut par défaut
             'created_by' => Auth::user()->agent->id,
-            'is_piece_jointe' => $is_piece_jointe,
+            'is_piece_jointe' => 1,
+        ]);
+        
+        // Associer le type de document
+        $document->typeDocument()->associate($documentType);
+        
+        // Sauvegarder le document
+        $document->save();
+        
+        // Rafraîchir pour s'assurer que tout est à jour
+        $document->refresh();
+        
+        // Log pour débogage
+        \Illuminate\Support\Facades\Log::info('Document créé avec succès', [
+            'document_id' => $document->id,
+            'type' => $document->type,
+            'type_relation' => $document->typeDocument ? $document->typeDocument->toArray() : null
         ]);
 
         $tache = Tache::findOrFail($this->tache->id);

@@ -1073,7 +1073,7 @@ class TacheController extends Controller
                 $document = Document::create([
                     'dossier_id' => $dossier->id,
                     'libelle' => Str::beforeLast($doc->getClientOriginalName(), '.'),
-                    'category_id' => 6,
+                    'category_id' => 5,
                     'reference' => 'DT/' . $agent->matricule,
                     'type' => 3,
                     'document' => (new File)->handle($doc, 'document', 'documents'),
