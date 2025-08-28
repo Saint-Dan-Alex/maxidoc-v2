@@ -358,7 +358,8 @@
                     </div>
                 </div>
                 
-                @can('Definir le traitement')
+                @if(in_array(3, (array)$type))
+
                     <div class="col-12 d-none traitement_field" wire:ignore>
                         <div class="row">
                             <label class="col-5 col-form-label">Traitement à effectuer</label>
@@ -367,7 +368,7 @@
                                     name="traitement_id" data-placeholder="Sélectionnez"
                                     data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
                                     data-get-items-field="titre" data-method="get" data-label="titre"
-                                    data-related-model="CourrierTypesTraitement" @if ($type == [3]) required @endif>
+                                    data-related-model="CourrierTypesTraitement" required>
                                 </select>
                             </div>
                         </div>
@@ -381,13 +382,42 @@
                                     name="priorite" data-placeholder="Sélectionnez"
                                     data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
                                     data-get-items-field="titre" data-method="get" data-label="titre"
-                                    data-related-model="Priorite" @if ($type == [1, 3]) required @endif>
+                                    data-related-model="Priorite" required>
                                 </select>
                             </div>
                         </div>
                     </div>
-                @endcan
-
+                @else
+                    @can('Definir le traitement')
+                        <div class="col-12 d-none traitement_field" wire:ignore>
+                            <div class="row">
+                                <label class="col-5 col-form-label">Traitement à effectuer</label>
+                                <div class="col-7" wire:ignore>
+                                    <select class="form-select form-control select2" aria-label="Default select example"
+                                        name="traitement_id" data-placeholder="Sélectionnez"
+                                        data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
+                                        data-get-items-field="titre" data-method="get" data-label="titre"
+                                        data-related-model="CourrierTypesTraitement" @if ($type == [3]) required @endif>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 priote_field" wire:ignore>
+                            <div class="row">
+                                <label class="col-5 col-form-label">Priorité</label>
+                                <div class="col-7" wire:ignore>
+                                    <select class="form-select form-control select2" aria-label="Default select example"
+                                        name="priorite" data-placeholder="Sélectionnez"
+                                        data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
+                                        data-get-items-field="titre" data-method="get" data-label="titre"
+                                        data-related-model="Priorite" @if ($type == [1, 3]) required @endif>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    @endcan
+                @endif
                 <div class="col-12 dateCourrier_field" wire:ignore>
                     <div class="row">
                         <label class="col-5 col-form-label">Date du courrier</label>
@@ -409,6 +439,27 @@
                     </div>
                 </div>
 
+                @if($type == [3])
+                <div class="col-12 d-none block_echeance" wire:ignore>
+                    <div class="row">
+                        <label class="col-5 col-form-label" for="check-date">Ajouter une échéance</label>
+                        <div class="col-7" wire:ignore>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" value="0" role="switch"
+                                    id="check-date" name="check-date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 d-none date-limite" wire:ignore>
+                    <div class="row">
+                        <label class="col-5 col-form-label">Date d'échéance</label>
+                        <div class="col-7">
+                            <input type="date" class="form-control" id="inputPassword" name="date-limite">
+                        </div>
+                    </div>
+                </div>
+                @else
                 @can("Définir la date d'échéance")
                     <div class="col-12 d-none block_echeance" wire:ignore>
                         <div class="row">
@@ -430,6 +481,7 @@
                         </div>
                     </div>
                 @endcan
+                @endif
 
                 @can('Definir le traitement')
                     <div class="col-12 remarques_field" wire:ignore>
