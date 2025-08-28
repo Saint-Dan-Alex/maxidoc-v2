@@ -2805,7 +2805,18 @@
             });
         });
     </script>
-
+    
+    <script>
+        // Rafraîchir la page après un accusé de réception
+        document.addEventListener('livewire:load', function() {
+            window.livewire.on('assistantSeen', () => {
+                // Rafraîchir la page après un court délai pour s'assurer que tout est bien enregistré
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            });
+        });
+    </script>
 </body>
 
 </html>
