@@ -931,7 +931,10 @@
                                     </a>
                                 @endif
                             @endif
-                            @if(Auth::user()->agent->isAssistant() && $courrier->type_id == 2 && $courrier->statut_id == 2)
+                            @php
+                                $hasAccusedReception = $courrier->accuseReceptions->contains('user_id', auth()->id());
+                            @endphp
+                            @if(Auth::user()->agent->isAssistant() && $courrier->type_id == 2 && $courrier->statut_id == 2 && $hasAccusedReception)
                                 <div class="text-end mb-2">
                                     <a href="{{ route('regidoc.courriers.transmettre', $courrier) }}" 
                                        class="btn btn-primary"
