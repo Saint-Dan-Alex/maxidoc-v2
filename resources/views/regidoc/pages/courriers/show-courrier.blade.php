@@ -2502,62 +2502,52 @@
                 });
             });
 
-            // Enforce focus within the modal
+            // Gestion de la modale de traitement
             $('#traitement-modal').on('shown.bs.modal', function() {
                 $(this).find('.form-control:first').focus();
                 // Réactiver le bouton de soumission lorsque la modale est rouverte
                 $('#submit-traitement').prop('disabled', false).text('Valider');
             });
             
-            // Désactiver le bouton de soumission pendant la requête AJAX
-            $(document).on('submit', '#traitement-form', function() {
-                $('#submit-traitement').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...');
-            });
+            // Gestion de la soumission du formulaire de traitement
             $('#traitement-form').submit(function(e) {
                 e.preventDefault();
-                $('page-load').removeClass('d-none');
                 
-                // Afficher les données du formulaire dans la console
-                const formData = $(this).serializeArray();
-                console.log('Données du formulaire:', formData);
+                // Désactiver le bouton et afficher un indicateur de chargement
+                const submitBtn = document.getElementById('submit-traitement');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...';
+                
+                $('page-load').removeClass('d-none');
                 
                 $.ajax({
                     url: "{{ route('regidoc.courriers.saveTraitement', $courrier) }}",
                     method: 'POST',
-                    data: formData,
+                    data: $(this).serialize(),
                     success: function(response) {
-                        console.log('Réponse du serveur:', response);
-                        if (response.success) {
-                            Livewire.emit('alert', 'success', 'Traitement effectué avec succès');
-                            $('page-load').addClass('d-none');
-                            $('#traitement-modal').modal('hide');
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
-                        } else {
-                            console.error('Erreur dans la réponse:', response);
-                            Livewire.emit('alert', 'error', response.message || 'Une erreur est survenue');
-                            $('page-load').addClass('d-none');
-                        }
+                        Livewire.emit('alert', 'success', 'Traitement effectué avec succès');
+                        $('page-load').addClass('d-none');
+                        $('#traitement-modal').modal('hide');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
                     },
-                    error: function(xhr, status, error) {
-                        console.error('Erreur lors de la soumission du formulaire:', xhr.responseText);
-                        let errorMessage = 'Une erreur est survenue lors du traitement';
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            if (response.message) {
-                                errorMessage = response.message;
-                            } else if (xhr.status === 422 && response.errors) {
-                                // Gestion des erreurs de validation
-                                errorMessage = Object.values(response.errors).flat().join('\n');
-                            }
-                        } catch (e) {
-                            console.error('Erreur lors de l\'analyse de la réponse:', e);
+                    error: function(xhr) {
+                        console.error('Erreur lors de la requête:', xhr);
+                        let errorMessage = 'Une erreur est survenue lors de la communication avec le serveur';
+                        
+                        // Gestion des erreurs de validation
+                        if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                            errorMessage = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
                         }
                         
                         Livewire.emit('alert', 'error', errorMessage);
                         $('page-load').addClass('d-none');
-                        // Ne pas recharger la page en cas d'erreur
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
                     }
                 });
             });
@@ -2646,12 +2636,6 @@
                     // Récupérer les données du formulaire
                     const formData = new FormData(this);
                     
-                    // Afficher un indicateur de chargement
-                    const submitBtn = document.getElementById('submit-traitement');
-                    const originalBtnText = submitBtn.innerHTML;
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enregistrement...';
-                    
                     // Envoyer la requête AJAX
                     fetch('{{ route("regidoc.courriers.updateTraitement") }}', {
                         method: 'POST',
@@ -2679,8 +2663,8 @@
                         }
                     })
                     .catch(error => {
-                        console.error('Erreur:', error);
-                        toastr.error('Une erreur est survenue lors de l\'enregistrement du traitement');
+                        console.error('Erreur lors de la requête:', error);
+                        Livewire.emit('alert', 'error', 'Une erreur est survenue lors de la communication avec le serveur');
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnText;
                     });

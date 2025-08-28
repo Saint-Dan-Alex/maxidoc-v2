@@ -22,13 +22,7 @@ class CreateCourrierTypesTraitementsTable extends Migration
 
     DB::table('courrier_types_traitements')->insert([
         [
-            'titre' => 'Traiter',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-            'deleted_at' => null,
-        ],
-        [
-            'titre' => 'Assigner pour traitement',
+            'titre' => 'Signer',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
             'deleted_at' => null,
@@ -38,15 +32,21 @@ class CreateCourrierTypesTraitementsTable extends Migration
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
             'deleted_at' => null,
+        ],
+        [
+            'titre' => 'Assigner',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+            'deleted_at' => null,
         ],            
         [
-            'titre' => 'Consulter',
+            'titre' => 'Traiter',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
             'deleted_at' => null,
         ],
         [
-            'titre' => 'Signer',
+            'titre' => 'Consulter',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
             'deleted_at' => null,
@@ -70,7 +70,7 @@ class CreateCourrierTypesTraitementsTable extends Migration
             'deleted_at' => null,
         ],
         [
-            'titre' => 'Transmission à la trésorerie',
+            'titre' => 'Transmettre à la trésorerie',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
             'deleted_at' => null,
