@@ -99165,3 +99165,10 @@
 [2025-08-28 13:37:31] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":13,"user_id":2} 
 [2025-08-28 13:40:32] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":13,"user_id":3} 
 [2025-08-28 13:43:22] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":12,"user_id":3} 
+[2025-08-28 13:53:26] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":12,"user_id":3} 
+[2025-08-28 13:56:18] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":2,"user_id":2} 
+[2025-08-28 13:57:27] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":2,"user_id":2} 
+[2025-08-28 13:57:57] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":3,"user_id":2} 
+[2025-08-28 14:07:18] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":12,"user_id":3} 
+[2025-08-28 14:08:02] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":12,"user_id":3} 
+[2025-08-28 14:18:16] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":12,"user_id":3} 
