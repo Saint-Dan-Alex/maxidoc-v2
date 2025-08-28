@@ -757,7 +757,7 @@
                     @can('Numériser un document sortant')
                             <li>
                                 <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-piece"
-                                    @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                    class="dropdown-item">
                                     <span class="d-flex align-items-center">
                                         <i class="fi fi-rr-clip"></i>
                                     </span>
@@ -939,7 +939,7 @@
                                     <a href="{{ route('regidoc.courriers.transmettre', $courrier) }}" 
                                        class="btn btn-primary"
                                        onclick="return confirm('Êtes-vous sûr de vouloir transmettre ce courrier ?')">
-                                        <i class="fi fi-rr-paper-plane me-2"></i>Expédier
+                                        <i class="fi fi-rr-paper-plane me-2"></i>Clôturer
                                     </a>
                                 </div>
                             @endif
@@ -964,6 +964,9 @@
                                         'Consulter' => 'consultation',
                                         'Traiter' => 'traitement',
                                         'Assigner' => 'assignation',
+                                        'Valider par le DG' => 'validation par le DG',
+                                        'Valider par le D.A' => 'validation par le D.A',
+                                        'Valider par le D.F' => 'validation par le D.F',
                                     ];
 
                                     $titre = $courrier->traitement->titre ?? '';
