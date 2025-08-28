@@ -18,4 +18,10 @@ class CourrierType extends Model
     {
         return $this->hasMany(Courrier::class, 'type_id');
     }
+
+    public function categories()
+    {
+        return $this->hasMany(CourrierCategory::class, 'type_id');
+    }
+
 }

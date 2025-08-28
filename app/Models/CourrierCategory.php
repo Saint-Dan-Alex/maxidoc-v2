@@ -9,5 +9,10 @@ class CourrierCategory extends Model
 {
     use HasFactory;
     protected $fillable = ['title','type_id'];
+    
+    public function type()
+    {
+        return $this->belongsTo(CourrierType::class, 'type_id');
+    }
 
 }
