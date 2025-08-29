@@ -2539,22 +2539,22 @@
                             location.reload();
                         }, 1000);
                     },
-                    error: function(xhr) {
-                        console.error('Erreur lors de la requête:', xhr);
-                        let errorMessage = 'Une erreur est survenue lors de la communication avec le serveur';
+                    // error: function(xhr) {
+                    //     console.error('Erreur lors de la requête:', xhr);
+                    //     let errorMessage = 'Une erreur est survenue lors de la communication avec le serveur';
                         
-                        // Gestion des erreurs de validation
-                        if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
-                            errorMessage = Object.values(xhr.responseJSON.errors).flat().join('\n');
-                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMessage = xhr.responseJSON.message;
-                        }
                         
-                        Livewire.emit('alert', 'error', errorMessage);
-                        $('page-load').addClass('d-none');
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnText;
-                    }
+                    //     if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                    //         errorMessage = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    //     } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    //         errorMessage = xhr.responseJSON.message;
+                    //     }
+                        
+                    //     Livewire.emit('alert', 'error', errorMessage);
+                    //     $('page-load').addClass('d-none');
+                    //     submitBtn.disabled = false;
+                    //     submitBtn.innerHTML = originalBtnText;
+                    // }
                 });
             });
 
