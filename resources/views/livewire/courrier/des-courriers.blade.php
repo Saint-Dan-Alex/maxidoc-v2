@@ -616,10 +616,10 @@
                                                 @endforelse
                                             </div>
                                         </td>
-                                        <td>{{ $sortant->date_du_courrier->format('d/m/Y HH:ii') ?? 'Non defini' }}</td>
-                                        <td>{{ $sortant->created_at->format('d/m/Y HH:ii' ) ?? 'Non defini'}}</td>
+                                        <td>{{ $sortant->date_du_courrier->format('d/m/Y H:i') ?? 'Non defini' }}</td>
+                                        <td>{{ $sortant->created_at->format('d/m/Y H:i' ) ?? 'Non defini'}}</td>
                                         <td>
-                                            {{ $sortant->updated_at->format('d/m/Y HH:ii')?? 'Non defini' }}
+                                            {{ $sortant->updated_at->format('d/m/Y H:i')?? 'Non defini' }}
                                         </td>
                                         <td>
                                                 <div @class([
