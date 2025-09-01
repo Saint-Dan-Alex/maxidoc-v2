@@ -55,82 +55,335 @@
                     {{-- @endcan --}}
                     <div class="form-group row g-3">
                         <div class="col-12">
-                            <h5 class="mb-2 title-info">Informations générales</h5>
+                            <h5 class="mb-2 title-info">Intervenants</h5>
                         </div>
+
+                        @if($find_document->courrier && $find_document->courrier->accuseReceptions->count() > 0)
                         <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Titre</label>
-                                <div class="col-7">
-                                    <p class="items">{{ Str::ucfirst($find_document->libelle ?? '') }}</p>
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">Accusés de réception</span>
+                                    </div>
+                                    <div class="col-7">
+                                        @foreach($find_document->courrier->accuseReceptions as $accuseReception)
+                                            @if($accuseReception->user && $accuseReception->user->agent)
+                                                <div class="detailCourierUserInfosBox">
+                                                    <div class="avatarDetailCourier">
+                                                        <img class="avatarDetailCourier-avatar"
+                                                            src="{{ imageOrDefault($accuseReception->user->agent?->image) }}"
+                                                            alt="image profil">
+                                                    </div>
+                                                    <div>
+                                                        <p style="font-size: 14px; color: var(--colorTitre); margin-bottom: 5px;">
+                                                            {{ Str::ucfirst($accuseReception->user->agent->prenom ?? '') . ' ' . Str::ucfirst($accuseReception->user->agent->nom ?? '') }}
+                                                            @if($accuseReception->user->agent->poste)
+                                                                <small class="d-block text-muted">
+                                                                    {{ $accuseReception->user->agent->poste->titre }}
+                                                                </small>
+                                                            @endif
+                                                            <small class="d-block text-muted">
+                                                                {{ $accuseReception->created_at->format('d/m/Y H:i') }}
+                                                            </small>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Type de courrier</label>
-                                <div class="col-7">
-                                    <p class="items">
-                                        {{ Str::ucfirst($find_document->typeDocument?->titre) }}
-                                    </p>
+                        @endif
+
+                        @if ($find_document->followers->count())
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">En copie</span>
+                                        </div>
+                                        <div class="col-7">
+                                            @foreach ($find_document->followers->unique() as $follower)
+                                                <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                    {{ Str::ucfirst($follower->prenom ?? '') . ' ' . Str::ucfirst($follower->nom ?? '') }}
+                                                </p>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                        @endif
+                        
+                        <hr class="mt-4">
+
+                        <div class="col-12">
+                            <h6 class="mt-3 mb-2 title-info">Informations générales</h6>
                         </div>
-                        <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Catégorie</label>
-                                <div class="col-7">
-                                    <p class="items">
-                                        {{ Str::ucfirst($find_document->categorie?->title) }}
-                                    </p>
+                        @if ($find_document->libelle)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">Titre</span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ Str::ucfirst($find_document->libelle) }}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Référence courrier</label>
-                                <div class="col-7">
-                                    <p class="items">{{ Str::ucfirst($find_document->reference ?? '') }}</p>
+                        @endif
+
+                        @if ($find_document->reference)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">Référence</span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ $find_document->reference }}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        {{-- <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Service initiateur</label>
-                                <div class="col-7">
-                                    <p class="items">
-                                        {{ $find_document->author->fonction()->departement?->libelle }}
-                                    </p>
+                        @endif
+
+                        @if ($find_document->categorie)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Catégorie
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ $find_document->categorie->title }}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div> --}}
-                        <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Objet</label>
-                                <div class="col-7">
-                                    <p class="items">
-                                        {{ $find_document->description }}
-                                    </p>
+                        @endif
+
+                        @if($find_document->courrier && $find_document->courrier->expediteur)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Expéditeur
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-1">
+                                                {{ $find_document->courrier->expediteur->prenom }} {{ $find_document->courrier->expediteur->nom }}
+                                                @if($find_document->courrier->expediteur->poste)
+                                                    <small class="d-block text-muted">
+                                                        {{ $find_document->courrier->expediteur->poste->titre }}
+                                                    </small>
+                                                @endif
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Date de création</label>
-                                <div class="col-7">
-                                    <p class="items">
-                                        {{ $find_document->created_at?->isoFormat('LL') }}
-                                    </p>
+                        @elseif($find_document->courrier && $find_document->courrier->externExpediteur)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Expéditeur
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-1">
+                                                {{ $find_document->courrier->externExpediteur->nom }}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        @endif
+
+                        @if ($find_document->typeDocument)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Type de document
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ $find_document->typeDocument->titre }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($find_document->reference_interne)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                N° d'enregistrement
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ $find_document->reference_interne }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($find_document->courrier && $find_document->courrier->nature_id)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Nature
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ $find_document->courrier->nature->titre ?? '' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($find_document->traitement)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Traitement à effectuer
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ $find_document->traitement->titre }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($find_document->courrier && $find_document->courrier->priorite_id)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Priorité
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ $find_document->courrier->priorite->titre ?? '' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($find_document->date_du_courrier)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Date du courrier
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ \Carbon\Carbon::parse($find_document->date_du_courrier)->isoFormat('LL') }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($find_document->date_arrive)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Date de réception
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ \Carbon\Carbon::parse($find_document->date_arrive)->isoFormat('LL') }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($find_document->description)
+                            <div class="col-12">
+                                <div class="item">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <span style="font-size: 13px; color: var(--colorParagraph)">
+                                                Objet
+                                            </span>
+                                        </div>
+                                        <div class="col-7">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                                {{ $find_document->description }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Ajouté par</label>
-                                <div class="col-7">
-                                    <p class="items">
-                                        {{ Str::ucfirst($find_document->author?->prenom ?? '') }}
-                                        {{ Str::ucfirst($find_document->author?->nom ?? '') }}
-                                    </p>
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            Créé par
+                                        </span>
+                                    </div>
+                                    <div class="col-7">
+                                        <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                            {{ $find_document->author?->prenom }} {{ $find_document->author?->nom }}
+                                            @if($find_document->author?->poste)
+                                                <small class="d-block text-muted">
+                                                    {{ $find_document->author->poste->titre }}
+                                                </small>
+                                            @endif
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

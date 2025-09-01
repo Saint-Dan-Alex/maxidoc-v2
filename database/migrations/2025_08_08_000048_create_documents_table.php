@@ -9,67 +9,114 @@ use Illuminate\Support\Str;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
+
+            // 🔹 Informations générales
             $table->foreignId('dossier_id')->nullable()->constrained('dossiers')->nullOnDelete();
             $table->foreignId('category_id')->nullable()->constrained('courrier_categories')->nullOnDelete();
             $table->string('reference', 255)->nullable();
+            $table->string('reference_courrier', 200)->nullable();
+            $table->string('reference_interne', 200)->nullable();
             $table->string('libelle', 255)->nullable();
+            $table->text('title')->nullable();
             $table->foreignId('type')->nullable()->constrained('document_types')->nullOnDelete();
             $table->text('description')->nullable();
-            $table->text('document')->nullable(); // Stockera une chaîne JSON
-            $table->boolean('confidentiel')->default(false);
-            $table->string('password', 255)->nullable();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('statut_id')->default(1)->constrained('document_statuts');
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->text('objet')->nullable();
+            $table->text('document')->nullable(); // JSON des fichiers
+
+            // 🔹 Dates
+            $table->timestamp('date_du_courrier')->nullable();
+            $table->timestamp('date_arrive')->nullable();
+            $table->date('date_fin')->nullable();
             $table->timestamp('archived_at')->nullable();
-            $table->foreignId('desarchive_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('desarchive_at')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+
+            // 🔹 Confidentialité
+            $table->boolean('confidentiel')->default(false);
+            $table->boolean('is_classified')->default(false);
+            $table->string('password', 255)->nullable();
+
+            // 🔹 Relations utilisateur
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('desarchive_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('statut_id')->default(1)->constrained('document_statuts');
+            $table->foreignId('priorite_id')->nullable()->constrained('priorites')->nullOnDelete();
+            $table->foreignId('nature_id')->nullable()->constrained('courrier_natures')->nullOnDelete();
+            $table->foreignId('traitement_id')->nullable()->constrained('courrier_traitements')->nullOnDelete();
+
+            // 🔹 Expéditeur
+            $table->text('expediteur_externe')->nullable(); // Ex: entreprise, particulier
+            $table->foreignId('expediteur_interne_id')->nullable()->constrained('courrier_expediteurs')->nullOnDelete();
+
+            // 🔹 Destinataire
+            $table->foreignId('destinataire_externe_id')->nullable()->constrained('courrier_destinateur_externes')->nullOnDelete();
+            $table->foreignId('destinataire_interne_id')->nullable()->constrained('agents')->nullOnDelete();
+
+            // 🔹 Hiérarchie et liens
+            $table->foreignId('reference_document_id')->nullable()->constrained('documents')->nullOnDelete();
+            $table->foreignId('parent_document_id')->nullable()->constrained('documents')->nullOnDelete();
+
+            // 🔹 États et workflow
             $table->boolean('is_piece_jointe')->default(false);
             $table->boolean('is_default')->default(false);
-            $table->foreignId('reference_document_id')->nullable()->constrained('documents')->nullOnDelete();
+            $table->boolean('mark_as_done')->nullable();
+            $table->string('etape', 50)->default('en_attente');
 
-            // Indexes
+            // 🔹 Copie
+            $table->integer('copie')->nullable();
+
+            // 🔹 Timestamps
+            $table->timestamps();
+            $table->softDeletes();
+
+            // 🔹 Index
             $table->index(['user_id']);
             $table->index(['statut_id']);
+            $table->index(['reference_interne']);
+            $table->index(['date_arrive']);
+            $table->index(['date_du_courrier']);
+            $table->index(['etape']);
+            $table->index(['mark_as_done']);
+            $table->index(['is_classified']);
+            $table->index(['expediteur_interne_id']);
+            $table->index(['destinataire_interne_id']);
+            $table->index(['destinataire_externe_id']);
         });
 
-        // 🔴 Format du mois : "FY" → "August2025" (pas d'espace)
+        // 🔴 Création du dossier mensuel pour les documents
         $yearMonth = now()->format('FY'); // Ex: August2025
         $destinationPath = storage_path('app/public/documents/' . $yearMonth);
-
-        // Créer le dossier s'il n'existe pas
         if (!File::exists($destinationPath)) {
             File::makeDirectory($destinationPath, 0755, true);
         }
 
-        // Fonction pour copier le fichier et générer les infos
+        // Fonction de copie des fichiers par défaut
         $copyFile = function ($sourceFile) use ($yearMonth, $destinationPath) {
             $sourcePath = storage_path('app/public/documents_defaut/' . $sourceFile);
-
             if (!File::exists($sourcePath)) {
-                throw new \Exception("Le fichier source n'existe pas : " . $sourcePath);
+                throw new \Exception("Fichier manquant : " . $sourcePath);
             }
 
             $fileName = Str::random(20) . '.pdf';
             $fullDestinationPath = $destinationPath . '/' . $fileName;
 
-            // Copie du fichier
             File::copy($sourcePath, $fullDestinationPath);
 
-            // 🔴 download_link : sans espace, donc pas de %20 dans l'URL
             return [
                 'download_link' => 'documents/' . $yearMonth . '/' . $fileName,
                 'original_name' => $sourceFile,
             ];
         };
 
-        // Préparation des documents par défaut
+        // Insertion des documents par défaut
         $documents = [
             [
                 'dossier_id' => 1,
@@ -94,6 +141,25 @@ return new class extends Migration
                 'is_piece_jointe' => false,
                 'is_default' => true,
                 'reference_document_id' => null,
+                'title' => null,
+                'reference_courrier' => null,
+                'reference_interne' => null,
+                'objet' => null,
+                'date_du_courrier' => null,
+                'date_arrive' => null,
+                'date_fin' => null,
+                'priorite_id' => null,
+                'nature_id' => null,
+                'traitement_id' => null,
+                'expediteur_externe' => null,
+                'expediteur_interne_id' => null,
+                'destinataire_externe_id' => null,
+                'destinataire_interne_id' => null,
+                'is_classified' => false,
+                'mark_as_done' => null,
+                'etape' => 'en_attente',
+                'copie' => null,
+                'parent_document_id' => null,
             ],
             [
                 'dossier_id' => 1,
@@ -118,14 +184,35 @@ return new class extends Migration
                 'is_piece_jointe' => false,
                 'is_default' => true,
                 'reference_document_id' => null,
+                'title' => null,
+                'reference_courrier' => null,
+                'reference_interne' => null,
+                'objet' => null,
+                'date_du_courrier' => null,
+                'date_arrive' => null,
+                'date_fin' => null,
+                'priorite_id' => null,
+                'nature_id' => null,
+                'traitement_id' => null,
+                'expediteur_externe' => null,
+                'expediteur_interne_id' => null,
+                'destinataire_externe_id' => null,
+                'destinataire_interne_id' => null,
+                'is_classified' => false,
+                'mark_as_done' => null,
+                'etape' => 'en_attente',
+                'copie' => null,
+                'parent_document_id' => null,
             ]
         ];
 
-        // Insertion en base
         DB::table('documents')->insert($documents);
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::dropIfExists('documents');
     }
