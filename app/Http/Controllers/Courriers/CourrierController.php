@@ -1074,7 +1074,7 @@ public function createDocument($request, $destinateur, $doc = null)
 {
     try {
         // Gestion du paramètre $destinateur qui peut être un ID ou un objet Agent
-        $agentDestinataire = is_numeric($destinateur) ? Agent::find($destinateur) : $destinateur;
+        $agentDestinataire = is_numeric($destinateur) ? Agent::findOrFail($destinateur) : $destinateur;
         
         if (!$agentDestinataire) {
             throw new \Exception('Agent destinataire introuvable');
@@ -1119,9 +1119,17 @@ public function createDocument($request, $destinateur, $doc = null)
                 $document = new Document();
                 $document->dossier_id = $dossier->id;
                 $document->reference = is_array($request->get('ref')) ? implode(', ', $request->get('ref')) : ($request->get('ref') ?? '');
+                $document->reference_interne = $request->get('ref_interne');
                 $document->category_id = $request->get('categorie');
                 $document->libelle = $request->get('title');
                 $document->type = $request->get('type');
+                $document->nature_id = $request->get('nature');
+                $document->date_du_courrier = $request->get('date-doc');
+                $document->date_arrive = $request->get('date-arriv');
+                $document->objet = $request->get('objet');
+                $document->confidentiel = $request->get('confidentiel') ? '1' : '0';
+                $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user()->agent_id;
+                $document->destinataire_interne_id = $agentDestinataire->id;
 
                 if ($isScan) {
                     try {
@@ -1168,9 +1176,17 @@ public function createDocument($request, $destinateur, $doc = null)
                     $document = new Document();
                     $document->dossier_id = $dossier->id;
                     $document->reference = $request->get('ref') ?? '';
+                    $document->reference_interne = $request->get('ref_interne');
                     $document->category_id = $request->get('categorie');
                     $document->libelle = $request->get('title');
                     $document->type = $request->get('type');
+                    $document->nature_id = $request->get('nature');
+                    $document->date_du_courrier = $request->get('date-doc');
+                    $document->date_arrive = $request->get('date-arriv');
+                    $document->objet = $request->get('objet');
+                    $document->confidentiel = $request->get('confidentiel') ? '1' : '0';
+$document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user()->agent_id;
+                    $document->destinataire_interne_id = $agentDestinataire->id;
                     
                     $uploadedFile = (new File())->handle($request, 'document', 'documents');
                     if (empty($uploadedFile)) {
@@ -1210,9 +1226,18 @@ public function createDocument($request, $destinateur, $doc = null)
         $document = Document::create([
             'dossier_id' => $dossier->id,
             'reference' => (is_array($doc->reference) ? implode(', ', $doc->reference) : ($doc->reference ?? '')) . '/R',
+            'reference_interne' => $doc->reference_interne ?? null,
             'category_id' => $doc->category_id ?? null,
             'libelle' => $doc->libelle ?? 'Nouveau document',
             'type' => $doc->type ?? 'document',
+            'nature_id' => $doc->nature_id ?? null,
+            'date_du_courrier' => $doc->date_du_courrier ?? null,
+            'date_arrive' => $doc->date_arrive ?? null,
+            'objet' => $doc->objet ?? null,
+            'confidentiel' => $doc->confidentiel ?? '0',
+            'expediteur_interne_id' => $doc->expediteur_interne_id ?? Auth::user()->agent_id,
+            'destinataire_interne_id' => $agentDestinataire->id,
+            'expediteur_externe' => $doc->expediteur_externe ?? null,
             'document' => $doc->document ?? ((new File())->handle($request, 'document', 'documents')),
             'user_id' => Auth::id(),
             'statut_id' => 1,
@@ -1803,33 +1828,57 @@ public function createDocument($request, $destinateur, $doc = null)
     }
  
     protected function updateDocument(Request $request, Document $document, $dossierId)
-{
-    $document->dossier_id = $dossierId;
-    $document->reference = is_array($request->get('ref')) 
-        ? implode(', ', $request->get('ref')) 
-        : $request->get('ref');
-    $document->category_id = $request->get('categorie');
-    $document->libelle = $request->get('title');
-    $document->type = 1;
-    $document->description = $request->get('description') ?? $document->description;
+    {
+        // Mise à jour des champs de base
+        $document->dossier_id = $dossierId;
+        $document->reference = is_array($request->get('ref')) 
+            ? implode(', ', $request->get('ref')) 
+            : $request->get('ref');
+        $document->reference_interne = $request->get('ref_interne') ?? $document->reference_interne;
+        $document->reference_courrier = $request->get('ref_courrier') ?? $document->reference_courrier;
+        $document->category_id = $request->get('categorie');
+        $document->libelle = $request->get('title');
+        $document->type = $request->get('type') ?? 1;
+        $document->description = $request->get('description') ?? $document->description;
+        $document->objet = $request->get('objet') ?? $document->objet;
+        $document->nature_id = $request->get('nature') ?? $document->nature_id;
+        $document->date_du_courrier = $request->get('date-doc') ?? $document->date_du_courrier;
+        $document->date_arrive = $request->get('date-arriv') ?? $document->date_arrive;
+        
+        // Gestion de la priorité et du traitement
+        $document->priorite_id = $request->get('priorite') ?? $document->priorite_id;
+        $document->traitement_id = $request->get('traitement_id') ?? $document->traitement_id;
+        
+        $document->expediteur_externe = $request->get('exp') ?? $document->expediteur_externe;
+        
+        
+        // Gestion de la confidentialité
+        $document->confidentiel = $request->has('confidentiel') && 
+                                ($request->confidentiel == 'on' || $request->confidentiel == 1) 
+                                ? 1 : 0;
 
-    $document->confidentiel = $request->has('confidentiel') && 
-                              ($request->confidentiel == 'on' || $request->confidentiel == 1) 
-                              ? 1 : 0;
-
-    if ($request->hasFile('document')) {
-        if (!empty($document->document) && Storage::disk('documents')->exists($document->document)) {
-            Storage::disk('documents')->delete($document->document);
+        // Gestion du fichier
+        if ($request->hasFile('document')) {
+            if (!empty($document->document) && Storage::disk('documents')->exists($document->document)) {
+                Storage::disk('documents')->delete($document->document);
+            }
+            $document->document = (new File())->handle($request, 'document', 'documents');
         }
-        $document->document = (new File())->handle($request, 'document', 'documents');
+        
+        // Si un nouveau destinataire est fourni, on le met à jour
+        if ($request->has('destinataire_id')) {
+            $document->destinataire_interne_id = $request->get('destinataire_id');
+        }
+
+        // Mise à jour des métadonnées
+        $document->user_id = Auth::id();
+        $document->statut_id = $request->get('statut_id') ?? $document->statut_id ?? 1;
+        $document->updated_by = Auth::user()->agent->id;
+        
+        $document->save();
+
+        return $document;
     }
-
-    $document->user_id = Auth::user()->id;
-    $document->statut_id = 1;
-    $document->save();
-
-    return $document;
-}
 
 public function update(Request $request, $id)
 {

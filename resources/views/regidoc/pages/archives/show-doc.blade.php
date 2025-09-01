@@ -64,6 +64,20 @@
                         <div class="col-12">
                             <h5 class="mb-2 title-info">Informations générales</h5>
                         </div>
+                        @if($find_document->reference_interne)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <span>N° d'enregistrement</span>
+                                    </div>
+                                    <div class="col-7">
+                                        <p class="items mb-0">{{ $find_document->reference_interne }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Nom</label>
@@ -113,6 +127,34 @@
                                 </div>
                             </div>
                         </div>
+                        @if($find_document->nature)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <span>Nature</span>
+                                    </div>
+                                    <div class="col-7">
+                                        <p class="items mb-0">{{ $find_document->nature->titre ?? '' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        @if($find_document->service)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <span>Service initiateur</span>
+                                    </div>
+                                    <div class="col-7">
+                                        <p class="items mb-0">{{ $find_document->service->titre ?? '' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Date de création</label>
