@@ -629,8 +629,7 @@ class DocumentController extends Controller
      */
     public function show(Document $document)
     {
-        // dd($document->piecesJointes);
-
+ 
         $classeurs = Classeur::all();
         $dossiers = Dossier::all();
         
@@ -646,6 +645,17 @@ class DocumentController extends Controller
             'dossiers' => $dossiers,
             'defaultPdfs' => $defaultPdfs,
         ]);
+    }
+
+    /**
+     * Display the specified resource's PDF file.
+     *
+     * @param  Document  $document
+     * @return \Illuminate\Http\Response
+     */
+    public function showPdf(Document $document)
+    {
+        return view('regidoc.pages.documents.show-pdf', ['document' => $document]);
     }
 
     /**
