@@ -629,6 +629,8 @@ class DocumentController extends Controller
      */
     public function show(Document $document)
     {
+        // dd($document->piecesJointes);
+
         $classeurs = Classeur::all();
         $dossiers = Dossier::all();
         
