@@ -51,6 +51,10 @@ return new class extends Migration
             $table->foreignId('priorite_id')->nullable()->constrained('priorites')->nullOnDelete();
             $table->foreignId('nature_id')->nullable()->constrained('courrier_natures')->nullOnDelete();
             $table->foreignId('traitement_id')->nullable()->constrained('courrier_traitements')->nullOnDelete();
+            $table->foreignId('courrier_id')
+                  ->nullable()
+                ->constrained('courriers')
+                  ->nullOnDelete();
 
             // 🔹 Expéditeur
             $table->text('expediteur_externe')->nullable(); // Ex: entreprise, particulier

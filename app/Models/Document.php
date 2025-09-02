@@ -45,6 +45,17 @@ class Document extends Model
 
     protected $guarded = [];
     /**
+     * Get all pieces jointes for the document.
+     */
+    /**
+     * Get all pieces jointes for the document.
+     */
+    public function piecesJointes()
+    {
+        return $this->hasMany(PieceJointe::class, 'document_id');
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array

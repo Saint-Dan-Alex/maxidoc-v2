@@ -156,6 +156,33 @@ class CourrierController extends Controller
                 // Déplacer le fichier téléversé
                 $path = $file->storeAs($basePath, $fileName, 'public');
                 
+                // Vérifier si un document est déjà associé au courrier via document_id
+                if ($courrier->document_id) {
+                    $document = Document::find($courrier->document_id);
+                } else {
+                    // Sinon, vérifier s'il existe déjà un document lié via la relation
+                    $document = $courrier->documents->first();
+                    
+                    // Si aucun document n'existe, en créer un nouveau
+                    if (!$document) {
+                        $document = Document::create([
+                            'titre' => 'Pièce jointe - ' . $file->getClientOriginalName(),
+                            'reference' => 'PJ-' . time(),
+                            'type_document_id' => 1, // À adapter selon votre configuration
+                            'statut' => 'brouillon',
+                            'est_prive' => false,
+                            'courrier_id' => $courrier->id,
+                            'created_by' => auth()->id(),
+                        ]);
+                        
+                        // Mettre à jour le document_id du courrier
+                        $courrier->update(['document_id' => $document->id]);
+                    } else {
+                        // Si un document existe via la relation, mettre à jour le document_id du courrier
+                        $courrier->update(['document_id' => $document->id]);
+                    }
+                }
+                
                 // Enregistrer la pièce jointe dans la base de données
                 $pieceJointe = new PieceJointe([
                     'nom' => $file->getClientOriginalName(),
@@ -163,6 +190,7 @@ class CourrierController extends Controller
                     'taille' => $file->getSize(),
                     'mime_type' => $file->getMimeType(),
                     'courrier_id' => $courrier->id,
+                    'document_id' => $document->id,
                     'uploaded_by' => auth()->id(),
                 ]);
                 
@@ -171,8 +199,8 @@ class CourrierController extends Controller
                 // Retourner la réponse au format JSON attendu
                 $content = json_encode([
                     'name' => 'Courrier',
-                    'statut' => 'error',
-                    'message' => 'Ajout d\'une pièce jointe'
+                    'statut' => 'success',
+                    'message' => 'Pièce jointe ajoutée avec succès'
                 ]);
             
         

@@ -14,8 +14,19 @@ class PieceJointe extends Model
         'taille',
         'mime_type',
         'courrier_id',
+        'document_id',
         'uploaded_by',
     ];
+
+    protected $with = ['document'];
+
+    /**
+     * Get the document that owns the piece jointe.
+     */
+    public function document()
+    {
+        return $this->belongsTo(Document::class);
+    }
 
     protected $casts = [
         'taille' => 'integer',
