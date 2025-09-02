@@ -439,21 +439,34 @@
                                 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                             @php
                                 $docInfo = null;
+                                $docUrl = null;
+                                $docName = 'Sélectionner un document';
+
                                 if ($find_document->document) {
-                                    $docArr = json_decode($find_document->document, true);
-                                    $docInfo = $docArr[0] ?? null;
+                                    $docArr = is_array($find_document->document) ? $find_document->document : json_decode($find_document->document, true);
+                                    $firstElement = $docArr[0] ?? null;
+
+                                    if (is_array($firstElement)) {
+                                        // Cas où l'élément est un tableau associatif (format JSON)
+                                        $docUrl = $firstElement['download_link'] ?? null;
+                                        $docName = $firstElement['original_name'] ?? 'Document';
+                                    } elseif (is_string($firstElement)) {
+                                        // Cas où l'élément est une simple chaîne (chemin du fichier)
+                                        $docUrl = $firstElement;
+                                        $docName = basename($firstElement);
+                                    }
                                 }
                             @endphp
-                            {{ $docInfo['original_name'] ?? 'Sélectionner un document' }}
+                            {{ $docName }}
                         </button>
                         <ul class="dropdown-menu w-100" aria-labelledby="documentDropdown">
-                            @if($docInfo)
+                            @if($docUrl)
                                 <li>
                                     <a class="dropdown-item document-item active" 
                                        href="javascript:void(0)"
-                                       data-url="{{ asset('storage/' . $docInfo['download_link']) }}">
+                                       data-url="{{ asset('storage/' . $docUrl) }}">
                                         <i class="fi fi-rr-file me-2"></i>
-                                        {{ $docInfo['original_name'] }} (principal)
+                                        {{ $docName }} (principal)
                                     </a>
                                 </li>
                             @endif
@@ -486,9 +499,9 @@
                 <div id="document-viewer">
                     <div id="document-error" style="display:none; padding:2rem; color:red; text-align:center;"></div>
                     @php
-                        $iframeUrl = '#';
-                        if ($docInfo) {
-                            $iframeUrl = asset('storage/' . $docInfo['download_link']) . '#toolbar=0&navpanes=0&page=1';
+                        $iframeUrl = '';
+                        if ($docUrl) {
+                           $iframeUrl = asset('storage/' . $docUrl) . '#toolbar=0&navpanes=0&page=1';
                         }
                     @endphp
                     <iframe src="{{ $iframeUrl }}" 
