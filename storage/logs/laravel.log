@@ -6633,3 +6633,6 @@
 #67 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\wamp64\\\\www\\\\m...')
 #68 {main}
 "} 
+[2025-09-02 15:33:02] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-09-02 15:33:07] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-09-02 15:33:07] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":9,"type":1,"requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,1,"K-%"]} 
