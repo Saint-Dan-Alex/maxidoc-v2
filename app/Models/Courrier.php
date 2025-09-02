@@ -384,6 +384,14 @@ class Courrier extends Model implements Viewable
     }
 
     /**
+     * Get the documents associated with the courrier.
+     */
+    public function documents()
+    {
+        return $this->hasMany(Document::class, 'courrier_id');
+    }
+
+    /**
      * Get the indexable data array for the model.
      *
      * @return array

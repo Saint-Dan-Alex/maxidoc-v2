@@ -429,12 +429,15 @@
                                 <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-header">Pièces jointes</li>
                                 @foreach($find_document->piecesJointes as $piece)
+                                    @php
+                                        $filePath = $piece->chemin . '/' . $piece->nom;
+                                    @endphp
                                     <li>
                                         <a class="dropdown-item document-item" 
                                            href="javascript:void(0)"
-                                           data-url="{{ files($piece->fichier)->link }}">
+                                           data-url="{{ asset('storage/' . $filePath) }}">
                                             <i class="fi fi-rr-file me-2"></i>
-                                            {{ files($piece->fichier)->name }}
+                                            {{ $piece->nom }}
                                         </a>
                                     </li>
                                 @endforeach
