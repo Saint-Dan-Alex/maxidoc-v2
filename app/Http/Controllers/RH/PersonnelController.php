@@ -398,7 +398,7 @@ class PersonnelController extends Controller
             $adresse->save();
 
             return redirect()->route('regidoc.personnels.index')
-                           ->with('success', 'Agent créé avec succès.');
+                           ->with('message', 'Agent créé avec succès.');
 
         } catch (\Throwable $th) {
             return back()->with('error', 'Erreur lors de la création: ' . $th->getMessage());
@@ -551,7 +551,7 @@ class PersonnelController extends Controller
                 $this->updateUserRole($user, $request->role_id);
             }
 
-            return redirect()->route('regidoc.personnels.index')->with('success', 'Agent modifié avec succès.');
+            return redirect()->route('regidoc.personnels.index')->with('message', 'Agent modifié avec succès.');
         } catch (\Throwable $th) {
             return back()->with('error', 'Erreur lors de la modification : ' . $th->getMessage());
         }
