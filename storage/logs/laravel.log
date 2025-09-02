@@ -4685,3 +4685,7 @@
 [2025-09-02 11:28:46] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":10,"user_id":3} 
 [2025-09-02 11:30:41] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":10,"user_id":3} 
 [2025-09-02 11:31:50] local.INFO: Vérification des droits d'accès {"user_id":3,"agent_id":3,"is_assistant":true,"courrier_type":2,"courrier_statut":2} 
+[2025-09-02 15:08:59] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":10,"user_id":3} 
+[2025-09-02 15:09:14] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":10,"user_id":3} 
+[2025-09-02 15:09:16] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":10,"user_id":3} 
+[2025-09-02 15:09:32] local.INFO: Vérification des droits d'accès {"user_id":3,"agent_id":3,"is_assistant":true,"courrier_type":2,"courrier_statut":2} 

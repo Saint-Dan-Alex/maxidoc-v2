@@ -496,14 +496,14 @@
                             class="w-100"
                             style="height: calc(100vh - 200px);"></iframe>
                 </div>
-                @if($find_document->libelle)
+                {{-- @if($find_document->libelle)
                     <div class="document-title-bar mt-3 p-3 bg-light rounded">
                         <h4>{{ $find_document->libelle }}</h4>
                         @if($find_document->reference)
                             <small class="text-muted">Réf: {{ $find_document->reference }}</small>
                         @endif
                     </div>
-                @endif
+                @endif --}}
         </div>
 
     </div>
