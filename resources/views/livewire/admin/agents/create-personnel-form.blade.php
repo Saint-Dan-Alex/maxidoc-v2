@@ -269,7 +269,15 @@
                     <a href="/ressources-humaines/personnels" class="btn btn-cansel-create h-100 me-2">
                         Annuler
                     </a>
-                    <button type="submit" class="btn btn-add">Créer</button>
+                    <button type="submit" class="btn btn-add" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="submit">
+                            Créer
+                        </span>
+                        <span wire:loading wire:target="submit">
+                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                            Création en cours...
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
