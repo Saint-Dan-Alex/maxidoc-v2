@@ -392,21 +392,71 @@
 
                 </div>
                 <div class="footer-sidebar">
+                    @can('Archiver')
+                        <a href="#" class="btn btn-valid w-100" data-bs-toggle="modal"
+                        data-bs-target="#modal-new-archive">Archiver</a>
+                    @endcan
                     {{-- <a href="#" class="btn" data-bs-toggle="modal"
                         data-bs-target="#modal-delete-document">Supprimer</a> --}}
-                    @can('Archiver')
-                        <a href="#" class="btn btn-valid" data-bs-toggle="modal"
-                            data-bs-target="#modal-new-archive">Archiver</a>
-                    @endcan
                 </div>
             </form>
 
         </div>
         <div class="content-scanner">
             <div class="container-fluid">
-                <iframe src="{{ files($find_document?->document)->link ? files($find_document?->document)->link.'#toolbar=0&navpanes=0&page=1' : '#' }}" frameborder="0"
-                    class="w-100"></iframe>
-            </div>
+                <div class="document-selector mb-3">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start" 
+                                id="documentDropdown" 
+                                data-bs-toggle="dropdown" 
+                                aria-expanded="false"
+                                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            {{ files($find_document->document)->name ?? 'Sélectionner un document' }}
+                        </button>
+                        <ul class="dropdown-menu w-100" aria-labelledby="documentDropdown">
+                            @if($find_document->document)
+                                <li>
+                                    <a class="dropdown-item document-item active" 
+                                       href="javascript:void(0)"
+                                       data-url="{{ files($find_document->document)->link }}">
+                                        <i class="fi fi-rr-file me-2"></i>
+                                        {{ files($find_document->document)->name }} (principal)
+                                    </a>
+                                </li>
+                            @endif
+                            
+                            @if(isset($find_document->piecesJointes) && $find_document->piecesJointes->count() > 0)
+                                <li><hr class="dropdown-divider"></li>
+                                <li class="dropdown-header">Pièces jointes</li>
+                                @foreach($find_document->piecesJointes as $piece)
+                                    <li>
+                                        <a class="dropdown-item document-item" 
+                                           href="javascript:void(0)"
+                                           data-url="{{ files($piece->fichier)->link }}">
+                                            <i class="fi fi-rr-file me-2"></i>
+                                            {{ files($piece->fichier)->name }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            @endif
+                        </ul>
+                    </div>
+                </div>
+                
+                <div id="document-viewer">
+                    <iframe src="{{ files($find_document?->document)->link ? files($find_document?->document)->link.'#toolbar=0&navpanes=0&page=1' : '#' }}" 
+                            frameborder="0"
+                            class="w-100"
+                            style="height: calc(100vh - 200px);"></iframe>
+                </div>
+                @if($find_document->libelle)
+                    <div class="document-title-bar mt-3 p-3 bg-light rounded">
+                        <h4>{{ $find_document->libelle }}</h4>
+                        @if($find_document->reference)
+                            <small class="text-muted">Réf: {{ $find_document->reference }}</small>
+                        @endif
+                    </div>
+                @endif
         </div>
 
     </div>
@@ -462,3 +512,29 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestion du changement de document dans le sélecteur
+        document.querySelectorAll('.document-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Mise à jour du bouton du sélecteur
+                const dropdownButton = document.getElementById('documentDropdown');
+                dropdownButton.textContent = this.textContent.trim();
+                
+                // Mise à jour de l'iframe
+                const iframe = document.querySelector('#document-viewer iframe');
+                const url = this.getAttribute('data-url') + '#toolbar=0&navpanes=0&page=1';
+                iframe.src = url;
+                
+                // Mise à jour de la classe active
+                document.querySelectorAll('.document-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    });
+</script>
+@endpush
