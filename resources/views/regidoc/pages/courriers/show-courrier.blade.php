@@ -779,7 +779,19 @@
 
                                    
                             
-                           
+                    @if($courrier->dest_interne_id == (Auth::user()->agent->id) && $courrier->mark_as_done != 1)
+                        <li>
+                                <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-piece"
+                                    class="dropdown-item">
+                                    <span class="d-flex align-items-center">
+                                        <i class="fi fi-rr-clip"></i>
+                                    </span>
+                                    <span class="title">
+                                                Joindre une pièce jointe
+                                    </span>
+                                </a>
+                            </li>
+                    @endif
                             
                         
                     
