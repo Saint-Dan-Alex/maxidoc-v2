@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('chemin');
             $table->unsignedBigInteger('taille');
             $table->string('mime_type');
-            $table->foreignId('courrier_id')->constrained('courriers')->onDelete('cascade');
+            $table->foreignId('courrier_id')->nullable()->constrained('courriers')->onDelete('cascade');
+            $table->foreignId('documents_id')->nullable()->constrained('cdocuments')->onDelete('cascade');
+
             $table->foreignId('uploaded_by')->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
