@@ -545,7 +545,7 @@
     </div>
 </div>
 {{-- @dd(Storage::get('public/tmp/file.pdf')) --}}
-<script>
+{{-- <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Gestionnaire de clic pour le bouton de soumission
         document.getElementById('submit-btn').addEventListener('click', function(e) {
@@ -687,7 +687,7 @@
             el.classList.add('is-invalid');
         });
     });
-</script>
+</script> --}}
 
 @push('livewireScripts')
     <script src="{{ asset('vendor/scannerjs/scanner.js') }}"></script>
