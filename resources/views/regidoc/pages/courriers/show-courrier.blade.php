@@ -2619,7 +2619,7 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js?v=1"></script>
     <script src="{{ asset('assets/js/showPDF.js') }}"></script>
     
-    <script>
+    {{-- <script>
         // Vérifier si c'est un courrier interne et si on vient de la numérisation
         document.addEventListener('DOMContentLoaded', function() {
             // Vérifier si c'est un courrier interne (type_id = 3 pour interne)
@@ -2703,7 +2703,7 @@
                 });
             }
         });
-    </script>
+    </script> --}}
     
     <!-- Inclusion du script de transmission pour débogage -->
     <script src="{{ asset('js/courrier-transmission.js') }}"></script>
