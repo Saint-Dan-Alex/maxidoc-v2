@@ -390,6 +390,32 @@
 
                     </div>
 
+                    <!-- Section des pièces jointes -->
+                    @if($find_document->piecesJointes->count() > 0)
+                        <div class="col-12 mt-4">
+                            <h6 class="mb-3 title-info">Pièces jointes</h6>
+                            <div class="list-group">
+                                @foreach($find_document->piecesJointes as $piece)
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="bi bi-file-earmark me-2"></i>
+                                                <a href="{{ $piece->url }}" target="_blank" class="text-decoration-none">
+                                                    {{ $piece->nom }}
+                                                </a>
+                                                <small class="d-block text-muted">{{ $piece->formatted_size }}</small>
+                                            </div>
+                                            <a href="{{ $piece->url }}" download class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                    <!-- Fin section des pièces jointes -->
+
                 </div>
                 <div class="footer-sidebar">
                     @can('Archiver')
@@ -411,16 +437,23 @@
                                 data-bs-toggle="dropdown" 
                                 aria-expanded="false"
                                 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            {{ files($find_document->document)->name ?? 'Sélectionner un document' }}
+                            @php
+                                $docInfo = null;
+                                if ($find_document->document) {
+                                    $docArr = json_decode($find_document->document, true);
+                                    $docInfo = $docArr[0] ?? null;
+                                }
+                            @endphp
+                            {{ $docInfo['original_name'] ?? 'Sélectionner un document' }}
                         </button>
                         <ul class="dropdown-menu w-100" aria-labelledby="documentDropdown">
-                            @if($find_document->document)
+                            @if($docInfo)
                                 <li>
                                     <a class="dropdown-item document-item active" 
                                        href="javascript:void(0)"
-                                       data-url="{{ files($find_document->document)->link }}">
+                                       data-url="{{ asset('storage/' . $docInfo['download_link']) }}">
                                         <i class="fi fi-rr-file me-2"></i>
-                                        {{ files($find_document->document)->name }} (principal)
+                                        {{ $docInfo['original_name'] }} (principal)
                                     </a>
                                 </li>
                             @endif
@@ -430,12 +463,16 @@
                                 <li class="dropdown-header">Pièces jointes</li>
                                 @foreach($find_document->piecesJointes as $piece)
                                     @php
-                                        $filePath = $piece->chemin . '/' . $piece->nom;
+                                        $filePath = $piece->chemin;
+                                        $fullPath = storage_path('app/public/' . $filePath);
+                                        $isPdf = Str::endsWith(strtolower($filePath), '.pdf');
+                                        $exists = file_exists($fullPath);
                                     @endphp
                                     <li>
                                         <a class="dropdown-item document-item" 
                                            href="javascript:void(0)"
-                                           data-url="{{ asset('storage/' . $filePath) }}">
+                                           data-url="{{ ($isPdf && $exists) ? asset('storage/' . $filePath) : '' }}"
+                                           data-error="{{ (!$exists) ? 'Fichier introuvable' : (!$isPdf ? 'Format non supporté' : '') }}">
                                             <i class="fi fi-rr-file me-2"></i>
                                             {{ $piece->nom }}
                                         </a>
@@ -447,7 +484,14 @@
                 </div>
                 
                 <div id="document-viewer">
-                    <iframe src="{{ files($find_document?->document)->link ? files($find_document?->document)->link.'#toolbar=0&navpanes=0&page=1' : '#' }}" 
+                    <div id="document-error" style="display:none; padding:2rem; color:red; text-align:center;"></div>
+                    @php
+                        $iframeUrl = '#';
+                        if ($docInfo) {
+                            $iframeUrl = asset('storage/' . $docInfo['download_link']) . '#toolbar=0&navpanes=0&page=1';
+                        }
+                    @endphp
+                    <iframe src="{{ $iframeUrl }}" 
                             frameborder="0"
                             class="w-100"
                             style="height: calc(100vh - 200px);"></iframe>
@@ -519,21 +563,38 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Gestion du changement de document dans le sélecteur
+        const pdfSuffix = '#toolbar=0&navpanes=0&page=1';
+
         document.querySelectorAll('.document-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
-                
-                // Mise à jour du bouton du sélecteur
+
                 const dropdownButton = document.getElementById('documentDropdown');
                 dropdownButton.textContent = this.textContent.trim();
-                
-                // Mise à jour de l'iframe
+
                 const iframe = document.querySelector('#document-viewer iframe');
-                const url = this.getAttribute('data-url') + '#toolbar=0&navpanes=0&page=1';
-                iframe.src = url;
-                
-                // Mise à jour de la classe active
+                const errorDiv = document.getElementById('document-error');
+                let url = this.getAttribute('data-url');
+                let error = this.getAttribute('data-error');
+                if (error) {
+                    errorDiv.textContent = error;
+                    errorDiv.style.display = 'block';
+                    iframe.style.display = 'none';
+                    iframe.src = 'about:blank';
+                } else if (url) {
+                    errorDiv.style.display = 'none';
+                    iframe.style.display = 'block';
+                    if (!url.endsWith(pdfSuffix)) {
+                        url += pdfSuffix;
+                    }
+                    iframe.src = url;
+                } else {
+                    errorDiv.textContent = 'Aucun fichier à afficher';
+                    errorDiv.style.display = 'block';
+                    iframe.style.display = 'none';
+                    iframe.src = 'about:blank';
+                }
+
                 document.querySelectorAll('.document-item').forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
             });
