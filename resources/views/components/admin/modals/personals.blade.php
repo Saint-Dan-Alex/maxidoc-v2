@@ -290,6 +290,7 @@
     </div>
 </div>
 
+<!-- 
 {{-- modal --}}
 {{-- <div wire:ignore.self class="modal fade" id="modal-delete-pers" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -310,3 +311,4 @@
     </div>
     </div>
 </div> --}}
+-->
