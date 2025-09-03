@@ -10844,3 +10844,5 @@
 [2025-09-03 10:54:34] local.INFO: ✅ Fin du traitement avec succès  
 [2025-09-03 10:54:35] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":2} 
 [2025-09-03 11:05:23] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":2} 
+[2025-09-03 11:21:27] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":3,"user_id":2} 
+[2025-09-03 11:21:41] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":3,"user_id":2} 
