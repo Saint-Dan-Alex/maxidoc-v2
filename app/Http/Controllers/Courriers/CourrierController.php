@@ -196,6 +196,14 @@ class CourrierController extends Controller
                 
                 $courrier->piecesJointes()->save($pieceJointe);
                 
+                Historique::create([
+                    "key" => "Ajout d'une piece jointe'",
+                    "historiquecable_id" => $courrier->id,
+                    "historiquecable_type" => Courrier::class,
+                    "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a ajouté une pièce jointe à ce document .",
+                    "user_id" => Auth::user()->id,
+                ]);
+                
                 // Retourner la réponse au format JSON attendu
                 $content = json_encode([
                     'name' => 'Courrier',

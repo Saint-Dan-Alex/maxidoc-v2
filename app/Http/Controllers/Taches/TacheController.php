@@ -717,11 +717,18 @@ class TacheController extends Controller
                 }
             }
 
+            Historique::create([
+                "key" => "Ajout de tâche",
+                "historiquecable_id" => $tache->id,
+                "historiquecable_type" => Tache::class,
+                "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a créé une tâche.",
+                "user_id" => Auth::user()->id,
+            ]);
 
             $content = json_encode([
                 'name' => 'Gestion de tâches',
                 'statut' => 'success',
-                'message' => 'L\'ajout de la tâche a réussi avec succès !',
+                'message' => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a créé une tâche.",
             ]);
 
         } catch (\Throwable $th) {
