@@ -449,7 +449,7 @@ class CourrierController extends Controller
             "key" => "Signature",
             "historiquecable_id" => $request->courrier_id,
             "historiquecable_type" => Courrier::class,
-            "description" => "A signé le document du courrier",
+            "description" => Auth::user()->name.' a signé ce document.',
             "user_id" => Auth::user()->id,
         ]);
 
@@ -2216,13 +2216,13 @@ public function update(Request $request, $id)
         $historique = new Historique();
         $historique->user_id = Auth::id();
         $historique->key = 'courrier_valide';
-        $historique->description = 'Le courrier a été marqué comme validé';
+        $historique->description = Auth::user()->name.' a validé ce document.';
         $historique->historiquecable()->associate($courrier);
         $historique->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Le courrier a été validé et traité avec succès.'
+            'message' => Auth::user()->name.' a validé ce document.'
         ]);
 
     } catch (\Throwable $e) {
@@ -2338,14 +2338,14 @@ public function rejeter(Courrier $courrier)
         // Historique du rejet
         $historique = new Historique();
         $historique->user_id = Auth::id();
-        $historique->key = 'courrier_rejete';
-        $historique->description = 'Le courrier a été marqué comme rejeté';
+        $historique->key = 'courrier_rejeté';
+        $historique->description = Auth::user()->name.' a rejeté ce document.';
         $historique->historiquecable()->associate($courrier);
         $historique->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Le courrier a été rejeté avec succès.'
+            'message' => Auth::user()->name.' a rejeté ce document.'
         ]);
     } catch (\Throwable $e) {
         Log::error('Erreur lors du rejet du courrier', [

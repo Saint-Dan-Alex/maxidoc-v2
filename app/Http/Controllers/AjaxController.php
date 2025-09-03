@@ -355,7 +355,7 @@ class AjaxController extends Controller
             "key" => "Traitement",
             "historiquecable_id" => $request->courrier_id,
             "historiquecable_type" => Courrier::class,
-            "description" => "A validé le courrier",
+            "description" => Auth::user()->name.' a validé ce document.',
             "user_id" => Auth::user()->id,
         ]);
 
@@ -448,7 +448,7 @@ class AjaxController extends Controller
             "key" => "Traitement",
             "historiquecable_id" => $request->courrier_id,
             "historiquecable_type" => Courrier::class,
-            "description" => "A rejeté le courrier",
+            "description" => Auth::user()->name.' a rejeté ce document.',
             "user_id" => Auth::user()->id,
         ]);
 
