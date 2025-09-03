@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use App\Models\Historique;
 
 class TachePane extends Component
 {
@@ -76,6 +77,14 @@ class TachePane extends Component
 
             $this->tache = $tache;
             $this->pourcentage = $pourcentage;
+
+            Historique::create([
+                "key" => "Mise à jour objectif",
+                "historiquecable_id" => $tache->id,
+                "historiquecable_type" => Tache::class,
+                "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a réalisé l\’objectif de la tâche que vou lui avez assigné.",
+                "user_id" => Auth::user()->id,
+            ]);
             // $this->emit('reloadPane');
             $this->emit('alert', 'success', 'Objectif mis à jour avec succès');
             event(new TacheCreated($tache, $tache->user->agent->id, 'Objectif ' . $objectif->libelle . ' est mis à jour pour la tâche ' . $tache->titre));
@@ -103,7 +112,15 @@ class TachePane extends Component
 
             $this->emit('reloadPane');
             $this->pan = 2;
-            $this->emit('alert', 'success', 'Commentaire a été ajouté à la tâche');
+            $this->emit('alert', 'success', Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ' a ajouté un commentaire à la tâche');
+            Historique::create([
+                "key" => "Ajout d'un commentaire",
+                "historiquecable_id" => $this->tache->id,
+                "historiquecable_type" => Tache::class,
+                "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a ajouté un commentaire à la tâche.",
+                "user_id" => Auth::user()->id,
+            ]);
+            $this->emit('alert', 'success', Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ' a ajouté un commentaire à la tâche');
             event(new TacheCreated($this->tache, $this->tache->user->agent->id, 'La tâche ' . $this->tache->titre . ' a un nouveau commentaire'));
         } catch (\Throwable $th) {
             //throw $th;
@@ -210,6 +227,14 @@ class TachePane extends Component
             // Déclencher l'événement
             event(new TacheCreated($tache, $tache->user->agent->id, 'La tâche ' . $tache->titre . ' a un nouveau fichier'));
             $this->mount($this->tache, 3);
+
+            Historique::create([
+                "key" => "Ajout d'une pièce jointe",
+                "historiquecable_id" => $tache->id,
+                "historiquecable_type" => Tache::class,
+                "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a ajouté une pièce jointe à cette tâche.",
+                "user_id" => Auth::user()->id,
+            ]);
             
         } catch (\Throwable $th) {
             \Log::error('Erreur lors de l\'ajout du fichier : ' . $th->getMessage());
