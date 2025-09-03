@@ -811,9 +811,12 @@ public function desarchiver(Request $request)
         $pageCount = $pdf->setSourceFile($source);
         $dateArchive = $ancienDocument->created_at->format('d/m/Y');
         $dateDesarchive = now()->format('d/m/Y');
+        $heureDesarchive = now()->format('H:i:s');
+        $heureArchive = $ancienDocument->archived_at->format('H:i:s');
+        $utilisateur = Auth::user()->name;
         
         // Texte d'en-tête simplifié
-        $texte = "DOCUMENT DESARCHIVE - Archive: {$dateArchive} | Desarchive: {$dateDesarchive}";
+        $texte = "DOCUMENT DESARCHIVE | Archivé le: {$dateArchive} à {$heureArchive} | Désarchivé le: {$dateDesarchive} à {$heureDesarchive} par {$utilisateur}";
         $fontSize = 8; // Taille de police réduite
 
         for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
@@ -860,7 +863,7 @@ public function desarchiver(Request $request)
         ]);
 
         $nouveauDocument->user_id = Auth::id();
-        $nouveauDocument->statut_id = 1;
+        $nouveauDocument->statut_id = 5;
         $nouveauDocument->created_by = Auth::user()->agent->id;
         $nouveauDocument->desarchive_by = Auth::user()->agent->id;
         $nouveauDocument->reference_document_id = $ancienDocument->id;
