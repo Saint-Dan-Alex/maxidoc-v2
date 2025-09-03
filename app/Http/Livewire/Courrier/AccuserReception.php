@@ -261,7 +261,7 @@ class AccuserReception extends Component
             "key" => "Accusé de reception",
             "historiquecable_id" => $this->courrier->id,
             "historiquecable_type" => Courrier::class,
-            "description" => "A accusé reception du courrier",
+            "description" => Auth::user()->name." a accusé reception de ce document.",
             "user_id" => Auth::user()->id,
         ]);
 
@@ -304,7 +304,7 @@ class AccuserReception extends Component
         "key" => "Accusé de reception",
         "historiquecable_id" => $this->courrier->id,
         "historiquecable_type" => Courrier::class,
-        "description" => "A accusé reception du courrier",
+        "description" => Auth::user()->name." a accusé reception de ce document.",
         "user_id" => Auth::user()->id,
     ]);
 
@@ -392,7 +392,7 @@ class AccuserReception extends Component
             "key" => "Accusé de reception",
             "historiquecable_id" => $this->courrier->id,
             "historiquecable_type" => Courrier::class,
-            "description" => "A accusé reception du courrier",
+            "description" => Auth::user()->name." a accusé reception de ce document.",
             "user_id" => Auth::user()->id,
         ]);
 
@@ -408,7 +408,7 @@ class AccuserReception extends Component
         }
     }
 
-    $this->emit('alert', 'success', 'Accuser de reception effectué avec succès');
+    $this->emit('alert', 'success', Auth::user()->name.' a accusé de reception de ce document');
 }
 
     public function validerTraitementDGA()
@@ -461,7 +461,7 @@ class AccuserReception extends Component
                     "key" => "Accusé de reception",
                     "historiquecable_id" => $courrier->id,
                     "historiquecable_type" => Courrier::class,
-                    "description" => "A  apporté des modifications sur le traitement à effectué",
+                    "description" => Auth::user()->name." a apporté des modifications sur le traitement à effectué",
                     "user_id" => Auth::user()->id,
                 ]);
 
@@ -565,7 +565,7 @@ class AccuserReception extends Component
                 "key" => "Accusé de reception",
                 "historiquecable_id" => $this->courrier->id,
                 "historiquecable_type" => Courrier::class,
-                "description" => "A effectué des traitements sur ce courrier",
+                "description" => Auth::user()->name." a effectué des traitements sur ce document",
                 "user_id" => Auth::user()->id,
             ]);
 
@@ -628,7 +628,7 @@ class AccuserReception extends Component
                     "key" => "Accusé de reception",
                     "historiquecable_id" => $this->courrier->id,
                     "historiquecable_type" => Courrier::class,
-                    "description" => "A effectué des traitements sur ce courrier",
+                    "description" => Auth::user()->name." a effectué des traitements sur ce document.",
                     "user_id" => Auth::user()->id,
                 ]);
 
@@ -647,7 +647,7 @@ class AccuserReception extends Component
                     "key" => "Accusé de reception",
                     "historiquecable_id" => $this->courrier->id,
                     "historiquecable_type" => Courrier::class,
-                    "description" => "A effectué des traitements sur ce courrier",
+                    "description" => Auth::user()->name." a effectué des traitements sur ce document.",
                     "user_id" => Auth::user()->id,
                 ]);
 
@@ -688,7 +688,7 @@ class AccuserReception extends Component
                 "key" => "Accusé de reception",
                 "historiquecable_id" => $this->courrier->id,
                 "historiquecable_type" => Courrier::class,
-                "description" => "A joint un fichier à ce courrier",
+                "description" => Auth::user()->name." a joint un fichier à ce document.",
                 "user_id" => Auth::user()->id,
             ]);
         }

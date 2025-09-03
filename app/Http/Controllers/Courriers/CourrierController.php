@@ -681,10 +681,18 @@ public function traitement($courrier)
             Log::info('🟩 Courrier interne mis à jour avec traitement');
         }
 
+        Historique::create([
+            "key" => "Traitement",
+            "historiquecable_id" => $courrier->id,
+            "historiquecable_type" => Courrier::class,
+            "description" => Auth::user()->name.' a marqué ce document comme traité ',
+            "user_id" => Auth::user()->id,
+        ]);
+
         $response = [
             'name' => 'Courrier',
             'statut' => 'success',
-            'message' => 'Le courrier a été marqué comme traité',
+            'message' => Auth::user()->name.' a marqué ce document comme traité ',
         ];
 
         Log::info('✅ Fin du traitement avec succès');
@@ -960,7 +968,7 @@ public function traitement($courrier)
                     "key" => "Accusé de reception",
                     "historiquecable_id" => $courrier->id,
                     "historiquecable_type" => Courrier::class,
-                    "description" => "A établi un traitement à effectuer le courrier",
+                    "description" => $user->name." a défini  le traitement à effectuer sur ce document.",
                     "user_id" => $user->id,
                 ]);
 
@@ -1584,14 +1592,14 @@ $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user(
                     "key" => "Numérisation du courrier",
                     "historiquecable_id" => $courrier->id,
                     "historiquecable_type" => Courrier::class,
-                    "description" => "A numérisé un courrier",
+                    "description" => Auth::user()->name." a numérisé ce document",
                     "user_id" => Auth::user()->id,
                 ]);
 
                 $content = json_encode([
                     'name' => 'Courriers',
                     'statut' => 'success',
-                    'message' => 'Courrier numérisé et envoyé aux assistants du DG avec succès !',
+                    'message' => Auth::user()->name.' a numérisé ce document ',
                 ]);
 
             } elseif ($request->get('type') == 3) { // Logique pour Courrier Interne (Destinataire est un agent)
@@ -1996,14 +2004,14 @@ public function update(Request $request, $id)
             "key" => "Mise à jour du courrier",
             "historiquecable_id" => $courrier->id,
             "historiquecable_type" => Courrier::class,
-            "description" => "A mis à jour le courrier.",
+            "description" => Auth::user()->name." a mis à jour les informations du document.",
             "user_id" => Auth::user()->id,
         ]);
 
         $content = json_encode([
             'name' => 'Courriers',
             'statut' => 'success',
-            'message' => 'Courrier mis à jour avec succès !',
+            'message' => Auth::user()->name.' a mis à jour les informations du document.',
         ]);
     } catch (\Throwable $th) {
         dd([
