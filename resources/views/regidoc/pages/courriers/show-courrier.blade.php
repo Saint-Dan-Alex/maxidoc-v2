@@ -2041,7 +2041,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            @if (!Auth::user()->agent->isSecretaire())
+                            @if (Auth::user()->agent->isAssistant() || !Auth::user()->agent->isSecretaire() || Auth::user()->agent->isDG())
                                 <div class="col-12 block_echeances">
                                     <div class="d-flex align-items-center">
                                         <label for="check-date" class="mb-0">Ajouter une échéance</label>
