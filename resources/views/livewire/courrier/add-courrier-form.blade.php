@@ -506,7 +506,7 @@
     
     <div class="footer-sidebar">
         <a href="{{ route('regidoc.courriers.index') }}" class="btn btn-concel">Annuler</a>
-        <button type="button" class="btn btn-valid" @disabled(!$isFormValid) id="submit-btn">Numériser</button>
+        <button type="submit" class="btn btn-valid" @disabled(!$isFormValid) id="submit-btn">Numériser</button>
     </div>
 </form>
     </div>

@@ -10909,3 +10909,7 @@
 [2025-09-03 15:33:41] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":9,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"1","K-%"]} 
 [2025-09-03 15:35:27] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":"3","prefix":"K"} 
 [2025-09-03 15:35:27] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":2,"type":"3","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"3","K-%"]} 
+[2025-09-03 15:50:10] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-09-03 15:50:16] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":"1","prefix":"K"} 
+[2025-09-03 15:50:16] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":9,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"1","K-%"]} 
+[2025-09-03 15:51:07] local.INFO: Fichier stocké avec succès {"chemin":"documents/September2025/pFRylbjy6SB0GJMjbKQA.pdf","nom_original":"Modifications MaxiDoc.pdf"} 
