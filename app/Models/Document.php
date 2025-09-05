@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
-use \Venturecraft\Revisionable\Revisionabluse App\Models\Redacteur;
+use \Venturecraft\Revisionable\RevisionableTrait;
+use App\Models\Redacteur;
 use App\Models\Destination;
 
 class Document extends Model
@@ -86,9 +87,6 @@ class Document extends Model
     {
         return $this->belongsTo(Destination::class, 'destination_id');
     }
- [
-        'document' => 'array',
-    ];
 
     protected $guarded = [];
     /**
