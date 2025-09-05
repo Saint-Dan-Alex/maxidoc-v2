@@ -11039,3 +11039,434 @@
 [2025-09-05 09:25:07] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
 [2025-09-05 09:25:13] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":"1","prefix":"K"} 
 [2025-09-05 09:25:13] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":10,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"1","K-%"]} 
+[2025-09-05 10:06:15] local.ERROR: Trait "Spatie\Activitylog\Traits\LogsActivity" not found {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Trait \"Spatie\\Activitylog\\Traits\\LogsActivity\" not found at C:\\wamp64\\www\\maxidoc-projet-origine\\app\\Models\\Document.php:13)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Trait \"Spatie\\\\...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
+[2025-09-05 10:06:24] local.ERROR: Trait "Spatie\Activitylog\Traits\LogsActivity" not found {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Trait \"Spatie\\Activitylog\\Traits\\LogsActivity\" not found at C:\\wamp64\\www\\maxidoc-projet-origine\\app\\Models\\Document.php:13)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Trait \"Spatie\\\\...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
+[2025-09-05 10:07:25] local.ERROR: Trait "Spatie\Activitylog\Traits\LogsActivity" not found {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Trait \"Spatie\\Activitylog\\Traits\\LogsActivity\" not found at C:\\wamp64\\www\\maxidoc-projet-origine\\app\\Models\\Document.php:13)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Trait \"Spatie\\\\...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
+[2025-09-05 10:08:23] local.ERROR: Trait "Spatie\Activitylog\Traits\LogsActivity" not found {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Trait \"Spatie\\Activitylog\\Traits\\LogsActivity\" not found at C:\\wamp64\\www\\maxidoc-projet-origine\\app\\Models\\Document.php:13)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Trait \"Spatie\\\\...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
+[2025-09-05 10:09:23] local.ERROR: Trait "Spatie\Activitylog\Traits\LogsActivity" not found {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Trait \"Spatie\\Activitylog\\Traits\\LogsActivity\" not found at C:\\wamp64\\www\\maxidoc-projet-origine\\app\\Models\\Document.php:13)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(261): Symfony\\Component\\ErrorHandler\\Error\\FatalError->__construct(message: ''Trait \"Spatie\\\\...', code: '0', error: '['type' => 1, '...', traceOffset: '0', traceArgs: '???', trace: '???')
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(248): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->fatalErrorFromPhpError(error: '['type' => 1, '...', traceOffset: '0')
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleShutdown()
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(0): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure:C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php:271-273}()
+#4 {main}
+"} 
+[2025-09-05 10:09:47] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:10:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:10:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:11:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:11:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:12:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:12:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:13:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:13:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:13:36] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:13:36] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:13:36] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:14:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:14:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:15:25] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:15:25] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:16:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:16:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:16:26] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:17:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:18:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:18:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
+[2025-09-05 10:19:23] local.ERROR: include(C:\wamp64\www\maxidoc-projet-origine\vendor\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): include(C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer/../intervention/image/src/Intervention/Image/ImageServiceProvider.php): Failed to open stream: No such file or directory at C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php:576)
+[stacktrace]
+#0 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(272): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#1 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'include(C:\\\\wamp...', 'C:\\\\wamp64\\\\www\\\\m...', 576)
+#2 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(576): include('C:\\\\wamp64\\\\www\\\\m...')
+#3 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\composer\\ClassLoader.php(427): Composer\\Autoload\\{closure}('C:\\\\wamp64\\\\www\\\\m...')
+#4 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(775): Composer\\Autoload\\ClassLoader->loadClass('Intervention\\\\Im...')
+#5 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(709): Illuminate\\Foundation\\Application->resolveProvider('Intervention\\\\Im...')
+#6 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\ProviderRepository.php(75): Illuminate\\Foundation\\Application->register('Intervention\\\\Im...')
+#7 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(689): Illuminate\\Foundation\\ProviderRepository->load(Array)
+#8 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\RegisterProviders.php(17): Illuminate\\Foundation\\Application->registerConfiguredProviders()
+#9 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(265): Illuminate\\Foundation\\Bootstrap\\RegisterProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
+#10 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(383): Illuminate\\Foundation\\Application->bootstrapWith(Array)
+#11 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(153): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#12 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 {main}
+"} 
