@@ -790,16 +790,16 @@ class DocumentController extends Controller
         $document->archived_at = Carbon::now();
         
         // Si c'est un courrier entrant, on utilise expediteur_interne_id
-        if ($document->type === 'courrier_entrant' && $document->courrier) {
-            $document->courrier->expediteur_interne_id = $request->expediteur_interne_id;
-            $document->courrier->save();
+        if ($document->type === 1 && $document->courrier) {
+            $document->emetteur = $request->expediteur_externe;
+            
         } else {
             // Pour les autres types, on utilise expediteur_externe
-            $document->expediteur_externe = $request->expediteur_externe;
+            $document->expediteur_interne_id = $request->expediteur_interne_id;
         }
         
         // Gestion du destinataire pour les documents sortants
-        if ($document->type !== 'courrier_entrant' && $request->has('destinataire_interne_id')) {
+        if ($document->type !== 1 && $request->has('destinataire_interne_id')) {
             $document->destinataire_interne_id = $request->destinataire_interne_id;
         }
         
