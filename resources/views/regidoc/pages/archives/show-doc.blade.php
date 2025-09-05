@@ -68,6 +68,8 @@
                         <div class="col-12">
                             <div class="item">
                                 <div class="row">
+                                {{-- <label for="inputPassword" class="col-5 col-form-label">Nom</label> --}}
+
                                     <div class="col-5">
                                         <span>N° d'enregistrement</span>
                                     </div>
@@ -95,6 +97,7 @@
                             </div>
                         </div>
                         
+                        @if($find_document->description)                        
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Description</label>
@@ -105,7 +108,7 @@
                                 </div>
                             </div>
                         </div>
-
+                        @endif
 
                         <div class="col-12">
                             <div class="row align-items-center">
@@ -118,6 +121,36 @@
                                 </div>
                             </div>
                         </div>
+                        @if($find_document->emetteur)
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Emetteur</label>
+                                <div class="col-7">
+                                    <p class="items">
+                                        {{$find_document->emetteur}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        
+                        @if($find_document->destination)
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Destination</label>
+                                <div class="col-7">
+                                    <p class="items">
+                                        {{$find_document->destination}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+
+
+                        @if($find_document->courrier)
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Type de document</label>
@@ -128,6 +161,7 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
                         {{-- @if($find_document->nature) --}}
                         <div class="col-12">
                             <div class="item">
@@ -156,16 +190,20 @@
                             </div>
                         </div>
                         @endif
+
+                        @if ($find_document->date_arrive)
                         <div class="col-12">
                             <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Date de création</label>
+                                <label for="inputPassword" class="col-5 col-form-label">Date d'émission</label>
                                 <div class="col-7">
                                     <p class="items">
-                                        {{ $find_document->created_at->isoFormat('LL') }}
+
+                                        {{ \Carbon\Carbon::parse($find_document->date_arrive)->isoFormat('LL') }}
                                     </p>
                                 </div>
                             </div>
                         </div>
+                        @endif
                         @if ($find_document->priorite)
                             <div class="col-12">
                                 <div class="item">
@@ -184,7 +222,7 @@
                                 </div>
                             </div>
                         @endif
-                        <div class="col-12">
+                        {{-- <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Ajouté par</label>
                                 <div class="col-7">
@@ -194,7 +232,7 @@
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
                     </div>
                 </div>

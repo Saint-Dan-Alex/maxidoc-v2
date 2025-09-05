@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('libelle', 255)->nullable();
             $table->text('title')->nullable();
             $table->text('emetteur')->nullable();
+            $table->text('destination')->nullable();
             $table->text('redacteur')->nullable();
             $table->foreignId('type')->nullable()->constrained('document_types')->nullOnDelete();
             $table->text('description')->nullable();
