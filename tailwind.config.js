@@ -7,6 +7,9 @@ module.exports = {
     "./vendor/laravel/jetstream/**/*.blade.php",
     "./storage/framework/views/*.php",
     "./resources/views/**/*.blade.php",
+    "./app/Http/Livewire/**/*.php",
+    "./resources/views/livewire/**/*.blade.php",
+    "./vendor/livewire/livewire/src/Features/**/*.blade.php",
   ],
 
   theme: {

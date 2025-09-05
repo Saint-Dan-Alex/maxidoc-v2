@@ -5,6 +5,8 @@ namespace App\Http\Livewire\Courrier;
 use App\Models\CourriersAnnotation;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use App\Models\Historique;
+use App\Models\Courrier;
 
 class AnnotationModal extends Component
 {
@@ -41,6 +43,14 @@ class AnnotationModal extends Component
             // Mise à jour de l'annotation existante
             $this->annotation->note = $this->stat['note'];
             $this->annotation->save();
+
+            Historique::create([
+                "key" => "Annotation",
+                "historiquecable_id" => $this->courrier->id,
+                "historiquecable_type" => Courrier::class,
+                "description" => Auth::user()->name.' a modifié une annotation sur ce document ',
+                "user_id" => Auth::user()->id,
+            ]);
         } else {
             // Création d'une nouvelle annotation
             $annotation = new CourriersAnnotation();
@@ -48,6 +58,14 @@ class AnnotationModal extends Component
             $annotation->courrier_id = $this->courrier->id;
             $annotation->note = $this->stat['note'];
             $annotation->save();
+
+            Historique::create([
+                "key" => "Annotation",
+                "historiquecable_id" => $this->courrier->id,
+                "historiquecable_type" => Courrier::class,
+                "description" => Auth::user()->name.'  a ajouté une nouvelle annotation à ce document.',
+                "user_id" => Auth::user()->id,
+            ]);
         }
 
         $this->emit('annotationSaved');

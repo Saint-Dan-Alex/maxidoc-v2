@@ -47,11 +47,15 @@ class Sortants extends Component
 
             foreach ($courrier->etapes as $etape) {
                 if ($etape->pivot->view_by) {
-                    $followers->push(User::find($etape->pivot->view_by)->agent);
+                    $user = User::with('agent')->find($etape->pivot->view_by);
+                    if ($user && $user->agent) {
+                        $followers->push($user->agent);
+                    }
                 }
             }
 
-            $courrier->followers = $followers->unique();
+            // S'assurer que seuls les agents valides sont conservés
+            $courrier->followers = $followers->filter()->unique('id');
 
             return $courrier;
         });

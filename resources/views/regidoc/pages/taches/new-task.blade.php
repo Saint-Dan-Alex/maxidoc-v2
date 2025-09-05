@@ -179,21 +179,26 @@
                                             <div class="d-flex align-items-center">
                                                 <div class="form-check form-switch">
                                                     <input type="checkbox" id="permission-9" name="echeanche"
-                                                        class="echeance-toggle form-check-input" value="" checked>
+                                                        class="echeance-toggle form-check-input" value="" >
                                                 </div>
                                                 <label for="permission-9" class="mb-0" style="font-size: 14px">
                                                     Ajouter une échéance</label>
                                             </div>
                                         </div>
+                                        {{-- <div class="col-lg-12 mb-2 echeance d-none">
+                                            <label class="mb-2">Date de début</label>
+                                            <input type="datetime-local" class="form-control" placeholder="Objectif assigné"
+                                                name="date_debut">
+                                        </div> --}}
                                         <div class="col-lg-12 mb-2 echeance d-none">
                                             <label class="mb-2">Date de début</label>
-                                            <input type="date" class="form-control" placeholder="Objectif assigné"
-                                                name="date_debut">
+                                            <input type="datetime-local" class="form-control" placeholder="Objectif assigné"
+                                                name="date_debut" id="date_debut" readonly>
                                         </div>
                                         <div class="col-lg-12 mb-2 echeance d-none">
                                             <label class="mb-2">Date d'échéance</label>
-                                            <input type="date" class="form-control" placeholder="Objectif assigné"
-                                                name="date_fin">
+                                            <input type="datetime-local" class="form-control" placeholder="Objectif assigné"
+                                                name="date_fin" min="{{ now()->format('Y-m-d\TH:i') }}">
                                         </div>
 
                                         <div class="col-lg-12">
@@ -242,7 +247,10 @@
                                                 <div class="mt-3 d-flex justify-content-end mt-lg-4">
                                                     <a href="{{ url()->previous() }}" class="btn me-3"
                                                         style="padding: 10px 24px; font-size: 14px">Annuler</a>
-                                                    <button class="btn btn-add" style="padding: 10px 24px">Créer</button>
+                                                    <button type="submit" class="btn btn-add" id="createTaskBtn" style="padding: 10px 24px">
+                                                        <span class="btn-text">Créer</span>
+                                                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -263,10 +271,43 @@
     <script src="{{ asset('vendor/select2/dist/js/select2.min.js') }}"></script>
     <script src="{{ asset('vendor/jdikasaDropZone/dist/js/jdikasaDropZone.js') }}"></script>
     <script>
-        $(document).ready(function() {
+    // Fonction pour formater la date et heure actuelle au format yyyy-MM-ddTHH:mm
+    function getCurrentDateTime() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
 
+    // Insère la date dans le champ à l'ouverture de la page
+    document.addEventListener("DOMContentLoaded", function() {
+        const dateInput = document.getElementById("date_debut");
+        dateInput.value = getCurrentDateTime();
+    });
+    </script>
+    <script>
+        $(document).ready(function() {
+            // Initialisation de Select2
             $('.select2').select2({
-                width: "100%",
+                width: "100%"
+            });
+
+            // Gestion de la soumission du formulaire
+            $('form').on('submit', function(e) {
+                const submitBtn = $('#createTaskBtn');
+                if (submitBtn.length) {
+                    const spinner = submitBtn.find('.spinner-border');
+                    const btnText = submitBtn.find('.btn-text');
+                    
+                    // Désactiver le bouton et afficher le spinner
+                    submitBtn.prop('disabled', true);
+                    btnText.text('Création en cours...');
+                    spinner.removeClass('d-none');
+                }
+                // La soumission continue normalement
             });
 
             $('body').on('click', '.btn-add-agent', function() {

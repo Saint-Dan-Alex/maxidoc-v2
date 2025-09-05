@@ -43,7 +43,7 @@
                                Caissière
                             </p>
                             <h6 class="mt-1" style="font-weight: 500!important">
-                                <span class="text-decoration-underline">C/° REGIDESO S.A /DCK-NORD/OUEST</span>
+                                <span class="text-decoration-underline">C/° Lerexcom Petroleum /DCK-NORD/OUEST</span>
                             </h6>
                             <p class="mb-0" style="font-size: 16px;">
                                 C.I : DRK-OUEST

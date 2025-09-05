@@ -18,38 +18,99 @@ class File
      */
     public function handle($fileRequested, $field, $table_slug, $options = null)
     {
-        $this->slug = $table_slug;
-        $this->options = $options;
-        $files = [];
+        try {
+            $this->slug = $table_slug;
+            $this->options = $options;
+            $files = [];
 
-        if ($fileRequested instanceof Request) {
-            if (!$fileRequested->hasFile($field)) {
-                return;
-            }else {
-                $files = Arr::wrap($fileRequested->file($field));
+            // Vérifier si le fichier est valide
+            if ($fileRequested instanceof Request) {
+                if (!$fileRequested->hasFile($field)) {
+                    \Log::error('Aucun fichier trouvé dans la requête pour le champ: ' . $field);
+                    return null;
+                } else {
+                    $files = Arr::wrap($fileRequested->file($field));
+                }
+            } elseif ($fileRequested instanceof UploadedFile) {
+                if (!$fileRequested->isValid()) {
+                    \Log::error('Fichier invalide: ' . $fileRequested->getError());
+                    return null;
+                }
+                $files = Arr::wrap($fileRequested);
+            } else {
+                \Log::error('Type de fichier non pris en charge: ' . gettype($fileRequested));
+                return null;
             }
-        }elseif($fileRequested instanceof UploadedFile){
-            $files = Arr::wrap($fileRequested);
+
+            $filesPath = [];
+            $path = $this->generatePath();
+            
+            // Créer le répertoire s'il n'existe pas
+            $fullPath = storage_path('app/public/' . $path);
+            if (!file_exists($fullPath)) {
+                if (!mkdir($fullPath, 0777, true)) {
+                    \Log::error('Impossible de créer le répertoire: ' . $fullPath);
+                    return null;
+                }
+            }
+
+            foreach ($files as $file) {
+                if (!$file->isValid()) {
+                    \Log::error('Erreur de téléversement: ' . $file->getErrorMessage());
+                    continue;
+                }
+
+                $filename = $this->generateFileName($file, $path);
+                $fullFilename = $filename . '.' . $file->getClientOriginalExtension();
+                $filePath = $path . $fullFilename;
+                
+                // Vérifier si le fichier existe déjà
+                if (Storage::disk('public')->exists($filePath)) {
+                    \Log::warning('Le fichier existe déjà: ' . $filePath);
+                    $filename = $filename . '_' . time();
+                    $fullFilename = $filename . '.' . $file->getClientOriginalExtension();
+                    $filePath = $path . $fullFilename;
+                }
+                
+                // Téléverser le fichier
+                $storedPath = $file->storeAs(
+                    $path,
+                    $fullFilename,
+                    'public'
+                );
+
+                if (!$storedPath) {
+                    \Log::error('Échec du stockage du fichier: ' . $file->getClientOriginalName());
+                    continue;
+                }
+
+                // Nettoyer le chemin avant de le stocker
+                $cleanFilePath = str_replace('\\', '/', $filePath);
+                $cleanFilePath = ltrim($cleanFilePath, '/'); // Supprimer les slashes en début de chaîne
+                
+                array_push($filesPath, [
+                    'download_link' => $cleanFilePath,
+                    'original_name' => $file->getClientOriginalName(),
+                ]);
+                
+                \Log::info('Fichier stocké avec succès', [
+                    'chemin' => $cleanFilePath,
+                    'nom_original' => $file->getClientOriginalName()
+                ]);
+            }
+
+            if (empty($filesPath)) {
+                \Log::error('Aucun fichier n\'a pu être téléversé');
+                return null;
+            }
+
+            return json_encode($filesPath);
+            
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors du traitement du fichier: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return null;
         }
-
-        $filesPath = [];
-        $path = $this->generatePath();
-
-        foreach ($files as $file) {
-            $filename = $this->generateFileName($file, $path);
-            $file->storeAs(
-                $path,
-                $filename.'.'.$file->getClientOriginalExtension(),
-                'public'
-            );
-
-            array_push($filesPath, [
-                'download_link' => $path.$filename.'.'.$file->getClientOriginalExtension(),
-                'original_name' => $file->getClientOriginalName(),
-            ]);
-        }
-
-        return json_encode($filesPath);
     }
 
     /**

@@ -34,8 +34,27 @@ class Document extends Model
     protected $revisionNullString = 'vide';
     protected $revisionUnknownString = 'inconnu';
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'document' => 'array',
+    ];
 
     protected $guarded = [];
+    /**
+     * Get all pieces jointes for the document.
+     */
+    /**
+     * Get all pieces jointes for the document.
+     */
+    public function piecesJointes()
+    {
+        return $this->hasMany(PieceJointe::class, 'document_id');
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -143,6 +162,16 @@ class Document extends Model
     public function taches()
     {
         return $this->belongsToMany(Tache::class, 'tache_documents', 'document_id', 'tache_id');
+    }
+
+    /**
+     * Get the user who unarchived the document
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function desarchiveBy()
+    {
+        return $this->belongsTo(User::class, 'desarchive_by');
     }
 
     /**

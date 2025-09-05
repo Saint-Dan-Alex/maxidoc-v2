@@ -50,8 +50,8 @@
                 <thead>
                     <tr>
                         <th scope="col">Nom</th>
-                        <th scope="col">Responsable</th>
-                        <th scope="col">Description</th>
+                        {{-- <th scope="col">Responsable</th>
+                        <th scope="col">Description</th> --}}
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
@@ -61,21 +61,23 @@
                             <td> {{ $grade->titre }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
-                                    {{-- <a href="#" class="btn btn-primary  p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-show-grade-{{ $grade->id }}"><i
-                                            class="fi fi-rr-eye"></i>
-                                        Voir</a> --}}
-                                    <a href="#" class="btn btn-success  p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-edit-grade-{{ $grade->id }}"><i
-                                            class="fi fi-rr-pencil"></i>
-                                        Editer</a>
-                                    <form action="{{ route('regidoc.grades.destroy', $grade) }}" method="POST"
-                                        style="flex: 0 0 auto">
+                                    {{-- <a href="#" class="btn btn-primary me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-show-grade-{{ $grade->id }}">
+                                        <i class="fi fi-rr-eye"></i>
+                                        <span class="btn-text">Voir</span>
+                                    </a> --}}
+                                    <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-edit-grade-{{ $grade->id }}">
+                                        <i class="fi fi-rr-pencil"></i>
+                                        <span class="btn-text">Éditer</span>
+                                    </a>
+                                    <form action="{{ route('regidoc.grades.destroy', $grade) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger  p-2"><i
-                                                class="fi fi-rr-trash"></i>
-                                            Supprimer</button>
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce grade ?')">
+                                            <i class="fi fi-rr-trash"></i>
+                                            <span class="btn-text">Supprimer</span>
+                                        </button>
                                     </form>
 
                                 </div>
@@ -83,17 +85,21 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">
+                            <td colspan="4" class="text-center">
                                 <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucun departement trouvé</p>
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p>Aucun grade trouvé</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="mt-4 d-flex justify-content-center">
+            {{ $grades->links() }}
         </div>
     </div>
 </div>

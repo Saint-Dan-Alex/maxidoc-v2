@@ -357,26 +357,36 @@
         $docToShow = '';
         $nameDocToShow = '';
         $docToShowId = '';
-        if ($courrier->traitements->count()) {
-            if ($courrier->traitements->last()->document_url) {
-                $docToShow = str_replace('\\', '/', files($courrier->traitements->last()->document_url)->link);
-                $nameDocToShow = files($courrier->traitements->last()->document_url)->name;
-                // $docToShowId = $tache->documents->last()->id;
-            } else {
-                $docToShow = str_replace('\\', '/', files($courrier->document?->document)->link);
-                $nameDocToShow = files($courrier->document?->document)->name;
-                $docToShowId = $courrier->document?->id;
-            }
-        } else {
-            $docToShow = str_replace('\\', '/', files($courrier->document?->document)->link);
-            $nameDocToShow = files($courrier->document?->document)->name;
-            $docToShowId = $courrier->document?->id;
+        
+        // Debug: Afficher les informations sur le document
+        $debugInfo = [
+            'has_traitements' => $courrier->traitements->count() > 0,
+            'document_exists' => $courrier->document ? 'Oui' : 'Non',
+            'document_path' => $courrier->document?->document ?? 'N/A'
+        ];
+        
+        if ($courrier->traitements->count() && $courrier->traitements->last()->document_url) {
+            $docToShow = str_replace('\\', '/', files($courrier->traitements->last()->document_url)->link);
+            $nameDocToShow = files($courrier->traitements->last()->document_url)->name;
+        } elseif ($courrier->document?->document) {
+            $docToShow = str_replace('\\', '/', files($courrier->document->document)->link);
+            $nameDocToShow = files($courrier->document->document)->name;
+            $docToShowId = $courrier->document->id;
         }
+        
+        // Debug: Afficher l'URL finale
+        $debugInfo['final_doc_url'] = $docToShow;
     @endphp
+    
+    {{-- Debug --}}
+    <div class="d-none">
+        <pre>@php print_r($debugInfo) @endphp</pre>
+        <p>URL du document: {{ $docToShow }}</p>
+    </div>
 
     <div class="sidebar">
         <div class="px-3 py-3 logo text-start d-flex align-items-center justify-content-between">
-            <h6 class="mb-0" style="color: var(--colorTitre)">Aperçu du courrier</h6>
+            <h6 class="mb-0" style="color: var(--colorTitre)">Aperçu du document</h6>
         </div>
 
         <div class="content-sidebar">
@@ -401,7 +411,7 @@
                     }
                 @endphp
                 <ul class="lists">
-                    @if ($courrier->type_id != 2)
+                    @if (!in_array($courrier->type_id, [2,3]) )
                         {{-- <li class="assistant-trait @if (!($hasSeen && (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) && $courrier->author->id != Auth::user()->agent->id && !$aTraite)) d-none @endif"> --}}
                         @php
                             $dgaSecretaires = \App\Models\Direction::find(1)
@@ -419,7 +429,9 @@
                                     $courrier->author->id != Auth::user()->agent->id &&
                                     !$aTraite
                                 )) d-none @endif">
-                                <a data-bs-toggle="modal" data-bs-target="#traitement-modal" href="javascript:void(0)"
+
+                                @if ($courrier->etape === "termine")
+                                    <a data-bs-toggle="modal" data-bs-target="#traitement-modal" href="javascript:void(0)"
                                     class="dropdown-item">
                                     <span class="d-flex align-items-center">
                                         <i class="fi fi-rr-hourglass-end"></i>
@@ -428,9 +440,26 @@
                                         Traiter
                                     </span>
                                 </a>
+                                   
+                                @else
+                                    <a href="{{route('regidoc.courriers.edit',$courrier->id)}}" class="dropdown-item d-flex align-items-center">
+                                        <i class="fi fi-rr-edit me-2"></i>
+                                        <span class="title">Compléter les infos</span>
+                                    </a>  
+                                    
+                                @endif
+
+                               
+
+                                
+
+
+
                             </li>
                         @endif
                     @endif
+                                      
+
 
                     <li>
                         <a data-bs-toggle="offcanvas" href="#offcanvasInfoDoc" class="dropdown-item">
@@ -443,10 +472,13 @@
                                 </svg>
                             </span>
                             <span class="title">
-                                Détails du courrier
+                                Détails du document
                             </span>
                         </a>
                     </li>
+
+                   
+                   
 
                     @can('Suivi des courriers')
                         <li>
@@ -458,29 +490,15 @@
                         </li>
                     @endcan
 
-                    @if ($courrier->type_id != 2)
-                        @can('Assigner une tâche')
-                            @if ($courrier->document)
-                                @if (!Auth::user()->agent->isSecretaire())
-                                    @if (!Auth::user()->agent->isDGA())
-                                        <li>
-                                            <a href="javascript:void(0)" data-bs-target="#dga-modal" data-bs-toggle="modal"
-                                                @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
-                                                <span class="d-flex align-items-center">
-                                                    <svg viewBox="0 0 24 24" width="512" height="512">
-                                                        <path
-                                                            d="M19,4h-1.1c-.46-2.28-2.48-4-4.9-4h-2c-2.41,0-4.43,1.72-4.9,4h-1.1C2.24,4,0,6.24,0,9v10c0,2.76,2.24,5,5,5h14c2.76,0,5-2.24,5-5V9c0-2.76-2.24-5-5-5ZM11,2h2c1.3,0,2.42,.84,2.83,2h-7.66c.41-1.16,1.52-2,2.83-2Zm11,17c0,1.65-1.35,3-3,3H5c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3h14c1.65,0,3,1.35,3,3v10Zm-4.85-7.1c.54,.54,.85,1.3,.85,2.1s-.31,1.55-.88,2.12l-2.39,2.56c-.2,.21-.46,.32-.73,.32-.24,0-.49-.09-.68-.27-.4-.38-.43-1.01-.05-1.41l2.16-2.32H7c-.55,0-1-.45-1-1s.45-1,1-1H15.43l-2.16-2.32c-.38-.4-.35-1.04,.05-1.41,.4-.38,1.04-.35,1.41,.05l2.41,2.59Z" />
-                                                    </svg>
-                                                </span>
-                                                <span class="title">
-                                                    Transmettre au DGA
-                                                </span>
-                                            </a>
-                                        </li>
-                                    @endif
+                   @if ($courrier->type_id == 1)
+                    {{-- Logique pour type_id == 1 (Courrier Entrant) : Garde toutes les conditions et les CAN --}}
 
+                    {{-- @can('Assigner une tâche')
+                        @if ($courrier->document)
+                            @if (!Auth::user()->agent->isSecretaire())
+                                @if (!Auth::user()->agent->isDGA())
                                     <li>
-                                        <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) }}"
+                                        <a href="javascript:void(0)" data-bs-target="#dga-modal" data-bs-toggle="modal"
                                             @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
                                             <span class="d-flex align-items-center">
                                                 <svg viewBox="0 0 24 24" width="512" height="512">
@@ -489,101 +507,115 @@
                                                 </svg>
                                             </span>
                                             <span class="title">
-                                                Assigner à une direction
-                                            </span>
-                                        </a>
-                                    </li>
-
-                                    <li>
-                                        <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'agent', 'courrier_id' => $courrier->id]) }}"
-                                            @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
-                                            <span class="d-flex align-items-center">
-                                                <svg viewBox="0 0 24 24" width="512" height="512">
-                                                    <path
-                                                        d="M15,6c0-3.309-2.691-6-6-6S3,2.691,3,6s2.691,6,6,6,6-2.691,6-6Zm-6,4c-2.206,0-4-1.794-4-4s1.794-4,4-4,4,1.794,4,4-1.794,4-4,4Zm-.008,4.938c.068,.548-.32,1.047-.869,1.116-3.491,.436-6.124,3.421-6.124,6.946,0,.552-.448,1-1,1s-1-.448-1-1c0-4.531,3.386-8.37,7.876-8.93,.542-.069,1.047,.32,1.116,.869Zm13.704,4.195l-.974-.562c.166-.497,.278-1.019,.278-1.572s-.111-1.075-.278-1.572l.974-.562c.478-.276,.642-.888,.366-1.366-.277-.479-.887-.644-1.366-.366l-.973,.562c-.705-.794-1.644-1.375-2.723-1.594v-1.101c0-.552-.448-1-1-1s-1,.448-1,1v1.101c-1.079,.22-2.018,.801-2.723,1.594l-.973-.562c-.48-.277-1.09-.113-1.366,.366-.276,.479-.112,1.09,.366,1.366l.974,.562c-.166,.497-.278,1.019-.278,1.572s.111,1.075,.278,1.572l-.974,.562c-.478,.276-.642,.888-.366,1.366,.186,.321,.521,.5,.867,.5,.169,0,.341-.043,.499-.134l.973-.562c.705,.794,1.644,1.375,2.723,1.594v1.101c0,.552,.448,1,1,1s1-.448,1-1v-1.101c1.079-.22,2.018-.801,2.723-1.594l.973,.562c.158,.091,.33,.134,.499,.134,.346,0,.682-.179,.867-.5,.276-.479,.112-1.09-.366-1.366Zm-5.696,.866c-1.654,0-3-1.346-3-3s1.346-3,3-3,3,1.346,3,3-1.346,3-3,3Z" />
-                                                </svg>
-                                            </span>
-                                            <span class="title">
-                                                Assigner à un agent
+                                                Transmettre au DGA
                                             </span>
                                         </a>
                                     </li>
                                 @endif
-                            @endif
-                        @endcan
-
-                        @can('Signer un courrier')
-                            @if (!Auth::user()->agent->isSecretaire())
                                 <li>
-                                    <a href="{{ route('regidoc.documents.sign', ['doc_id' => $courrier->document?->id, 'is_original' => true, 'courrier_id' => $courrier->id]) }}{{-- route('regidoc.courriers.signer',$courrier) --}}"
-                                        @class(['dropdown-item signature_btn', 'btn disabled' => $aTraite]) @disabled($aTraite)>
-                                        {{-- <a href="{{ route('regidoc.courriers.signer', $courrier) }}" @class(['dropdown-item', 'btn disabled' => $aTraite])
-                                        @disabled($aTraite)> --}}
+                                    <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) }}"
+                                        @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
                                         <span class="d-flex align-items-center">
                                             <svg viewBox="0 0 24 24" width="512" height="512">
                                                 <path
-                                                    d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1,.45,1,1Z" />
+                                                    d="M19,4h-1.1c-.46-2.28-2.48-4-4.9-4h-2c-2.41,0-4.43,1.72-4.9,4h-1.1C2.24,4,0,6.24,0,9v10c0,2.76,2.24,5,5,5h14c2.76,0,5-2.24,5-5V9c0-2.76-2.24-5-5-5ZM11,2h2c1.3,0,2.42,.84,2.83,2h-7.66c.41-1.16,1.52-2,2.83-2Zm11,17c0,1.65-1.35,3-3,3H5c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3h14c1.65,0,3,1.35,3,3v10Zm-4.85-7.1c.54,.54,.85,1.3,.85,2.1s-.31,1.55-.88,2.12l-2.39,2.56c-.2,.21-.46,.32-.73,.32-.24,0-.49-.09-.68-.27-.4-.38-.43-1.01-.05-1.41l2.16-2.32H7c-.55,0-1-.45-1-1s.45-1,1-1H15.43l-2.16-2.32c-.38-.4-.35-1.04,.05-1.41,.4-.38,1.04-.35,1.41,.05l2.41,2.59Z" />
                                             </svg>
                                         </span>
                                         <span class="title">
-                                            Signer
+                                            Assigner à une direction
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'agent', 'courrier_id' => $courrier->id]) }}"
+                                        @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                        <span class="d-flex align-items-center">
+                                            <svg viewBox="0 0 24 24" width="512" height="512">
+                                                <path
+                                                    d="M15,6c0-3.309-2.691-6-6-6S3,2.691,3,6s2.691,6,6,6,6-2.691,6-6Zm-6,4c-2.206,0-4-1.794-4-4s1.794-4,4-4,4,1.794,4,4-1.794,4-4,4Zm-.008,4.938c.068,.548-.32,1.047-.869,1.116-3.491,.436-6.124,3.421-6.124,6.946,0,.552-.448,1-1,1s-1-.448-1-1c0-4.531,3.386-8.37,7.876-8.93,.542-.069,1.047,.32,1.116,.869Zm13.704,4.195l-.974-.562c.166-.497,.278-1.019,.278-1.572s-.111-1.075-.278-1.572l.974-.562c.478-.276,.642-.888,.366-1.366-.277-.479-.887-.644-1.366-.366l-.973,.562c-.705-.794-1.644-1.375-2.723-1.594v-1.101c0-.552-.448-1-1-1s-1,.448-1,1v1.101c-1.079,.22-2.018,.801-2.723,1.594l-.973-.562c-.48-.277-1.09-.113-1.366,.366-.276,.479-.112,1.09-.366,1.366l.974,.562c-.166,.497-.278,1.019-.278,1.572s.111,1.075,.278,1.572l-.974,.562c-.478,.276-.642,.888-.366,1.366,.186,.321,.521,.5,.867,.5,.169,0,.341-.043,.499-.134l.973-.562c.705,.794,1.644,1.375,2.723,1.594v1.101c0,.552,.448,1,1,1s1-.448,1-1v-1.101c1.079-.22,2.018-.801,2.723-1.594l.973,.562c.158,.091,.33,.134,.499,.134,.346,0,.682-.179,.867-.5,.276-.479,.112-1.09-.366-1.366Zm-5.696,.866c-1.654,0-3-1.346-3-3s1.346-3,3-3,3,1.346,3,3-1.346,3-3,3Z" />
+                                            </svg>
+                                        </span>
+                                        <span class="title">
+                                            Assigner à un agent
                                         </span>
                                     </a>
                                 </li>
                             @endif
-                        @endcan
-
-
-                        {{-- @can('Valider un courrier')
-                        <li>
-                            <a href="javascript:void(0)" @class(['dropdown-item', 'btn disabled' => $aTraite]) data-bs-target="#modal-validation"
-                                data-bs-toggle="modal" @disabled($aTraite)>
-                                <i class="fi fi-rr-check"></i>
-                                <span class="title">
-                                    Valider
-                                </span>
-                            </a>
-                        </li>
+                        @endif
                     @endcan --}}
 
-                        @can('Partager un courrier')
-                            @if (!Auth::user()->agent->isSecretaire())
-                                <li>
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#modal-new-task-ass"
-                                        @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
-                                        <i class="fi fi-rr-share"></i>
-                                        <span class="title"> Partager pour traitement</span>
-                                    </a>
-                                </li>
-                            @endif
-                        @endcan
-                    @endif
-
-                    {{-- @can('Rejeter un courrier')
-                        <li>
-                            <a href="javascript:void(0)" data-bs-target="#modal-reject" data-bs-toggle="modal"
-                                @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
-                                <span>
-                                    <svg viewBox="0 0 24 24" width="512" height="512">
-                                        <path
-                                            d="M16,8a1,1,0,0,0-1.414,0L12,10.586,9.414,8A1,1,0,0,0,8,9.414L10.586,12,8,14.586A1,1,0,0,0,9.414,16L12,13.414,14.586,16A1,1,0,0,0,16,14.586L13.414,12,16,9.414A1,1,0,0,0,16,8Z" />
-                                        <path
-                                            d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z" />
-                                    </svg>
-                                </span>
-                                <span class="title">
-                                    Rejeter
-                                </span>
-                            </a>
-                        </li>
+                    {{-- @can('Signer un document')
+                        @if (!Auth::user()->agent->isSecretaire())
+                            <li>
+                                <a href="{{ route('regidoc.documents.sign', ['doc_id' => $courrier->document?->id, 'is_original' => true, 'courrier_id' => $courrier->id]) }}"
+                                    @class(['dropdown-item signature_btn', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                    <span class="d-flex align-items-center">
+                                        <svg viewBox="0 0 24 24" width="512" height="512">
+                                            <path
+                                                d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1,.45,1,1Z" />
+                                        </svg>
+                                    </span>
+                                    <span class="title">
+                                        Signer
+                                    </span>
+                                </a>
+                            </li>
+                        @endif
                     @endcan --}}
 
-                    @can('Annoter un courrier')
+                    {{-- @can('Valider un document')
+                        @if($courrier->statut_id != 3 && $courrier->statut_id != 4)
+                            <li>
+                                <a href="javascript:void(0)" class="dropdown-item btn-valider-courrier" data-id="{{ $courrier->id }}">
+                                    <span class="d-flex align-items-center">
+                                        <svg viewBox="0 0 24 24" width="512" height="512">
+                                            <path d="M9,16.17L4.83,12l-1.42,1.41L9,19L21,7l-1.41-1.41L9,16.17z"/>
+                                        </svg>
+                                    </span>
+                                    <span class="title">
+                                        Valider
+                                    </span>
+                                </a>
+                            </li>
+                        @endif
+                    @endcan --}}
+
+                    @can('Partager un document')
+                        @if (!Auth::user()->agent->isSecretaire())
+                            <li>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modal-new-task-ass"
+                                    @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                    <i class="fi fi-rr-share"></i>
+                                    <span class="title"> Partager pour traitement</span>
+                                </a>
+                            </li>
+                        @endif
+                    @endcan
+
+                    {{-- @can('Rejeter un document')
+                        @if($courrier->statut_id != 3 && $courrier->statut_id != 4)
+                            <li>
+                                <a href="javascript:void(0)" class="dropdown-item btn-rejeter-courrier" data-id="{{ $courrier->id }}">
+                                    <span class="d-flex align-items-center">
+                                        <svg viewBox="0 0 24 24" width="512" height="512">
+                                            <path d="M16,8a1,1,0,0,0-1.414,0L12,10.586,9.414,8A1,1,0,0,0,8,9.414L10.586,12,8,14.586A1,1,0,0,0,9.414,16L12,13.414,14.586,16A1,1,0,0,0,16,14.586L13.414,12,16,9.414A1,1,0,0,0,16,8Z"/>
+                                            <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"/>
+                                        </svg>
+                                    </span>
+                                    <span class="title">
+                                        Rejeter
+                                    </span>
+                                </a>
+                            </li>
+                        @endif
+                    @endcan --}}
+
+                    @can('Annoter un document')
                         @if (
                             $hasSeen &&
-                                (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) &&
-                                $courrier->author->id != Auth::user()->agent->id &&
-                                !$aTraite)
+                            (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) &&
+                            $courrier->author->id != Auth::user()->agent->id &&
+                            !$aTraite)
                             <li>
                                 <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-annotation"
                                     @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
@@ -600,7 +632,189 @@
                             </li>
                         @endif
                     @endcan
-                </ul>
+
+                @elseif ($courrier->type_id == 2)
+                    {{-- Logique pour type_id == 2 : Retire tous les CAN et IF, sauf $aTraite --}}
+                    {{-- @can('Assigner une tâche')
+                        <li>
+                            <a href="javascript:void(0)" data-bs-target="#dga-modal" data-bs-toggle="modal"
+                                @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                <span class="d-flex align-items-center">
+                                    <svg viewBox="0 0 24 24" width="512" height="512">
+                                        <path
+                                            d="M19,4h-1.1c-.46-2.28-2.48-4-4.9-4h-2c-2.41,0-4.43,1.72-4.9,4h-1.1C2.24,4,0,6.24,0,9v10c0,2.76,2.24,5,5,5h14c2.76,0,5-2.24,5-5V9c0-2.76-2.24-5-5-5ZM11,2h2c1.3,0,2.42,.84,2.83,2h-7.66c.41-1.16,1.52-2,2.83-2Zm11,17c0,1.65-1.35,3-3,3H5c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3h14c1.65,0,3,1.35,3,3v10Zm-4.85-7.1c.54,.54,.85,1.3,.85,2.1s-.31,1.55-.88,2.12l-2.39,2.56c-.2,.21-.46,.32-.73,.32-.24,0-.49-.09-.68-.27-.4-.38-.43-1.01-.05-1.41l2.16-2.32H7c-.55,0-1-.45-1-1s.45-1,1-1H15.43l-2.16-2.32c-.38-.4-.35-1.04,.05-1.41,.4-.38,1.04-.35,1.41,.05l2.41,2.59Z" />
+                                    </svg>
+                                </span>
+                                <span class="title">
+                                    Transmettre au DGA
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) }}"
+                                @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                <span class="d-flex align-items-center">
+                                    <svg viewBox="0 0 24 24" width="512" height="512">
+                                        <path
+                                            d="M19,4h-1.1c-.46-2.28-2.48-4-4.9-4h-2c-2.41,0-4.43,1.72-4.9,4h-1.1C2.24,4,0,6.24,0,9v10c0,2.76,2.24,5,5,5h14c2.76,0,5-2.24,5-5V9c0-2.76-2.24-5-5-5ZM11,2h2c1.3,0,2.42,.84,2.83,2h-7.66c.41-1.16,1.52-2,2.83-2Zm11,17c0,1.65-1.35,3-3,3H5c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3h14c1.65,0,3,1.35,3,3v10Zm-4.85-7.1c.54,.54,.85,1.3,.85,2.1s-.31,1.55-.88,2.12l-2.39,2.56c-.2,.21-.46,.32-.73,.32-.24,0-.49-.09-.68-.27-.4-.38-.43-1.01-.05-1.41l2.16-2.32H7c-.55,0-1-.45-1-1s.45-1,1-1H15.43l-2.16-2.32c-.38-.4-.35-1.04,.05-1.41,.4-.38,1.04-.35,1.41,.05l2.41,2.59Z" />
+                                                </svg>
+                                            </span>
+                                            <span class="title">
+                                                Assigner à une direction
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'agent', 'courrier_id' => $courrier->id]) }}"
+                                @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                <span class="d-flex align-items-center">
+                                    <svg viewBox="0 0 24 24" width="512" height="512">
+                                        <path
+                                            d="M15,6c0-3.309-2.691-6-6-6S3,2.691,3,6s2.691,6,6,6,6-2.691,6-6Zm-6,4c-2.206,0-4-1.794-4-4s1.794-4,4-4,4,1.794,4,4-1.794,4-4,4Zm-.008,4.938c.068,.548-.32,1.047-.869,1.116-3.491,.436-6.124,3.421-6.124,6.946,0,.552-.448,1-1,1s-1-.448-1-1c0-4.531,3.386-8.37,7.876-8.93,.542-.069,1.047,.32,1.116,.869Zm13.704,4.195l-.974-.562c.166-.497,.278-1.019,.278-1.572s-.111-1.075-.278-1.572l.974-.562c.478-.276,.642-.888,.366-1.366-.277-.479-.887-.644-1.366-.366l-.973,.562c-.705-.794-1.644-1.375-2.723-1.594v-1.101c0-.552-.448-1-1-1s-1,.448-1,1v1.101c-1.079,.22-2.018,.801-2.723,1.594l-.973-.562c-.48-.277-1.09-.113-1.366,.366-.276,.479-.112,1.09-.366,1.366l.974,.562c-.166,.497-.278,1.019-.278,1.572s.111,1.075,.278,1.572l-.974,.562c-.478,.276-.642,.888-.366,1.366,.186,.321,.521,.5,.867,.5,.169,0,.341-.043,.499-.134l.973-.562c.705,.794,1.644,1.375,2.723,1.594v1.101c0,.552,.448,1,1,1s1-.448,1-1v-1.101c1.079-.22,2.018-.801,2.723-1.594l.973,.562c.158,.091,.33,.134,.499,.134,.346,0,.682-.179,.867-.5,.276-.479,.112-1.09-.366-1.366Zm-5.696,.866c-1.654,0-3-1.346-3-3s1.346-3,3-3,3,1.346,3,3-1.346,3-3,3Z" />
+                                    </svg>
+                                </span>
+                                <span class="title">
+                                    Assigner à un agent
+                                </span>
+                            </a>
+                        </li>
+                    @endcan --}}
+                    {{-- @can('Signer un document')
+                        <li>
+                            <a href="{{ route('regidoc.documents.sign', ['doc_id' => $courrier->document?->id, 'is_original' => true, 'courrier_id' => $courrier->id]) }}"
+                                @class(['dropdown-item signature_btn', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                <span class="d-flex align-items-center">
+                                    <svg viewBox="0 0 24 24" width="512" height="512">
+                                        <path
+                                            d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1,.45,1,1Z" />
+                                    </svg>
+                                </span>
+                                <span class="title">
+                                    Signer
+                                </span>
+                            </a>
+                        </li>   
+                    @endcan --}}
+        
+                    {{-- @can('Valider un document')
+                        <li>
+                            <a href="javascript:void(0)" class="dropdown-item btn-valider-courrier" data-id="{{ $courrier->id }}">
+                                <span class="d-flex align-items-center">
+                                    <svg viewBox="0 0 24 24" width="512" height="512">
+                                        <path d="M9,16.17L4.83,12l-1.42,1.41L9,19L21,7l-1.41-1.41L9,16.17z"/>
+                                    </svg>
+                                </span>
+                                <span class="title">
+                                    Valider
+                                </span>
+                            </a>
+                        </li>
+                    @endcan --}}
+
+                    @can('Partager un document')
+                        <li>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#modal-new-task-ass"
+                                @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                <i class="fi fi-rr-share"></i>
+                                <span class="title"> Partager pour traitement</span>
+                            </a>
+                        </li>
+                    @endcan
+    
+                    {{-- @can('Rejeter un document')
+                        <li>
+                                <a href="javascript:void(0)" class="dropdown-item btn-rejeter-courrier" data-id="{{ $courrier->id }}">
+                                    <span class="d-flex align-items-center">
+                                        <svg viewBox="0 0 24 24" width="512" height="512">
+                                            <path d="M16,8a1,1,0,0,0-1.414,0L12,10.586,9.414,8A1,1,0,0,0,8,9.414L10.586,12,8,14.586A1,1,0,0,0,9.414,16L12,13.414,14.586,16A1,1,0,0,0,16,14.586L13.414,12,16,9.414A1,1,0,0,0,16,8Z"/>
+                                            <path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"/>
+                                        </svg>
+                                    </span>
+                                    <span class="title">
+                                        Rejeter
+                                    </span>
+                                </a>
+                            </li>
+                    @endcan  --}}
+                    {{-- @can('Annoter un document')
+                        <li>
+                                <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-annotation"
+                                    @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                    <span class="d-flex align-items-center">
+                                        <svg viewBox="0 0 24 24">
+                                            <path
+                                                d="m22.75,9.693c.806.914,1.25,2.088,1.25,3.307v5c0,2.757-2.243,5-5,5H5c-2.757,0-5-2.243-5-5v-5c0-2.757,2.243-5,5-5h4c.553,0,1,.448,1,1s-.447,1-1,1h-4c-1.654,0-3,1.346-3,3v5c0,1.654,1.346,3,3,3h14c1.654,0,3-1.346,3-3v-5c0-.731-.267-1.436-.75-1.984-.365-.414-.326-1.046.089-1.412.413-.364,1.045-.326,1.411.088ZM5,15.5c0,.828.672,1.5,1.5,1.5s1.5-.672,1.5-1.5-.672-1.5-1.5-1.5-1.5.672-1.5,1.5Zm6.5,1.5c.828,0,1.5-.672,1.5-1.5s-.672-1.5-1.5-1.5-1.5.672-1.5,1.5.672,1.5,1.5,1.5Zm.5-6v-1.586c0-1.068.416-2.073,1.172-2.828L18.879.879c1.17-1.17,3.072-1.17,4.242,0,.566.566.879,1.32.879,2.121s-.313,1.555-.879,2.122l-5.707,5.707c-.755.755-1.76,1.172-2.828,1.172h-1.586c-.553,0-1-.448-1-1Zm2-1h.586c.534,0,1.036-.208,1.414-.586l5.707-5.707c.189-.189.293-.44.293-.707s-.104-.518-.293-.707c-.391-.391-1.023-.39-1.414,0l-5.707,5.707c-.372.373-.586.888-.586,1.414v.586Z" />
+                                                </svg>
+                                    </span>
+                                    <span class="title">
+                                                Annotations
+                                    </span>
+                                </a>
+                            </li>
+
+                    @endcan --}}
+
+                    @can('Numériser un document sortant')
+                            <li>
+                                <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-piece"
+                                    class="dropdown-item">
+                                    <span class="d-flex align-items-center">
+                                        <i class="fi fi-rr-clip"></i>
+                                    </span>
+                                    <span class="title">
+                                                Joindre une pièce jointe
+                                    </span>
+                                </a>
+                            </li>
+
+                    @endcan
+    
+    
+    
+    
+    
+    
+                @elseif ($courrier->type_id == 3)
+                    {{-- Logique pour type_id == 3 (Courrier Interne) : Retire les CAN, mais garde les IF imbriqués --}}
+
+                                   
+                            
+                    @if($courrier->dest_interne_id == (Auth::user()->agent->id) && $courrier->mark_as_done != 1)
+                        <li>
+                                <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-piece"
+                                    class="dropdown-item">
+                                    <span class="d-flex align-items-center">
+                                        <i class="fi fi-rr-clip"></i>
+                                    </span>
+                                    <span class="title">
+                                                Joindre une pièce jointe
+                                    </span>
+                                </a>
+                            </li>
+                    @endif
+                            
+                        
+                    
+
+                    
+                    
+                   
+                        {{-- <li>
+                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-annotation"
+                                @class(['dropdown-item', 'btn disabled' => $aTraite]) @disabled($aTraite)>
+                                <span class="d-flex align-items-center">
+                                    <svg viewBox="0 0 24 24">
+                                        <path
+                                            d="m22.75,9.693c.806.914,1.25,2.088,1.25,3.307v5c0,2.757-2.243,5-5,5H5c-2.757,0-5-2.243-5-5v-5c0-2.757,2.243-5,5-5h4c.553,0,1,.448,1,1s-.447,1-1,1h-4c-1.654,0-3,1.346-3,3v5c0,1.654,1.346,3,3,3h14c1.654,0,3-1.346,3-3v-5c0-.731-.267-1.436-.75-1.984-.365-.414-.326-1.046.089-1.412.413-.364,1.045-.326,1.411.088ZM5,15.5c0,.828.672,1.5,1.5,1.5s1.5-.672,1.5-1.5-.672-1.5-1.5-1.5-1.5.672-1.5,1.5Zm6.5,1.5c.828,0,1.5-.672,1.5-1.5s-.672-1.5-1.5-1.5-1.5.672-1.5,1.5.672,1.5,1.5,1.5Zm.5-6v-1.586c0-1.068.416-2.073,1.172-2.828L18.879.879c1.17-1.17,3.072-1.17,4.242,0,.566.566.879,1.32.879,2.121s-.313,1.555-.879,2.122l-5.707,5.707c-.755.755-1.76,1.172-2.828,1.172h-1.586c-.553,0-1-.448-1-1Zm2-1h.586c.534,0,1.036-.208,1.414-.586l5.707-5.707c.189-.189.293-.44.293-.707s-.104-.518-.293-.707c-.391-.391-1.023-.39-1.414,0l-5.707,5.707c-.372.373-.586.888-.586,1.414v.586Z" />
+                                    </svg>
+                                </span>
+                                <span class="title">
+                                    Annotations
+                                </span>
+                            </a>
+                        </li> --}}
+                    
+                @endif
             </div>
         </div>
 
@@ -628,65 +842,121 @@
     </div>
     <div id="pdf-main-container" class="d-flex flex-column" data-docid="{{ $docToShowId }}"
         data-url="{{ $docToShow }}" data-name="{{ $nameDocToShow }}" data-courrier="{{ $courrier->id }}"
-        @if ($courrier->confidentiel) data-code="{{ $courrier->document?->password }}" @endif>
+        @if ($courrier->confidentiel && $courrier->document) data-code="{{ $courrier->document->password }}" @endif>
         <div id="pdf-meta" class="nav-tools-page">
             <div class="row w-100 ms-0 align-items-center g-3 g-lg-4">
                 <div class="col-lg-4">
                     <div class="d-flex align-items-center justify-content-between justify-content-sm-start">
                         {{-- <a href="{{ route('regidoc.courriers.index') }}" class="mb-0 back me-3">
+{{ ... }}
                             <i class="fi fi-rr-angle-left"></i>
                             <div class="tooltip-indicator">
                                 Retour
                             </div>
                         </a> --}}
-                        <a href="{{ url()->previous() }}" class="mb-0 back me-3">
+                        <a href="{{ route('regidoc.courriers.index') }}" class="mb-0 back me-3">
                             <i class="fi fi-rr-angle-left"></i>
                             <div class="tooltip-indicator">
                                 Retour
                             </div>
                         </a>
-                        @livewire('courrier.traitement-doc-select', ['courrier' => $courrier])
+                        @livewire('courrier.traitement-doc-select', ['courrier' => $courrier]) 
+            <h5 class="offcanvas-title" id="offcanvasRightLabel"> <span style="color: white">{!! $courrier->status_badge !!}</span> </h5>
+
                         <div class="menu-action d-flex d-lg-none">
                             <i class="fi fi-rr-menu-burger"></i>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-8">
-                    <div class="gap-2 pb-2 gap-lg-3 d-flex justify-content-end align-items-center pb-sm-0">
-                        @can('Annoter un courrier')
-                            @if (!Auth::user()->agent->isSecretaire())
-                                <a href="#" class="link-action" data-bs-toggle="modal"
-                                    data-bs-target="#modal-add-annotation">
-                                    <div class="card card-btnCourier ">
-                                        <button class="btn btn-primary btn-addCourier text-white">
-                                            <i class="fi fi-rr-plus"></i>
-                                            <div class="tooltip-btn">
-                                                Ajouter une annotation
-                                            </div>
-                                        </button>
+                    @if($courrier->type_id == 3 )
+                        <div class="gap-2 pb-2 gap-lg-3 d-flex justify-content-end align-items-center pb-sm-0">
+                           
+                                    <a href="#" class="link-action" data-bs-toggle="modal"
+                                        data-bs-target="#modal-add-annotation">
+                                        <div class="card card-btnCourier ">
+                                            <button class="btn btn-primary btn-addCourier text-white">
+                                                <i class="fi fi-rr-plus"></i>
+                                                <div class="tooltip-btn">
+                                                    Ajouter une annotation
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </a>
+                                
+                            <div class=" annotation-btn-float">
+                                <button class="btn show-vignette">
+                                    <i class="fi fi-rr-comment-quote"></i>
+                                    <div class="tooltip-btn">
+                                        Voir les annotations
                                     </div>
-                                </a>
-                            @endif
-                        @endcan
-                        <div class=" annotation-btn-float">
-                            <button class="btn show-vignette">
-                                <i class="fi fi-rr-comment-quote"></i>
-                                <div class="tooltip-btn">
-                                    Voir les annotations
-                                </div>
-                            </button>
+                                </button>
+                            </div>
+                                {{-- Débogage --}}
+                                {{-- <div style="">
+                                    Destinataire: {{ $courrier->dest_interne_id }}<br>
+                                    Utilisateur: {{ Auth::user()->id }}<br>
+                                    Agent lié: {{ optional(Auth::user()->agent)->id ?? 'Aucun' }}<br>
+                                    Marqué comme traité: {{ $courrier->mark_as_done }}
+                                </div> --}}
+                                @if($courrier->dest_interne_id == optional(Auth::user()->agent)->id && $courrier->mark_as_done != 1)
+                                    <a href="{{ route('regidoc.courriers.traitement', $courrier) }}"
+                                        class="save_pdf btn "><i class="fi fi-rr-check"></i>
+                                        <span class="ms-1 d-none d-sm-inline-block">
+                                            Marquer comme traité
+                                        </span>
+                                    </a>
+                                @endif
                         </div>
-                        @if ($courrier->type_id == 1)
-                            @if ((Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()) && $courrier->mark_as_done != 1)
-                                <a href="{{ route('regidoc.courriers.traitement', $courrier) }}"
-                                    class="save_pdf btn "><i class="fi fi-rr-check"></i>
-                                    <span class="ms-1 d-none d-sm-inline-block">
-                                        Marquer comme traité
-                                    </span>
-                                </a>
+                    @else
+                        <div class="gap-2 pb-2 gap-lg-3 d-flex justify-content-end align-items-center pb-sm-0">
+                            @can('Annoter un document')
+                                @if (!Auth::user()->agent->isSecretaire())
+                                    <a href="#" class="link-action" data-bs-toggle="modal"
+                                        data-bs-target="#modal-add-annotation">
+                                        <div class="card card-btnCourier ">
+                                            <button class="btn btn-primary btn-addCourier text-white">
+                                                <i class="fi fi-rr-plus"></i>
+                                                <div class="tooltip-btn">
+                                                    Ajouter une annotation
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </a>
+                                @endif
+                            @endcan
+                            <div class=" annotation-btn-float">
+                                <button class="btn show-vignette">
+                                    <i class="fi fi-rr-comment-quote"></i>
+                                    <div class="tooltip-btn">
+                                        Voir les annotations
+                                    </div>
+                                </button>
+                            </div>
+                            @if ($courrier->type_id == 1)
+                                @if ((Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()) && $courrier->mark_as_done != 1)
+                                    <a href="{{ route('regidoc.courriers.traitement', $courrier) }}"
+                                        class="save_pdf btn "><i class="fi fi-rr-check"></i>
+                                        <span class="ms-1 d-none d-sm-inline-block">
+                                            Marquer comme traité
+                                        </span>
+                                    </a>
+                                @endif
                             @endif
-                        @endif
-                    </div>
+                            @php
+                                $hasAccusedReception = $courrier->accuseReceptions->contains('user_id', auth()->id());
+                            @endphp
+                            @if(Auth::user()->agent->isAssistant() && $courrier->type_id == 2 && $courrier->statut_id == 2 && $hasAccusedReception)
+                                <div class="text-end mb-2">
+                                    <a href="{{ route('regidoc.courriers.transmettre', $courrier) }}" 
+                                       class="btn btn-primary"
+                                       onclick="return confirm('Êtes-vous sûr de vouloir transmettre ce courrier ?')">
+                                        <i class="fi fi-rr-paper-plane me-2"></i>Clôturer
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -695,45 +965,61 @@
                 <div class="row justify-content-end">
                     <div class="mx-auto text-center col-lg-9">
 
-                        @if (
-                            $courrier->traitement &&
-                                (Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()) &&
-                                $courrier->traitements->where('agent_id', Auth::user()->agent->id)->count() <= 0)
+                        @if (($courrier->type_id == 3 && $courrier->dest_interne_id == (Auth::user()->agent)->id) ||                      
+                            ($courrier->traitement && (Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()) &&
+                            $courrier->traitements->where('agent_id', Auth::user()->agent->id)->count() <= 0))
                             <div class="d-flex  align-items-center block-action-doc mt-2" style="max-width: 100%">
-                                <p class="mb-0 d-inline-flex g-2 align-items-center">
-                                <div class="content-scanner-iconFileBox">
-                                    <img class="content-scanner-iconFileBox-image me-4"
-                                        src="{{ asset('assets/images/icons/accuse-reception--.png') }}"
-                                        alt="file icon" />
-                                </div>
-                                {{-- <i class="fi fi-rr-magic-wand"></i> --}}
-                                Document transmis pour {{ Str::ucfirst($courrier->traitement->titre ?? '') }}
+                                @php
+                                    $titres = [
+                                        'Valider' => 'validation',
+                                        'Signer' => 'signature',
+                                        'Consulter' => 'consultation',
+                                        'Traiter' => 'traitement',
+                                        'Assigner' => 'assignation',
+                                        'Valider par le DG' => 'validation par le DG',
+                                        'Valider par le D.A' => 'validation par le D.A',
+                                        'Valider par le D.F' => 'validation par le D.F',
+                                    ];
+
+                                    $titre = $courrier->traitement->titre ?? '';
+                                    $affichage = $titres[$titre] ?? strtolower($titre);
+                                @endphp
+
+                                <p class="mb-0 d-inline-flex g-2 align-items-center"> 
+                                    <div class="content-scanner-iconFileBox">
+                                        <img class="content-scanner-iconFileBox-image me-4"
+                                            src="{{ asset('assets/images/icons/accuse-reception--.png') }}"
+                                            alt="file icon" />
+                                    </div>
+                                    Document transmis pour&nbsp;<span style="color: #2C62C3">{{ $affichage }}</span>
+
                                 </p>
+
                                 <div class="d-flex align-items-center ms-auto">
                                     @php
                                         $url = 'javascript:void(0)';
                                         $attributs = '';
                                         $text = 'Exécuter';
-                                        switch ($courrier->traitement->id) {
-                                            case 1:
-                                                $url =
-                                                    '/system/documents/sign/task?doc_id=' .
-                                                    $courrier->document?->id .
-                                                    '&is_original=1&courrier_id=' .
-                                                    $courrier->id; //route('regidoc.courriers.signer', $courrier->id);
-                                                break;
-                                            case 2:
-                                                $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-asigner"';
-                                                break;
-                                            case 3:
-                                                $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-traiter"';
-                                                break;
-
-                                            default:
-                                                $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-traiter"';
-                                                break;
+                                        
+                                        if (isset($courrier->traitement) && $courrier->traitement) {
+                                            switch ($courrier->traitement->id) {
+                                                case 1:
+                                                    $url = '/system/documents/sign/task?doc_id=' . 
+                                                           ($courrier->document?->id ?? '') . 
+                                                           '&is_original=1&courrier_id=' . 
+                                                           $courrier->id;
+                                                    break;
+                                                case 2:
+                                                    $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-asigner"';
+                                                    break;
+                                                case 3:
+                                                    $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-traiter"';
+                                                    break;
+                                                default:
+                                                    $attributs = 'data-bs-toggle="modal" data-bs-target="#modal-a-traiter"';
+                                                    break;
+                                            }
                                         }
-
                                     @endphp
                                     @if (!$aTraite)
                                         <a href="{{ $url != 'javascript:void(0)' ? url($url) : $url }}"
@@ -746,23 +1032,35 @@
                             </div>
                         @endif
 
-                        <div id="pdf-contents" class="mt-3" style="width: 100%!important">
-                            {{-- <div id="pdf-loader">Loading document ...</div> --}}
-                            @if ($courrier->confidentiel)
-                                <div class="p-5 text-center bg-white confidentiel-doc position-relative mx-auto">
-                                    <i class="fi fi-rr-lock"></i>
-                                    <h5>Ce document est crypté</h5>
-                                    <div class="w-50 mx-auto mt-3">
-                                        <p>Veuillez saisir le code secret</p>
-                                        <input type="text" class="form-control code-confident"
-                                            placeholder="Code confidentiel">
-                                        <small class="text-danger code-error-label d-none">Mot de pass incorect</small>
-                                        <button
-                                            class="btn btn-primary mt-3 text-white w-100 validate-code">Valider</button>
-                                    </div>
+                        @if ($courrier->confidentiel)
+                            <div class="p-5 text-center bg-white confidentiel-doc position-relative mx-auto">
+                                <i class="fi fi-rr-lock"></i>
+                                <h5>Ce document est crypté</h5>
+                                <div class="w-50 mx-auto mt-3">
+                                    <p>Veuillez saisir le code secret</p>
+                                    <input type="text" class="form-control code-confident"
+                                        placeholder="Code confidentiel">
+                                    <small class="text-danger code-error-label d-none">Mot de passe incorrect</small>
+                                    <button class="btn btn-primary mt-3 text-white w-100 validate-code">Valider</button>
                                 </div>
-                            @endif
-                        </div>
+                            </div>
+                        @else
+                            <div id="pdf-contents" style="width: 100%; height: 100%; min-height: 80vh;">
+                                @php
+                                    $documentPath = $courrier->document?->document;
+                                    $storagePath = $documentPath ? storage_path('app/' . $documentPath) : null;
+                                    $publicPath = $documentPath ? 'storage/' . $documentPath : null;
+                                    $fileExists = $storagePath && file_exists($storagePath);
+                                @endphp
+
+                                @if($courrier->document && $courrier->document->document && $fileExists)
+                                                              
+                                   
+                                    
+                                    <iframe src="{{ $documentUrl }}" frameborder="0" style="width: 100%; height: 100%; min-height: 80vh;"></iframe>
+                                @endif
+                            </div>
+                        @endif
                         @include('components.pdf-tools')
 
                     </div>
@@ -784,7 +1082,7 @@
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasInfoDoc" aria-labelledby="offcanvasRightLabel"
         style="width: 550px;">
         <div class="offcanvas-header align-items-center">
-            <h5 class="offcanvas-title" id="offcanvasRightLabel">Détails du courrier</h5>
+            <h5 class="offcanvas-title" id="offcanvasRightLabel">Détails du document {!! $courrier->status_badge !!}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
                 <i class="fi fi-rr-cross"></i>
             </button>
@@ -820,32 +1118,39 @@
                         <div class="item">
                             <div class="row">
                                 <div class="col-lg-6">
-                                    <span style="font-size: 13px; color: var(--colorParagraph)">Accusées
-                                        réceptions</span>
+                                    <span style="font-size: 13px; color: var(--colorParagraph)">Accusés de réception</span>
                                 </div>
                                 <div class="col-lg-6">
-                                    {{-- @foreach ($courrierViewers->accuseReceptions() as $agentViewed) --}}
-                                    @forelse ($courrier->accuseReceptions as $accuseReception)
-                                        @if ($accuseReception->user && $accuseReception->user->agent)
-                                            <div class="detailCourierUserInfosBox">
-                                                <div class="avatarDetailCourier">
-                                                    <img class="avatarDetailCourier-avatar"
-                                                        src="{{ imageOrDefault($accuseReception->user->agent?->image) }}"
-                                                        alt="image profil">
+                                    @if($courrier->accuseReceptions->count() > 0)
+                                        @foreach($courrier->accuseReceptions as $accuseReception)
+                                            @if($accuseReception->user && $accuseReception->user->agent)
+                                                <div class="detailCourierUserInfosBox">
+                                                    <div class="avatarDetailCourier">
+                                                        <img class="avatarDetailCourier-avatar"
+                                                            src="{{ imageOrDefault($accuseReception->user->agent?->image) }}"
+                                                            alt="image profil">
+                                                    </div>
+                                                    <div>
+                                                        <p style="font-size: 14px; color: var(--colorTitre); margin-bottom: 5px;">
+                                                            {{ Str::ucfirst($accuseReception->user->agent->prenom ?? '') . ' ' . Str::ucfirst($accuseReception->user->agent->nom ?? '') }}
+                                                            @if($accuseReception->user->agent->poste)
+                                                                <small class="d-block text-muted">
+                                                                    {{ $accuseReception->user->agent->poste->titre }}
+                                                                </small>
+                                                            @endif
+                                                            <small class="d-block text-muted">
+                                                                {{ $accuseReception->created_at->format('d/m/Y H:i') }}
+                                                            </small>
+                                                        </p>
+                                                    </div>
                                                 </div>
-
-                                                <p style="font-size: 14px; color: var(--colorTitre)" class="mb-2">
-                                                    {{ Str::ucfirst($accuseReception->user->agent->prenom ?? '') . ' ' . Str::ucfirst($accuseReception->user->agent->nom ?? '') }}
-                                                    <small
-                                                        class="d-block">({{ $accuseReception->user->agent->poste?->titre }})</small>
-                                                </p>
-                                            </div>
-                                        @endif
-                                    @empty
-
-                                        <p style="font-size: 13px; color: var(--colorTitre)">Pas d'accusé de réception
-                                            pour le moment.</p>
-                                    @endforelse
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <p style="font-size: 13px; color: var(--colorTitre); margin-bottom: 0;">
+                                            Aucun accusé de réception pour le moment.
+                                        </p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -912,6 +1217,25 @@
                             </div>
                         </div>
                     @endif
+                    @if ($courrier->categorie)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            Catégorie
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                            {{ Str::ucfirst($courrier->categorie->title) }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    @endif
 
                     @if ($courrier->expediteur || $courrier->externExpediteur)
                         <div class="col-12">
@@ -937,26 +1261,25 @@
                         </div>
                     @endif
 
-                    @if ($courrier->categorie)
+                    @if ($courrier->externExpediteur)
                         <div class="col-12">
                             <div class="item">
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <span style="font-size: 13px; color: var(--colorParagraph)">
-                                            Catégorie
+                                            Contact
                                         </span>
                                     </div>
                                     <div class="col-lg-6">
                                         <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                            {{ Str::ucfirst($courrier->categorie->title) }}
+                                            {{ $courrier->externExpediteur?->contact ?? 'Non défini' }}
                                         </p>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     @endif
-
+                    
                     @if ($courrier->type)
                         <div class="col-12">
                             <div class="item">
@@ -976,6 +1299,64 @@
 
                             </div>
                         </div>
+                    @endif
+                    @if($courrier->reference_interne)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            N° d'enregistrement
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                            {{ Str::ucfirst($courrier->reference_interne ?? '') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    @endif
+
+                    @if($courrier->nature)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            Nature
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                            {{ Str::ucfirst($courrier->nature->titre ?? '') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    @if ($courrier->copie)
+                    <div class="col-12">
+                        <div class="item">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <span style="font-size: 13px; color: var(--colorParagraph)">
+                                        En copie
+                                    </span>
+                                </div>
+                                <div class="col-lg-6">
+                                    <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                        {{ Str::ucfirst($courrier->copie ?? '') }}
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>  
+                        
                     @endif
 
                     @if ($courrier->traitement)
@@ -1013,7 +1394,23 @@
                                         </p>
                                     </div>
                                 </div>
-
+                            </div>
+                        </div>
+                    @endif
+                    
+                    @if ($courrier->statut_id === 3)
+                        <div class="col-12">
+                            <div class="item">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            Statut
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <span class="badge bg-success">Validé</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -1049,7 +1446,7 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                            {{ $courrier->date_arrive?->isoFormat('LL') }}
+                                            {{ $courrier->date_arrive?->isoFormat('LL à HH:mm') }}
                                         </p>
                                     </div>
                                 </div>
@@ -1101,7 +1498,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <span style="font-size: 13px; color: var(--colorParagraph)">
-                                            Objet
+                                            Remarques
                                         </span>
                                     </div>
                                     <div class="col-lg-6">
@@ -1117,18 +1514,38 @@
                     @if ($courrier->author)
                         <div class="col-12">
                             <div class="item">
+                                @if($courrier->type_id==1 || $courrier->type_id==3)
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <span style="font-size: 13px; color: var(--colorParagraph)">
-                                            Ajouté par
+                                            Numérisé par
                                         </span>
                                     </div>
                                     <div class="col-lg-6">
                                         <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                            {{ Str::ucfirst($courrier->author->poste?->titre ?? '') }}
+                                            {{ $courrier->author->prenom . ' ' . $courrier->author->nom}}
+                                            <small
+                                                        class="d-block">{{ Str::ucfirst($courrier->author->poste?->titre ?? '') }}</small>
                                         </p>
                                     </div>
                                 </div>
+                                @elseif ($courrier->type_id==2)
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <span style="font-size: 13px; color: var(--colorParagraph)">
+                                            Emetteur
+                                        </span>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
+                                            {{ $courrier->author->prenom . ' ' . $courrier->author->nom}}
+                                            <small
+                                                        class="d-block">{{ Str::ucfirst($courrier->author->poste?->titre ?? '') }}</small>
+                                        </p>
+                                    </div>
+                                </div>
+                                @endif
+
                             </div>
                         </div>
                     @endif
@@ -1138,13 +1555,22 @@
         </div>
     </div>
 
+
+
     @can('Suivi des courriers')
         <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasHisto" aria-labelledby="offcanvasRightLabel">
             <div class="offcanvas-header align-items-center">
                 <h5 class="offcanvas-title" id="offcanvasRightLabel">Historique des activités</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
-                    <i class="fi fi-rr-cross"></i>
-                </button>
+                <div class="d-flex align-items-center">
+                    
+                        <a href="{{ route('regidoc.courriers.export-historique', $courrier->id) }}" class="btn btn-sm btn-outline-primary me-2" target="_blank" title="Exporter l'historique en PDF">
+                            <i class="fi fi-rr-print"></i>
+                        </a>
+                    
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
+                        <i class="fi fi-rr-cross"></i>
+                    </button>
+                </div>
             </div>
             <div class="offcanvas-body">
                 <div class="block-activity">
@@ -1397,7 +1823,7 @@
         </div>
     </div>
 
-    @can('Valider un courrier')
+    @can('Valider un document')
         <div class="modal fade" id="modal-validation" tabindex="-1" aria-labelledby="exampleModalLabel">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -1437,7 +1863,7 @@
         </div>
     @endcan
 
-    @can('Rejeter un courrier')
+    {{-- @can('Rejeter un document')
         <div class="modal fade" id="modal-reject" tabindex="-1" aria-labelledby="exampleModalLabel">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -1457,7 +1883,7 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <form wire:submit.prevent="saveNote"> --}}
+                        
                         <div class="form-group row g-2">
                             <div class="col-lg-12">
                                 <label for="">Direction en charge du suivi</label>
@@ -1480,18 +1906,68 @@
                                 <button type="submit" class="mt-0 btn btn-add btn-rejeter">Enregistrer</button>
                             </div>
                         </div>
-                        {{-- </form> --}}
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
-    @endcan
+    @endcan--}}
+    @can('Rejeter un document')
+    <!-- Modal Rejet -->
+    <div class="modal fade" id="modal-reject" tabindex="-1" aria-labelledby="modalRejectLabel">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title d-flex align-items-center" id="modalRejectLabel">
+                        <span>Rejeter le courrier</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
 
-    @can('Partager un courrier')
+                <div class="modal-body">
+                    <!-- Loader facultatif -->
+                    <div class="d-none position-absolute d-flex loader-card justify-content-center"
+                        style="z-index: 2; height:90%; width:90%; background-color:rgba(255,255,255,0.95)"
+                        wire:loading="" wire:target="filter" wire:loading.class.remove="d-none">
+                        <div class="m-auto text-center">
+                            <div class="spinner-border text-success" role="status"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group row g-2">
+                        <div class="col-lg-12">
+                            <label for="direction_id">Direction en charge du suivi</label>
+                            <select name="direction_id" id="direction_id" class="form-control" required>
+                                <option value="" selected disabled>Sélectionnez</option>
+                                @foreach ($directions as $direction)
+                                    <option value="{{ $direction->id }}">{{ $direction->titre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <label for="note">Note</label>
+                            <textarea name="note" id="note" cols="30" rows="5" class="form-control" required placeholder="Saisissez vos annotations ici"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 from-group row">
+                        <div class="mb-3 col-lg-12 text-end">
+                            <button type="reset" class="btn btn-cansel" data-bs-dismiss="modal">Annuler</button>
+                            <button type="button" class="mt-0 btn btn-add btn-rejeter">Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endcan
+
+    @can('Partager un document')
         @livewire('taches.add-courrier-tache-modal', ['courrier' => $courrier])
     @endcan
 
-    {{-- @can('Annoter un courrier') --}}
+    {{-- @can('Annoter un document') --}}
     @livewire('courrier.annotation-modal', ['courrier' => $courrier])
 
     @livewire('courrier.annotation-modal-add', ['courrier' => $courrier])
@@ -1565,7 +2041,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            @if (!Auth::user()->agent->isSecretaire())
+                            @if (Auth::user()->agent->isAssistant() || !Auth::user()->agent->isSecretaire() || Auth::user()->agent->isDG())
                                 <div class="col-12 block_echeances">
                                     <div class="d-flex align-items-center">
                                         <label for="check-date" class="mb-0">Ajouter une échéance</label>
@@ -1594,8 +2070,7 @@
                             <div class="d-flex gap-2 mt-4">
                                 <button type="reset" class="btn btn-cansel w-50"
                                     data-bs-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-add mt-0 w-50"
-                                    data-bs-dismiss="modal">Valider</button>
+                                <button type="submit" class="btn btn-add mt-0 w-50" id="submit-traitement">Valider</button>
                             </div>
                         </div>
                     </form>
@@ -1610,7 +2085,7 @@
             <div class="modal-content">
                 <div class="modal-header ">
                     <h5 class="modal-title d-flex align-items-center" id="exampleModalLabel">
-                        <span>Traitements</span>
+                        <span>Traitements du document</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -1625,10 +2100,33 @@
                     </div>
                     <div class="row g-lg-3 g-2">
                         <div class="col-6">
-                            <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) }}"
+                            <button class="btn btn-action-doc d-flex flex-column h-100 w-100"
+                                data-bs-target="#modal-validation" data-bs-toggle="modal">
+                                <i class="fi fi-rr-check"></i>
+                                Valider le document
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-action-doc d-flex flex-column h-100 w-100"
+                                data-bs-target="#modal-reject" data-bs-toggle="modal">
+                                <svg viewBox="0 0 24 24" width="512" height="512" class="mx-auto mb-2">
+                                    <path
+                                        d="M16,8a1,1,0,0,0-1.414,0L12,10.586,9.414,8A1,1,0,0,0,8,9.414L10.586,12,8,14.586A1,1,0,0,0,9.414,16L12,13.414,14.586,16A1,1,0,0,0,16,14.586L13.414,12,16,9.414A1,1,0,0,0,16,8Z" />
+                                    <path
+                                        d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z" />
+                                </svg>
+                                Rejeter
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ $courrier->document ? route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) : '#' }}"
                                 id="download"
-                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if ($courrier->confidentiel) disabled @endif"
-                                @if ($courrier->confidentiel) title="Coursier confidentiel" @endif>
+                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if ($courrier->confidentiel || !$courrier->document) disabled @endif"
+                                @if ($courrier->confidentiel) 
+                                    title="Courrier confidentiel"
+                                @elseif(!$courrier->document)
+                                    title="Document non disponible"
+                                @endif>
                                 <svg viewBox="0 0 24 24" width="512" height="512" class="mx-auto mb-2">
                                     <path
                                         d="M19,4h-1.1c-.46-2.28-2.48-4-4.9-4h-2c-2.41,0-4.43,1.72-4.9,4h-1.1C2.24,4,0,6.24,0,9v10c0,2.76,2.24,5,5,5h14c2.76,0,5-2.24,5-5V9c0-2.76-2.24-5-5-5ZM11,2h2c1.3,0,2.42,.84,2.83,2h-7.66c.41-1.16,1.52-2,2.83-2Zm11,17c0,1.65-1.35,3-3,3H5c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3h14c1.65,0,3,1.35,3,3v10Zm-4.85-7.1c.54,.54,.85,1.3,.85,2.1s-.31,1.55-.88,2.12l-2.39,2.56c-.2,.21-.46,.32-.73,.32-.24,0-.49-.09-.68-.27-.4-.38-.43-1.01-.05-1.41l2.16-2.32H7c-.55,0-1-.45-1-1s.45-1,1-1H15.43l-2.16-2.32c-.38-.4-.35-1.04,.05-1.41,.4-.38,1.04-.35,1.41,.05l2.41,2.59Z" />
@@ -1637,8 +2135,10 @@
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'agent', 'courrier_id' => $courrier->id]) }}"
-                                id="download" class="btn btn-action-doc d-flex flex-column h-100 w-100">
+                            <a href="{{ $courrier->document ? route('regidoc.taches.create', ['doc' => $courrier->document->id ?? null, 'to' => 'agent', 'courrier_id' => $courrier->id]) : '#' }}"
+                                id="download" 
+                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if(!$courrier->document) disabled @endif"
+                                @if(!$courrier->document) title="Document non disponible" @endif>
                                 <svg viewBox="0 0 24 24" width="512" height="512" class="mx-auto mb-2">
                                     <path
                                         d="M15,6c0-3.309-2.691-6-6-6S3,2.691,3,6s2.691,6,6,6,6-2.691,6-6Zm-6,4c-2.206,0-4-1.794-4-4s1.794-4,4-4,4,1.794,4,4-1.794,4-4,4Zm-.008,4.938c.068,.548-.32,1.047-.869,1.116-3.491,.436-6.124,3.421-6.124,6.946,0,.552-.448,1-1,1s-1-.448-1-1c0-4.531,3.386-8.37,7.876-8.93,.542-.069,1.047,.32,1.116,.869Zm13.704,4.195l-.974-.562c.166-.497,.278-1.019,.278-1.572s-.111-1.075-.278-1.572l.974-.562c.478-.276,.642-.888,.366-1.366-.277-.479-.887-.644-1.366-.366l-.973,.562c-.705-.794-1.644-1.375-2.723-1.594v-1.101c0-.552-.448-1-1-1s-1,.448-1,1v1.101c-1.079,.22-2.018,.801-2.723,1.594l-.973-.562c-.48-.277-1.09-.113-1.366,.366-.276,.479-.112,1.09,.366,1.366l.974,.562c-.166,.497-.278,1.019-.278,1.572s.111,1.075,.278,1.572l-.974,.562c-.478,.276-.642,.888-.366,1.366,.186,.321,.521,.5,.867,.5,.169,0,.341-.043,.499-.134l.973-.562c.705,.794,1.644,1.375,2.723,1.594v1.101c0,.552,.448,1,1,1s1-.448,1-1v-1.101c1.079-.22,2.018-.801,2.723-1.594l.973,.562c.158,.091,.33,.134,.499,.134,.346,0,.682-.179,.867-.5,.276-.479,.112-1.09-.366-1.366Zm-5.696,.866c-1.654,0-3-1.346-3-3s1.346-3,3-3,3,1.346,3,3-1.346,3-3,3Z" />
@@ -1657,7 +2157,7 @@
             <div class="modal-content">
                 <div class="modal-header ">
                     <h5 class="modal-title d-flex align-items-center" id="exampleModalLabel">
-                        <span>Traitements</span>
+                        <span>Traitements  </span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -1674,30 +2174,37 @@
                         <div class="col-12">
                             {{-- <a href="{{ route('regidoc.courriers.signer', $courrier) }}?is_paraphe=1"
                                 class="flex-row gap-3 btn btn-action-doc d-flex justify-content-center align-items-center w-100"> --}}
-                            <a href="{{ route('regidoc.documents.sign', ['doc_id' => $courrier->document?->id, 'is_original' => true, 'courrier_id' => $courrier->id]) }}"
-                                class="flex-row gap-3 btn btn-action-doc d-flex justify-content-center align-items-center w-100">
+                            <a href="{{ $courrier->document ? route('regidoc.documents.sign', ['doc_id' => $courrier->document->id ?? null, 'is_original' => true, 'courrier_id' => $courrier->id]) : '#' }}"
+                                class="flex-row gap-3 btn btn-action-doc d-flex justify-content-center align-items-center w-100 @if(!$courrier->document) disabled @endif"
+                                @if(!$courrier->document) title="Document non disponible" @endif>
                                 <svg viewBox="0 0 24 24" width="512" height="512">
                                     <path
-                                        d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1,.45,1,1Z" />
+                                        d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1-.45,1-1Z" />
                                 </svg>
                                 Signer
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'direction', 'courrier_id' => $courrier->id]) }}"
+                            <a href="{{ $courrier->document ? route('regidoc.taches.create', ['doc' => $courrier->document->id ?? null, 'to' => 'direction', 'courrier_id' => $courrier->id]) : '#' }}"
                                 id="download"
-                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if ($courrier->confidentiel) disabled @endif"
-                                @if ($courrier->confidentiel) title="Coursier confidentiel" @endif>
+                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if ($courrier->confidentiel || !$courrier->document) disabled @endif"
+                                @if ($courrier->confidentiel) 
+                                    title="Courrier confidentiel"
+                                @elseif(!$courrier->document)
+                                    title="Document non disponible"
+                                @endif>
                                 <svg viewBox="0 0 24 24" width="512" height="512" class="mx-auto mb-2">
                                     <path
-                                        d="M19,4h-1.1c-.46-2.28-2.48-4-4.9-4h-2c-2.41,0-4.43,1.72-4.9,4h-1.1C2.24,4,0,6.24,0,9v10c0,2.76,2.24,5,5,5h14c2.76,0,5-2.24,5-5V9c0-2.76-2.24-5-5-5ZM11,2h2c1.3,0,2.42,.84,2.83,2h-7.66c.41-1.16,1.52-2,2.83-2Zm11,17c0,1.65-1.35,3-3,3H5c-1.65,0-3-1.35-3-3V9c0-1.65,1.35-3,3-3h14c1.65,0,3,1.35,3,3v10Zm-4.85-7.1c.54,.54,.85,1.3,.85,2.1s-.31,1.55-.88,2.12l-2.39,2.56c-.2,.21-.46,.32-.73,.32-.24,0-.49-.09-.68-.27-.4-.38-.43-1.01-.05-1.41l2.16-2.32H7c-.55,0-1-.45-1-1s.45-1,1-1H15.43l-2.16-2.32c-.38-.4-.35-1.04,.05-1.41,.4-.38,1.04-.35,1.41,.05l2.41,2.59Z" />
+                                        d="M15,6c0-3.309-2.691-6-6-6S3,2.691,3,6s2.691,6,6,6,6-2.691,6-6Zm-6,4c-2.206,0-4-1.794-4-4s1.794-4,4-4,4,1.794,4,4-1.794,4-4,4Zm-.008,4.938c.068,.548-.32,1.047-.869,1.116-3.491,.436-6.124,3.421-6.124,6.946,0,.552-.448,1-1,1s-1-.448-1-1c0-4.531,3.386-8.37,7.876-8.93,.542-.069,1.047,.32,1.116,.869Zm13.704,4.195l-.974-.562c.166-.497,.278-1.019,.278-1.572s-.111-1.075-.278-1.572l.974-.562c.478-.276,.642-.888,.366-1.366-.277-.479-.887-.644-1.366-.366l-.973,.562c-.705-.794-1.644-1.375-2.723-1.594v-1.101c0-.552-.448-1-1-1s-1,.448-1,1v1.101c-1.079,.22-2.018,.801-2.723,1.594l-.973-.562c-.48-.277-1.09-.113-1.366,.366-.276,.479-.112,1.09,.366,1.366l.974,.562c-.166,.497-.278,1.019-.278,1.572s.111,1.075,.278,1.572l-.974,.562c-.478,.276-.642,.888-.366,1.366,.186,.321,.521,.5,.867,.5,.169,0,.341-.043,.499-.134l.973-.562c.705,.794,1.644,1.375,2.723,1.594v1.101c0,.552,.448,1,1,1s1-.448,1-1v-1.101c1.079-.22,2.018-.801,2.723-1.594l.973,.562c.158,.091,.33,.134,.499,.134,.346,0,.682-.179,.867-.5,.276-.479,.112-1.09-.366-1.366Zm-5.696,.866c-1.654,0-3-1.346-3-3s1.346-3,3-3,3,1.346,3,3-1.346,3-3,3Z" />
                                 </svg>
                                 Assigner à une direction
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('regidoc.taches.create', ['doc' => $courrier->document->id, 'to' => 'agent', 'courrier_id' => $courrier->id]) }}"
-                                id="download" class="btn btn-action-doc d-flex flex-column h-100 w-100">
+                            <a href="{{ $courrier->document ? route('regidoc.taches.create', ['doc' => $courrier->document->id ?? null, 'to' => 'agent', 'courrier_id' => $courrier->id]) : '#' }}"
+                                id="download" 
+                                class="btn btn-action-doc d-flex flex-column h-100 w-100 @if(!$courrier->document) disabled @endif"
+                                @if(!$courrier->document) title="Document non disponible" @endif>
                                 <svg viewBox="0 0 24 24" width="512" height="512" class="mx-auto mb-2">
                                     <path
                                         d="M15,6c0-3.309-2.691-6-6-6S3,2.691,3,6s2.691,6,6,6,6-2.691,6-6Zm-6,4c-2.206,0-4-1.794-4-4s1.794-4,4-4,4,1.794,4,4-1.794,4-4,4Zm-.008,4.938c.068,.548-.32,1.047-.869,1.116-3.491,.436-6.124,3.421-6.124,6.946,0,.552-.448,1-1,1s-1-.448-1-1c0-4.531,3.386-8.37,7.876-8.93,.542-.069,1.047,.32,1.116,.869Zm13.704,4.195l-.974-.562c.166-.497,.278-1.019,.278-1.572s-.111-1.075-.278-1.572l.974-.562c.478-.276,.642-.888,.366-1.366-.277-.479-.887-.644-1.366-.366l-.973,.562c-.705-.794-1.644-1.375-2.723-1.594v-1.101c0-.552-.448-1-1-1s-1,.448-1,1v1.101c-1.079,.22-2.018,.801-2.723,1.594l-.973-.562c-.48-.277-1.09-.113-1.366,.366-.276,.479-.112,1.09,.366,1.366l.974,.562c-.166,.497-.278,1.019-.278,1.572s.111,1.075,.278,1.572l-.974,.562c-.478,.276-.642,.888-.366,1.366,.186,.321,.521,.5,.867,.5,.169,0,.341-.043,.499-.134l.973-.562c.705,.794,1.644,1.375,2.723,1.594v1.101c0,.552,.448,1,1,1s1-.448,1-1v-1.101c1.079-.22,2.018-.801,2.723-1.594l.973,.562c.158,.091,.33,.134,.499,.134,.346,0,.682-.179,.867-.5,.276-.479,.112-1.09-.366-1.366Zm-5.696,.866c-1.654,0-3-1.346-3-3s1.346-3,3-3,3,1.346,3,3-1.346,3-3,3Z" />
@@ -1733,6 +2240,32 @@
     @include('regidoc.layouts.partials.head.scripts')
     @yield('scripts')
     @stack('livewireScripts')
+    
+    <!-- Modal pour ajouter une pièce jointe -->
+    <div class="modal fade" id="modal-new-piece" tabindex="-1" aria-labelledby="modalNewPieceLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNewPieceLabel">Joindre une pièce jointe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulaire pour téléverser une pièce jointe -->
+                    <form action="{{ route('courriers.upload-piece', $courrier) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="piece-jointe" class="form-label">Sélectionner un fichier</label>
+                            <input class="form-control" type="file" id="piece-jointe" name="piece_jointe" required>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Téléverser</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @if (session()->get('session') && json_decode(session()->get('session'))->name != '')
         @if (json_decode(session()->get('session'))->statut == 'success')
@@ -1777,31 +2310,263 @@
 
     @livewire('livewire-alert')
     <script>
-        $(document).ready(function() {
+    $(document).ready(function () {
+        // ... (Votre code existant pour le bouton de rejet 'btn-rejeter' reste ici) ...
 
-            // Enforce focus within the modal
+        // --- CODE CORRIGÉ POUR LE BOUTON DE VALIDATION ---
+        $('.btn-valider').on('click', function (e) {
+            e.preventDefault();
+
+            // Assurez-vous que $courrier->id est accessible et correctement renseigné dans cette vue Blade.
+            // Si le modal s'ouvre depuis un bouton, l'ID peut être passé via un attribut data-id :
+            // Par exemple, sur le bouton qui ouvre le modal: <button data-bs-toggle="modal" data-bs-target="#modal-validation" data-courrier-id="{{ $courrier->id }}">Valider</button>
+            // Et ensuite récupéré ici:
+            // const courrierId = $('#modal-validation').data('courrier-id'); OU
+            // const courrierId = $(this).closest('.modal').find('.some-element-with-id').data('courrier-id');
+            //
+            // Pour l'exemple, nous continuons avec l'hypothèse qu'il est directement accessible via Blade:
+            const courrierId = '{{ $courrier->id ?? '' }}'; // Assurez-vous qu'elle est définie !
+            if (!courrierId) {
+                alert("Erreur : ID du courrier introuvable pour la validation.");
+                return;
+            }
+
+            const csrfToken = $('meta[name="csrf-token"]').attr('content');
+            const $btn = $(this);
+
+            // Désactive le bouton et affiche un spinner pendant l'opération
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Validation en cours...');
+
+            $.ajax({
+                url: '/courriers/' + courrierId + '/valider', // L'URL de votre route de validation
+                type: 'POST',
+                data: {
+                    _token: csrfToken,
+                    // Aucun champ 'note' ou 'direction_id' n'est nécessaire ici pour la validation
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message || 'Courrier validé avec succès !');
+                        // Mettre à jour l'interface utilisateur
+                        $('.btn-valider').remove(); // Supprime le bouton Valider après succès
+                        const badge = $('<span class="badge bg-success ms-2">Validé</span>');
+                        $('.modal-title').append(badge);
+
+                        // Ferme le modal et recharge la page après un court délai
+                        setTimeout(function () {
+                            $('#modal-validation').modal('hide');
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        // Gérer les cas où success est false mais sans erreur HTTP
+                        alert(response.message || 'La validation a échoué.');
+                        $btn.prop('disabled', false).text('Valider'); // Réactive le bouton
+                    }
+                },
+                error: function (xhr) {
+                    let errorMessage = 'Erreur lors de la validation.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    alert(errorMessage);
+                    $btn.prop('disabled', false).text('Valider'); // Réactive le bouton et remet le texte initial
+                }
+            });
+        });
+    });
+</script>
+    <script>
+        $(document).ready(function() {
+            // Gestion du clic sur le bouton de validation
+            $(document).on('click', '.btn-valider-courrier', function(e) {
+                e.preventDefault();
+                
+                const courrierId = $(this).data('id');
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                
+                // Demander confirmation
+                if (!confirm('Êtes-vous sûr de vouloir valider ce courrier ?')) {
+                    return;
+                }
+                
+                // Afficher un message de chargement
+                alert('Traitement en cours...');
+                
+                // Envoyer la requête AJAX
+                $.ajax({
+                    url: '/courriers/' + courrierId + '/valider',
+                    type: 'POST',
+                    data: {
+                        _token: csrfToken
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            // Recharger la page pour afficher les mises à jour
+                            location.reload();
+                        } else {
+                            alert('Erreur: ' + (response.message || 'Une erreur inconnue est survenue'));
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'Une erreur est survenue lors de la validation du courrier';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage += ': ' + xhr.responseJSON.message;
+                        }
+                        alert(errorMessage);
+                    }
+                });
+            });
+
+            
+    $(document).ready(function () {
+        $('.btn-rejeter').on('click', function (e) {
+            e.preventDefault();
+
+            const courrierId = '{{ $courrier->id }}';
+            const csrfToken = $('meta[name="csrf-token"]').attr('content');
+            const note = $('#note').val();
+            const directionId = $('#direction_id').val();
+            const $btn = $(this);
+
+            if (!note || !directionId) {
+                alert("Veuillez remplir tous les champs.");
+                return;
+            }
+
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Rejet en cours...');
+
+            $.ajax({
+                url: '/courriers/' + courrierId + '/rejeter',
+                type: 'POST',
+                data: {
+                    _token: csrfToken,
+                    note: note,
+                    direction_id: directionId
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        $('.btn-rejeter').remove();
+                        const badge = $('<span class="badge bg-danger ms-2">Rejeté</span>');
+                        $('.modal-title').append(badge);
+                        setTimeout(function () {
+                            $('#modal-reject').modal('hide');
+                            location.reload();
+                        }, 1500);
+                    }
+                },
+                error: function (xhr) {
+                    let errorMessage = 'Erreur lors du rejet.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    alert(errorMessage);
+                    $btn.prop('disabled', false).text('Enregistrer');
+                }
+            });
+        });
+    });
+
+
+
+            
+            // Gestion du clic sur le bouton de rejet
+            $(document).on('click', '.btn-rejeter-courrier', function(e) {
+                e.preventDefault();
+                
+                const courrierId = $(this).data('id');
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                
+                // Demander la raison du rejet
+                const raison = prompt('Veuillez indiquer la raison du rejet :');
+                if (raison === null || raison.trim() === '') {
+                    alert('La raison du rejet est obligatoire.');
+                    return;
+                }
+                
+                // Demander confirmation
+                if (!confirm('Êtes-vous sûr de vouloir rejeter ce courrier ?')) {
+                    return;
+                }
+                
+                // Afficher un message de chargement
+                alert('Traitement en cours...');
+                
+                // Envoyer la requête AJAX
+                $.ajax({
+                    url: '/courriers/' + courrierId + '/rejeter',
+                    type: 'POST',
+                    data: {
+                        _token: csrfToken,
+                        raison: raison
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            // Recharger la page pour afficher les mises à jour
+                            location.reload();
+                        } else {
+                            alert('Erreur: ' + (response.message || 'Une erreur inconnue est survenue'));
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'Une erreur est survenue lors du rejet du courrier';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage += ': ' + xhr.responseJSON.message;
+                        }
+                        alert(errorMessage);
+                    }
+                });
+            });
+
+            // Gestion de la modale de traitement
             $('#traitement-modal').on('shown.bs.modal', function() {
                 $(this).find('.form-control:first').focus();
+                // Réactiver le bouton de soumission lorsque la modale est rouverte
+                $('#submit-traitement').prop('disabled', false).text('Valider');
             });
+            
+            // Gestion de la soumission du formulaire de traitement
             $('#traitement-form').submit(function(e) {
                 e.preventDefault();
+                
+                // Désactiver le bouton et afficher un indicateur de chargement
+                const submitBtn = document.getElementById('submit-traitement');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...';
+                
                 $('page-load').removeClass('d-none');
+                
                 $.ajax({
                     url: "{{ route('regidoc.courriers.saveTraitement', $courrier) }}",
                     method: 'POST',
                     data: $(this).serialize(),
                     success: function(response) {
-                        Livewire.emit('alert', 'success', 'Traitement effectué avec succès')
+                        Livewire.emit('alert', 'success', 'Traitement effectué avec succès');
                         $('page-load').addClass('d-none');
+                        $('#traitement-modal').modal('hide');
                         setTimeout(() => {
                             location.reload();
                         }, 1000);
                     },
-                    error: function(error) {
-                        console.log(error.message);
-                        Livewire.emit('alert', 'error', error.message);
-                        $('page-load').addClass('d-none');
-                    }
+                    // error: function(xhr) {
+                    //     console.error('Erreur lors de la requête:', xhr);
+                    //     let errorMessage = 'Une erreur est survenue lors de la communication avec le serveur';
+                        
+                        
+                    //     if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                    //         errorMessage = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    //     } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    //         errorMessage = xhr.responseJSON.message;
+                    //     }
+                        
+                    //     Livewire.emit('alert', 'error', errorMessage);
+                    //     $('page-load').addClass('d-none');
+                    //     submitBtn.disabled = false;
+                    //     submitBtn.innerHTML = originalBtnText;
+                    // }
                 });
             });
 
@@ -1848,17 +2613,144 @@
                 dropdownParent: $('#traitement-modal')
             });
 
-            // Handle form submission
-            $('#traitement-form').on('submit', function(e) {
-                e.preventDefault(); // Prevent default form submission
-                // Process form data here (e.g., send AJAX request)
-                $('#traitement-modal').modal('hide'); // Close the modal
-            });
 
         });
     </script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js?v=1"></script>
     <script src="{{ asset('assets/js/showPDF.js') }}"></script>
+    
+    {{-- <script>
+        // Vérifier si c'est un courrier interne et si on vient de la numérisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Vérifier si c'est un courrier interne (type_id = 3 pour interne)
+            const isInterne = {{ $courrier->type_id ?? 0 }} === 3;
+            
+            // Vérifier si on vient de la numérisation (via un paramètre dans l'URL)
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromScan = urlParams.get('from_scan') === 'true';
+            
+            // Si c'est un courrier interne et qu'on vient de la numérisation
+            if (isInterne && fromScan) {
+                // Attendre que le DOM soit complètement chargé
+                setTimeout(() => {
+                    // Ouvrir la modale de traitement
+                    const modal = new bootstrap.Modal(document.getElementById('traitement-modal'));
+                    modal.show();
+                    
+                    // Mettre le focus sur le champ de traitement
+                    const traitementSelect = document.getElementById('traitement_id');
+                    if (traitementSelect) {
+                        traitementSelect.focus();
+                    }
+                }, 1000); // Délai pour s'assurer que tout est chargé
+            }
+            
+            // Gérer la soumission du formulaire de traitement
+            const traitementForm = document.getElementById('traitement-form');
+            if (traitementForm) {
+                traitementForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Récupérer les données du formulaire
+                    const formData = new FormData(this);
+                    
+                    // Envoyer la requête AJAX
+                    fetch('{{ route("regidoc.courriers.updateTraitement") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Afficher un message de succès
+                            toastr.success(data.message || 'Traitement enregistré avec succès');
+                            // Fermer la modale
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('traitement-modal'));
+                            modal.hide();
+                            // Recharger la page pour afficher les mises à jour
+                            setTimeout(() => window.location.reload(), 1000);
+                        } else {
+                            toastr.error(data.message || 'Une erreur est survenue');
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalBtnText;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors de la requête:', error);
+                        Livewire.emit('alert', 'error', 'Une erreur est survenue lors de la communication avec le serveur');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                    });
+                });
+            }
+            
+            // Gérer la case à cocher pour la date d'échéance
+            const checkDate = document.getElementById('check-date');
+            const dateLimiteField = document.querySelector('.date-limite');
+            
+            if (checkDate && dateLimiteField) {
+                checkDate.addEventListener('change', function() {
+                    if (this.checked) {
+                        dateLimiteField.classList.remove('d-none');
+                    } else {
+                        dateLimiteField.classList.add('d-none');
+                    }
+                });
+            }
+        });
+    </script> --}}
+    
+    <!-- Inclusion du script de transmission pour débogage -->
+    <script src="{{ asset('js/courrier-transmission.js') }}"></script>
+    <script>
+        console.log('Variables de condition de transmission:', {
+            isDGAssistant: {{ $isDGAssistant ? 'true' : 'false' }},
+            type_id: {{ $courrier->type_id }},
+            statut_id: {{ $courrier->statut_id }}
+        });
+    </script>
+    
+    <script>
+        // Gestion du clic sur le bouton Traiter
+        $(document).on('click', '.btn-traiter', function() {
+            const courrierId = $(this).data('courrier-id');
+            
+            // Afficher un indicateur de chargement
+            const $button = $(this);
+            const $icon = $button.find('i');
+            const originalIcon = $icon.attr('class');
+            
+            $icon.removeClass().addClass('spinner-border spinner-border-sm');
+            $button.prop('disabled', true);
+            
+            // Envoyer la requête AJAX
+            $.ajax({
+                url: `/regidoc/courriers/${courrierId}/traiter`,
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    _method: 'PUT'
+                },
+                success: function(response) {
+                    // Recharger la page pour voir les changements
+                    window.location.reload();
+                },
+                error: function(xhr) {
+                    // Afficher un message d'erreur
+                    alert('Une erreur est survenue lors du traitement du courrier');
+                    
+                    // Réinitialiser le bouton
+                    $icon.removeClass().addClass(originalIcon);
+                    $button.prop('disabled', false);
+                }
+            });
+        });
+    </script>
 
     <script>
         window.addEventListener('alert', event => {
@@ -1912,7 +2804,34 @@
         });
     </script>
 
+    <!-- Le script de transmission est géré par courrier-transmission.js -->
 
+    <script>
+        // Initialisation des tooltips Bootstrap pour les boutons de la barre d'outils PDF
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    trigger: 'hover',
+                    placement: 'top',
+                    container: 'body',
+                    html: true
+                });
+            });
+        });
+    </script>
+    
+    <script>
+        // Rafraîchir la page après un accusé de réception
+        document.addEventListener('livewire:load', function() {
+            window.livewire.on('assistantSeen', () => {
+                // Rafraîchir la page après un court délai pour s'assurer que tout est bien enregistré
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            });
+        });
+    </script>
 </body>
 
 </html>

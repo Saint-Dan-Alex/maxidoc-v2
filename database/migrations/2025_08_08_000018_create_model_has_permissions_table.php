@@ -1,0 +1,29 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('model_has_permissions', function (Blueprint $table) {
+            $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
+            $table->string('model_type');
+            $table->unsignedBigInteger('model_id');
+
+            $table->primary(['permission_id', 'model_id', 'model_type']);
+            $table->index(['model_id', 'model_type']);
+        });
+
+        // Ne pas attribuer de permissions directement ici
+        // Les permissions seront gérées via les rôles
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('model_has_permissions');
+    }
+};

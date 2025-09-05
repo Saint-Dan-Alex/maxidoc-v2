@@ -30,6 +30,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\Snappy\Facades\SnappyPdf;
+use Illuminate\Support\Facades\Log;
+use App\Models\Historique;
+use Carbon\Carbon;
+use setasign\Fpdi\Fpdi;
+
 
 class DocumentController extends Controller
 {
@@ -43,83 +48,7 @@ class DocumentController extends Controller
     {
         $data = [];
         $documents = Document::all();
-        // if ($request->has('direction')) {
-        //     $data['divisions'] = Direction::find($request->get('direction'))->divisions->filter(function ($division) {
-        //         return Gate::allows('view', $division);
-        //     });
-        // }elseif ($request->has('division')) {
-        //     $data['services'] = Division::find($request->get('division'))->services->filter(function ($service) {
-        //         return Gate::allows('view', $service);
-        //     });
-
-        // }elseif ($request->has('service')) {
-
-        //     $classeurs = Classeur::select('id')->get()->filter(function ($classeur) {
-        //         return Gate::allows('view', $classeur);
-        //     });
-        //     $dossiers = Classeur::select('id')->get()->filter(function ($dossier) {
-        //         return Gate::allows('view', $dossier);
-        //     });
-        //     $filesCount = Document::select('id')->get()->filter(function ($document) {
-        //         return Gate::allows('view', $document);
-        //     })->count();
-
-        //     $division_id = Service::find($request->get('service'))->division->id;
-
-        //     return view('regidoc.pages.documents.index')->with(
-        //         [
-        //             'classeurs' => $classeurs,
-        //             'dossiers' => $dossiers,
-        //             'filesCount' => $filesCount,
-        //             'division_id' => $division_id,
-        //         ]
-        //     );
-        // }else {
-        // }
-        // if (Auth::user()->hasRole('Admin')) {
-        //     if ($request->has('lieu')) {
-        //         $data['directions'] = Direction::whereHas('agents', function ($query) {
-        //             $query->withWhereHas('user', function ($sql) {
-        //                 $sql->whereHas('documents', function ($sql2) {
-        //                     $sql2->whereIn('documents.id', Document::get()->filter(function ($document) {
-        //                         return Gate::allows('view', $document);
-        //                     })->pluck('id')->toArray());
-        //                 });
-        //             });
-        //         })->where('lieu_id', $request->get('lieu'))->select('id', 'titre')->get();
-        //         // ->filter(function ($direction) {
-        //         //     return Gate::allows('view', $direction);
-        //         // });
-
-        //         return view('regidoc.pages.documents.hierachie.direction')->with($data);
-        //     } elseif ($request->has('direction')) {
-        //         $data['direction'] = Direction::find($request->get('direction'));
-        //         return view('regidoc.pages.documents.index')->with($data);
-        //     } else {
-        //         // $data['lieux'] = LieuAffectation::whereHas('directions', function($query){
-        //         //     $query->whereHas('agents', function($sql){
-        //         //         $sql->whereHas('documents', function($sql2){
-        //         //             $sql2->whereIn('documents.id', Document::get()->filter(function ($document) {
-        //         //                 return Gate::allows('view', $document);
-        //         //             })->pluck('id')->toArray());
-        //         //         });
-        //         //     });
-        //         // })
-        //         // // ->select('id','titre')
-        //         // ->get();
-        //         $data['lieux'] = LieuAffectation::with('agents')->whereHas('agents', function ($query) {
-        //             $query->withWhereHas('user', function ($sql) {
-        //                 $sql->whereHas('documents', function ($sql2) {
-        //                     $sql2->whereIn('documents.id', Document::get()->filter(function ($document) {
-        //                         return Gate::allows('view', $document);
-        //                     })->pluck('id')->toArray());
-        //                 });
-        //             });
-        //         })->get();
-
-        //         return view('regidoc.pages.documents.hierachie.direction')->with($data);
-        //     }
-        // } else {
+       
             return view('regidoc.pages.documents.index', compact('documents'));
     }
 
@@ -700,13 +629,33 @@ class DocumentController extends Controller
      */
     public function show(Document $document)
     {
+ 
         $classeurs = Classeur::all();
         $dossiers = Dossier::all();
+        
+        // Récupérer les deux premiers documents avec is_default = 1
+        $defaultPdfs = Document::where('is_default', 1)
+            ->orderBy('id', 'asc')
+            ->take(2)
+            ->get();
+            
         return view('regidoc.pages.documents.show-doc')->with([
             'find_document' => $document,
             'classeurs' => $classeurs,
             'dossiers' => $dossiers,
+            'defaultPdfs' => $defaultPdfs,
         ]);
+    }
+
+    /**
+     * Display the specified resource's PDF file.
+     *
+     * @param  Document  $document
+     * @return \Illuminate\Http\Response
+     */
+    public function showPdf(Document $document)
+    {
+        return view('regidoc.pages.documents.show-pdf', ['document' => $document]);
     }
 
     /**
@@ -802,6 +751,7 @@ class DocumentController extends Controller
     {
         $document = Document::find($request->document_id);
         $document->statut_id = 6;
+        $document-> archived_at = Carbon::now();
         $document->save();
 
         $content = json_encode([
@@ -815,28 +765,148 @@ class DocumentController extends Controller
             $content
         );
 
-        return redirect()->route('regidoc.dossiers.show', $document->dossier);
+        return redirect()->route('regidoc.documents.index', $document->dossier);
     }
 
-    public function desarchiver(Request $request)
-    {
-        $document = Document::find($request->document_id);
-        $document->statut_id = 2;
-        $document->save();
+    
+public function desarchiver(Request $request)
+{
+    try {
+        $ancienDocument = Document::findOrFail($request->document_id);
+
+        // Décoder le JSON stocké dans la colonne document
+        $documentData = json_decode($ancienDocument->document, true);
+
+        // Le champ document est un tableau, on prend le premier élément
+        if (!$documentData || !is_array($documentData) || count($documentData) === 0) {
+            throw new \Exception("Le contenu JSON est vide ou invalide");
+        }
+
+        $premierDocument = $documentData[0];
+
+        if (!isset($premierDocument['download_link'])) {
+            throw new \Exception("Le chemin du fichier n'a pas été trouvé dans la donnée JSON");
+        }
+
+        $ancienChemin = str_replace('\\', '/', $premierDocument['download_link']);
+
+        if (!Storage::disk('public')->exists($ancienChemin)) {
+            throw new \Exception("Fichier original introuvable : $ancienChemin");
+        }
+
+        $nouveauNomFichier = uniqid() . '_' . basename($ancienChemin);
+        $dossierDestination = 'documents/' . date('FY'); // ex July2025
+        $nouveauChemin = $dossierDestination . '/' . $nouveauNomFichier;
+
+        Storage::disk('public')->makeDirectory($dossierDestination);
+        Storage::disk('public')->copy($ancienChemin, $nouveauChemin);
+
+        // --- Modification PDF pour ajouter pied de page avec dates ---
+
+        $source = storage_path("app/public/" . $ancienChemin);
+        $destinationPath = storage_path("app/public/" . $nouveauChemin);
+
+        $pdf = new \setasign\Fpdi\Fpdi();
+
+        $pageCount = $pdf->setSourceFile($source);
+        $dateArchive = $ancienDocument->created_at->format('d/m/Y');
+        $dateDesarchive = now()->format('d/m/Y');
+        $heureDesarchive = now()->format('H:i:s');
+        $heureArchive = $ancienDocument->archived_at->format('H:i:s');
+        $utilisateur = Auth::user()->name;
+        
+        // Texte d'en-tête simplifié
+        $texte = "DOCUMENT DESARCHIVE | Archivé le: {$dateArchive} à {$heureArchive} | Désarchivé le: {$dateDesarchive} à {$heureDesarchive} par {$utilisateur}";
+        $fontSize = 8; // Taille de police réduite
+
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $tplIdx = $pdf->importPage($pageNo);
+
+            // Taille standard A4
+            $width = 210;  // largeur en mm
+            $height = 297; // hauteur en mm
+
+            // Ajouter une nouvelle page
+            $pdf->AddPage('P', [$width, $height]);
+            
+            // Utiliser le template de la page existante
+            $pdf->useTemplate($tplIdx, 10, 20, $width - 20, $height - 30);
+            
+            // Ajouter l'en-tête manuellement
+            $pdf->SetFont('Arial', '', $fontSize);
+            $pdf->SetTextColor(0, 0, 200);
+            $pdf->SetXY(10, 10);
+            $pdf->Cell(0, 10, $texte, 0, 0, 'C');
+            $pdf->Line(10, 20, $width - 10, 20);
+        }
+
+
+
+        // Enregistrer le PDF modifié (remplace la copie simple)
+        $pdf->Output($destinationPath, 'F');
+
+        // --- Création du nouveau document en base ---
+
+        $nouveauDocument = new Document();
+        $nouveauDocument->dossier_id = $ancienDocument->dossier_id;
+        $nouveauDocument->category_id = $ancienDocument->category_id;
+        $nouveauDocument->reference = $ancienDocument->reference . '/R'; // modifiable
+        $nouveauDocument->libelle = $ancienDocument->libelle;
+        $nouveauDocument->type = $ancienDocument->type;
+        $nouveauDocument->description = $ancienDocument->description;
+
+        $nouveauDocument->document = json_encode([
+            [
+                'download_link' => $nouveauChemin,
+                'original_name' => $premierDocument['original_name'] ?? basename($ancienChemin),
+            ]
+        ]);
+
+        $nouveauDocument->user_id = Auth::id();
+        $nouveauDocument->statut_id = 5;
+        $nouveauDocument->created_by = Auth::user()->agent->id;
+        $nouveauDocument->desarchive_by = Auth::user()->agent->id;
+        $nouveauDocument->reference_document_id = $ancienDocument->id;
+        $nouveauDocument->save();
+
+        ArchivePermission::create([
+            'agent_id' => Auth::user()->agent->id,
+            'permissionable_id' => $nouveauDocument->id,
+            'permissionable_type' => Document::class,
+            'key' => 'view_document',
+        ]);
+
+        Historique::create([
+            "key" => "Désarchivage du document",
+            "historiquecable_id" => $nouveauDocument->id,
+            "historiquecable_type" => Document::class,
+            "description" => "Document désarchivé et recréé à partir du document #{$ancienDocument->id} par l'utilisateur #" . Auth::id(),
+            "user_id" => Auth::id(),
+        ]);
+
+        event(new DocumentCreated($nouveauDocument, 'Un document a été désarchivé et recréé.'));
 
         $content = json_encode([
             'name' => 'Document',
             'statut' => 'success',
-            'message' => 'Document desarchivé avec succès !',
+            'message' => 'Document désarchivé et recréé avec succès !',
         ]);
-
-        session()->flash(
-            'session',
-            $content
-        );
-
-        return redirect()->route('regidoc.dossiers.show', $document->dossier);
+    } catch (\Throwable $th) {
+        $content = json_encode([
+            'name' => 'Document',
+            'statut' => 'error',
+            'message' => 'Échec du désarchivage du document : ' . $th->getMessage(),
+        ]);
     }
+
+    session()->flash('session', $content);
+
+    return redirect()->route('regidoc.documents.index', $ancienDocument->dossier_id);
+}
+
+
+
+
 
     public function saveNew(Request $request)
     {

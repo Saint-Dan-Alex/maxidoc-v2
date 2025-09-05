@@ -20,34 +20,43 @@ class EditCourrierForm extends Component
     public $priorites;
     public $destination;
     public $copies;
-    public $isConfidentiel;
-    public $dg;
+    public $isConfidentiel = false;
+    public $dg = null;
     public $categories;
     public $traitements;
-    public $selectedDoc;
+    public $selectedDoc = null;
     public $courrier;
-    public $dga;
+    public $dga = null;
+    public $isFormValid = false;
 
     protected $listeners = ['selectDoc'];
 
-    // public function FunctionName(Type $var = null)
-    // {
-    //     # code...
-    // }
+    public function mount($courrier, $types, $natures, $services, $agents)
+    {
+        $this->courrier = $courrier;
+        $this->types = $types;
+        $this->natures = $natures;
+        $this->services = $services;
+        $this->agents = $agents;
+        $this->agentSelected = auth()->user()->agent_id;
+    }
 
     public function render()
     {
-        $this->isConfidentiel = $this->courrier->confidentiel;
+        $this->isConfidentiel = $this->courrier->confidentiel ?? false;
         $this->priorites = Priorite::all();
         $this->followers = $this->agents->where('id', '!=', $this->agentSelected);
-        $this->dg = Agent::whereHas('fonctions', function ($query)
-        {
-            $query->where('fonctions.id', 1)->where('pivot_agent_fonctions.statut_id', 1);
+        
+        // Récupération du DG (Directeur Général)
+        $this->dg = Agent::whereHas('fonctions', function ($query) {
+            $query->where('fonctions.id', 1)
+                  ->where('pivot_agent_fonctions.statut_id', 1);
         })->first();
 
-        $this->dga = Agent::whereHas('fonctions', function ($query)
-        {
-            $query->where('fonctions.id', 2)->where('pivot_agent_fonctions.statut_id', 1);
+        // Récupération du DGA (Directeur Général Adjoint)
+        $this->dga = Agent::whereHas('fonctions', function ($query) {
+            $query->where('fonctions.id', 2)
+                  ->where('pivot_agent_fonctions.statut_id', 1);
         })->first();
 
         $this->categories = CourrierCategory::all();

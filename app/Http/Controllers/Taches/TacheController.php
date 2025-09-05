@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Taches;
 
 use App\Events\TacheCreated;
+use App\Models\Fichier;
+use App\Events\TacheConsulted;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\File;
 use App\Models\Agent;
@@ -21,6 +23,7 @@ use App\Models\Courrier;
 use App\Models\TacheObjectif;
 use App\Mail\DocumentPasswordMail;
 use App\Models\TachesStatut;
+use App\Models\TacheView;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -28,21 +31,97 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Courriers\CourrierController as CourrierController;
 use App\Models\Historique;
+use Illuminate\Support\Facades\Log;
 
 class TacheController extends Controller
 {
+    /**
+     * Construit une URL valide pour un document en utilisant la fonction files()
+     * pour assurer la cohérence avec le reste de l'application
+     *
+     * @param mixed $documentPath Chemin du document depuis la base de données
+     * @return string URL complète du document
+     */
+    public static function buildDocumentUrl($documentPath)
+    {
+        if (empty($documentPath)) {
+            return '';
+        }
+
+        // Utiliser la fonction files() pour générer l'URL de manière cohérente
+        $fileInfo = files($documentPath);
+        
+        // Si files() retourne une collection, prendre le premier élément
+        if (is_object($fileInfo) && isset($fileInfo->link)) {
+            return $fileInfo->link;
+        }
+        
+        // Si c'est une collection, prendre le premier élément
+        if (is_iterable($fileInfo) && $fileInfo->isNotEmpty()) {
+            return $fileInfo->first()->link ?? '';
+        }
+        
+        // Si on arrive ici, essayer de construire l'URL manuellement
+        if (is_string($documentPath)) {
+            // Si c'est déjà une URL complète, la retourner telle quelle
+            if (Str::startsWith($documentPath, ['http://', 'https://', '/'])) {
+                return $documentPath;
+            }
+            
+            // Nettoyer le chemin
+            $documentPath = ltrim($documentPath, '[\"\'');
+            $documentPath = rtrim($documentPath, '\\\"\\]}');
+            
+            // Remplacer les antislashs par des slashs pour la cohérence
+            $documentPath = str_replace('\\', '/', $documentPath);
+            
+            // Nettoyer les préfixes inutiles
+            $documentPath = preg_replace('#^/+#', '', $documentPath);
+            $documentPath = preg_replace('#^storage/#', '', $documentPath);
+            
+            // Construire l'URL complète
+            return asset('storage/' . $documentPath);
+        }
+        
+        return '';
+    }
     public function index()
     {
-       
-         if (Auth::user()->agent->isDG()) {
-             $taches = Tache::where('user_id', Auth::user()->id)->orderBy('id', 'desc')->paginate(10);
-         } else {
-             $taches = collect();
-             $y = Tache::getTachesForCurrentUser();
-             $z = Tache::where('user_id', Auth::user()->id)->orderBy('id', 'desc')->get();
-             $taches = $taches->merge($y)->merge($z);
-             $taches = $taches->unique('id');
-         }
+        $user = Auth::user();
+        
+        if ($user->agent->isDG() || $user->agent->isDelegue()) {
+            // Pour les DG et délégués, afficher toutes les tâches
+            $taches = Tache::with(['agents', 'objectifs', 'tache_statut'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            // Pour les autres utilisateurs, afficher leurs tâches assignées et celles qu'ils ont créées
+            $tachesAssignees = Tache::whereHas('agents', function($query) use ($user) {
+                    $query->where('agent_id', $user->agent->id)
+                          ->where('type', 'App\\Models\\Agent')
+                          ->where('type_id', $user->agent->id);
+                })
+                ->with(['agents', 'objectifs', 'tache_statut'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+                
+            $tachesCreees = Tache::where('user_id', $user->id)
+                ->with(['agents', 'objectifs', 'tache_statut'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+                
+            // Fusionner et éliminer les doublons
+            $taches = $tachesAssignees->merge($tachesCreees)->unique('id');
+            
+            // Convertir en paginate manuellement
+            $taches = new \Illuminate\Pagination\LengthAwarePaginator(
+                $taches->forPage(\Illuminate\Pagination\Paginator::resolveCurrentPage(), 10),
+                $taches->count(),
+                10,
+                null,
+                ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+            );
+        }
 
          $num = $taches->count();
 
@@ -158,17 +237,17 @@ class TacheController extends Controller
         if ($request->has('parent_id')) {
             $newDoc = $tache->tacheParent?->documents->first();
             if ($newDoc) {
-                $tache->documents()->attach($newDoc->id);
-
+                $tache->documents()->attach($newDoc->id, ['created_by' => Auth::id()]);
                 $newDoc->followers()->attach($followers->pluck('id'));
 
                 if ($newDoc->confidentiel) {
                     if (is_countable($followers)) {
-                        $users = $followers->map(function ($agent) {
-                            if ($agent) {
-                                return $agent->user;
+                        $users = [];
+                        foreach ($followers as $follower) {
+                            if ($follower && $follower->user) {
+                                $users[] = $follower->user;
                             }
-                        });
+                        }
                         // foreach ($users as $user) {
                         //     # code...
                         //     Mail::to($user)->send(new DocumentPasswordMail($newDoc->password, $user));
@@ -183,15 +262,25 @@ class TacheController extends Controller
 
         if ($request->has('doc_id')) {
             $newDoc = Document::findOrFail($request->doc_id);
-            $tache->documents()->attach($newDoc->id);
+            $tache->documents()->attach($newDoc->id, ['created_by' => Auth::id()]);
 
             $newDoc->followers()->attach($followers->pluck('id'));
+            
+            // Notifier les followers du document
+            foreach ($followers as $follower) {
+                if ($follower && $follower->user) {
+                    event(new TacheCreated($tache, $follower->id, 'Un nouveau document a été attaché à la tâche : ' . $tache->titre));
+                }
+            }
 
             if ($newDoc->confidentiel) {
                 if (is_countable($followers)) {
-                    $users = $followers->map(function ($agent) {
-                        return $agent->user;
-                    });
+                    $users = [];
+                    foreach ($followers as $follower) {
+                        if ($follower && $follower->user) {
+                            $users[] = $follower->user;
+                        }
+                    }
                     // foreach ($users as $user) {
                     //     # code...
                     //     Mail::to($user)->send(new DocumentPasswordMail($newDoc->password, $user));
@@ -271,9 +360,16 @@ class TacheController extends Controller
             //     'key' => 'view_document',
             // ]);
 
-            $tache->documents()->attach($document->id);
+            $tache->documents()->attach($document->id, ['created_by' => Auth::id()]);
 
             $document->followers()->attach($followers);
+            
+            // Notifier les followers du nouveau document
+            foreach ($followers as $follower) {
+                if ($follower && $follower->user) {
+                    event(new TacheCreated($tache, $follower->id, 'Un nouveau document a été créé et attaché à la tâche : ' . $tache->titre));
+                }
+            }
         }
 
         if ($request->hasFile('documents')) {
@@ -321,9 +417,13 @@ class TacheController extends Controller
                     'created_by' => Auth::user()->agent->id,
                 ]);
 
-                $tache->documents()->attach($document->id);
+                $tache->documents()->attach($document->id, ['created_by' => Auth::id()]);
                 foreach ($followers as $follower) {
                     $document->followers()->attach($follower);
+                    // Notifier chaque follower du nouveau document
+                    if ($follower && $follower->user) {
+                        event(new TacheCreated($tache, $follower->id, 'Un nouveau document a été téléversé et attaché à la tâche : ' . $tache->titre));
+                    }
                 }
             }
         }
@@ -419,21 +519,30 @@ class TacheController extends Controller
 
             } elseif ($request->has('division_id')) {
                 $divisions = Division::find($request->input('division_id'));
+                
+                // Créer une seule tâche pour toutes les divisions
+                $tache = $this->createTache($request, $followers);
+                
+                // Ajouter toutes les divisions à la tâche
                 foreach ($divisions as $division) {
                     $responsable = $division->responsable;
                     $followers->push($responsable);
+                    
+                    // Mettre à jour le titre de la tâche pour inclure toutes les divisions
+                    if (strpos($tache->titre, ' pour ') === false) {
+                        $tache->titre = $tache->titre . ' pour ' . $division->titre;
+                    } else {
+                        $tache->titre = str_replace(' pour ', ', ', $tache->titre) . ', ' . $division->titre;
+                    }
+                    $tache->save();
 
                     if ($responsable) {
-                        $tache = $this->createTache($request, $followers);
-                        $tache->titre = $tache->titre . ' pour ' . $division->libelle;
-                        $tache->save();
                         $tache->agents()->attach($responsable, [
                             'type' => Division::class,
                             'type_id' => $division->id,
                         ]);
 
-                        event(new TacheCreated($tache, $responsable->id, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
-
+                        // Créer les objectifs pour chaque division
                         if (isset($request->input('objects')[$division->id])) {
                             $objects = $request->input('objects')[$division->id];
                             foreach ($objects as $object) {
@@ -456,29 +565,40 @@ class TacheController extends Controller
                                 'agent_id' => $responsable->id,
                             ]);
                         }
+                        
+                        // Envoyer une notification à chaque responsable de division
+                        if ($responsable->id != Auth::user()->agent->id) {
+                            event(new TacheCreated($tache, $responsable->id, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
+                        }
                     }
                 }
-
             } elseif ($request->has('service_id')) {
 
                 $services = Service::find($request->input('service_id'));
-
+                
+                // Créer une seule tâche pour tous les services
+                $tache = $this->createTache($request, $followers);
+                
+                // Ajouter tous les services à la tâche
                 foreach ($services as $service) {
-
                     $responsable = $service->responsable;
                     $followers->push($responsable);
-
-                    if ($responsable) {
-                        $tache = $this->createTache($request, $followers);
+                    
+                    // Mettre à jour le titre de la tâche pour inclure tous les services
+                    if (strpos($tache->titre, ' / ') === false) {
                         $tache->titre = $tache->titre . ' / ' . $service->titre;
-                        $tache->save();
+                    } else {
+                        $tache->titre = str_replace(' / ', ', ', $tache->titre) . ', ' . $service->titre;
+                    }
+                    $tache->save();
+                    
+                    if ($responsable) {
                         $tache->agents()->attach($responsable, [
                             'type' => Service::class,
                             'type_id' => $service->id,
                         ]);
 
-                        event(new TacheCreated($tache, $responsable->id, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
-
+                        // Créer les objectifs pour chaque service
                         if (isset($request->input('objects')[$service->id])) {
                             $objects = $request->input('objects')[$service->id];
                             foreach ($objects as $object) {
@@ -501,68 +621,73 @@ class TacheController extends Controller
                                 'agent_id' => $responsable->id,
                             ]);
                         }
+                        
+                        // Envoyer une notification au responsable du service
+                        event(new TacheCreated($tache, $responsable->id, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
                     }
+                    
+                    // Envoyer une notification à chaque responsable de service
+                    event(new TacheCreated($tache, $service->responsable, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
                 }
-
             } elseif ($request->has('section_id')) {
                 $sections = Section::find($request->input('section_id'));
-
+                
+                // Créer une seule tâche pour toutes les sections
+                $tache = $this->createTache($request, $followers);
+                
+                // Ajouter toutes les sections à la tâche
                 foreach ($sections as $section) {
+                    $followers->push($section->responsable);
+                    $tache->agents()->attach($section->responsable, [
+                        'type' => Section::class,
+                        'type_id' => $section->id,
+                    ]);
 
-                    $responsable = $section->responsable;
-                    $followers->push($responsable);
-
-                    if ($responsable) {
-                        $tache = $this->createTache($request, $followers);
-                        $tache->titre = $tache->titre . ' / ' . $section->titre;
-                        $tache->save();
-                        $tache->agents()->attach($responsable, [
-                            'type' => Section::class,
-                            'type_id' => $section->id,
-                        ]);
-
-                        event(new TacheCreated($tache, $responsable->id, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
-
-                        if (isset($request->input('objects')[$section->id])) {
-                            $objects = $request->input('objects')[$section->id];
-                            foreach ($objects as $object) {
-                                if ($object) {
-                                    TacheObjectif::create([
-                                        'libelle' => $object,
-                                        'tache_id' => $tache->id,
-                                        'user_id' => Auth::user()->id,
-                                        'statut' => 0,
-                                        'agent_id' => $responsable->id,
-                                    ]);
-                                }
+                    // Créer les objectifs pour chaque section
+                    if (isset($request->input('objects')[$section->id])) {
+                        $objects = $request->input('objects')[$section->id];
+                        foreach ($objects as $object) {
+                            if ($object) {
+                                TacheObjectif::create([
+                                    'libelle' => $object,
+                                    'tache_id' => $tache->id,
+                                    'user_id' => Auth::user()->id,
+                                    'statut' => 0,
+                                    'agent_id' => $section->responsable->id,
+                                ]);
                             }
-                        } else {
-                            TacheObjectif::create([
-                                'libelle' => $request->description ?? " ",
-                                'tache_id' => $tache->id,
-                                'user_id' => Auth::user()->id,
-                                'statut' => 0,
-                                'agent_id' => $responsable->id,
-                            ]);
                         }
+                    } else {
+                        TacheObjectif::create([
+                            'libelle' => $request->description ?? " ",
+                            'tache_id' => $tache->id,
+                            'user_id' => Auth::user()->id,
+                            'statut' => 0,
+                            'agent_id' => $section->responsable->id,
+                        ]);
                     }
+                    
+                    // Envoyer une notification à chaque responsable de section
+                    event(new TacheCreated($tache, $section->responsable, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
                 }
             }
 
             if (!$request->has('direction_id') && !$request->has('division_id') && !$request->has('section_id') && !$request->has('service_id')) {
                 $agents = Agent::find($request->input('agent_id'));
-
+                
+                // Créer une seule tâche pour tous les participants
+                $tache = $this->createTache($request, $agents);
+                
+                // Ajouter tous les participants à la tâche
                 foreach ($agents as $agent) {
                     $followers->push($agent);
                     if ($agent) {
-                        $tache = $this->createTache($request, $followers);
                         $tache->agents()->attach($agent, [
                             'type' => Agent::class,
                             'type_id' => $agent->id,
                         ]);
 
-                        event(new TacheCreated($tache, $agent, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
-
+                        // Créer les objectifs pour chaque participant
                         if (isset($request->input('objects')[$agent->id])) {
                             $objects = $request->input('objects')[$agent->id];
                             foreach ($objects as $object) {
@@ -585,19 +710,29 @@ class TacheController extends Controller
                                 'agent_id' => $agent->id,
                             ]);
                         }
+                        
+                        // Envoyer une notification à chaque participant
+                        event(new TacheCreated($tache, $agent, "Une nouvelle tâche vous a été assignée par " . Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ", cliquez sur 'TRAITER' pour commencer le traitement"));
                     }
                 }
             }
 
+            Historique::create([
+                "key" => "Ajout de tâche",
+                "historiquecable_id" => $tache->id,
+                "historiquecable_type" => Tache::class,
+                "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a créé une tâche.",
+                "user_id" => Auth::user()->id,
+            ]);
 
             $content = json_encode([
                 'name' => 'Gestion de tâches',
                 'statut' => 'success',
-                'message' => 'L\'ajout de la tâche a réussi avec succès !',
+                'message' => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a créé une tâche.",
             ]);
 
         } catch (\Throwable $th) {
-            dd($th);
+            // dd($th);
             $content = json_encode([
                 'name' => 'Gestion de tâches',
                 'statut' => 'error',
@@ -615,101 +750,382 @@ class TacheController extends Controller
 
     public function show($id)
     {
-        $tache = Tache::find($id);
-        return view('regidoc.pages.taches.show-task')->with(['tache' => $tache]);
+        $tache = Tache::with(['documents', 'objectifs.agent'])->find($id);
+        $documents = $tache->documents ?? collect();
+        
+        // Vérifier si c'est la première consultation de la tâche par l'utilisateur
+        $view = TacheView::firstOrNew([
+            'tache_id' => $tache->id,
+            'user_id' => auth()->id(),
+            'agent_id' => auth()->user()->agent->id
+        ]);
+
+        // Si c'est une nouvelle vue
+        if (!$view->exists) {
+            $view->is_first_view = true;
+            $view->save();
+            
+            // Récupérer tous les agents concernés par la tâche
+            $agentsConcernes = collect();
+            
+            // Ajouter le créateur de la tâche
+            if ($tache->user && $tache->user->agent) {
+                $agentsConcernes->push($tache->user->agent);
+            }
+            
+            // Ajouter les agents assignés aux objectifs
+            foreach ($tache->objectifs as $objectif) {
+                if ($objectif->agent && !$agentsConcernes->contains('id', $objectif->agent->id)) {
+                    $agentsConcernes->push($objectif->agent);
+                }
+            }
+            
+            // Déclencher l'événement de consultation
+            if ($agentsConcernes->isNotEmpty()) {
+                event(new TacheConsulted(
+                    $tache,
+                    auth()->user()->agent,
+                    $agentsConcernes
+                ));
+            }
+        } else if ($view->is_first_view) {
+            // Mettre à jour la vue existante
+            $view->is_first_view = false;
+            $view->viewed_at = now();
+            $view->save();
+        }
+        
+        // Préparer les URLs des documents
+        $documents->each(function($document) {
+            $document->document_url = self::buildDocumentUrl($document->document);
+        });
+        
+        return view('regidoc.pages.taches.show-task', compact('tache', 'documents'));
     }
 
-    public function edit($id)
+    // public function edit($id)
+    // {
+    //     $tache = Tache::findOrFail($id);
+    //     if ($tache->user_id == Auth::user()->id) {
+    //         # code...
+    //         $agents = Agent::select('id', 'nom', 'prenom')->get();
+    //         $priorites = Priorite::select('id', 'titre')->get();
+    //         return view('regidoc.pages.taches.edit-task', compact('tache', 'priorites', 'agents'));
+    //     } else {
+    //         # code...
+    //         $content = json_encode([
+    //             'name' => 'Gestion de tâches',
+    //             'statut' => 'error',
+    //             'message' => 'Accès non autorisé !',
+    //         ]);
+    //         session()->flash(
+    //             'session',
+    //             $content
+    //         );
+    //         return back();
+    //     }
+
+    // }
+    public function edit(Request $request, $id)
     {
-        $tache = Tache::findOrFail($id);
-        if ($tache->user_id == Auth::user()->id) {
-            # code...
-            $agents = Agent::select('id', 'nom', 'prenom')->get();
-            $priorites = Priorite::select('id', 'titre')->get();
-            return view('regidoc.pages.taches.edit-task', compact('tache', 'priorites', 'agents'));
-        } else {
-            # code...
-            $content = json_encode([
+        // Charger la tâche AVEC les agents liés (avec pivots)
+        $tache = Tache::with('agents')->findOrFail($id);
+
+        // Vérification d'autorisation
+        if ($tache->user_id != Auth::user()->id) {
+            session()->flash('session', json_encode([
                 'name' => 'Gestion de tâches',
                 'statut' => 'error',
                 'message' => 'Accès non autorisé !',
-            ]);
-            session()->flash(
-                'session',
-                $content
-            );
+            ]));
             return back();
         }
 
+        // Initialisation du tableau de données avec valeurs par défaut
+        $data = [
+            'tache' => $tache,
+            'agents' => collect(),
+            'directions' => collect(),
+            'services' => collect(),
+            'sections' => collect(),
+            'priorites' => Priorite::select('id', 'titre')->get(),
+            'to' => null,
+            'isNewdoc' => false,
+            'document' => null,
+            'isSubTask' => false,
+        ];
+
+        // Cas Directeur Général
+        if (Auth::user()->agent->isDG()) {
+            if ($request->to === "direction") {
+                $data['directions'] = Direction::where('id', '!=', Auth::user()->agent->direction_id)->get();
+                $data['to'] = 'direction';
+            } elseif ($request->to === "agent") {
+                $data['agents'] = Agent::select('id', 'nom', 'prenom')
+                    ->where('id', '!=', Auth::id())
+                    ->get();
+                $data['to'] = 'agent';
+            } else {
+                $data['directions'] = Direction::where('id', '!=', Auth::user()->agent->direction_id)->get();
+            }
+        } else {
+            // Cas utilisateur normal
+            $data['agents'] = Agent::select('id', 'nom', 'prenom')
+                ->where('id', '!=', Auth::id())
+                ->where('direction_id', Auth::user()->agent->direction_id)
+                ->get();
+        }
+
+        // Récupération des services et sections si nécessaires
+        $data['services'] = Service::all();
+        $data['sections'] = Section::all();
+
+        // Cas nouveau document attaché temporairement
+        if ($request->newdoc == 1 && $request->textSelected && $request->fileName) {
+            $fileName = $request->fileName;
+            $text = $request->textSelected;
+            $name = $text . date('_dmYHi') . '.pdf';
+
+            $data['isNewdoc'] = true;
+            $data['docname'] = $name;
+            $data['filename'] = $fileName;
+            $data['dossiername'] = $text;
+        }
+
+        // Cas document lié existant
+        if ($request->doc != null) {
+            $document = Document::findOrFail((int) $request->doc);
+            $data['document'] = $document;
+        }
+
+        // Cas sous-tâche
+        if ($request->parent_id != null) {
+            $data['isSubTask'] = true;
+            $data['tacheParent'] = Tache::findOrFail($request->parent_id);
+        }
+
+        // Cas courrier lié
+        if ($request->courrier_id != null) {
+            $data['courrier_id'] = $request->courrier_id;
+        }
+
+        return view('regidoc.pages.taches.edit-task', $data);
     }
 
-    public function update(Request $request, $id)
+    // public function update(Request $request, $id)
+    // {
+    //     $tache = Tache::find($id)->update([
+    //         'titre' => $request->titre,
+    //         'date_debut' => $request->date_debut,
+    //         'date_fin' => $request->date_fin,
+    //         'priorite_id' => $request->priorite_id,
+    //         'description' => $request->description,
+    //     ]);
+    //     if ($request->hasFile('documents')) {
+    //         $classer = Classeur::where('direction_id', Auth::user()->agent?->direction_id)->where('titre', 'Classeur Tâches ' . Auth::user()->agent?->direction->titre)->first();
+    //         if ($classer == null) {
+    //             # code...
+    //             $classer = Classeur::firstOrCreate(
+    //                 [
+    //                     'direction_id' => Auth::user()->agent?->direction_id,
+    //                     'titre' => 'Classeur Tâches ' . Auth::user()->agent?->direction->titre,
+    //                 ],
+    //                 [
+    //                     'reference' => Auth::user()->agent?->direction?->code,
+    //                     'description' => 'Ce Classeur contient tous les documents liés à vos tâches',
+    //                     'created_by' => Auth::user()->agent->id,
+    //                     'updated_by' => Auth::user()->agent->id,
+    //                 ]
+    //             );
+    //         }
+
+    //         $dossier = Dossier::firstOrCreate(
+    //             [
+    //                 'classeur_id' => $classer->id,
+    //                 'titre' => 'Taches',
+    //                 'reference' => 'DIR' . Str::padLeft(Dossier::count() + 1, 4, 0),
+    //             ],
+    //             [
+    //                 'description' => 'Dossier pour les documents de tâches',
+    //                 'confidentiel' => 0,
+    //                 'created_by' => Auth::user()->agent->id,
+    //                 'updated_by' => Auth::user()->agent->id,
+    //             ]
+    //         );
+
+    //         foreach ($request->file('documents') as $key => $doc) {
+
+    //             $document = Document::create([
+    //                 'dossier_id' => $dossier->id,
+    //                 'libelle' => Str::beforeLast($doc->getClientOriginalName(), '.'),
+    //                 'category_id' => 6,
+    //                 'reference' => 'DT/' . Auth::user()->agent?->matricule,
+    //                 'type' => 3,
+    //                 'document' => (new File)->handle($doc, 'document', 'documents'),
+    //                 'user_id' => Auth::user()->id,
+    //                 'statut_id' => 1,
+    //                 'created_by' => Auth::user()->agent->id,
+    //             ]);
+
+    //             ArchivePermission::create([
+    //                 'agent_id' => Auth::user()->agent->id,
+    //                 'permissionable_id' => $document->id,
+    //                 'permissionable_type' => 'App\Models\Document',
+    //                 'key' => 'view_document',
+    //             ]);
+
+    //             // $doc->move($path, $name . '.' . $ext);
+    //             $tache->documents()->attach($document->id);
+    //         }
+    //     }
+    //     if ($tache == 1) {
+    //         $content = json_encode([
+    //             'name' => 'Gestion de tâche',
+    //             'statut' => 'success',
+    //             'message' => 'Tâche modifiée avec succès !',
+    //         ]);
+    //     } else {
+    //         $content = json_encode([
+    //             'name' => 'Gestion de tâche',
+    //             'statut' => 'error',
+    //             'message' => "La modification de la tâche a échoué !",
+    //         ]);
+    //     }
+
+    //     session()->flash(
+    //         'session',
+    //         $content
+    //     );
+
+    //     return redirect()->route('regidoc.taches.index');
+    // }
+
+        public function update(Request $request, $id)
     {
-        $tache = Tache::find($id)->update([
+        $tache = Tache::find($id);
+
+        if (!$tache) {
+            session()->flash('session', json_encode([
+                'name' => 'Gestion de tâche',
+                'statut' => 'error',
+                'message' => "Tâche introuvable !",
+            ]));
+            return redirect()->route('regidoc.taches.index');
+        }
+
+        // Mettre à jour la tâche
+        $updated = $tache->update([
             'titre' => $request->titre,
             'date_debut' => $request->date_debut,
             'date_fin' => $request->date_fin,
             'priorite_id' => $request->priorite_id,
             'description' => $request->description,
         ]);
+
         if ($request->hasFile('documents')) {
-            $classer = Classeur::where('direction_id', Auth::user()->agent?->direction_id)->where('titre', 'Classeur Tâches ' . Auth::user()->agent?->direction->titre)->first();
+            $agent = Auth::user()->agent;
+
+            // Sécurité : vérifier que agent et direction existent
+            if (!$agent || !$agent->direction) {
+                session()->flash('session', json_encode([
+                    'name' => 'Gestion de tâche',
+                    'statut' => 'error',
+                    'message' => "Agent ou direction introuvable pour l'utilisateur connecté.",
+                ]));
+                return redirect()->route('regidoc.taches.index');
+            }
+
+            $directionId = $agent->direction_id;
+            $directionTitre = $agent->direction->titre;
+            $directionCode = $agent->direction->code ?? 'UNKNOWN_CODE';
+
+            // Récupérer ou créer le classeur
+            $classer = Classeur::where('direction_id', $directionId)
+                ->where('titre', 'Classeur Tâches ' . $directionTitre)
+                ->first();
+
             if ($classer == null) {
-                # code...
                 $classer = Classeur::firstOrCreate(
                     [
-                        'direction_id' => Auth::user()->agent?->direction_id,
-                        'titre' => 'Classeur Tâches ' . Auth::user()->agent?->direction->titre,
+                        'direction_id' => $directionId,
+                        'titre' => 'Classeur Tâches ' . $directionTitre,
                     ],
                     [
-                        'reference' => Auth::user()->agent?->direction?->code,
+                        'reference' => $directionCode,
                         'description' => 'Ce Classeur contient tous les documents liés à vos tâches',
-                        'created_by' => Auth::user()->agent->id,
-                        'updated_by' => Auth::user()->agent->id,
+                        'created_by' => $agent->id,
+                        'updated_by' => $agent->id,
                     ]
                 );
             }
 
+            // Récupérer ou créer le dossier
             $dossier = Dossier::firstOrCreate(
                 [
                     'classeur_id' => $classer->id,
                     'titre' => 'Taches',
-                    'reference' => 'DIR' . Str::padLeft(Dossier::count() + 1, 4, 0),
+                    // Si tu veux, on peut changer la référence en quelque chose de plus cohérent
+                    'reference' => 'DIR' . Str::padLeft(Dossier::count() + 1, 4, '0'),
                 ],
                 [
                     'description' => 'Dossier pour les documents de tâches',
                     'confidentiel' => 0,
-                    'created_by' => Auth::user()->agent->id,
-                    'updated_by' => Auth::user()->agent->id,
+                    'created_by' => $agent->id,
+                    'updated_by' => $agent->id,
                 ]
             );
 
-            foreach ($request->file('documents') as $key => $doc) {
-
+            // Parcourir les fichiers et les enregistrer
+            foreach ($request->file('documents') as $doc) {
                 $document = Document::create([
                     'dossier_id' => $dossier->id,
                     'libelle' => Str::beforeLast($doc->getClientOriginalName(), '.'),
-                    'category_id' => 6,
-                    'reference' => 'DT/' . Auth::user()->agent?->matricule,
+                    'category_id' => 5,
+                    'reference' => 'DT/' . $agent->matricule,
                     'type' => 3,
                     'document' => (new File)->handle($doc, 'document', 'documents'),
                     'user_id' => Auth::user()->id,
                     'statut_id' => 1,
-                    'created_by' => Auth::user()->agent->id,
+                    'created_by' => $agent->id,
                 ]);
 
                 ArchivePermission::create([
-                    'agent_id' => Auth::user()->agent->id,
+                    'agent_id' => $agent->id,
                     'permissionable_id' => $document->id,
                     'permissionable_type' => 'App\Models\Document',
                     'key' => 'view_document',
                 ]);
 
-                // $doc->move($path, $name . '.' . $ext);
-                $tache->documents()->attach($document->id);
+                // Attacher le document à la tâche (relation many-to-many)
+                $tache->documents()->attach($document->id, ['created_by' => Auth::id()]);
             }
         }
-        if ($tache == 1) {
+
+        if ($updated) {
+            // Récupérer tous les agents assignés à cette tâche
+            $agents = $tache->agents()->get();
+            
+            $userName = Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom;
+            $message = "Mise à jour effectuée par $userName sur la tâche " ;
+            
+            // Envoyer une notification à chaque agent assigné
+            foreach ($agents as $agent) {
+                if ($agent->id != Auth::user()->agent->id) {
+                    event(new TacheCreated($tache, $agent->id, $message));
+                }
+            }
+            
+            // Enregistrer dans l'historique
+            Historique::create([
+                'action' => 'Mise à jour de la tâche',
+                'description' => $message,
+                'user_id' => Auth::id(),
+                'entity_type' => Tache::class,
+                'entity_id' => $tache->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
             $content = json_encode([
                 'name' => 'Gestion de tâche',
                 'statut' => 'success',
@@ -723,13 +1139,11 @@ class TacheController extends Controller
             ]);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
+        session()->flash('session', $content);
 
         return redirect()->route('regidoc.taches.index');
     }
+
 
     public function destroy($id)
     {
@@ -846,8 +1260,13 @@ class TacheController extends Controller
             'session',
             $content
         );
-
+        if($tache->courrier_id){
+            return redirect()->route('regidoc.courriers.show',$tache->courrier_id);
+        }
+        else
+        {
         return redirect()->route('regidoc.taches.index');
+        }
     }
 
     public function remettreEncours($id)
@@ -1050,7 +1469,7 @@ class TacheController extends Controller
 
         } catch (\Exception $e) {
             // En cas d'erreur, on enregistre le message d'erreur dans les logs et on retourne un message d'erreur à l'utilisateur
-            \Log::error($e->getMessage());
+            Log::error($e->getMessage());
             return redirect()->back()->with('error', 'L\'ajout des fichiers a échoué. Veuillez réessayer.');
         }
     }

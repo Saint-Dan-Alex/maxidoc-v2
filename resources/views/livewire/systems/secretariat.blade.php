@@ -66,39 +66,47 @@
                             <td> {{ $secretariat->user?->name }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
-                                    {{-- <a href="#" class="btn btn-primary text-white p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-show-secretariat-{{ $secretariat->id }}"><i
-                                            class="fi fi-rr-eye"></i>
-                                        Voir</a> --}}
-                                    <a href="#" class="btn btn-success" data-bs-toggle="modal"
-                                        data-bs-target="#modal-edit-secretariat-{{ $secretariat->id }}"><i
-                                            class="fi fi-rr-pencil"></i>
-                                        Editer</a>
-                                    <form action="{{ route('regidoc.secretariats.destroy', $secretariat) }}"
-                                        method="POST">
+                                    {{-- <a href="#" class="btn btn-primary me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-show-secretariat-{{ $secretariat->id }}">
+                                        <i class="fi fi-rr-eye"></i>
+                                        <span class="btn-text">Voir</span>
+                                    </a> --}}
+                                    <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-edit-secretariat-{{ $secretariat->id }}">
+                                        <i class="fi fi-rr-pencil"></i>
+                                        <span class="btn-text">Éditer</span>
+                                    </a>
+                                    <form action="{{ route('regidoc.secretariats.destroy', $secretariat) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger"><i class="fi fi-rr-trash"></i>
-                                            Supprimer</button>
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce secrétariat ?')">
+                                            <i class="fi fi-rr-trash"></i>
+                                            <span class="btn-text">Supprimer</span>
+                                        </button>
                                     </form>
 
                                 </div>
                             </td>
                         </tr>
                     @empty
-
                         <tr>
-                            <td colspan="5">
+                            <td colspan="4" class="text-center">
                                 <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucun departement trouvé</p>
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p>Aucun secrétariat trouvé</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            @if($secretariats->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $secretariats->links() }}
+                </div>
+            @endif
         </div>
         {!! $secretariats->links() !!}
     </div>
@@ -134,24 +142,25 @@
                             </div>
                             <div class="col-lg-12">
                                 <label for="">Responsable</label>
-                                <select name="responsable_id" class="form-control select2" required
-                                    data-placeholder="Selectionner"
-                                    data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
-                                    data-get-items-field="nom" data-method="get"
-                                    data-label="prenom,nom,post_nom"
-                                    data-related-model="Agent">
+                                <select name="responsable_id" class="form-control" required>
+                                    <option value="">Sélectionner un responsable</option>
+                                    @foreach($agents as $agent)
+                                        <option value="{{ $agent->id }}">
+                                            {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom ?? '' }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12">
                                 <div class="d-flex gap-3">
                                     <div>
-                                        <label for="dg">Secretaire DG</label>
+                                        <label for="dg">Service Accueil</label>
                                         <input type="radio" name="for" id="dg" value="1">
                                     </div>
-                                    <div>
+                                    {{-- <div>
                                         <label for="dga">Secretaire DGA</label>
                                         <input type="radio" name="for" id="dga" value="2">
-                                    </div>
+                                    </div> --}}
                                     <div>
                                         <label for="direction">Secretaire Direction</label>
                                         <input type="radio" name="for" id="direction" value="3">
@@ -201,25 +210,25 @@
                                 </div>
                                 <div class="col-lg-12">
                                     <label for="">Responsable</label>
-                                    <select name="responsable_id" class="form-control select2" required
-                                        data-placeholder="Selectionner"
-                                        data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
-                                        data-get-items-field="nom" data-method="get"
-                                        data-label="prenom,nom,post_nom"
-                                        data-related-model="Agent">
-                                        <option value="{{ $secretariat->responsable_id }}">{{ $secretariat->responsable?->prenom.' '.$secretariat->responsable?->nom.' '.$secretariat->responsable?->post_nom }}</option>
+                                    <select name="responsable_id" class="form-control" required>
+                                        <option value="">Sélectionner un responsable</option>
+                                        @foreach($agents as $agent)
+                                            <option value="{{ $agent->id }}" @selected($secretariat->responsable_id == $agent->id)>
+                                                {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom ?? '' }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-12">
                                     <div class="d-flex gap-3">
                                         <div>
-                                            <label for="dg">Secretaire DG</label>
+                                            <label for="dg">Service Accueil</label>
                                             <input type="radio" name="for" id="dg" value="1" @checked($secretariat->for_dg)>
                                         </div>
-                                        <div>
+                                        {{-- <div>
                                             <label for="dga">Secretaire DGA</label>
                                             <input type="radio" name="for" id="dga" value="2" @checked($secretariat->for_dga)>
-                                        </div>
+                                        </div> --}}
                                         <div>
                                             <label for="direction">Secretaire Direction</label>
                                             <input type="radio" name="for" id="direction" value="3" @checked($secretariat->for_dg != 1 && $secretariat->for_dga != 1)>

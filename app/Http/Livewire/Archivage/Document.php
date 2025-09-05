@@ -4,66 +4,263 @@ namespace App\Http\Livewire\Archivage;
 
 use App\Models\Document as ModelsDocument;
 use App\Models\Dossier;
+use App\Models\LieuAffectation;
+use App\Models\Direction;
+use App\Models\Division;
+use App\Models\Agent;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Document extends Component
 {
+    use WithPagination;
+    
+    protected $paginationTheme = 'bootstrap-5';
+    
+    public $loading = false;
     public $dossier;
     public $documents;
     public $filter;
     public $filterText = 'Filtre';
     public $search;
+    
+    // Propriétés pour les filtres
+    public $lieus;
+    public $directions;
+    public $divisions;
+    public $agents;
+    
+    public $selectedMonth;
+    public $selectedYear;
+    public $selectedDay;
+    
+    public $lieu_query;
+    public $direction_query;
+    public $division_query;
+    public $agent_query;
 
     public function mount(Dossier $dossier)
     {
         $this->dossier = $dossier;
-        // $this->filterText = "Filtre";
+        $this->lieus = LieuAffectation::select('id', 'titre')->get();
+        $this->directions = collect();
+        $this->divisions = collect();
+        $this->agents = collect();
     }
 
     public function render()
     {
-        $this->documents = ModelsDocument::archive()->where('dossier_id', $this->dossier->id)->get();
-
-        if ($this->search) {
-            $this->documents = $this->documents->filter(function ($document)
-            {
-                return Str::contains(Str::lower($document->titre), Str::lower($this->search)) || Str::contains(Str::lower($document->reference), Str::lower($this->search));
+        $query = ModelsDocument::archive()->where('dossier_id', $this->dossier->id);
+        
+        // Appliquer les filtres
+        $query = $this->applyFilters($query);
+        
+        // Récupérer les documents avec pagination
+        $documents = $query->paginate(10);
+        $this->documents = $documents->getCollection();
+        
+        // Appliquer le tri
+        $this->applySorting();
+        
+        // Désactiver le loader une fois le rendu terminé
+        $this->loading = false;
+        
+        return view('livewire.archivage.document', [
+            'paginatedDocuments' => $documents
+        ]);
+    }
+    
+    protected function applyFilters($query)
+    {
+        // Filtre par recherche
+        if (!empty($this->search)) {
+            $searchTerm = '%' . $this->search . '%';
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('libelle', 'like', $searchTerm)
+                  ->orWhere('reference', 'like', $searchTerm)
+                  ->orWhereHas('courrier', function($q) use ($searchTerm) {
+                      $q->where('objet', 'like', $searchTerm)
+                        ->orWhere('reference', 'like', $searchTerm);
+                  });
             });
         }
-
+        
+        // Filtres par lieu, direction, division, agent
+        if (!empty($this->lieu_query)) {
+            $query->whereHas('author', function($q) {
+                $q->where('lieu_id', $this->lieu_query);
+            });
+        }
+        
+        if (!empty($this->direction_query)) {
+            $query->whereHas('author', function($q) {
+                $q->where('direction_id', $this->direction_query);
+            });
+        }
+        
+        if (!empty($this->division_query)) {
+            $query->whereHas('author', function($q) {
+                $q->where('division_id', $this->division_query);
+            });
+        }
+        
+        if (!empty($this->agent_query)) {
+            $query->where('author_id', $this->agent_query);
+        }
+        
+        // Filtres par date
+        if (!empty($this->selectedYear)) {
+            $query->whereYear('archived_at', $this->selectedYear);
+        }
+        
+        if (!empty($this->selectedMonth)) {
+            $query->whereMonth('archived_at', $this->selectedMonth);
+        }
+        
+        if (!empty($this->selectedDay)) {
+            $query->whereDay('archived_at', $this->selectedDay);
+        }
+        
+        return $query;
+    }
+    
+    protected function applySorting()
+    {
+        $sortField = 'archived_at';
+        $sortDirection = 'desc';
+        
         switch ($this->filter) {
-            case 1:
+            case 1: // Par défaut
+                $sortField = 'archived_at';
+                $sortDirection = 'desc';
                 $this->filterText = 'Filtre';
-                $this->documents = $this->documents->sortByDesc('created_at');
                 break;
-            case 2:
+            case 2: // A-Z
+                $sortField = 'titre';
+                $sortDirection = 'asc';
                 $this->filterText = 'A - Z';
-                $this->documents = $this->documents->sortBy('titre');
                 break;
-            case 3:
+            case 3: // Z-A
+                $sortField = 'titre';
+                $sortDirection = 'desc';
                 $this->filterText = 'Z - A';
-                $this->documents = $this->documents->sortByDesc('titre');
                 break;
-            case 4:
+            case 4: // Date d'ajout
+                $sortField = 'created_at';
+                $sortDirection = 'desc';
                 $this->filterText = "Date d'ajout";
-                $this->documents = $this->documents->sortByDesc('created_at');
                 break;
-            case 5:
+            case 5: // Date de modification
+                $sortField = 'updated_at';
+                $sortDirection = 'desc';
                 $this->filterText = 'Date de modification';
-                $this->documents = $this->documents->sortByDesc('updated_at');
-                break;
-            default:
-                # code...
                 break;
         }
+        
+        $this->documents = $this->documents->sortBy($sortField, SORT_REGULAR, $sortDirection === 'desc');
+   
 
         return view('livewire.archivage.document');
     }
 
+    public function updatedLieuQuery($value)
+    {
+        $this->loading = true;
+        $this->resetPage();
+        if ($value) {
+            $this->directions = Direction::where('lieu_id', $value)->get();
+        } else {
+            $this->directions = collect();
+        }
+        $this->divisions = collect();
+        $this->agents = collect();
+        $this->direction_query = null;
+        $this->division_query = null;
+        $this->agent_query = null;
+    }
+
+    public function updatedDirectionQuery($value)
+    {
+        $this->loading = true;
+        $this->resetPage();
+        if ($value) {
+            $this->divisions = Division::where('direction_id', $value)->get();
+        } else {
+            $this->divisions = collect();
+        }
+        $this->agents = collect();
+        $this->division_query = null;
+        $this->agent_query = null;
+    }
+
+    public function updatedDivisionQuery($value)
+    {
+        $this->loading = true;
+        $this->resetPage();
+        if ($value) {
+            $this->agents = Agent::where('division_id', $value)->get();
+        } else {
+            $this->agents = collect();
+        }
+        $this->agent_query = null;
+    }
+
+    public function updatedAgentQuery()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearch()
+    {
+        $this->loading = true;
+        $this->resetPage();
+    }
+
+    public function updatedSelectedYear()
+    {
+        $this->loading = true;
+        $this->resetPage();
+    }
+
+    public function updatedSelectedMonth()
+    {
+        $this->loading = true;
+        $this->resetPage();
+    }
+
+    public function updatedSelectedDay()
+    {
+        $this->loading = true;
+        $this->resetPage();
+    }
+
     public function changeFilter($value)
     {
+        $this->loading = true;
         $this->filter = $value;
+        $this->resetPage();
+    }
+    
+    public function resetFilters()
+    {
+        $this->loading = true;
+        $this->reset([
+            'search',
+            'lieu_query',
+            'direction_query',
+            'division_query',
+            'agent_query',
+            'selectedDay',
+            'selectedMonth',
+            'selectedYear',
+            'filter'
+        ]);
+        $this->directions = collect();
+        $this->divisions = collect();
+        $this->agents = collect();
+        $this->filterText = 'Filtre';
+        $this->resetPage();
     }
 }

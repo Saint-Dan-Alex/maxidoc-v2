@@ -23,6 +23,25 @@
     @include('regidoc.layouts.partials.head.styles')
     @yield('style')
     @livewireScripts()
+    <style>
+    .scrollable-text {
+        max-height: 6em;
+        overflow-y: auto;
+        white-space: normal;
+        scrollbar-width: thin; /* pour Firefox */
+    }
+
+    /* Scrollbar fine pour Chrome, Edge, Safari */
+    .scrollable-text::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .scrollable-text::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 3px;
+    }
+</style>
+
 </head>
 
 <body>

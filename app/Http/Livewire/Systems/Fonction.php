@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 class Fonction extends Component
 {
     use WithPagination;
-    public $fonctions;
+    
     public $filter;
     public $filterText;
     public $search;
@@ -25,54 +25,57 @@ class Fonction extends Component
 
     public function mount()
     {
-        $this->fonctions = Model::all();
         $this->filterText = "Filtre";
     }
 
     public function render()
     {
+        $query = Model::query();
 
+        // Gestion de la recherche
         if ($this->search) {
-            $this->fonctions = $this->fonctions->filter(function ($fonction) {
-                return Str::contains(Str::lower($fonction->titre), Str::lower($this->search)) || Str::contains(Str::lower($fonction->description), Str::lower($this->search));
+            $query->where(function($q) {
+                $q->where('titre', 'like', '%' . $this->search . '%');
             });
-        } else {
-            $this->fonctions = Model::all();
         }
 
+        // Gestion du filtrage
         switch ($this->filter) {
             case 1:
                 $this->filterText = 'Filtre';
-                $this->fonctions = $this->fonctions->sortByDesc('created_at');
+                $query->orderBy('created_at', 'desc');
                 break;
             case 2:
                 $this->filterText = 'A - Z';
-                $this->fonctions = $this->fonctions->sortBy('titre');
+                $query->orderBy('titre', 'asc');
                 break;
             case 3:
                 $this->filterText = 'Z - A';
-                $this->fonctions = $this->fonctions->sortByDesc('titre');
+                $query->orderBy('titre', 'desc');
                 break;
             case 4:
                 $this->filterText = "Date d'ajout";
-                $this->fonctions = $this->fonctions->sortByDesc('created_at');
+                $query->orderBy('created_at', 'desc');
                 break;
             case 5:
                 $this->filterText = 'Date de modification';
-                $this->fonctions = $this->fonctions->sortByDesc('updated_at');
+                $query->orderBy('updated_at', 'desc');
                 break;
             default:
-                # code...
-                break;
+                $query->orderBy('created_at', 'desc');
         }
 
-        return view('livewire.systems.fonction');
-
+        // Pagination avec 10 éléments par page
+        $fonctions = $query->paginate(10);
+        
+        return view('livewire.systems.fonction', [
+            'fonctions' => $fonctions
+        ]);
     }
 
     public function changeFilter($value)
     {
         $this->filter = $value;
+        $this->resetPage(); // Réinitialise la pagination lors du changement de filtre
     }
-
 }

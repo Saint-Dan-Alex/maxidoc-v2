@@ -12,8 +12,13 @@ class ProfilController extends Controller
     public function index()
     {
         $agents = Agent::where('id', '!=', Auth::user()->agent->id)->get();
+        
+        // Récupérer les historiques avec pagination
+        $historiques = \App\Models\Historique::where('user_id', Auth::id())
+            ->orderBy('id', 'desc')
+            ->paginate(10);
 
-        return view('regidoc.pages.profil', compact('agents'));
+        return view('regidoc.pages.profil', compact('agents', 'historiques'));
     }
 
     public function updateAvatar(Request $request)

@@ -25,13 +25,18 @@ use App\Http\Controllers\RH\PersonnelController;
 use App\Http\Controllers\RH\SecretariatController;
 use App\Http\Controllers\RH\SectionController;
 use App\Http\Controllers\RH\ServiceController;
+use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Taches\TacheController;
+use App\Http\Controllers\TacheDocumentController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SignaturesMail;
 use Illuminate\Support\Str;
 use App\Jobs\SendEmail;
+use App\Http\Livewire\Systems\CourrierCategory;
+use App\Http\Livewire\Systems\CourrierExpediteur;
+use App\Http\Livewire\Systems\CourrierNature;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,10 +50,10 @@ use App\Jobs\SendEmail;
  */
 
 //config('jetstream.auth_session')
-Route::post('/authentification/connexion', [AuthController::class, 'login'])->name('auth.login');
-Route::get('/authentification/mot-de-passe/oublie', [AuthController::class, 'forgotpassword'])->name('auth.forgot.password');
-Route::post('/authentification/mot-de-passe/code/confirmation', [AuthController::class, 'confirmationpassword'])->name('auth.confirmation.code');
-Route::post('/authentification/mot-de-passe/code/verification', [AuthController::class, 'verificationcode'])->name('auth.verification.code');
+// Route::post('/authentification/connexion', [AuthController::class, 'login'])->name('auth.login');
+// Route::get('/authentification/mot-de-passe/oublie', [AuthController::class, 'forgotpassword'])->name('auth.forgot.password');
+// Route::post('/authentification/mot-de-passe/code/confirmation', [AuthController::class, 'confirmationpassword'])->name('auth.confirmation.code');
+// Route::post('/authentification/mot-de-passe/code/verification', [AuthController::class, 'verificationcode'])->name('auth.verification.code');
 
 
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
@@ -59,6 +64,22 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::middleware('isFirstUse')->group(function () {
         Route::group(['as' => 'regidoc.'], function () {
             Route::get('/', HomeController::class)->name('home');
+
+            // Paramètres
+            Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+            
+            // Gestion des catégories, expéditeurs et natures de courrier via Livewire
+            Route::get('/settings/categories', function () {
+                return view('regidoc.pages.parametres', ['activeTab' => 'categorie']);
+            })->name('settings.categories');
+            
+            Route::get('/settings/expediteurs', function () {
+                return view('regidoc.pages.parametres', ['activeTab' => 'expediteur']);
+            })->name('settings.expediteurs');
+            
+            Route::get('/settings/natures', function () {
+                return view('regidoc.pages.parametres', ['activeTab' => 'nature']);
+            })->name('settings.natures');
 
             // Documents
             Route::resource('documents', DocumentController::class);
@@ -78,7 +99,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
 
             // Archivage  
-            Route::resource('archivages', ArchiveController::class);
+            Route::resource('archivages', ArchiveController::class)->names('archivages');
             Route::resource('archive-classeurs', ArchivesClasseurController::class)->except('index');
             Route::get('archive-classeurs/list/{annee}', [ArchivesClasseurController::class, 'index'])->name('archive-classeurs.index');
             Route::resource('archive-classeurs.archive-dossiers', ArchivesDossierController::class);
@@ -180,7 +201,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::get('/taches/finish/{id}', [TacheController::class, 'finish'])->name('taches.finish');
             Route::get('/taches/remettre/encours/{id}', [TacheController::class, 'remettreEncours'])->name('taches.remettreEncours');
             Route::post('/taches/fichier/store', [TacheController::class, 'storefichier'])->name('fichier.store');
-
+            Route::post('/taches/{tache}/documents', [TacheDocumentController::class, 'store'])->name('taches.documents.store');
 
             // Courriers
             
@@ -190,21 +211,38 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::get('courriers/signer/{id}', [CourrierController::class, 'signer'])->name('courriers.signer');
 
 
+            // Routes pour les courriers
             Route::prefix('courriers')->group(function () {
+                // Routes sans ID
                 Route::post('partages', [CourrierController::class, 'partages'])->name('courriers.partages');
-                Route::get('/receptions', [CourrierController::class, 'receivedMails'])->name('courriers.received');
-                Route::get('/envoyes', [CourrierController::class, 'sendMails'])->name('courriers.sent');
-                Route::get('/nouveau', [CourrierController::class, 'create'])->name('courriers.add');
-                Route::post('/save/signature', [CourrierController::class, 'saveSignature'])->name('courriers.saveSignature');
-                Route::post('{id}/save/traitement', [CourrierController::class, 'saveTraitement'])->name('courriers.saveTraitement');
-                Route::get('{id}/relance', [CourrierController::class, 'relance'])->name('courriers.relance');
-                Route::get('{id}/traitement', [CourrierController::class, 'traitement'])->name('courriers.traitement');
-                Route::get('{id}/confidentiel', [CourrierController::class, 'confidentiel'])->name('courriers.confidentiel');
-                Route::get('{id}/nonconfidentiel', [CourrierController::class, 'nonconfidentiel'])->name('courriers.nonconfidentiel');
-                // Route::get('/finish/{id}', [CourrierController::class, 'finish'])->name('courriers.finish');
+                Route::post('update-traitement', [CourrierController::class, 'updateTraitement'])->name('courriers.updateTraitement');
+                Route::get('receptions', [CourrierController::class, 'receivedMails'])->name('courriers.received');
+                Route::get('envoyes', [CourrierController::class, 'sendMails'])->name('courriers.sent');
+                Route::get('nouveau', [CourrierController::class, 'create'])->name('courriers.add');
+                Route::post('save/signature', [CourrierController::class, 'saveSignature'])->name('courriers.saveSignature');
+                
+                // Routes avec ID
+                Route::prefix('{courrier}')->group(function () {
+                    Route::post('save/traitement', [CourrierController::class, 'saveTraitement'])->name('courriers.saveTraitement');
+                    Route::get('relance', [CourrierController::class, 'relance'])->name('courriers.relance');
+                    Route::get('traitement', [CourrierController::class, 'traitement'])->name('courriers.traitement');
+                    Route::get('confidentiel', [CourrierController::class, 'confidentiel'])->name('courriers.confidentiel');
+                    Route::get('nonconfidentiel', [CourrierController::class, 'nonconfidentiel'])->name('courriers.nonconfidentiel');
+                    Route::post('valider', [CourrierController::class, 'valider'])->name('courriers.valider');
+                    Route::post('rejeter', [CourrierController::class, 'rejeter'])->name('courriers.rejeter');
+                    Route::post('traiter', [CourrierController::class, 'traiter'])->name('courriers.traiter');
+                    Route::get('transmettre', [CourrierController::class, 'transmettreCourrier'])->name('courriers.transmettre');
+                    Route::get('export-historique', [CourrierController::class, 'exportHistoriquePdf'])->name('courriers.export-historique');
+
+
+                    // Route::get('finish', [CourrierController::class, 'finish'])->name('courriers.finish');
+                });
             });
 
             Route::post('/upload', [UploadController::class, 'store']);
+            Route::post('/courriers/upload-scan', [App\Http\Controllers\Courriers\CourrierController::class, 'handleScanUpload'])
+    ->name('courriers.uploadScan');
+
 
             Route::prefix('systemes')->group(function () {
                 Route::resource('sections', SectionController::class)->only('index', 'store', 'update', 'destroy');
@@ -217,12 +255,22 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 Route::resource('assistants', AssistanatController::class)->only('index', 'store', 'update', 'destroy');
                 Route::resource('grades', GradeController::class)->only('index', 'store', 'update', 'destroy');
                 Route::resource('lieux', LieuAffectationController::class)->only('index', 'store', 'update', 'destroy');
+                
+                // Routes pour la gestion des courriers
+                Route::resource('categories', \App\Http\Controllers\Courriers\CourrierCategoryController::class)
+                    ->only('index', 'store', 'update', 'destroy');
+                Route::resource('expediteurs', \App\Http\Controllers\Courriers\CourrierExpediteurController::class)
+                    ->only('index', 'store', 'update', 'destroy');
+                Route::resource('natures', \App\Http\Controllers\Courriers\CourrierNatureController::class)
+                    ->only('index', 'store', 'update', 'destroy');
+                
                 Route::get('/sessions/logs/session', [LogSessionController::class, 'index'])->name('session');
             });
-
+            Route::get('expediteur/contacts', [AjaxController::class, 'contactsExpediteur'])->name('ajax.expediteur.contacts');
+                Route::post('expediteur/contact/save', [AjaxController::class, 'contactExpediteurSave'])->name('ajax.expediteur.contact.save');
             Route::prefix('ajax')->group(function () {
                 Route::get('types/courriers', [AjaxController::class, 'typescourriers'])->name('ajax.typescourriers'); 
-
+                Route::get('/priorites', [AjaxController::class, 'priorites'])->name('ajax.priorites');
                 Route::get('types/get/all/agents', [DirectionController::class, 'getAgents'])->name('ajax.getAgents');
                 Route::get('categories/courriers', [AjaxController::class, 'categorycourriers'])->name('ajax.categorycourriers');
                 Route::post('categories/courriers/save', [AjaxController::class, 'categoryCourriersSave'])->name('ajax.categorycourriers.save');
@@ -252,9 +300,16 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     });
 });
 Route::post('courriers/scan', [CourrierController::class, 'scan'])->name('courriers.scan');
+
+// Route pour le téléversement des pièces jointes
+Route::post('courriers/{courrier}/upload-piece', [\App\Http\Controllers\Courriers\CourrierController::class, 'uploadPieceJointe'])
+    ->name('courriers.upload-piece');
 Route::post('documents/save-pdf', [DocumentController::class, 'storeNew'])->name('documents.storeNew'); 
 Route::post('documents/save-as-doc', [DocumentController::class, 'saveDoc'])->name('documents.saveDoc');
+Route::post('taches/generate-pdf-preview', [TacheDocumentController::class, 'generatePdfPreview'])->name('taches.generatePdfPreview');
 
+// Routes pour les documents des tâches
+Route::post('/taches/{tache}/documents', [TacheDocumentController::class, 'store'])->name('taches.documents.store');
 
 // Route::get('documents/pdf-preview', [DocumentController::class, 'showPDFPreview'])->name('regidoc.documents.previewPDF');
 

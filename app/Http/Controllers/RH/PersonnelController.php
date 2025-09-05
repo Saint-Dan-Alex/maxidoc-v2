@@ -254,7 +254,7 @@ class PersonnelController extends Controller
         // $services = Service::select('id', 'titre')->orderby('titre', 'asc')->get();
         // $dossiers = Dossier::all();
 
-        $this->authorize('Gerer les personnels');
+        $this->authorize('Gérer le personnel');
 
         return view("regidoc.pages.rh.personnels.index")->with([
             // 'directions' => $directions,
@@ -287,53 +287,86 @@ class PersonnelController extends Controller
     public function store(Request $request)
     {
         try {
-            $nom = $request->nom;
-            $postnom = $request->post_nom;
-            $prenom = $request->prenom;
-            $nomSansAccents = $this->removeAccents($nom);
-            $prenomSansAccents = $this->removeAccents($postnom);
-            $newMail = $request->newMail;
-            $existingAgent = Agent::where('matricule', $request->matricule)->first();
-            if ($existingAgent) {
-                $content = json_encode([
-                    'name' => 'Ressources humaines',
-                    'statut' => 'error',
-                    'message' => 'L\'ajout de l\'agent a échoué. Le matricule existe déjà.',
-                ]);
-                session()->flash('session', $content);
-                return back();
+            // Validation des données requises
+            $request->validate([
+                'nom' => 'required',
+                'post_nom' => 'required',
+                'prenom' => 'required',
+                'matricule' => 'required|unique:agents',
+                'newMail' => 'required|email|unique:users,email',
+                'direction_id' => 'required|exists:directions,id',
+                'fonction_id' => 'required|exists:fonctions,id',
+                'sexe' => 'required',
+            ]);
+
+            // Vérification des doublons
+            if (Agent::where('matricule', $request->matricule)->exists()) {
+                return back()->with('error', 'Ce matricule existe déjà.');
             }
 
-            $existingUser = User::where('email', $newMail)->first();
-            if ($existingUser) {
-                $content = json_encode([
-                    'name' => 'Ressources humaines',
-                    'statut' => 'error',
-                    'message' => 'L\'ajout de l\'agent a échoué. L\'email existe déjà.',
-                ]);
-                session()->flash('session', $content);
-                return back();
+            if (User::where('email', $request->newMail)->exists()) {
+                return back()->with('error', 'Cet email existe déjà.');
             }
-            $user = null;
-            $user = User::create(
-                [
-                    'email' => $newMail,
-                    'name' => $request->prenom . ' ' . $request->nom,
-                    'password' => Hash::make('12345678'),
-                    // 'password' => Hash::make($password),
-                    'statut_id' => 1,
-                ]
-            );
 
+            // Création de l'utilisateur
+            // Création de l'utilisateur avec le rôle par défaut 'utilisateur'
+            $user = User::create([
+                'email' => $request->newMail,
+                'name' => $request->prenom . ' ' . $request->nom,
+                'password' => Hash::make('12345678'), // Mot de passe par défaut
+                'statut_id' => 1, // Statut actif
+            ]);
+
+            // Attribution du rôle sélectionné et des permissions associées
+            if ($request->has('role_id') && $role = \Spatie\Permission\Models\Role::find($request->role_id)) {
+                // Attribuer le rôle à l'utilisateur
+                $user->assignRole($role);
+                
+                // Récupérer les permissions actuelles de l'utilisateur
+                $currentPermissions = $user->permissions->pluck('name')->toArray();
+                
+                // Récupérer les permissions associées au rôle
+                $rolePermissions = $role->permissions->pluck('name')->toArray();
+                
+                // Combiner les permissions existantes avec celles du rôle (sans doublons)
+                $allPermissions = array_unique(array_merge($currentPermissions, $rolePermissions));
+                
+                // Mettre à jour les permissions de l'utilisateur
+                if (!empty($allPermissions)) {
+                    $user->syncPermissions($allPermissions);
+                }
+            } else {
+                // Rôle par défaut si aucun rôle n'est sélectionné
+                $defaultRole = \Spatie\Permission\Models\Role::where('name', 'utilisateur')->first();
+                if ($defaultRole) {
+                    $user->assignRole($defaultRole);
+                    
+                    // Récupérer les permissions actuelles de l'utilisateur
+                    $currentPermissions = $user->permissions->pluck('name')->toArray();
+                    
+                    // Récupérer les permissions du rôle par défaut
+                    $rolePermissions = $defaultRole->permissions->pluck('name')->toArray();
+                    
+                    // Combiner les permissions existantes avec celles du rôle (sans doublons)
+                    $allPermissions = array_unique(array_merge($currentPermissions, $rolePermissions));
+                    
+                    // Mettre à jour les permissions de l'utilisateur
+                    if (!empty($allPermissions)) {
+                        $user->syncPermissions($allPermissions);
+                    }
+                }
+            }
+
+            // Création de l'agent
             $agent = new Agent();
             $agent->user_id = $user->id;
             $agent->statut_id = 1;
-            $agent->nom = Str::ucfirst(Str::lower($nom));
-            $agent->post_nom = Str::ucfirst(Str::lower($postnom));
-            $agent->prenom = Str::ucfirst(Str::lower($prenom));
+            $agent->nom = Str::ucfirst(Str::lower($request->nom));
+            $agent->post_nom = Str::ucfirst(Str::lower($request->post_nom));
+            $agent->prenom = Str::ucfirst(Str::lower($request->prenom));
             $agent->sexe = $request->sexe;
             $agent->lieu_naiss = $request->lieu_naiss ?? null;
-            $agent->date_naiss = Carbon::parse($request->date_naiss) ?? null;
+            $agent->date_naiss = $request->date_naiss ? Carbon::parse($request->date_naiss) : null;
             $agent->etat_civil = $request->etat_civil ?? null;
             $agent->nbr_enfant = $request->nbr_enfants ?? null;
             $agent->nationalite = $request->nationalite ?? null;
@@ -341,171 +374,35 @@ class PersonnelController extends Controller
             $agent->ville = $request->ville ?? null;
             $agent->matricule = $request->matricule;
             $agent->image = (new Image())->handle($request, 'image', 'agents');
-            $agent->slug = Str::slug($nom . ' ' . $postnom . ' ' . $prenom);
-            $agent->direction_id = $request->direction_id ?? null;
+            $agent->slug = Str::slug($request->nom . ' ' . $request->post_nom . ' ' . $request->prenom);
+            
+            // Assignation simplifiée des relations
+            $agent->direction_id = $request->direction_id;
+            $agent->fonction_id = $request->fonction_id;
+            
+            // Gestion des autres relations optionnelles
             $agent->division_id = $request->division_id ?? null;
-            $agent->service_id = $request->sevice_id ?? null;
+            $agent->service_id = $request->service_id ?? null;
             $agent->section_id = $request->section_id ?? null;
-            $agent->grade_id = $request->grade_id ?? null;
-            $agent->lieu_id = $request->lieu_id ?? null;
+            
             $agent->created_by = Auth::user()->id;
             $agent->updated_by = Auth::user()->id;
             $agent->save();
-            $titre = '';
 
-            if ($request->fonction_type == '1') {
-                $titre = 'Directeur ' . $request->fonction;
-                $dir = Direction::find($request->direction_id);
-                $dir->responsable_id = $agent->id;
-                $dir->save();
-            }
-
-            if ($request->fonction_type == '2') {
-                $titre = 'Chef ' . $request->fonction;
-                if (Str::startsWith($titre, 'Chef Division')) {
-                    $div = Division::find($request->division_id);
-                    if ($div) {
-                        $div->responsable_id = $agent->id;
-                        $div->save();
-                    }
-                }
-                if (Str::startsWith($titre, 'Chef Service')) {
-                    $ser = Service::find($request->service_id);
-                    if ($ser) {
-                        $ser->responsable_id = $agent->id;
-                        $ser->save();
-                    }
-                }
-                if (Str::startsWith($titre, 'Chef Section')) {
-                    $sec = Section::find($request->section_id);
-                    if ($sec) {
-                        $sec->responsable_id = $agent->id;
-                        $sec->save();
-                    }
-                }
-            }
-
-            if ($request->fonction_type == '3') {
-                $titre = 'Secrétaire ' . $request->fonction;
-                if (Str::startsWith($titre, 'Secrétaire Direction')) {
-                    $direction = Direction::find($request->direction_id);
-                    if ($direction) {
-                        Secretariat::firstOrCreate([
-                            'titre' => 'Secrétaire ' . $direction->titre,
-                            'direction_id' => $direction->id,
-                        ], [
-                            'responsable_id' => $agent->id,
-                        ]);
-                    }
-                }
-                if (Str::startsWith($titre, 'Secrétaire Division')) {
-                    $division = Division::find($request->division_id);
-                    if ($division) {
-                        Secretariat::firstOrCreate([
-                            'titre' => 'Secrétaire ' . $division->titre,
-                            'division_id' => $division->id,
-                        ], [
-                            'responsable_id' => $agent->id,
-                        ]);
-                    }
-                }
-            }
-
-            if ($request->fonction_type == '4') {
-                $titre = 'Assistant ' . $request->fonction;
-                $fct = Fonction::firstOrCreate(
-                    [
-                        "titre" => $titre,
-                        "direction_id" => $request->direction_id,
-                    ],
-                    [
-                        "section_id" => $request->section_id,
-                        "service_id" => $request->service_id,
-                        "division_id" => $request->division_id,
-                        "description" => '',
-                    ]
-                );
-            }
-
-            if ($request->fonction_type == '5') {
-                $titre = $request->fonction;
-                $fct = Fonction::firstOrCreate(
-                    [
-                        "titre" => $titre,
-                        "direction_id" => $request->direction_id,
-                    ],
-                    [
-                        "section_id" => $request->section_id ?? null,
-                        "service_id" => $request->service_id ?? null,
-                        "division_id" => $request->division_id ?? null,
-                        "description" => '',
-                    ]
-                );
-            }
-
-            if ($request->fonction_type == '6') {
-                $fct = Fonction::find($request->fonction_id);
-            } else {
-                # code...
-                $fct = Fonction::firstOrCreate(
-                    [
-                        "titre" => $titre,
-                    ],
-                    [
-                        "direction_id" => $request->direction_id,
-                        "division_id" => $request->division_id,
-                        "section_id" => $request->section_id,
-                        "service_id" => $request->service_id,
-                        "description" => '',
-                    ]
-                );
-            }
-
-            if ($fct) {
-                $exAgent = Agent::where('lieu_id', $request->lieu_id)->where('direction_id', $request->direction_id)->where('fonction_id', $fct->id)->first();
-                if ($exAgent) {
-                    # code...
-                    $exAgent->fonction_id = null;
-                    $exAgent->save();
-                }
-                $agent->fonction_id = $fct->id;
-                $agent->save();
-            }
-
+            // Création de l'adresse
             $adresse = new Adresse();
             $adresse->phone = $request->telephone;
-            // $adresse->phone_2 = $request->autre_telephone;
-            $adresse->email = $newMail;
+            $adresse->email = $request->newMail;
             $adresse->residence = $request->adresse;
             $adresse->agent_id = $agent->id;
             $adresse->save();
 
-            $content = json_encode([
-                'name' => 'Ressources humaines',
-                'statut' => 'success',
-                'message' => 'L\'ajout de l\'agent a réussi avec succès !',
-            ]);
-            session()->flash(
-                'session',
-                $content
-            );
-
-            return redirect()->route('regidoc.personnels.index');
+            return redirect()->route('regidoc.personnels.index')
+                           ->with('message', 'Agent créé avec succès.');
 
         } catch (\Throwable $th) {
-            // dd($th);
-            $content = json_encode([
-                'name' => 'Ressources humaines',
-                'statut' => 'error',
-                'message' => 'L\'ajout de l\'agent a échoué !',
-            ]);
-            session()->flash(
-                'session',
-                $content
-            );
-            return back();
+            return back()->with('error', 'Erreur lors de la création: ' . $th->getMessage());
         }
-
     }
 
     public function show($id)
@@ -526,173 +423,140 @@ class PersonnelController extends Controller
         return view('rh.personnels', compact('users', 'divisions', 'departements', 'postes', 'user', 'etats', 'roles', 'plannings', 'villes', 'statuts', 'contrats', 'conges'));
     }
 
+    /**
+     * Met à jour le rôle d'un utilisateur et ses permissions associées
+     *
+     * @param User $user L'utilisateur à mettre à jour
+     * @param int $roleId L'ID du rôle à attribuer
+     * @return void
+     */
+    /**
+     * Met à jour le rôle d'un utilisateur et ses permissions associées
+     *
+     * @param User $user L'utilisateur à mettre à jour
+     * @param int $roleId L'ID du rôle à attribuer
+     * @return void
+     */
+    private function updateUserRole($user, $roleId)
+    {
+        if (!$roleId) {
+            return;
+        }
+
+        $role = \Spatie\Permission\Models\Role::findOrFail($roleId);
+        
+        // 1. On récupère les anciennes permissions pour le log
+        $oldPermissions = $user->getAllPermissions()->pluck('name')->toArray();
+        
+        // 2. On supprime TOUTES les permissions existantes
+        $user->syncPermissions([]);
+        
+        // 3. On supprime TOUS les rôles existants
+        $user->syncRoles([]);
+        
+        // 4. On attribue le nouveau rôle
+        $user->assignRole($role);
+        
+        // 5. On récupère les permissions du nouveau rôle
+        $rolePermissions = $role->permissions->pluck('name')->toArray();
+        
+        // 6. On applique UNIQUEMENT les permissions du nouveau rôle
+        $user->syncPermissions($rolePermissions);
+        
+        // 7. On recharge les relations pour s'assurer que tout est à jour
+        $user->load(['roles', 'permissions']);
+        
+        // Log détaillé pour le débogage
+        \Log::info("Mise à jour complète des rôles et permissions", [
+            'user_id' => $user->id,
+            'ancien_role' => $user->getRoleNames(),
+            'nouveau_role' => $role->name,
+            'anciennes_permissions' => $oldPermissions,
+            'nouvelles_permissions' => $rolePermissions,
+            'timestamp' => now()->toDateTimeString()
+        ]);
+    }
+
     public function update(Request $request, $id)
     {
-        // dd($request);
         try {
-            $nom = $request->nom;
-            $prenom = $request->post_nom;
-            // dd([
-            //     'request' => $request,
-            // ]);
+            // Validation des données
+            $request->validate([
+                'nom' => 'required',
+                'post_nom' => 'required',
+                'prenom' => 'required',
+                'matricule' => 'required|unique:agents,matricule,' . $id,
+                'direction_id' => 'required|exists:directions,id',
+                'fonction_id' => 'required|exists:fonctions,id',
+                'sexe' => 'required',
+                'role_id' => 'nullable|exists:roles,id',
+            ]);
+
             $agent = Agent::findOrFail($id);
             $user = $agent->user;
 
-            $nomSansAccents = $this->removeAccents($nom);
-            $prenomSansAccents = $this->removeAccents($prenom);
+            // Génération de l'email
+            $nomSansAccents = $this->removeAccents($request->prenom);
+            $prenomSansAccents = $this->removeAccents($request->nom);
+            $newMail = Str::lower($nomSansAccents) . '.' . Str::lower($prenomSansAccents) . '@lerexcompetroleum.com';
 
-            $newMail = Str::lower($nomSansAccents) . '.' . Str::lower($prenomSansAccents) . '@regideso.cd';
-
-            $existingUser = User::where('email', $newMail)->where('id', '!=', $user->id)->first();
-            if ($existingUser) {
-                $content = json_encode([
-                    'name' => 'Ressources humaines',
-                    'statut' => 'error',
-                    'message' => 'La modification de l\'agent ' . $agent->prenom . ' ' . $agent->nom . ' a échoué. L\'email existe déjà.',
-                ]);
-                session()->flash('session', $content);
-                return redirect()->route('regidoc.personnels.index');
+            // Vérification de l’unicité de l’email
+            if (User::where('email', $newMail)->where('id', '!=', $user->id)->exists()) {
+                return back()->with('error', 'Cet email est déjà utilisé par un autre utilisateur.');
             }
 
-            // Vérifier si le matricule existe déjà dans la table agents
-            $existingAgent = Agent::where('matricule', $request->matricule)->where('id', '!=', $agent->id)->first();
-            if ($existingAgent) {
-                $content = json_encode([
-                    'name' => 'Ressources humaines',
-                    'statut' => 'error',
-                    'message' => 'La modification de l\'agent ' . $agent->prenom . ' ' . $agent->nom . ' a échoué. Vous avez déjà un agent avec ce matricule.',
-                ]);
-                session()->flash('session', $content);
-                return redirect()->route('regidoc.personnels.index');
-            }
-
+            // Mise à jour de l'utilisateur
             $user->update([
                 'email' => $newMail,
                 'name' => $request->prenom . ' ' . $request->nom,
             ]);
 
-            $agent->nom = Str::ucfirst(Str::lower($request->nom));
-            $agent->post_nom = Str::ucfirst(Str::lower($request->post_nom));
-            $agent->prenom = Str::ucfirst(Str::lower($request->prenom));
-            $agent->sexe = $request->sexe;
-            $agent->province = $request->province ?? null;
-            $agent->ville = $request->ville ?? null;
-            $agent->lieu_naiss = $request->lieu_naiss ?? null;
-            $agent->date_naiss = Carbon::parse($request->date_naiss) ?? null;
-            $agent->etat_civil = $request->etat_civil ?? null;
-            $agent->nbr_enfant = $request->nbr_enfant ?? null;
-            $agent->nationalite = $request->nationalite ?? null;
-            $agent->image = $request->hasFile('image') ? (new Image())->handle($request, 'image', 'agents') : $agent->image;
-            $agent->slug = Str::slug($request->nom . ' ' . $request->post_nom . ' ' . $request->prenom);
-            $agent->matricule = $request->matricule;
-            $agent->direction_id = $request->direction_id ?? null;
-            $agent->division_id = $request->division_id ?? null;
-            $agent->service_id = $request->sevice_id ?? null;
-            $agent->section_id = $request->section_id ?? null;
-            $agent->grade_id = $request->grade_id ?? null;
-            $agent->lieu_id = $request->lieu_id ?? null;
-            $agent->updated_by = Auth::user()->id;
-            if ($request->fonction_id != null) {
-                $fct = Fonction::find($request->fonction_id);
-                $titre = $fct->titre;
-                if (Str::startsWith($titre, 'Directeur')) {
-                    $dir = Direction::find($request->direction_id);
-                    $dir->responsable_id = $agent->id;
-                    $dir->save();
-                } elseif (Str::startsWith($titre, 'Chef Division')) {
-                    $div = Division::find($request->division_id);
-                    if ($div) {
-                        $div->responsable_id = $agent->id;
-                        $div->save();
-                    }
-                } elseif (Str::startsWith($titre, 'Chef Service')) {
-                    $ser = Service::find($request->service_id);
-                    if ($ser) {
-                        $ser->responsable_id = $agent->id;
-                        $ser->save();
-                    }
-                } elseif (Str::startsWith($titre, 'Chef Section')) {
-                    $sec = Section::find($request->section_id);
-                    if ($sec) {
-                        $sec->responsable_id = $agent->id;
-                        $sec->save();
-                    }
-                } elseif (Str::startsWith($titre, 'Secrétaire Direction') || Str::startsWith($titre, 'Secretaire Direction')) {
-                    $direction = Direction::find($request->direction_id);
-                    if ($direction) {
-                        Secretariat::firstOrCreate([
-                            'titre' => 'Secrétaire ' . $direction->titre,
-                        ], [
-                            'direction_id' => $direction->id,
-                            'responsable_id' => $agent->id,
-                        ]);
-                    }
-                } elseif (Str::startsWith($titre, 'Secrétaire Division') || Str::startsWith($titre, 'Secretaire Division')) {
-                    $division = Division::find($request->division_id);
-                    if ($division) {
-                        Secretariat::firstOrCreate([
-                            'titre' => 'Secrétaire ' . $division->libelle,
-                        ], [
-                            'division_id' => $division->id,
-                            'responsable_id' => $agent->id,
-                        ]);
-                    }
-                } elseif (Str::startsWith($titre, 'Secrétaire Service') || Str::startsWith($titre, 'Secretaire Service')) {
-                    $service = Service::find($request->service_id);
-                    if ($service) {
-                        Secretariat::firstOrCreate([
-                            'titre' => 'Secrétaire ' . $service->titre,
-                        ], [
-                            'service_id' => $service->id,
-                            'responsable_id' => $agent->id,
-                        ]);
-                    }
-                } elseif (Str::startsWith($titre, 'Secrétaire') || Str::startsWith($titre, 'Secretaire')) {
-                    Secretariat::firstOrCreate([
-                        'titre' => $titre,
-                    ], [
-                        'direction_id' => $request->direction_id,
-                        'responsable_id' => $agent->id,
-                    ]);
-                } elseif (Str::startsWith($titre, 'Assistant')) {
-                    Assistanat::FirstOrCreate([
-                        "titre" => $titre,
-                    ], [
-                        "direction_id" => $request->direction_id,
-                        "responsable_id" => $agent->id,
-                    ]);
-                }
-                $agent->fonction_id = $request->fonction_id;
-            }
-            $agent->save();
+            // Mise à jour de l'agent
+            $agent->update([
+                'nom' => Str::ucfirst(Str::lower($request->nom)),
+                'post_nom' => Str::ucfirst(Str::lower($request->post_nom)),
+                'prenom' => Str::ucfirst(Str::lower($request->prenom)),
+                'sexe' => $request->sexe,
+                'lieu_naiss' => $request->lieu_naiss ?? null,
+                'date_naiss' => $request->date_naiss ? Carbon::parse($request->date_naiss) : null,
+                'etat_civil' => $request->etat_civil ?? null,
+                'nbr_enfant' => $request->nbr_enfant ?? null,
+                'nationalite' => $request->nationalite ?? null,
+                'province' => $request->province ?? null,
+                'ville' => $request->ville ?? null,
+                'matricule' => $request->matricule,
+                'image' => $request->hasFile('image') ? (new Image())->handle($request, 'image', 'agents') : $agent->image,
+                'slug' => Str::slug($request->nom . ' ' . $request->post_nom . ' ' . $request->prenom),
+                'direction_id' => $request->direction_id,
+                'division_id' => $request->division_id ?? null,
+                'service_id' => $request->service_id ?? null,
+                'section_id' => $request->section_id ?? null,
+                'grade_id' => $request->grade_id ?? null,
+                'lieu_id' => $request->lieu_id ?? null,
+                'fonction_id' => $request->fonction_id,
+                'updated_by' => Auth::id(),
+            ]);
 
+            // Mise à jour de l'adresse
             $adresse = $agent->adresse ?? new Adresse();
-            $adresse->agent_id = $agent->id;
-            $adresse->phone = $request->telephone;
-            $adresse->residence = $request->adresse;
-            $adresse->save();
+            $adresse->fill([
+                'agent_id' => $agent->id,
+                'phone' => $request->telephone,
+                'email' => $newMail,
+                'residence' => $request->adresse,
+            ])->save();
 
-            $content = json_encode([
-                'name' => 'Ressources humaines',
-                'statut' => 'success',
-                'message' => 'La modification des informations de l\'agent a réussie avec succès !',
-            ]);
+            // Mise à jour du rôle et des permissions si un rôle est spécifié
+            if ($request->has('role_id')) {
+                $this->updateUserRole($user, $request->role_id);
+            }
+
+            return redirect()->route('regidoc.personnels.index')->with('message', 'Agent modifié avec succès.');
         } catch (\Throwable $th) {
-            // dd($th);
-            $content = json_encode([
-                'name' => 'Ressources humaines',
-                'statut' => 'error',
-                'message' => 'La modification de l\'agent a échoué !',
-            ]);
+            return back()->with('error', 'Erreur lors de la modification : ' . $th->getMessage());
         }
-
-        session()->flash(
-            'session',
-            $content
-        );
-
-        return back();
     }
+
 
     public function archived(Request $request, $agent, $doc)
     {

@@ -44,32 +44,104 @@ class AddCourrierForm extends Component
     public $type = 1;
     public $num;
     public $isFormValid = false;
+    public $isDestinateur;
+    public $title = '';
 
     protected $listeners = ['selectDoc'];
+    
+    public function updatedTitle($value)
+    {
+        $this->isFormValid = !empty(trim($value));
+    }
 
     public function mount()
     {
-        $lastNum = Courrier::whereIn('service_id', Direction::find(1)->services->pluck('id')->toArray())
-            ->orWhereNull('service_id')
-            ->where('reference_interne', 'LIKE', '%' . $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre) . '-%')
+        $services = Direction::find(1)->services->pluck('id')->toArray();
+        $prefix = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre);
+        
+        // Log pour débogage
+        \Log::info('mount - Paramètres:', [
+            'services' => $services,
+            'type' => $this->type,
+            'prefix' => $prefix
+        ]);
+        
+        $lastNum = Courrier::where(function($query) use ($services) {
+                $query->whereIn('service_id', $services)
+                      ->orWhereNull('service_id');
+            })
+            ->where('type_id', '=', $this->type)
+            ->where('reference_interne', 'LIKE', $prefix . '-%')
             ->count();
+            
+        // Log du résultat du comptage
+
+            
         $this->num = (int) $lastNum;
         $this->num += 1;
         $this->num = Str::padLeft($this->num, 4, '0');
-        $this->num = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre) . '-' . $this->num . '-' . substr($this->type == 1 ? 'ENTRANT' : ($this->type == 2 ? "SORTANT" : "INTERNE"), 0, 3);
+        
+        // Déterminer le suffixe en fonction du type
+        $suffix = match((int)$this->type) {
+            1 => 'ENT',  // Entrant
+            2 => 'SOR',  // Sortant
+            default => 'INT'  // Interne
+        };
+        
+        $this->num = $prefix . '-' . $this->num . '-' . $suffix;
     }
  
     public function changeNumRef()
     {
-        $lastNum = Courrier::whereIn('service_id', Direction::find(1)->services->pluck('id')->toArray())
-            ->orWhereNull('service_id')->where('type_id','=',$this->type)
-            ->where('reference_interne', 'LIKE', '%' . $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre) . '-%')
-            ->count();
+        // S'assurer que le type est défini, sinon utiliser 1 par défaut (entrant)
+        $type = $this->type ?? 1;
+        $services = Direction::find(1)->services->pluck('id')->toArray();
+        $prefix = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre);
+        
+        // Log pour débogage
+        \Log::info('changeNumRef - Paramètres:', [
+            'services' => $services,
+            'type' => $type,
+            'prefix' => $prefix
+        ]);
+        
+        // Construire la requête avec des conditions explicites
+        $query = Courrier::where(function($q) use ($services) {
+                $q->whereIn('service_id', $services)
+                  ->orWhereNull('service_id');
+            })
+            ->where('type_id', $type);
+            
+        // Ajouter la condition LIKE uniquement si le préfixe n'est pas vide
+        if (!empty($prefix)) {
+            $query->where('reference_interne', 'LIKE', $prefix . '-%');
+        }
+        
+        $lastNum = $query->count();
+            
+        // Log du résultat du comptage avec les paramètres liés
+        $sql = $query->toSql();
+        $bindings = $query->getBindings();
+        
+        \Log::info('changeNumRef - Résultat du comptage:', [
+            'lastNum' => $lastNum,
+            'type' => $type,
+            'requete_sql' => $sql,
+            'bindings' => $bindings
+        ]);
         
         $this->num = (int) $lastNum;
         $this->num += 1;
         $this->num = Str::padLeft($this->num, 4, '0');
-        $this->num = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre) . '-' . $this->num . '-' . substr($this->type == 1 ? 'ENTRANT' : ($this->type == 2 ? "SORTANT" : "INTERNE"), 0, 3);
+        
+        // Déterminer le suffixe en fonction du type
+        $suffix = match((int)$type) {
+            1 => 'ENT',  // Entrant
+            2 => 'SOR',  // Sortant
+            default => 'INT'  // Interne
+        };
+        
+        $this->num = $prefix . '-' . $this->num . '-' . $suffix;
     }
 
     public function changeServiceInit($id)
@@ -123,11 +195,11 @@ class AddCourrierForm extends Component
         $this->priorites = Priorite::select('id', 'titre')->get();
         $this->types = $this->types->filter(function ($type) {
             if ($type->id == 2) {
-                return Auth::user()->can('Enregistrer un courrier sortant');
+                return Auth::user()->can('Numériser un document sortant');
             } elseif ($type->id == 1) {
-                return Auth::user()->can('Enregistrer un courrier entrant');
+                return Auth::user()->can('Numériser un document entrant');
             } else {
-                return Auth::user()->can('Enregistrer un courrier interne');
+                return Auth::user()->can('Numériser un document interne');
             }
         });
         // $this->agents = $this->agents->where('id', '!=', Auth::user()->agent->id);

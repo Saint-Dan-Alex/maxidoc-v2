@@ -9,10 +9,11 @@
                 alt="{{ $notification->data['data']['agent']['name'] }}">
         </div>
         <div class="text-star text-content">
-            <h6 class="date d-flex justify-content-between align-items-center">
-                <span>{{ $notification->data['data']['agent']['name'] }}</span>
+            <h6 class="date d-flex justify-content-between align-items-center mb-0">
+                <span style="font-size: 15px; color: black;">{{ $notification->data['data']['agent']['name'] }}</span>
             </h6>
-            <p>
+            <span class="text-muted mt-0" style="font-size: 10px; ">({{ $notification->data['data']['agent']['service'] ?? 'Non Défini' }})</span>
+            <p style="font-size: 14px;color: black">
                 {!! $notification->data['data']['message'] !!}
             </p>
             <div class="text-start">

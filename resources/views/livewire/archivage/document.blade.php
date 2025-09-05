@@ -14,50 +14,130 @@
         {{-- <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-new-archive-document">Ajouter</button> --}}
         {{-- </div> --}}
     </div>
-    <div class="pb-5 card card-table" style="overflow:inherit">
-        <div class="row">
-            <div class="col-lg-7">
-                <p class="mb-0"><small>Dossier</small></p>
-                <h4 class="mb-1">{{ Str::ucfirst($dossier->titre) }}</h4>
-            </div>
-            <div class="col-lg-5">
-                <div class="d-flex align-items-center">
-                    <input type="text" class="form-control me-2 input-search-card" placeholder="Recherche"
-                        style="border:none;" wire:model='search'>
-                    <div class="dropdown">
-                        <button class="btn btn-filter" id="dropdownMenuButton1" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            {{-- <i class="fi fi-rr-filter me-2"></i> {{ $filterText }} --}}
-                            <svg data-name="Layer 1" viewBox="0 0 24 24" width="512" height="512">
-                                <path
-                                    d="M24,3c0,.55-.45,1-1,1H1c-.55,0-1-.45-1-1s.45-1,1-1H23c.55,0,1,.45,1,1ZM15,20h-6c-.55,0-1,.45-1,1s.45,1,1,1h6c.55,0,1-.45,1-1s-.45-1-1-1Zm4-9H5c-.55,0-1,.45-1,1s.45,1,1,1h14c.55,0,1-.45,1-1s-.45-1-1-1Z">
-                                </path>
-                            </svg>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="javascript:void(0)" wire:click='changeFilter(1)'>Par
-                                    défaut</a>
-                            </li>
-                            <li><a class="dropdown-item" href="javascript:void(0)" wire:click='changeFilter(2)'>A -
-                                    Z</a></li>
-                            <li><a class="dropdown-item" href="javascript:void(0)" wire:click='changeFilter(3)'>Z -
-                                    A</a></li>
-                            <li><a class="dropdown-item" href="javascript:void(0)" wire:click='changeFilter(4)'>Date
-                                    d'ajout</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="javascript:void(0)" wire:click='changeFilter(5)'>Date de
-                                    modification
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+    <div class="pb-5 card card-table position-relative" style="overflow:inherit; min-height: 200px;">
+        <!-- Overlay de chargement -->
+        <div class="d-none position-absolute loader-card d-flex justify-content-center m-0"
+            style="z-index: 2; left:5px; right:5px; top:5px; bottom:5px; background-color: rgba(255,255,255,0.95)"
+            wire:loading wire:target="search,lieu_query,direction_query,division_query,agent_query,selectedDay,selectedMonth,selectedYear,filter,resetFilters" 
+            wire:loading.class.remove="d-none">
+            <div class="text-center m-auto">
+                <div class="spinner-border" role="status" style="color: var(--primaryColor)">
+                    <span class="sr-only"></span>
                 </div>
             </div>
         </div>
-        <hr class="mt-0 mb-4">
+        <!-- Ligne du titre -->
+        <div class="mb-3">
+            <p class="mb-0"><small>Dossier</small></p>
+            <h4 class="mb-0">{{ Str::ucfirst($dossier->titre) }}</h4>
+        </div>
+        
+        <!-- Ligne des filtres et recherche -->
+        <div class="d-flex align-items-center justify-content-between position-relative">
+            <!-- Barre de recherche -->
+            <div class="d-flex align-items-center" style="width: 300px;">
+                <input type="text" class="form-control input-search-card" placeholder="Recherche"
+                    style="border:none;" wire:model.debounce.500ms='search'>
+            </div>
+            
+            <!-- Filtres avancés -->
+            <div class="d-flex align-items-center gap-2">
+                <!-- Bouton de tri -->
+                <div class="dropdown">
+                    <button class="btn btn-filter" id="dropdownMenuButton1" data-bs-toggle="dropdown"
+                        aria-expanded="false" title="Trier par">
+                        <svg data-name="Layer 1" viewBox="0 0 24 24" width="20" height="20">
+                            <path
+                                d="M24,3c0,.55-.45,1-1,1H1c-.55,0-1-.45-1-1s.45-1,1-1H23c.55,0,1,.45,1,1ZM15,20h-6c-.55,0-1,.45-1,1s.45,1,1,1h6c.55,0,1-.45,1-1s-.45-1-1-1Zm4-9H5c-.55,0-1,.45-1,1s.45,1,1,1h14c.55,0,1-.45,1-1s-.45-1-1-1Z">
+                            </path>
+                        </svg>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="javascript:void(0)" wire:click='changeFilter(1)'>Par défaut</a></li>
+                        <li><a class="dropdown-item" href="javascript:void(0)" wire:click='changeFilter(2)'>A - Z</a></li>
+                        <li><a class="dropdown-item" href="javascript:void(0)" wire:click='changeFilter(3)'>Z - A</a></li>
+                        <li><a class="dropdown-item" href="javascript:void(0)" wire:click='changeFilter(4)'>Date d'ajout</a></li>
+                        <li><a class="dropdown-item" href="javascript:void(0)" wire:click='changeFilter(5)'>Date de modification</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Filtres avancés -->
+                <div class="input-group block-input-filter">
+                    @if (Auth::user()->agent->isDG())
+                        <select class="form-select form-control" name="lieu_query"
+                            wire:model.debounce.500ms="lieu_query" title="Filtrer par lieu">
+                            <option value="" selected>Lieu</option>
+                            @foreach ($lieus as $lieu)
+                                <option value="{{ $lieu->id }}">
+                                    {{ $lieu->titre }}
+                                </option>
+                            @endforeach
+                        </select>
+                        {{-- <select class="form-select form-control" name='direction_query'
+                            wire:model.debounce.500ms="direction_query" {{ !$directions->count() ? 'disabled' : '' }} title="Filtrer par direction">
+                            <option value="" selected>Direction</option>
+                            @foreach ($directions as $direction)
+                                <option value="{{ $direction->id }}">
+                                    {{ $direction->titre }}
+                                </option>
+                            @endforeach
+                        </select> --}}
+                        {{-- <select class="form-select form-control" name="division_query"
+                            wire:model.debounce.500ms="division_query" {{ !$divisions->count() ? 'disabled' : '' }} title="Filtrer par division">
+                            <option value="" selected>Division</option>
+                            @foreach ($divisions as $division)
+                                <option value="{{ $division->id }}">
+                                    {{ $division->libelle }}
+                                </option>
+                            @endforeach
+                        </select> --}}
+                        {{-- <select class="form-select form-control" name="agent_query"
+                            wire:model.debounce.500ms="agent_query" {{ !$agents->count() ? 'disabled' : '' }} title="Filtrer par agent">
+                            <option value="" selected>Agent</option>
+                            @foreach ($agents as $agent)
+                                <option value="{{ $agent->id }}">
+                                    {{ $agent->nom . ' ' . $agent->prenom }}
+                                </option>
+                            @endforeach
+                        </select> --}}
+                    @endif
+                    <select name="datep" id="jour" class="form-select form-control"
+                        wire:model.debounce.500ms='selectedDay' title="Filtrer par jour">
+                        <option value="" selected>Jour</option>
+                        @for ($i = 1; $i <= 31; $i++)
+                            <option value="{{ $i }}">{{ $i }}</option>
+                        @endfor
+                    </select>
+                    <select name="datep" id="mois" class="form-select form-control"
+                        wire:model.debounce.500ms='selectedMonth' title="Filtrer par mois">
+                        <option value="" selected>Mois</option>
+                        @for ($i = 1; $i <= 12; $i++)
+                            <option value="{{ $i }}">
+                                {{ now()->month($i)->isoFormat('MMMM') }}
+                            </option>
+                        @endfor
+                    </select>
+                    <select name="datep" id="annee" class="form-select form-control"
+                        style="border-right: none" wire:model.debounce.500ms='selectedYear' title="Filtrer par année">
+                        <option value="" selected>Année</option>
+                        @for ($i = ((int) now()->year); $i > 1990; $i--)
+                            <option value="{{ $i }}">
+                                {{ $i }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
+                
+                <!-- Bouton de réinitialisation -->
+                <button class="btn btn-sm btn-outline-secondary" wire:click="resetFilters" title="Réinitialiser les filtres">
+                    <i class="fi fi-rr-refresh"></i>
+                </button>
+            </div>
+        </div>
+        
+        <hr class="mt-3 mb-4">
         <div class="row g-3 g-lg-5">
-            @forelse ($documents as $document)
+            @forelse ($paginatedDocuments as $document)
                 <div class="col-lg-3">
                     <div class="col-folder">
                         @if (Str::startsWith($document->reference, 'DAA/'))
@@ -77,9 +157,10 @@
                                 @endif
                                 <div class="text-star">
 
-                                    <h6 class="text-capitalize">{{ Str::ucfirst($document->titre) }}</h6>
+                                    <h6 class="text-capitalize">{{ Str::ucfirst($document->libelle) }}</h6>
                                     <p>Reférence : {{ Str::ucfirst($document->reference) }}</p>
-                                    <p>Ajouté le: {{ $document->created_at->format('d/m/Y h:i') }}</p>
+                                    <p>Archivé le : {{ \Carbon\Carbon::parse($document->archived_at)->format('d/m/Y h:i') }}</p>
+
                                 </div>
                             </div>
                         </a>
@@ -90,6 +171,13 @@
                     <p>Aucun document trouvé</p>
                 </div>
             @endforelse
+            
+            <!-- Pagination -->
+            <div class="col-12">
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $paginatedDocuments->links() }}
+                </div>
+            </div>
         </div>
     </div>
 </div>

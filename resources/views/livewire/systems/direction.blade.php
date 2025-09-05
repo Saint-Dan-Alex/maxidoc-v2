@@ -1,3 +1,13 @@
+{{-- <script>
+    fetch('/ajax/types/get/all/agents')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Liste des agents :', data);
+        })
+        .catch(error => {
+            console.error('Erreur lors de la récupération des agents:', error);
+        });
+</script> --}}
 <div class="col-lg-12">
     <div class="card card-table" style="overflow: inherit">
         <div class="d-none position-absolute loader-card d-flex justify-content-center m-0"
@@ -101,20 +111,23 @@
                             <td> {{ $direction->agents->count() }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table" wire:ignore>
-                                    {{-- <a href="#" class="btn btn-primary  p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-show-direction-{{ $direction->id }}"><i
-                                            class="fi fi-rr-eye"></i>
-                                        Voir</a> --}}
-                                    <a href="#" class="btn btn-success  p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-edit-direction-{{ $direction->id }}"><i
-                                            class="fi fi-rr-pencil"></i>
-                                        Editer</a>
-                                    <form action="{{ route('regidoc.directions.destroy', $direction) }}" method="POST">
+                                    {{-- <a href="#" class="btn btn-primary" data-bs-toggle="modal"
+                                        data-bs-target="#modal-show-direction-{{ $direction->id }}">
+                                        <i class="fi fi-rr-eye"></i>
+                                        <span class="btn-text">Voir</span>
+                                    </a> --}}
+                                    <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-edit-direction-{{ $direction->id }}">
+                                        <i class="fi fi-rr-pencil"></i>
+                                        <span class="btn-text">Éditer</span>
+                                    </a>
+                                    <form action="{{ route('regidoc.directions.destroy', $direction) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger  p-2"><i
-                                                class="fi fi-rr-trash"></i>
-                                            Supprimer</button>
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette direction ?')">
+                                            <i class="fi fi-rr-trash"></i>
+                                            <span class="btn-text">Supprimer</span>
+                                        </button>
                                     </form>
 
                                 </div>
@@ -122,19 +135,24 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">
+                            <td colspan="7" class="text-center">
                                 <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucune direction trouvé</p>
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p>Aucune direction trouvée</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            @if($directions->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $directions->links() }}
+                </div>
+            @endif
         </div>
-        {!! $directions->links() !!}
     </div>
 
 

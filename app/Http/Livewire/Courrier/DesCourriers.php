@@ -23,6 +23,23 @@ class DesCourriers extends Component
     public $selectedYear = '';
     public $priority = null;
     public $statut = null; 
+    public $isSec = false;
+
+    public function mount()
+    {
+        $this->isSec = false;
+        $user = Auth::user();
+        
+        if ($user && $user->agent) {
+            // Vérifier si l'utilisateur est un secrétaire du DG
+            $agent = $user->agent;
+            $isSecretaireDG = \App\Models\Secretariat::where('responsable_id', $agent->id)
+                ->where('for_dg', true)
+                ->exists();
+                
+            $this->isSec = $isSecretaireDG;
+        }
+    }
 
     protected $listeners = [
         'CourrierCreated' => 'SendCourrierCreatedNotification',
@@ -138,12 +155,25 @@ class DesCourriers extends Component
 
     public function render()
     {
-        $courriersQuery = Courrier::with('expediteur','externExpediteur','externDestinateur','destinateurs');
+        $courriersQuery = Courrier::with([
+            'expediteur',
+            'externExpediteur',
+            'externDestinateur',
+            'destinateurs',
+            'accuseReceptions.user.agent'  // Chargement des accusés avec les relations user et agent
+        ]);
         // $courriersQuery = $this->applyFilters($courriersQuery);
 
         // Gestion des différents onglets
         if ($this->active_tab == 1) {
-            $allcourriers = $courriersQuery->where('statut_id','!=',3)->orderBy('id', 'desc');
+            $allcourriers = $courriersQuery->where('statut_id','!=',3);
+            
+            // Si c'est un secrétaire du DG, on ne montre que les courriers entrants (type_id = 1)
+            if ($this->isSec) {
+                $allcourriers->where('type_id', 1);
+            }
+            
+            $allcourriers = $allcourriers->orderBy('id', 'desc');
             $allcourriers = $this->applyFilters($allcourriers);
             $allcourriers = $this->applyPermissions($allcourriers);
             $allcourriers = $this->mapFollowers($allcourriers);

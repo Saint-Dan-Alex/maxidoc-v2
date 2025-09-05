@@ -5,7 +5,7 @@
                 style="font-size: 14px; color: var(--colorTitle)">
                 <i class="bi bi-arrow-left"></i>
             </a>
-            <h4 class="ms-0 ms-2">Modification</h4>
+            <h4 class="ms-0 ms-2">Complément d’informations</h4>
         </div>
         <form action="{{ route('regidoc.courriers.update', $courrier) }}" method="POST" enctype="multipart/form-data">
             @csrf
@@ -18,12 +18,12 @@
                             <label class="col-5 col-form-label">Type de courrier</label>
                             <div class="col-7">
                                 <select class="form-select form-control select" aria-label="Default select example"
-                                    name="type" id="type_id" {{-- data-placeholder="Selectionner"
+                                    name="type2" id="type_id" {{-- data-placeholder="Selectionner"
                                     data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
                                     data-get-items-field="titre"
                                     data-method="get"
                                     data-label="titre"
-                                    data-related-model="CourrierType" --}}>
+                                    data-related-model="CourrierType" --}} disabled>
                                     <option value="" selected disabled>Sélectionnez</option>
                                     @foreach ($types as $type)
                                         <option value="{{ $type->id }}" @selected($courrier->type->id == $type->id)>
@@ -34,6 +34,7 @@
                             </div>
                         </div>
                     </div>
+                    <input type="hidden" name="type" value="1">
 
                     <div class="col-12 categorie_field" wire:ignore>
                         <div class="row">
@@ -55,18 +56,84 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="col-12">
-                        <div class="block-file ">
-                            <input type="file" id="file-upload" name="document" accept=".pdf"
-                                @disabled($selectedDoc != null)>
-                            <label for="file-upload">
-                                <i class="fi fi-sr-file"></i>
-                                <p>Cliquez pour importer un document scanné</p>
-                                <i class="bi bi-plus-lg"></i>
-                            </label>
+                     @if($courrier->type_id == 3) {{-- Courrier interne --}}
+                    <div class="col-12 exped_intern">
+                        <div class="row">
+                            <label class="col-5 col-form-label">Expéditeur Interne</label>
+                            <div class="col-7">
+                                <select class="form-select form-control text-capitalize"
+                                    aria-label="Sélectionner l'expéditeur interne" name="exp_int" required>
+                                    <option value="" disabled>Sélectionnez un expéditeur</option>
+                                    @foreach($agents as $agent)
+                                        <option value="{{ $agent->id }}" @selected($courrier->exped_interne_id == $agent->id)>
+                                            {{ $agent->prenom }} {{ $agent->nom }}
+                                            @if($agent->fonctions->isNotEmpty())
+                                                ({{ $agent->fonctions->first()->titre }})
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('exp_int')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
+                    @else {{-- Courrier externe --}}
+                    <div class="col-12 exped_extern" wire:ignore>
+                        <div class="row">
+                            <label class="col-5 col-form-label">Expéditeur</label>
+                            <div class="col-7" wire:ignore>
+                                <select class="form-select form-control sele" aria-label="Default select example"
+                                    name="exp" data-placeholder="Sélectionnez un expéditeur"
+                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true" data-max-selection="1"
+                                    data-relative-id="{{ $courrier->categorie ? $courrier->categorie->id : '' }}" 
+                                    @if ($type == [1]) required @endif>
+                                    @if($courrier->exped_externe && $courrier->externExpediteur)
+                                        <option value="{{ $courrier->exped_externe }}" selected>
+                                            {{ $courrier->externExpediteur->nom }}
+                                        </option>
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 contact_field" wire:ignore>
+                        <div class="row">
+                            <label class="col-5 col-form-label">Contact</label>
+                            <div class="col-7" wire:ignore>
+                                <select class="form-select form-control select2-contact" 
+                                    name="contact" 
+                                    id="contact_id"
+                                    data-placeholder="Sélectionnez"
+                                    data-expediteur-id="{{ $courrier->exped_externe }}"
+                                    data-route="{{ route('regidoc.ajax.expediteur.contact.save') }}"
+                                    data-tags="true"
+                                    data-allow-clear="true">
+                                    @if($courrier->externExpediteur && $courrier->externExpediteur->contact)
+                                        <option value="{{ $courrier->externExpediteur->contact }}" selected>
+                                            {{ $courrier->externExpediteur->contact }}
+                                        </option>
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    <div class="col-12">
+                        <div class="row">
+                            <label class="col-5 col-form-label">N° d'enregistrement </label>
+                            <div class="col-7">
+                                <input type="text" class="form-control" name="ref2" placeholder="Référence"
+                                    value=" {{ $courrier->reference_interne }}" disabled>
+                            </div>
+                        </div>
+                    </div>
+
+                    
 
                     @if ($courrier->document && !$selectedDoc)
                         {{-- wire:ignore --}}
@@ -74,7 +141,7 @@
                             {{-- <input type="hidden" name="document_id" id="" value="{{ $selectedDoc ? $selectedDoc->id : $courrier->document->id }}"> --}}
                             <ul class="list-file">
                                 <li class="d-flex align-items-center">
-                                    <i class="bi bi-file-earmark"></i>
+                                    <i class="bi-paperclip"></i>
                                     <div class="block-detail">
                                         <div class="names mb-0">
                                             <p class="name-file">{{ $courrier->document->libelle }} <span
@@ -83,7 +150,7 @@
                                                 <i class="bi bi-check-lg" style="font-size: 20px; color: #07c451"></i>
                                             </p>
                                         </div>
-                                        <small>Référence : {{ $courrier->document->reference }}</small>
+                                        {{-- <small>Référence : {{ $courrier->document->reference_interne }}</small> --}}
                                     </div>
                                 </li>
                             </ul>
@@ -139,9 +206,9 @@
                         </div>
                     @endif
 
-                    <div class="col-12">
+                    {{-- <div class="col-12">
                         <h5 class="mt-1 title-info">Destination</h5>
-                    </div>
+                    </div> --}}
 
                     {{-- <div class="col-12">
                         <div class="row">
@@ -179,7 +246,7 @@
                         </div>
                     </div> --}}
 
-                    <div class="col-12">
+                    {{-- <div class="col-12">
                         <div class="row">
                             <label class="col-5 col-form-label">Destinataire</label>
                             <div class="col-7">
@@ -190,7 +257,7 @@
                                         Sélectionnez
                                     </option>
                                     @foreach ($agents as $agent)
-                                        <option value="{{ $agent->id }}" @selected(($isConfidentiel && $agent->id == $dg->id) || $agent->id == $dg->id || $agent->id == $courrier->dest_interne_id)>
+                                        <option value="{{ $agent->id }}" @selected(($isConfidentiel && $dg && $agent->id == $dg->id) || ($dg && $agent->id == $dg->id) || $agent->id == $courrier->dest_interne_id)>
                                             {{ $agent->prenom }} {{ $agent->nom }}
                                         </option>
                                     @endforeach
@@ -230,42 +297,17 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <div class="col-12">
                         <h5 class="mb-3 title-info">Détails du Courrier</h5>
                     </div>
 
-                    <div class="col-12 exped_extern" wire:ignore>
-                        <div class="row">
-                            <label class="col-5 col-form-label">Expéditeur</label>
-                            <div class="col-7">
-                                <input type="text" class="form-control" id="inputPassword" name="exp"
-                                    placeholder="Expéditeur" value="{{ $courrier->exped_externe }}">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 @if ($courrier->type_id != 3) d-none @endif exped_intern" wire:ignore>
-                        <div class="row">
-                            <label class="col-5 col-form-label">Expéditeur</label>
-                            <div class="col-7">
-                                <select class="form-select form-control text-capitalize"
-                                    aria-label="Default select example" name="exp_int">
-                                    <option value="" selected disabled>Selectionnez</option>
-                                    @foreach ($agents as $agent)
-                                        <option value="{{ $agent->id }}" @selected($courrier->exped_interne_id == $agent->id)>
-                                            {{ $agent->prenom }} {{ $agent->nom }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+                   
 
                     <div class="col-12">
                         <div class="row">
-                            <label class="col-5 col-form-label">Référence</label>
+                            <label class="col-5 col-form-label">Référence du courrier</label>
                             <div class="col-7">
                                 <input type="text" class="form-control" name="ref" placeholder="Référence"
                                     value="{{ $courrier->reference }}">
@@ -277,7 +319,7 @@
                         <div class="row">
                             <label class="col-5 col-form-label">Titre</label>
                             <div class="col-7">
-                                <input type="text" class="form-control" name="title" placeholder="Titre"
+                                <input type="text" class="form-control" name="title" placeholder="Titre/objet"
                                     value="{{ $courrier->title }}">
                             </div>
                         </div>
@@ -329,16 +371,20 @@
                             <label class="col-5 col-form-label">Priorité</label>
                             <div class="col-7" wire:ignore>
                                 <select class="form-select form-control select2" aria-label="Default select example"
-                                    name="priorite" data-placeholder="Selectionner"
+                                    name="priorite" data-placeholder="Sélectionnez"
                                     data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
                                     data-get-items-field="titre" data-method="get" data-label="titre"
                                     data-related-model="Priorite">
+                                    
+                                    <option value="" disabled selected>Sélectionnez</option>
+                                
                                     @foreach ($priorites as $priorite)
                                         <option value="{{ $priorite->id }}" @selected($priorite->id == $courrier->priorite_id)>
                                             {{ $priorite->titre }}
                                         </option>
                                     @endforeach
                                 </select>
+                            
                             </div>
                         </div>
                     </div>
@@ -347,16 +393,19 @@
                             <label class="col-5 col-form-label">Date du courrier</label>
                             <div class="col-7">
                                 <input type="date" class="form-control" id="inputPassword1" name="date-doc"
-                                    value="{{ $courrier->date_du_courrier?->toDateString() }}">
+                                    value="{{ $courrier->date_du_courrier?->toDateString() }}"
+                                    max="{{ now()->toDateString() }}">
+
                             </div>
                         </div>
                     </div>
                     <div class="col-12 datearrive_field" wire:ignore>
                         <div class="row">
-                            <label class="col-5 col-form-label">Date d'arrivée</label>
+                            <label class="col-5 col-form-label">Date de reception</label>
                             <div class="col-7">
-                                <input type="date" class="form-control" id="inputPassword1" name="date-arriv"
-                                    value="{{ $courrier->date_arrive?->toDateString() }}">
+                                <input type="datetime-local" class="form-control" id="inputPassword1" name="date-arriv"
+                                    value="{{ $courrier->date_arrive ? $courrier->date_arrive->format('Y-m-d\TH:i') : '' }}" disabled>
+
                             </div>
                         </div>
                     </div>
@@ -402,10 +451,10 @@
 
                     <div class="col-12">
                         <div class="row">
-                            <label class="col-5 col-form-label">Objet</label>
+                            <label class="col-5 col-form-label">Remarques</label>
                             <div class="col-7">
                                 <textarea name="objet" id="" cols="30" rows="3" class="form-control" style="resize: none"
-                                    placeholder="Objet">{{ $courrier->objet }}</textarea>
+                                    placeholder="Remarques">{{ $courrier->objet }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -434,10 +483,11 @@
             </div>
             <div class="footer-sidebar">
                 <a href="{{ route('regidoc.courriers.index') }}" class="btn">Quitter</a>
-                <button class="btn btn-valid">Valider</button>
+                <button class="btn btn-valid" @disabled(!$isFormValid)>Valider</button>
             </div>
         </form>
     </div>
+</div>
     <div class="content-scanner">
         <div class="container-fluid">
             <iframe
@@ -481,6 +531,71 @@
     </script> --}}
     <script>
         $(document).ready(function() {
+            // Fonction pour vérifier si tous les champs obligatoires sont remplis
+            function checkFormValidity() {
+                // Liste des sélecteurs des champs obligatoires
+                const requiredFields = [
+                    // 'select[name="type_id"]',         // Type de courrier
+                    'select[name="categorie"]',      // Catégorie
+                    'select[name="exp"]',            // Expéditeur
+                    // 'input[name="ref_interne"]',     // N° d'enregistrement
+                    'input[name="ref"]',             // Référence du courrier
+                    'input[name="title"]',           // Titre
+                    'select[name="nature"]',         // Nature
+                    // 'select[name="priorite"]',       // Priorité
+                    'input[name="date-doc"]',        // Date du courrier
+                    // 'input[name="date-arriv"]'       // Date de réception
+                ];
+
+                let isValid = true;
+                
+                // Vérifier chaque champ obligatoire
+                for (const selector of requiredFields) {
+                    const field = $(selector);
+                    // Pour les champs de type select2, vérifier si une valeur est sélectionnée
+                    if (field.hasClass('select2-hidden-accessible')) {
+                        if (!field.val() || field.val().length === 0) {
+                            isValid = false;
+                            break;
+                        }
+                    } 
+                    // Pour les champs input normaux
+                    else if (!field.val() || field.val().trim() === '') {
+                        isValid = false;
+                        break;
+                    }
+                }
+                
+                @this.set('isFormValid', isValid);
+                return isValid;
+            }
+
+            // Vérifier la validité du formulaire au chargement de la page
+            checkFormValidity();
+
+            // Liste des sélecteurs des champs obligatoires
+            const requiredFields = [
+                // 'select[name="type_id"]',
+                'select[name="categorie"]',
+                'select[name="exp"]',
+                // 'input[name="ref_interne"]',
+                'input[name="ref"]',
+                'input[name="title"]',
+                'select[name="nature"]',
+                // 'select[name="priorite"]',
+                'input[name="date-doc"]',
+                // 'input[name="date-arriv"]'
+            ];
+
+            // Écouter les changements sur les champs obligatoires
+            $(requiredFields.join(',')).on('change keyup', function() {
+                checkFormValidity();
+            });
+
+            // Pour les champs Select2
+            $(document).on('select2:select select2:unselect', 'select.select2', function() {
+                checkFormValidity();
+            });
 
             setEntrat($('#type_id').val());
             $('#type_id').on('change', function(e) {
@@ -534,8 +649,189 @@
                     null,
             });
 
-            // code jl to open scanner device to importe a file
+            // Écouteur pour le changement de catégorie
+            $('select[name="categorie"]').on('change', function(e) {
+                $('select[name=exp]').data('relative-id', e.target.value);
+                $('select[name=exp]').attr('data-relative-id', e.target.value);
+                $('select[name=exp]').val(null).trigger('change');
+            });
+            
+            // Initialisation de la catégorie actuelle
+            var initialCategory = $('select[name="categorie"]').val();
+            if (initialCategory) {
+                $('select[name=exp]').data('relative-id', initialCategory);
+                $('select[name=exp]').attr('data-relative-id', initialCategory);
+            }
+            
+            // Initialisation du sélecteur d'expéditeurs avec Select2
+            $('select[name="exp"]').select2({
+                tags: $('select[name="exp"]').data('tags') ? $('select[name="exp"]').data('tags') : false,
+                placeholder: $('select[name="exp"]').data('placeholder'),
+                language: "fr",
+                createTag: function(params) {
+                    var term = $.trim(params.term);
 
+                    if (term === '') {
+                        return null;
+                    }
+
+                    return {
+                        id: term,
+                        text: term,
+                        newTag: true
+                    }
+                },
+                ajax: {
+                    url: $('select[name="exp"]').data('get-items-route'),
+                    data: function(params) {
+                        var query = {
+                            search: params.term,
+                            type: $('select[name="exp"]').data('get-items-field'),
+                            method: $('select[name="exp"]').data('method'),
+                            id: $('select[name="exp"]').data('id'),
+                            page: params.page || 1,
+                            model: $('select[name="exp"]').data('related-model'),
+                            label: $('select[name="exp"]').data('label'),
+                            relative_id: $('select[name="exp"]').data('relative-id'),
+                        }
+                        return query;
+                    }
+                },
+                width: '100%',
+                minimumInputLength: 0,
+                allowClear: true,
+                maximumSelectionLength: $('select[name="exp"]').data('max-selection') ? $('select[name="exp"]').data('max-selection') : null,
+                templateResult: formatExp,
+                templateSelection: formatExpSelection
+            });
+
+            function formatExp(exp) {
+                if (!exp.id) {
+                    return exp.text;
+                }
+                return $('<span>').text(exp.text);
+            }
+
+            function formatExpSelection(exp) {
+                return exp.text;
+            }
+
+            // code jl to open scanner device to importe a file
+             // Initialisation du champ de contact
+             function initContactField(expediteurId) {
+                if (!expediteurId) {
+                    $('.contact_field').addClass('d-none');
+                    return;
+                }
+                
+                $('.contact_field').removeClass('d-none');
+                
+                // Détruire l'instance Select2 existante si elle existe
+                if ($('.select2-contact').hasClass('select2-hidden-accessible')) {
+                    $('.select2-contact').select2('destroy');
+                }
+                
+                // Initialiser le select2 pour le contact
+                $('.select2-contact').select2({
+                    placeholder: 'Sélectionnez ou ajoutez un contact',
+                    allowClear: true,
+                    tags: true,
+                    language: 'fr',
+                    ajax: {
+                        url: '{{ route("regidoc.ajax.expediteur.contacts") }}',
+                        data: function (params) {
+                            return {
+                                expediteur_id: expediteurId,
+                                search: params.term,
+                                page: params.page || 1
+                            };
+                        },
+                        processResults: function (data, params) {
+                            params.page = params.page || 1;
+                            return {
+                                results: data.results,
+                                pagination: {
+                                    more: (params.page * 30) < data.total_count
+                                }
+                            };
+                        },
+                        cache: true
+                    },
+                    createTag: function (params) {
+                        var term = $.trim(params.term);
+                        if (term === '') {
+                            return null;
+                        }
+                        return {
+                            id: term,
+                            text: term,
+                            newTag: true
+                        };
+                    }
+                });
+                
+                // Mettre à jour l'ID de l'expéditeur dans le data-attribute
+                $('.select2-contact').data('expediteur-id', expediteurId);
+                $('.select2-contact').attr('data-expediteur-id', expediteurId);
+            }
+            
+            // Écouteur pour le changement d'expéditeur
+            $('select[name="exp"]').on('select2:select', function (e) {
+                var expediteurId = e.params.data.id;
+                initContactField(expediteurId);
+                
+                // Réinitialiser le champ de contact
+                $('.select2-contact').val(null).trigger('change');
+                
+                // Charger les contacts existants pour cet expéditeur
+                if (expediteurId) {
+                    $.ajax({
+                        url: '{{ route("regidoc.ajax.expediteur.contacts") }}',
+                        data: { expediteur_id: expediteurId },
+                        dataType: 'json',
+                        success: function (data) {
+                            if (data.results && data.results.length > 0) {
+                                var options = '';
+                                $.each(data.results, function(index, contact) {
+                                    options += '<option value="' + contact.id + '" selected>' + contact.text + '</option>';
+                                });
+                                $('.select2-contact').html(options).trigger('change');
+                            }
+                        }
+                    });
+                }
+            });
+            
+            // Sauvegarder un nouveau contact
+            $('.select2-contact').on('select2:select', function (e) {
+                var contact = e.params.data;
+                var expediteurId = $(this).data('expediteur-id');
+                
+                if (contact.newTag && expediteurId) {
+                    $.ajax({
+                        url: '{{ route("regidoc.ajax.expediteur.contact.save") }}',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            expediteur_id: expediteurId,
+                            contact: contact.text
+                        },
+                        success: function(response) {
+                            var newOption = new Option(contact.text, contact.text, true, true);
+                            $('.select2-contact').append(newOption).trigger('change');
+                        },
+                        error: function(xhr) {
+                            console.error('Erreur lors de la sauvegarde du contact', xhr);
+                        }
+                    });
+                }
+            });
+            
+            // Initialiser le champ de contact si un expéditeur est déjà sélectionné
+            var initialExpediteurId = $('select[name="exp"]').val();
+            if (initialExpediteurId) {
+                initContactField(initialExpediteurId);
+            }
         });
     </script>
 @endpush

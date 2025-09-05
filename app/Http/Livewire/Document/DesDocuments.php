@@ -119,30 +119,39 @@ class DesDocuments extends Component
     {
         // Filtrer par recherche
         if (!empty($this->search)) {
-            $query->where('libelle', 'like', '%' . $this->search . '%');
+            // Si la recherche est numérique, chercher par ID
+            if (is_numeric($this->search)) {
+                $query->where('id', $this->search);
+            } else if (preg_match('/^[A-Za-z]{2}-\d+\/[A-Za-z]?$/', $this->search)) {
+                // Si la recherche est au format de référence (ex: DG-00001/R)
+                $query->where('reference', 'like', '%' . $this->search . '%');
+            } else {
+                // Sinon chercher dans le libellé
+                $query->where('libelle', 'like', '%' . $this->search . '%');
+            }
         }
         
         if (!empty($this->lieu_query)) {
             $query->whereHas('author', function($subQuery){
-                $subQuery->where('lieu_id',$this->lieu_query);
+                $subQuery->where('lieu_id', $this->lieu_query);
             }); 
         } 
 
         if (!empty($this->direction_query)) {
             $query->whereHas('author', function($subQuery){
-                $subQuery->where('direction_id',$this->direction_query);
+                $subQuery->where('direction_id', $this->direction_query);
             });
         } 
 
         if (!empty($this->division_query)) {
             $query->whereHas('author', function($subQuery){
-                $subQuery->where('division_id',$this->division_query);
+                $subQuery->where('division_id', $this->division_query);
             });
         }
 
         if (!empty($this->agent_query)) {
             $query->whereHas('author', function($subQuery){
-                $subQuery->where('id',$this->agent_query);
+                $subQuery->where('id', $this->agent_query);
             });
         }
 
@@ -170,38 +179,97 @@ class DesDocuments extends Component
         return $query;
     }
 
-    public function render()
-    {
-        $documents = collect();
-        $shareds = collect();
+    // public function render()
+    // {
+    //     $documents = collect();
+    //     $shareds = collect();
 
-        $documentsQuery = Document::query(); 
-        $documentsQuery = $this->applyFilters($documentsQuery);
-        // Exécuter la requête pour obtenir une collection
-        $documents = $documentsQuery->get(); 
-        // Appliquer le filtre sur la collection
-        $documents = $documents->filter(function ($document) {
-            return Gate::allows('view', $document);
-        });
+    //     $documentsQuery = Document::query(); 
+    //     $documentsQuery = $this->applyFilters($documentsQuery);
+    //     // Exécuter la requête pour obtenir une collection
+    //     $documents = $documentsQuery->get(); 
+    //     // Appliquer le filtre sur la collection
+    //     $documents = $documents->filter(function ($document) {
+    //         return Gate::allows('view', $document);
+    //     });
     
-        // Paginer manuellement la collection filtrée
-        $currentPage = $this->page; // Page actuelle
-        $perPage = 10; // Nombre d'éléments par page
-        $documentsPaginated = new LengthAwarePaginator(
-            $documents->forPage($currentPage, $perPage), 
-            $documents->count(), 
-            $perPage, 
-            $currentPage
-        );
+    //     // Paginer manuellement la collection filtrée
+    //     $currentPage = $this->page; // Page actuelle
+    //     $perPage = 10; // Nombre d'éléments par page
+    //     $documentsPaginated = new LengthAwarePaginator(
+    //         $documents->forPage($currentPage, $perPage), 
+    //         $documents->count(), 
+    //         $perPage, 
+    //         $currentPage
+    //     );
 
-        $sharedQuery = $documentsQuery->whereHas('followers', function($query){
-                $query->where('agent_id', auth()->user()->agent->id);
-            });
-        $shareds = $sharedQuery->orderBy('id','desc')->paginate(10);
+    //     $sharedQuery = $documentsQuery->whereHas('followers', function($query){
+    //             $query->where('agent_id', auth()->user()->agent->id);
+    //         });
+    //     $shareds = $sharedQuery->orderBy('id','desc')->paginate(10);
             
-        return view('livewire.document.des-documents', [
-            'documents' => $documentsPaginated,
-            'shareds' => $shareds,
-        ]);
-    }
+    //     return view('livewire.document.des-documents', [
+    //         'documents' => $documentsPaginated,
+    //         'shareds' => $shareds,
+    //     ]);
+    // }
+
+public function render()
+{
+    $documentsQuery = Document::query(); 
+    $documentsQuery = $this->applyFilters($documentsQuery);
+
+    // Filtrer uniquement les documents dont le statut est "Traité"
+    $documentsQuery = $documentsQuery->whereHas('statut', function($query) {
+        $query->where('titre', 'Traité');
+    });
+
+    // Exécuter la requête pour obtenir une collection
+    $documents = $documentsQuery->get(); 
+
+    // Appliquer le filtre d'autorisation
+    $documents = $documents->filter(function ($document) {
+        return Gate::allows('view', $document);
+    });
+
+    // Pagination manuelle
+    $currentPage = $this->page; 
+    $perPage = 10; 
+    $documentsPaginated = new LengthAwarePaginator(
+        $documents->forPage($currentPage, $perPage), 
+        $documents->count(), 
+        $perPage, 
+        $currentPage
+    );
+
+    // Pour shareds (documents suivis)
+    $sharedQuery = $documentsQuery->whereHas('followers', function($query){
+        $query->where('agent_id', auth()->user()->agent->id);
+    });
+
+    $shareds = $sharedQuery->orderBy('id','desc')->paginate(10);
+
+    // Pour les documents désarchivés (reference_document_id et desarchive_by non null)
+    $archivesQuery = Document::query()
+                           ->whereNotNull('reference_document_id')
+                           ->whereNotNull('desarchive_by');
+    
+    // Créer une nouvelle instance pour appliquer les filtres
+    $filteredArchivesQuery = clone $archivesQuery;
+    $filteredArchivesQuery = $this->applyFilters($filteredArchivesQuery);
+    
+    // Appliquer le filtre d'autorisation
+    $archives = $filteredArchivesQuery->orderBy('id','desc')->paginate(10);
+    $archives->getCollection()->transform(function ($document) {
+        return  $document ;
+    })->filter();
+
+    return view('livewire.document.des-documents', [
+        'documents' => $documentsPaginated,
+        'shareds' => $shareds,
+        'archives' => $archives,
+    ]);
+}
+
+
 } 

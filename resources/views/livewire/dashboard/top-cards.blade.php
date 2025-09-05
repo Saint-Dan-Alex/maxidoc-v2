@@ -9,7 +9,7 @@
                                 <h3>{{ $nb_courriers }}</h3>
                             </div>
                             <div class="d-flex justify-content-between">
-                                <h5>Nouveaux courriers</h5>
+                                <h5>Nouveaux documents</h5>
                             </div>
                            
                         </div>
@@ -55,7 +55,7 @@
                                 <h3>{{ $nb_courriers_r }}</h3>
                             </div>
                             <div class="d-flex justify-content-between">
-                                <h5>Courriers en retard</h5>
+                                <h5>Traitements en retard</h5>
                             </div>
                            
                         </div>
@@ -82,7 +82,7 @@
                                 <h3>{{ $nb_courriers_tr }}</h3>
                             </div>
                             <div class="d-flex justify-content-between">
-                                <h5>Courriers traités</h5>
+                                <h5>Documents traités</h5>
                             </div>
                             
                         </div>

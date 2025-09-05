@@ -63,21 +63,23 @@
                             <td> {{ $lieu->titre }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table justify-content-end">
-                                    {{-- <a href="#" class="btn btn-primary  p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-show-lieu-{{ $lieu->id }}"><i
-                                            class="fi fi-rr-eye"></i>
-                                        Voir</a> --}}
-                                    <a href="#" class="btn btn-success  p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-edit-lieu-{{ $lieu->id }}"><i
-                                            class="fi fi-rr-pencil"></i>
-                                        Editer</a>
-                                    <form action="{{ route('regidoc.lieux.destroy', $lieu) }}" style="flex: 0 0 auto"
-                                        method="POST">
+                                    {{-- <a href="#" class="btn btn-primary me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-show-lieu-{{ $lieu->id }}">
+                                        <i class="fi fi-rr-eye"></i>
+                                        <span class="btn-text">Voir</span>
+                                    </a> --}}
+                                    <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-edit-lieu-{{ $lieu->id }}">
+                                        <i class="fi fi-rr-pencil"></i>
+                                        <span class="btn-text">Éditer</span>
+                                    </a>
+                                    <form action="{{ route('regidoc.lieux.destroy', $lieu) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger  p-2"><i
-                                                class="fi fi-rr-trash"></i>
-                                            Supprimer</button>
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce lieu ?')">
+                                            <i class="fi fi-rr-trash"></i>
+                                            <span class="btn-text">Supprimer</span>
+                                        </button>
                                     </form>
 
                                 </div>
@@ -85,17 +87,23 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">
+                            <td colspan="2" class="text-center">
                                 <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucun departement trouvé</p>
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p>Aucun lieu trouvé</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            @if($lieus->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $lieus->links() }}
+                </div>
+            @endif
         </div>
         {!! $lieus->links() !!}
     </div>

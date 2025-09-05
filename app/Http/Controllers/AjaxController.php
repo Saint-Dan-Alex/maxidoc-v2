@@ -35,11 +35,17 @@ use Intervention\Image\Image as InterventionImage;
 
 class AjaxController extends Controller
 {
-    public function typescourriers(Request $request)
-    {
-        return $this->relation($request, 'courrier-type')->orderBy('id', 'asc');
+    // public function typescourriers(Request $request)
+    // {
+    //     return $this->relation($request, 'courrier-type')->orderBy('id', 'asc');
     
-    }
+    // }
+    public function typescourriers(Request $request)
+{
+    // Appelle la méthode relation qui retourne directement une JsonResponse
+    return $this->relation($request, 'courrier-type');
+}
+
 
     public function categorycourriers(Request $request)
     {
@@ -76,15 +82,53 @@ class AjaxController extends Controller
         return $this->relation($request, 'courrier-expediteur');
     }
 
+    public function contactsExpediteur(Request $request)
+    {
+        $expediteurId = $request->input('expediteur_id');
+        
+        $contacts = CourrierExpediteur::where('id', $expediteurId)
+            ->whereNotNull('contact')
+            ->pluck('contact')
+            ->unique()
+            ->map(function($contact) {
+                return ['id' => $contact, 'text' => $contact];
+            })
+            ->values();
+            
+        return response()->json([
+            'results' => $contacts
+        ]);
+    }
+
     public function expediteurCourriersSave(Request $request)
     {
         $expediteur = new CourrierExpediteur();
         $expediteur->nom = $request->nom;
+        $expediteur->contact = $request->contact;
         $expediteur->category_id = $request->relative_id;
         $expediteur->save();
         return response()->json([
             'results' => $expediteur,
         ]);
+    }
+    
+    public function contactExpediteurSave(Request $request)
+    {
+        $expediteur = CourrierExpediteur::find($request->expediteur_id);
+        if ($expediteur) {
+            $expediteur->contact = $request->contact;
+            $expediteur->save();
+            
+            return response()->json([
+                'success' => true,
+                'contact' => $request->contact
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Expéditeur non trouvé'
+        ], 404);
     }
 
     public function destinatairecourriers(Request $request)
@@ -311,7 +355,7 @@ class AjaxController extends Controller
             "key" => "Traitement",
             "historiquecable_id" => $request->courrier_id,
             "historiquecable_type" => Courrier::class,
-            "description" => "A validé le courrier",
+            "description" => Auth::user()->name.' a validé ce document.',
             "user_id" => Auth::user()->id,
         ]);
 
@@ -404,7 +448,7 @@ class AjaxController extends Controller
             "key" => "Traitement",
             "historiquecable_id" => $request->courrier_id,
             "historiquecable_type" => Courrier::class,
-            "description" => "A rejeté le courrier",
+            "description" => Auth::user()->name.' a rejeté ce document.',
             "user_id" => Auth::user()->id,
         ]);
 
@@ -670,6 +714,11 @@ class AjaxController extends Controller
         // No result found, return empty array
         // return response()->json([], 404);
     }
+
+    public function priorites(Request $request)
+{
+    return $this->relation($request, 'priorite');
+}
 
     public function generateFileName($file, $path)
     {

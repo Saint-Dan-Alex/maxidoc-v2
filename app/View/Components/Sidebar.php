@@ -29,10 +29,22 @@ class Sidebar extends Component
     {
         $this->menuItems = collect();
 
-        $this->menuItems = MenuItem::where('parent_id', null)->orderBy('order')->get()
+        // Récupérer tous les éléments de menu principaux
+        $this->menuItems = MenuItem::where('parent_id', null)
+            ->orderBy('order')
+            ->get()
             ->filter(function ($item) {
-                return Auth::user()->can($item->policy);
-                // Gate::allows($item->policy);
+                // Pour l'élément Paramètres (ID 40), on vérifie s'il a des enfants accessibles
+                if ($item->id == 40) {
+                    $hasAccessibleChildren = MenuItem::where('parent_id', 40)
+                        ->get()
+                        ->filter(fn($child) => Gate::allows($child->policy))
+                        ->isNotEmpty();
+                    
+                    return $hasAccessibleChildren && Gate::allows($item->policy);
+                }
+                
+                return Gate::allows($item->policy);
             });
 
         return view('components.sidebar');

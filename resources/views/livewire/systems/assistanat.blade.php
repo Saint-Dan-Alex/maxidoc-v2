@@ -73,40 +73,42 @@
                                 {{ $assistant->responsable->prenom ?? '' }}</td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
-                                    {{-- <a href="#" class="btn btn-primary " data-bs-toggle="modal"
-                                        data-bs-target="#modal-show-assistant-{{ $assistant->id }}"><i
-                                            class="fi fi-rr-eye"></i>
-                                        Voir</a> --}}
-                                    <a href="#" class="btn btn-success " data-bs-toggle="modal"
-                                        data-bs-target="#modal-edit-assistant-{{ $assistant->id }}"><i
-                                            class="fi fi-rr-pencil"></i>
-                                        Editer</a>
-                                    <form action="{{ route('regidoc.assistants.destroy', $assistant) }}" method="POST">
+                                    <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-edit-assistant-{{ $assistant->id }}">
+                                        <i class="fi fi-rr-pencil"></i>
+                                        <span class="btn-text">Éditer</span>
+                                    </a>
+                                    <form action="{{ route('regidoc.assistants.destroy', $assistant) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger "><i class="fi fi-rr-trash"></i>
-                                            Supprimer</button>
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet assistant ?')">
+                                            <i class="fi fi-rr-trash"></i>
+                                            <span class="btn-text">Supprimer</span>
+                                        </button>
                                     </form>
-
                                 </div>
                             </td>
                         </tr>
                     @empty
-
                         <tr>
-                            <td colspan="5">
-                                <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucun departement trouvé</p>
+                            <td colspan="4" class="text-center">
+                                <div class="py-4">
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p class="mt-2 mb-0">Aucun assistant trouvé</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            @if($assistants->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $assistants->links() }}
+                </div>
+            @endif
         </div>
-        {!! $assistants->links() !!}
     </div>
 
     <div class="modal fade" id="modal-new-assistant" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -140,15 +142,13 @@
                             </div>
                             <div class="col-lg-12">
                                 <label for="">Responsable</label>
-                                <select name="responsable_id" class="form-control select2" required
-                                    data-placeholder="Selectionner"
-                                    data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
-                                    data-get-items-field="nom" data-method="get" data-label="prenom,nom,post_nom"
-                                    data-related-model="Agent">
-                                    {{-- <option value="">Selectionnez le responsable</option>
-                                    @foreach ($users as $user)
-                                        <option value="{{ $user->id }}"> {{ $user->name }} </option>
-                                    @endforeach --}}
+                                <select name="responsable_id" class="form-control" required>
+                                    <option value="">Sélectionner un responsable</option>
+                                    @foreach($agents as $agent)
+                                        <option value="{{ $agent->id }}">
+                                            {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom ?? '' }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12">
@@ -157,10 +157,10 @@
                                         <label for="dg">Assistant DG</label>
                                         <input type="radio" name="for" id="dg" value="1">
                                     </div>
-                                    <div>
+                                    {{-- <div>
                                         <label for="dga">Assistant DGA</label>
                                         <input type="radio" name="for" id="dga" value="2">
-                                    </div>
+                                    </div> --}}
                                     <div>
                                         <label for="direction">Assistant Direction</label>
                                         <input type="radio" name="for" id="direction" value="3">
@@ -204,49 +204,42 @@
                                     <select name="direction_id" class="form-control select2Bis" required
                                         data-placeholder="Selectionnez la direction">
                                         <option value=""></option>
-                                        @foreach ($directions as $direction)
-                                            <option value="{{ $direction->id }}" @selected($assistant->direction_id == $direction->id)>
-                                                {{ $direction->titre }} </option>
+                                        @foreach ($allDirections as $direction)
+                                            <option value="{{ $direction->id }}" {{ $assistant->direction_id == $direction->id ? 'selected' : '' }}>
+                                                {{ $direction->titre }} 
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="col-lg-12">
                                     <label for="">Responsable</label>
-                                    <select name="responsable_id" class="form-control select2" required
-                                        data-placeholder="Selectionner"
-                                        data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
-                                        data-get-items-field="nom" data-method="get" data-label="prenom,nom,post_nom"
-                                        data-related-model="Agent">
-                                        <option value="{{ $assistant->responsable_id }}">
-                                            {{ $assistant->responsable?->prenom . ' ' . $assistant->responsable?->nom . ' ' . $assistant->responsable?->post_nom }}
-                                        </option>
-                                        {{-- @foreach ($users as $user)
-                                            <option value="{{ $user->id }}" @selected($assistant->responsable_id == $user->id)>
-                                                {{ $user->name }} </option>
-                                        @endforeach --}}
+                                    <select name="responsable_id" class="form-control" required>
+                                        <option value="">Sélectionner un responsable</option>
+                                        @foreach($agents as $agent)
+                                            <option value="{{ $agent->id }}" {{ $assistant->responsable_id == $agent->id ? 'selected' : '' }}>
+                                                {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom ?? '' }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-12">
                                     <div class="d-flex gap-3">
                                         <div>
-                                            <label for="dg">Assistant DG</label>
-                                            <input type="radio" name="for" id="dg" value="1"
-                                                @checked($assistant->for_dg)>
+                                            <label for="dg-{{ $assistant->id }}">Assistant DG</label>
+                                            <input type="radio" name="for" id="dg-{{ $assistant->id }}" value="1" {{ $assistant->for_dg ? 'checked' : '' }}>
                                         </div>
+                                        {{-- <div>
+                                            <label for="dga-{{ $assistant->id }}">Assistant DGA</label>
+                                            <input type="radio" name="for" id="dga-{{ $assistant->id }}" value="2" {{ $assistant->for_dga ? 'checked' : '' }}>
+                                        </div> --}}
                                         <div>
-                                            <label for="dga">Assistant DGA</label>
-                                            <input type="radio" name="for" id="dga" value="2"
-                                                @checked($assistant->for_dga)>
-                                        </div>
-                                        <div>
-                                            <label for="direction">Assistant Direction</label>
-                                            <input type="radio" name="for" id="direction" value="3"
-                                                @checked($assistant->for_dg != 1 && $assistant->for_dga != 1)>
+                                            <label for="direction-{{ $assistant->id }}">Assistant Direction</label>
+                                            <input type="radio" name="for" id="direction-{{ $assistant->id }}" value="3" {{ !$assistant->for_dg && !$assistant->for_dga ? 'checked' : '' }}>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-lg-12 text-end">
-                                    <button class="btn btn-add">Modifier</button>
+                                    <button type="submit" class="btn btn-add">Enregistrer</button>
                                 </div>
                             </div>
                         </form>

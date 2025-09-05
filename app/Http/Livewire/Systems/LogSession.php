@@ -11,49 +11,57 @@ use Yadahan\AuthenticationLog\AuthenticationLog;
 class LogSession extends Component
 {
     use WithPagination;
-    public $logs;
-    public $filter;
-    public $filterText;
-    public $search;
+    public $filter = 0;
+    public $filterText = 'Filtre';
+    public $search = '';
+    public $perPage = 10;
 
     protected $paginationTheme = 'bootstrap-5';
     protected $queryString = [
         'search' => ['except' => ''],
+        'filter' => ['except' => 0],
         'page' => ['except' => 1],
     ];
 
-    public function mount()
+    public function updatingSearch()
     {
-        $this->logs = AuthenticationLog::all();
-        $this->filterText = "Filtre";
+        $this->resetPage();
+    }
+
+    public function updatingFilter()
+    {
+        $this->resetPage();
     }
 
     public function render()
     {
-
-        if ($this->search) {
-            $this->logs = $this->logs->filter(function ($log) {
-                return Str::contains(Str::lower($log->authenticatable), Str::lower($this->search));
+        $query = AuthenticationLog::with('authenticatable')
+            ->when($this->search, function($query) {
+                $search = strtolower($this->search);
+                $query->whereHas('authenticatable', function($q) use ($search) {
+                    $q->whereRaw('LOWER(name) LIKE ?', ['%' . $search . '%']);
+                });
             });
-        } else {
-            $this->logs = AuthenticationLog::all();
-        }
 
         switch ($this->filter) {
             case 1:
                 $this->filterText = 'Connexion';
-                $this->logs = $this->logs->sortByDesc('login_at');
+                $query->orderByDesc('login_at');
                 break;
             case 2:
-                $this->filterText = 'Deconnexion';
-                $this->logs = $this->logs->sortBy('logout_at');
+                $this->filterText = 'Déconnexion';
+                $query->orderBy('logout_at', 'desc');
                 break;
             default:
-                # code...
+                $query->orderByDesc('login_at');
                 break;
         }
 
-        return view('livewire.systems.log-session');
+        $logs = $query->paginate($this->perPage);
+
+        return view('livewire.systems.log-session', [
+            'logs' => $logs
+        ]);
 
     }
 

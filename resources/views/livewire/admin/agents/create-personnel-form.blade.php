@@ -29,6 +29,9 @@
                     </label>
                 </div>
             </div>
+            <div class="col-lg-6">
+                <input type="text" class="form-control" name="prenom" placeholder="Prénom" wire:model='prenom'>
+            </div>
             <div class="col-lg-6 mt-4">
                 <input type="text" class="form-control" name="nom" placeholder="Nom" wire:model='nom' required>
             </div>
@@ -36,13 +39,11 @@
                 <input type="text" class="form-control" name="post_nom" wire:model='post_nom' placeholder="Post-nom"
                     required>
             </div>
-            <div class="col-lg-6">
-                <input type="text" class="form-control" name="prenom" placeholder="Prénom" wire:model='prenom'>
-            </div>
+           
             <div class="col-lg-6">
                 <select class="form-select form-control" name="sexe" wire:model='sexe'
                     aria-label="Default select example" required>
-                    <option disabled selected value="">Sexe</option>
+                    <option  selected value="">Sexe</option>
                     <option value="M">Masculin</option>
                     <option value="F">Féminin</option>
                 </select>
@@ -199,183 +200,84 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-lg-4">
-                <label for="">Division</label>
-                <select class="form-select form-control" name="division_id" wire:model="division_id"
-                    aria-label="Default select example" @disabled($isReadyOnly['division'])>
-                    <option selected value="">Selectionnez</option>
-                    @foreach ($divisions as $division)
-                        <option value="{{ $division->id }}">{{ $division->libelle }}</option>
-                    @endforeach
-                </select>
-            </div>
+
             <div class="col-lg-4">
                 <label for="">Service</label>
-                <select class="form-select form-control" name="sevice_id"
-                    wire:model='service_id'aria-label="Default select example" @disabled($isReadyOnly['service'])>
+                <select class="form-select form-control" name="service_id"
+                    wire:model='service_id' aria-label="Default select example" @disabled($isReadyOnly['service'])>
                     <option selected value="">Selectionnez</option>
                     @foreach ($services as $service)
                         <option value="{{ $service->id }}">{{ $service->titre }}</option>
                     @endforeach
                 </select>
+                @error('service_id') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
-            <div class="col-lg-4">
-                <label for="">Section</label>
-                <select class="form-select form-control" name="section_id" wire:model="section_id"
-                    aria-label="Default select example" @disabled($isReadyOnly['section'])>
-                    <option selected value="">Selectionnez</option>
-                    @foreach ($sections as $section)
-                        <option value="{{ $section->id }}">{{ $section->titre }}</option>
-                    @endforeach
-                </select>
-            </div>
+
             <div class="col-lg-4">
                 <label for="">Grade</label>
-                <select class="form-select form-control" name="grade_id" aria-label="Default select example">
+                <select class="form-select form-control" name="grade_id" wire:model='grade_id' aria-label="Default select example" required>
                     <option selected value="">Selectionnez</option>
                     @foreach ($grades as $grade)
                         <option value="{{ $grade->id }}">{{ $grade->titre }}</option>
                     @endforeach
                 </select>
+                @error('grade_id') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
             <div class="col-lg-4">
-                <label for="">Type Fonction</label>
-                <select class="form-select form-control" name="fonction_type" caria-label="Default select example"
-                    wire:model='fonction_type' @disabled($isReadyOnly['fonction_type'])>
-                    <option selected value="">Selectionnez</option>
-                    <option selected value="6">Existante</option>
-                    <option selected value="1">Directeur</option>
-                    <option selected value="2">Chef</option>
-                    <option selected value="3">Secretaire</option>
-                    <option selected value="4">Assistant</option>
-                    <option selected value="5">Autre</option>
+                <label for="">Fonction</label>
+                <select class="form-select form-control" name="fonction_type" aria-label="Default select example"
+                    wire:model='fonction_type' @disabled($isReadyOnly['fonction_type']) required>
+                    <option value="">Selectionnez</option>
+                    @foreach($fonctions as $fonction)
+                        <option value="{{ $fonction->id }}">{{ $fonction->titre }}</option>
+                    @endforeach
                 </select>
+                @error('fonction_type') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
-            @if ($fonction_type == '1')
-                <div class="col-lg-4">
-                    <label for="">Directions</label>
-                    <select class="form-select form-control" name="fonction" caria-label="Default select example"
-                        @disabled($isReadyOnly['fonction'])>
-                        <option selected value="">Selectionnez</option>
-                        @foreach ($directions as $direction)
-                            <option value="{{ $direction->titre }}">{{ $direction->titre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            @elseif ($fonction_type == '3')
-                <div class="col-lg-4">
-                    <label for="">Secretaire de</label>
-                    <select class="form-select form-control" name="sec_type" caria-label="Default select example"
-                        wire:model='sec_type' @disabled($isReadyOnly['fonction_type'])>
-                        <option selected value="">Selectionnez</option>
-                        <option selected value="1">Direction</option>
-                        <option selected value="2">Division</option>
-                    </select>
-                </div>
-                @if ($sd)
-                    <div class="col-lg-4">
-                        <label for="">Directions</label>
-                        <select class="form-select form-control" name="fonction" caria-label="Default select example"
-                            @disabled($isReadyOnly['fonction_type'])>
-                            <option selected value="">Selectionnez</option>
-                            @foreach ($directions as $direction)
-                                <option value="{{ $direction->titre }}">{{ $direction->titre }}</option>
-                            @endforeach
-                        </select>
+            
+            <div class="col-lg-4">
+                <label for="">Rôle</label>
+                <select class="form-select form-control" name="role_id" aria-label="Sélectionnez un rôle"
+                    wire:model='role_id' required>
+                    <option value="">Sélectionnez un rôle</option>
+                    @foreach($roles as $role)
+                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                    @endforeach
+                </select>
+                @error('role_id') <span class="text-danger">{{ $message }}</span> @enderror
+            </div>
+            @if ($fonction_type)
+                @php
+                    $selectedFonction = $fonctions->firstWhere('id', $fonction_type);
+                @endphp
+                @if($selectedFonction)
+                    <div class="col-lg-8 mt-2">
+                        <div class="alert alert-info">
+                            <strong>Description :</strong> {{ $selectedFonction->description ?? 'Aucune description disponible' }}
+                        </div>
                     </div>
                 @endif
-                @if ($sdv)
-                    <div class="col-lg-4">
-                        <label for="">Divisions</label>
-                        <select class="form-select form-control" name="fonction" caria-label="Default select example"
-                            @disabled($isReadyOnly['fonction_type'])>
-                            <option selected value="">Selectionnez</option>
-                            @foreach ($divisions as $division)
-                                <option value="{{ $division->libelle }}">{{ $division->libelle }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
-            @elseif ($fonction_type == '2')
-                <div class="col-lg-4">
-                    <label for="">Chef de</label>
-                    <select class="form-select form-control" name="chef_type" caria-label="Default select example"
-                        wire:model='chef_type' @disabled($isReadyOnly['fonction_type'])>
-                        <option selected value="">Selectionnez</option>
-                        <option selected value="1">Division</option>
-                        <option selected value="2">Service</option>
-                        <option selected value="3">Section</option>
-                    </select>
-                </div>
-                @if ($cd)
-                    <div class="col-lg-4">
-                        <label for="">Divisions</label>
-                        <select class="form-select form-control" name="fonction" caria-label="Default select example"
-                            @disabled($isReadyOnly['fonction'])>
-                            <option selected value="">Selectionnez</option>
-                            @foreach ($divisions as $division)
-                                <option value="{{ $division->libelle }}">{{ $division->libelle }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
-                @if ($csv)
-                    <div class="col-lg-4">
-                        <label for="">Services</label>
-                        <select class="form-select form-control" name="fonction" caria-label="Default select example"
-                            @disabled($isReadyOnly['fonction'])>
-                            <option selected value="">Selectionnez</option>
-                            @foreach ($services as $service)
-                                <option value="{{ $service->id }}">{{ $service->titre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
-                @if ($csc)
-                    <div class="col-lg-4">
-                        <label for="">Section</label>
-                        <select class="form-select form-control" name="fonction" caria-label="Default select example"
-                            @disabled($isReadyOnly['fonction'])>
-                            <option selected value="">Selectionnez</option>
-                            @foreach ($sections as $section)
-                                <option value="{{ $section->id }}">{{ $section->titre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
-            @elseif ($fonction_type == '4')
-                <div class="col-lg-4">
-                    <label for="">Fonction</label>
-                    <select class="form-select form-control" name="fonction" caria-label="Default select example"
-                        @disabled($isReadyOnly['fonction'])>
-                        <option selected value="">Selectionnez</option>
-                        @foreach ($fonctions as $fonction)
-                            <option value="{{ $fonction->titre }}">{{ $fonction->titre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            @elseif ($fonction_type == '5')
-                <div class="col-lg-4">
-                    <label for="">Fonction</label>
-                    <input type="text" class="form-control" name="fonction" wire:model='fonction' />
-                </div>
-            @elseif ($fonction_type == '6')
-                <div class="col-lg-4">
-                    <label for="">Fonction</label>
-                    <select class="form-select form-control" name="fonction_id" caria-label="Default select example">
-                        <option selected value="">Selectionnez</option>
-                        @foreach ($fonctions as $fonction)
-                            <option value="{{ $fonction->id }}">{{ $fonction->titre }}</option>
-                        @endforeach
-                    </select>
-                </div>
             @endif
+            
+            <!-- Champ caché pour stocker l'ID de la fonction sélectionnée -->
+            @if($fonction_type)
+                <input type="hidden" name="fonction_id" value="{{ $fonction_type }}">
+            @endif
+            
             <div class="mb-3 col-lg-12 d-flex justify-content-end">
                 <div class="col-lg-6 text-end">
                     <a href="/ressources-humaines/personnels" class="btn btn-cansel-create h-100 me-2">
                         Annuler
                     </a>
-                    <button type="submit" class="btn btn-add">Créer</button>
+                    <button type="submit" class="btn btn-add" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="submit">
+                            Créer
+                        </span>
+                        <span wire:loading wire:target="submit">
+                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                            Création en cours...
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>

@@ -6,15 +6,18 @@ use CyrildeWit\EloquentViewable\Contracts\Viewable;
 use CyrildeWit\EloquentViewable\InteractsWithViews;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Scout\Searchable;
 use Venturecraft\Revisionable\RevisionableTrait;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\PieceJointe;
 use CyrildeWit\EloquentViewable\Support\Period;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use App\Models\Personel;
+use App\Models\Historique;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Courrier extends Model implements Viewable
 {
@@ -28,6 +31,21 @@ class Courrier extends Model implements Viewable
     protected $historyLimit = 500; //Maintain a maximum of 500 changes at any point of time, while cleaning up old revisions.
     protected $revisionCreationsEnabled = true;
 
+    /**
+     * Get all of the historiques for the Courrier
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
+    public function historiques()
+    {
+        return $this->morphMany(Historique::class, 'historiquecable');
+    }
+
+    /**
+     * Get all of the piecesJointes for the Courrier
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     /**
      * The attributes that are mass assignable.
      *
@@ -173,6 +191,12 @@ class Courrier extends Model implements Viewable
     {
         return $this->belongsToMany(Agent::class, CourrierFollower::class);
     }
+
+    /**
+     * The destinateurs that belong to the Courrier
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
 
     /**
      * The destinateurs that belong to the Courrier
@@ -350,15 +374,47 @@ class Courrier extends Model implements Viewable
     }
 
     /**
+     * Get all of the pieces jointes for the Courrier
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function piecesJointes()
+    {
+        return $this->hasMany(PieceJointe::class, 'courrier_id');
+    }
+
+    /**
+     * Get the documents associated with the courrier.
+     */
+    public function documents()
+    {
+        return $this->hasMany(Document::class, 'courrier_id');
+    }
+
+    /**
      * Get the indexable data array for the model.
      *
      * @return array
      */
+    // public function toSearchableArray()
+    // {
+    //     $array = $this->toArray();
+    //     return $array;
+    // }
+
     public function toSearchableArray()
-    {
-        $array = $this->toArray();
-        return $array;
-    }
+{
+    return [
+        'id' => $this->id,
+        'objet' => $this->objet,
+        'reference_interne' => $this->reference_interne,
+        'title' => $this->title,
+        'reference_courrier' => $this->reference_courrier,
+        'date_arrive' => optional($this->date_arrive)->toDateString(),
+        'libelle' => optional($this->document)->libelle, // ⚠️ si tu veux inclure un champ de relation, vérifie qu’il est bien string
+    ];
+}
+
 
     /**
      * Get the statut that owns the Courrier
@@ -430,5 +486,31 @@ class Courrier extends Model implements Viewable
     {
         return $this->views->where('user_id', Auth::id())->count() == 0;
     }
+
+    // Dans app/Models/Courrier.php
+public function getStatusBadgeAttribute()
+{
+    $lastHistory = $this->history()
+        ->whereIn('description', [
+            'Le courrier a été marqué comme validé',
+            'Le courrier a été marqué comme rejeté'
+        ])
+        ->latest()
+        ->first();
+    
+    if (!$lastHistory) {
+        return '';
+    }
+    
+    if (str_contains($lastHistory->description, 'validé')) {
+        return '<span class="badge bg-success ms-2">Validé</span>';
+    }
+    
+    if (str_contains($lastHistory->description, 'rejeté')) {
+        return '<span class="badge bg-danger ms-2">Rejeté</span>';
+    }
+    
+    return '';
+}
    
 }

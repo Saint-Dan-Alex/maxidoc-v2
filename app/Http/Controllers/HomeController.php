@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agent;
+use App\Models\Courrier;
 use App\Models\Tache;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class HomeController extends Controller
         // $permission = Permission::create(['name' => 'Voir les Fonctions', 'guard_name' => 'web', 'module_id' => 7]);
         // $role->givePermissionTo($permission);
         // User::find(1)->assignRole($role);
+        $courriers = Courrier::with('destinateurs')->get();
 
         $agents = Agent::select('id')->get();
         $taches = Tache::all(); //Tache::orderby('id', 'DESC')->where('user_id', Auth::user()->id)->orwhere('assigned_id', Auth::user()->id)->limit(5)->get();
@@ -33,7 +35,7 @@ class HomeController extends Controller
         return view('regidoc.pages.home.index')->with([
             'agents' => $agents,
             // 'newAgents' => $newAgents,
-            // 'courriers' => $courriers,
+            'courriers' => $courriers,
             // 'departements' => $departements,
             // 'personnels' => $personels,
             // 'connected' => $conneted,

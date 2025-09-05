@@ -1101,7 +1101,7 @@
                                 }
                             @endphp
                             <span style="font-size: 14px; color: var(--colorParagraph)">Nom</span>
-                            <input type="text" class="form-control ms-1" name="user-name" id="user-name"
+                            <input type="text" class="form-control ms-1" name="user-name" id="user-name-paraphe"
                                 value="{{ $name }}">
                         </div>
                         <div class="d-flex align-items-center mx-2">
@@ -1322,7 +1322,7 @@
                     <div class="my-3 d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
                             <span style="font-size: 14px; color: var(--colorParagraph)">Nom</span>
-                            <input type="text" class="form-control ms-1" name="user-name" id="user-name"
+                            <input type="text" class="form-control ms-1" name="user-name" id="user-name-signature"
                                 value="{{ Auth::user()->agent->prenom . ' ' . Auth::user()->agent->nom }}">
                         </div>
                         <div class="d-flex align-items-center mx-2">

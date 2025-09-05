@@ -69,32 +69,39 @@
                             <td> {{ $section->agents->count() }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
-                                    {{-- <a href="#" class="btn btn-primary  p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-show-departement-{{ $departement->id }}"><i
-                                            class="fi fi-rr-eye"></i>
-                                        Voir</a> --}}
-                                    <a href="#" class="btn btn-success  p-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-edit-section-{{ $section->id }}"><i
-                                            class="fi fi-rr-pencil"></i>
-                                        Editer</a>
+                                    {{-- <a href="#" class="btn btn-primary me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-show-departement-{{ $departement->id }}">
+                                        <i class="fi fi-rr-eye"></i>
+                                        <span class="btn-text">Voir</span>
+                                    </a> --}}
+                                    <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-edit-section-{{ $section->id }}">
+                                        <i class="fi fi-rr-pencil"></i>
+                                        <span class="btn-text">Éditer</span>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">
+                            <td colspan="5" class="text-center">
                                 <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucun departement trouvé</p>
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p>Aucune section trouvée</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            @if($sections->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $sections->links() }}
+                </div>
+            @endif
         </div>
-        {!! $sections->links() !!}
     </div>
 
     <div class="modal fade" id="modal-new-section" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

@@ -12,6 +12,8 @@ use App\Events\CourrierCreated;
 use App\Listeners\SendCourrierCreatedNotification;
 use App\Events\TacheCreated;
 use App\Listeners\SendTacheCreatedNotification;
+use App\Events\TacheConsulted;
+use App\Listeners\SendTacheConsultedNotification;
 use App\Events\CourrierPartage;
 use App\Listeners\SendCourrierPartageNotification;
 
@@ -41,6 +43,10 @@ class EventServiceProvider extends ServiceProvider
 
         CourrierPartage::class => [
             SendCourrierPartageNotification::class
+        ],
+        
+        TacheConsulted::class => [
+            SendTacheConsultedNotification::class
         ],
     ];
 

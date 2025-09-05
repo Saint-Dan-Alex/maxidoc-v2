@@ -34,7 +34,7 @@
                     </div>
                 </li>
 
-                <li class="item mb-2   d-flex justify-content-center align-items-center ">
+                <li class="item mb-2  d-flex justify-content-center align-items-center ">
                     <button class="sidebar-sm-btn-search">
                         <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24">
                             <path fill="currentColor"
@@ -44,30 +44,42 @@
                 </li>
                 @foreach ($menuItems as $item)
                     <li class="item">
-                        <a href="{{ $item->link() }}" class="{{ $item->isActive() ? 'active' : '' }} panelsession"
-                            @if ($item->hasChildren()) data-bs-toggle="collapse" data-bs-target="#{{ Str::slug($item->title) }}" aria-expanded="{{ $item->isActive() ? 'true' : 'false' }}"
-                                aria-controls="{{ Str::slug($item->title) }}" @endif>
-                            <span>
-                                <i class="{{ $item->icon_regular }}"></i>
-                                <i class="{{ $item->icon_solid }}"></i>
-                            </span>
-                            <span class="title">
-                                {{ $item->title }}
-                            </span>
-                            @if ($item->hasChildren())
-                                <i class="fi fi-rr-angle-down arrow"></i>
-                            @endif
-                            <div class="tooltip-indicator">
-                                {{ $item->title }}
-                            </div>
-                            {{-- @can('Traiter un courrier')
-                                @if ($item->id == 53)
-                                    <div class="notif">
-                                        9+
-                                    </div>
+                        @if ($item->id == 40) {{-- Paramètres --}}
+                            <a href="{{ route('regidoc.settings') }}"
+                                class="{{ request()->routeIs('regidoc.settings*') ? 'active' : '' }} panelsession">
+                                <span>
+                                    <i class="{{ $item->icon_regular }}"></i>
+                                    <i class="{{ $item->icon_solid }}"></i>
+                                </span>
+                                <span class="title">
+                                    {{ $item->title }}
+                                </span>
+                                <div class="tooltip-indicator">
+                                    {{ $item->title }}
+                                </div>
+                            </a>
+                        @else
+                            <a href="{{ $item->link() }}" class="{{ $item->isActive() ? 'active' : '' }} panelsession"
+                                @if ($item->hasChildren() && $item->id != 40)
+                                    data-bs-toggle="collapse" data-bs-target="#{{ Str::slug($item->title) }}"
+                                    aria-expanded="{{ $item->isActive() ? 'true' : 'false' }}"
+                                    aria-controls="{{ Str::slug($item->title) }}"
+                                @endif>
+                                <span>
+                                    <i class="{{ $item->icon_regular }}"></i>
+                                    <i class="{{ $item->icon_solid }}"></i>
+                                </span>
+                                <span class="title">
+                                    {{ $item->title }}
+                                </span>
+                                @if ($item->hasChildren() && $item->id != 40)
+                                    <i class="fi fi-rr-angle-down arrow"></i>
                                 @endif
-                            @endcan --}}
-                        </a>
+                                <div class="tooltip-indicator">
+                                    {{ $item->title }}
+                                </div>
+                            </a>
+                        @endif
 
                         @if ($item->hasChildren())
                             <div class="collapse {{ $item->isActive() ? 'show' : '' }}"
@@ -108,40 +120,31 @@
             </ul>
         </div>
     </div>
-    {{-- @can('Créer un document') --}}
-
-    {{-- <a href="#" class="link-action" data-bs-toggle="modal" data-bs-target="#modalNewDoc">
-            <div class="card card-sm pointer">
-                <div class="text-center">
-                    <i class="fi fi-rr-plus"></i>
-                    <span>
-                        Créer un document
-                    </span>
-                </div>
-            </div>
-        </a> --}}
-    {{-- @if (Auth::user()->agent->direction->services->first()->id != 3)
-            @can('Créer un document')
-                <a href="{{ route('document.creation') }}" class="link-action">
-                    <div class="card card-sm pointer" >
-                        <div class="text-center">
-                            <i class="fi fi-rr-plus"></i>
-                            <span>
-                                Créer un document
-                            </span>
-                        </div>
-                    </div> 
-                </a> 
-            @endcan
-        @else --}}
-    {{-- @can('Créer un document') --}}
-    @if (!Auth::user()->agent->direction->services->pluck('id')->contains(3) || !Auth::user()->agent->IsDG())
+    @php
+        $user = Auth::user();
+        $showButton = true;
+        
+        // Vérifier si l'utilisateur est le super admin (ID = 1)
+        if ($user->id === 1) {
+            $showButton = true;
+        } 
+        // Vérifier si l'utilisateur a un agent avec une direction
+        elseif ($user->agent && $user->agent->direction) {
+            $showButton = !$user->agent->direction->services->pluck('id')->contains(3) || !$user->agent->IsDG();
+        }
+        // Pour les autres cas (pas d'agent ou agent sans direction)
+        else {
+            $showButton = false;
+        }
+    @endphp
+    
+    @if ($showButton)
         <a href="{{ route('regidoc.courriers.create') }}" class="link-action">
             <div class="card card-sm pointer">
                 <div class="text-center">
                     <i class="fi fi-rr-"></i>
                     <span>
-                        Numériser un courrier
+                        Numériser un document
                     </span>
                 </div>
             </div>
@@ -156,16 +159,6 @@
         </a>
     @else
         @can('Créer un document')
-            <a href="{{ route('document.creation') }}" class="link-action">
-                <div class="card card-sm pointer">
-                    <div class="text-center d-flex justify-content-center align-items-center g-2 gap-2">
-                        <i class="fi fi-rr-plus icon-plus" style="font-size: 10px;"></i>
-                        <span>
-                            Créer un document
-                        </span>
-                    </div>
-                </div>
-            </a>
         @endcan
     @endif
     <div class="tooltip-lg">

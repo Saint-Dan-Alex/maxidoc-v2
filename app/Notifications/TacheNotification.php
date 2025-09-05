@@ -15,16 +15,18 @@ class TacheNotification extends Notification
 
     public $tache;
     public $message;
+    public $agent;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(Tache $tache, $message)
+    public function __construct(Tache $tache, $message, $agent = null)
     {
         $this->tache = $tache;
         $this->message = $message;
+        $this->agent = $agent ?? $tache->user->agent;
     }
 
     /**
@@ -55,7 +57,7 @@ class TacheNotification extends Notification
     public function toWebPush($notifiable, $notification)
     {
         return (new WebPushMessage)
-            ->title($this->tache->user->agent->prenom.' '.$this->tache->user->agent->nom)
+            ->title($this->agent->prenom.' '.$this->agent->nom)
             // ->icon('/notification-icon.png')
             ->body($this->message)
             ->action('View App', 'notification_action');
@@ -72,8 +74,8 @@ class TacheNotification extends Notification
         return [
             'data' => [
                 'agent' => [
-                    'name' => $this->tache->user->agent->prenom.' '.$this->tache->user->agent->nom,
-                    'image' => $this->tache->user->agent->image
+                    'name' => $this->agent->prenom.' '.$this->agent->nom,
+                    'image' => $this->agent->image ?? null
                 ],
                 'message' => $this->message,
                 'object' => '',

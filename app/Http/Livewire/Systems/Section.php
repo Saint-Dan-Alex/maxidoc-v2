@@ -6,7 +6,6 @@ use App\Models\Section as Model;
 use App\Models\Service;
 use App\Models\Statut;
 use Livewire\Component;
-use Illuminate\Support\Str;
 use Livewire\WithPagination;
 
 class Section extends Component
@@ -19,6 +18,7 @@ class Section extends Component
     public $filterText;
     public $search;
 
+    protected $listeners = ['reloadSection' => '$refresh'];
     protected $paginationTheme = 'bootstrap-5';
     protected $queryString = [
         'search' => ['except' => ''],
@@ -27,90 +27,76 @@ class Section extends Component
 
     public function mount()
     {
-        // $this->sections = Model::all();
-        $this->services = Service::all();
-        // $this->statuts = Statut::select('libelle', 'id')->get();
+        $this->services = Service::with('division')->orderBy('titre', 'asc')->get();
+        $this->statuts = Statut::select('libelle', 'id')->orderBy('libelle', 'asc')->get();
         $this->filterText = "Filtre";
     }
 
     public function render()
     {
+        $query = Model::with([
+                'division',
+                'service',
+                'responsable',
+                'agents',
+                'statut'
+            ])
+            ->select('id', 'division_id', 'service_id', 'responsable_id', 'statut_id', 'titre', 'description', 'created_at', 'updated_at');
 
-        $sections = Model::with('division','service','responsable','agents')->select('id','division_id','service_id','responsable_id','titre','description');
-
+        // Gestion de la recherche
         if ($this->search) {
-            $sections = $sections->where('titre', 'LIKE', '%'.$this->search.'%');
+            $query->where(function($q) {
+                $q->where('titre', 'LIKE', '%' . $this->search . '%')
+                  ->orWhere('description', 'LIKE', '%' . $this->search . '%')
+                  ->orWhereHas('service', function($q) {
+                      $q->where('libelle', 'LIKE', '%' . $this->search . '%');
+                  })
+                  ->orWhereHas('division', function($q) {
+                      $q->where('libelle', 'LIKE', '%' . $this->search . '%');
+                  });
+            });
         }
 
-        // if ($this->search) {
-        //     $this->sections = $this->sections->filter(function ($section) {
-        //         return Str::contains(Str::lower($section->titre), Str::lower($this->search)) || Str::contains(Str::lower($section->description), Str::lower($this->search));
-        //     });
-        // } else {
-        //     $this->sections = Model::all();
-        // }
-
+        // Gestion du filtrage
         switch ($this->filter) {
             case 1:
                 $this->filterText = 'Filtre';
-                $sections = $sections->orderBy('created_at', 'desc');
+                $query->orderBy('created_at', 'desc');
                 break;
             case 2:
                 $this->filterText = 'A - Z';
-                $sections = $this->sections->orderBy('titre');
+                $query->orderBy('titre', 'asc');
                 break;
             case 3:
                 $this->filterText = 'Z - A';
-                $sections = $sections->orderBy('titre', 'desc');
+                $query->orderBy('titre', 'desc');
                 break;
             case 4:
                 $this->filterText = "Date d'ajout";
-                $sections = $sections->whereDate('created_at', now());
+                $query->orderBy('created_at', 'desc');
                 break;
             case 5:
                 $this->filterText = 'Date de modification';
-                $sections = $sections->orderBy('updated_at');
+                $query->orderBy('updated_at', 'desc');
                 break;
             default:
-                $sections = $sections->orderBy('titre');
-                break;
+                $query->orderBy('titre', 'asc');
         }
 
-        // switch ($this->filter) {
-        //     case 1:
-        //         $this->filterText = 'Filtre';
-        //         $this->sections = $this->sections->sortByDesc('created_at');
-        //         break;
-        //     case 2:
-        //         $this->filterText = 'A - Z';
-        //         $this->sections = $this->sections->sortBy('libelle');
-        //         break;
-        //     case 3:
-        //         $this->filterText = 'Z - A';
-        //         $this->sections = $this->sections->sortByDesc('libelle');
-        //         break;
-        //     case 4:
-        //         $this->filterText = "Date d'ajout";
-        //         $this->sections = $this->sections->sortByDesc('created_at');
-        //         break;
-        //     case 5:
-        //         $this->filterText = 'Date de modification';
-        //         $this->sections = $this->sections->sortByDesc('updated_at');
-        //         break;
-        //     default:
-        //         # code...
-        //         break;
-        // }
-
-        return view('livewire.systems.section')->with([
-            'sections' => $sections->paginate(10)
+        // Pagination avec 10 éléments par page
+        $sections = $query->paginate(10);
+        
+        return view('livewire.systems.section', [
+            'sections' => $sections,
+            'allServices' => $this->services,
+            'allStatuts' => $this->statuts
         ]);
-
     }
 
     public function changeFilter($value)
     {
         $this->filter = $value;
+        $this->resetPage(); // Réinitialise la pagination lors du changement de filtre
     }
 
 }

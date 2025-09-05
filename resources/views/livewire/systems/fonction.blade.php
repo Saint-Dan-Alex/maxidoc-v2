@@ -57,10 +57,10 @@
                 <thead>
                     <tr>
                         <th scope="col">Nom</th>
-                        <th scope="col">Service</th>
+                        {{-- <th scope="col">Service</th>
                         <th scope="col">Direction</th>
                         <th scope="col">Division</th>
-                        <th scope="col">Section</th>
+                        <th scope="col">Section</th> --}}
                         <th scope="col">Nbe Agents</th>
                         <th scope="col">Action</th>
                     </tr>
@@ -69,26 +69,29 @@
                     @forelse ($fonctions as $fonction)
                         <tr>
                             <td class="text-truncate"> {{ $fonction->titre }} </td>
-                            <td class="text-truncate"> {{ $fonction->service?->titre }} </td>
+                            {{-- <td class="text-truncate"> {{ $fonction->service?->titre }} </td>
                             <td class="text-truncate"> {{ $fonction->direction?->titre }} </td>
-                            <td class="text-truncate"> {{ $fonction->division?->libelle }} </td>
-                            <td> {{-- $fonction->departement?->direction->titre --}} </td>
+                            <td class="text-truncate"> {{ $fonction->division?->libelle }} </td> --}}
+                            {{-- <td> $fonction->departement?->direction->titre </td> --}}
                             <td class="text-truncate"> {{ $fonction->agents->count() }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
-                                    <a href="#" class="btn btn-primary  p-2"><i class="fi fi-rr-eye"></i>
-                                        Voir</a>
-                                    <a href="#" class="btn btn-success  p-2 me-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-edit-fonction-{{ $fonction->id }}"><i
-                                            class="fi fi-rr-pencil"></i>
-                                        Editer</a>
-                                    <form action="{{ route('regidoc.fonctions.destroy', $fonction) }}"
-                                        style="flex: 0 0 auto" method="POST">
+                                    {{-- <a href="#" class="btn btn-primary me-2">
+                                        <i class="fi fi-rr-eye"></i>
+                                        <span class="btn-text">Voir</span>
+                                    </a> --}}
+                                    <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modal-edit-fonction-{{ $fonction->id }}">
+                                        <i class="fi fi-rr-pencil"></i>
+                                        <span class="btn-text">Éditer</span>
+                                    </a>
+                                    <form action="{{ route('regidoc.fonctions.destroy', $fonction) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger  p-2"><i
-                                                class="fi fi-rr-trash"></i>
-                                            Supprimer</button>
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette fonction ?')">
+                                            <i class="fi fi-rr-trash"></i>
+                                            <span class="btn-text">Supprimer</span>
+                                        </button>
                                     </form>
 
                                 </div>
@@ -96,17 +99,21 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">
+                            <td colspan="7" class="text-center">
                                 <div class="text-center col-12">
-                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px"
-                                        class="">
-                                    <p>Aucun departement trouvé</p>
+                                    <img src="{{ asset('assets/images/sad.gif') }}" alt="" width="35px">
+                                    <p>Aucune fonction trouvée</p>
                                 </div>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="mt-4 d-flex justify-content-center">
+            {{ $fonctions->links() }}
         </div>
     </div>
 </div>

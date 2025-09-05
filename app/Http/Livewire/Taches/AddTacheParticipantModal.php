@@ -33,31 +33,49 @@ class AddTacheParticipantModal extends Component
         $this->validate();
 
         try {
-            // Vérifiez si $this->tache existe avant de le stocker en session
-            //code...
+            // Récupération des données nécessaires
             $tache = $this->tache;
-            $agent_id = $this->agent_id;
+            $agentId = $this->agent_id;
             $libelle = $this->libelle;
+            $currentUserId = Auth::id();
 
-            TacheObjectif::create([
-                'libelle' => $this->libelle,
-                'tache_id' => $this->tache->id,
-                'agent_id' => $this->agent_id,
-                'user_id' => Auth::id(),
+            // Création de l'objectif de la tâche
+            $objectif = TacheObjectif::create([
+                'libelle' => $libelle,
+                'tache_id' => $tache->id,
+                'agent_id' => $agentId,
+                'user_id' => $currentUserId,
                 'statut' => 0,
             ]);
 
-            if (!in_array($this->agent_id,$tache->agents->pluck('id')->toArray())) {
-                $tache->agents()->attach($this->agent_id);
+            // Lier l'agent à la tâche s'il ne l'est pas déjà
+            if (!$tache->agents->contains($agentId)) {
+                $tache->agents()->attach($agentId, [
+                    'type' => 'App\Models\Agent',
+                    'type_id' => $agentId,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
             }
 
-            $this->reset();
+            // Rafraîchir les relations
+            $tache->load('agents');
+
+            // Émettre les événements nécessaires
+            $this->emit('participantAdded');
+            $this->emit('refreshTacheInfo');
             $this->emit('reloadComponent');
             $this->emit('reloadPane');
             $this->emit('reloadInfo');
-            $this->mount($tache);
-            $this->emit('alert', 'success', 'Nouvel objectif assigné');
-            event(new TacheCreated($tache, $agent_id, 'Vous a envoyé un nouvel objectif < ' . $libelle . ' > pour la tâche ' . $tache->titre));
+            
+            // Réinitialiser le formulaire
+            $this->reset(['agent_id', 'libelle']);
+            
+            // Émettre l'événement de création de tâche
+            event(new TacheCreated($tache, $agentId, 'Vous a envoyé un nouvel objectif < ' . $libelle . ' > pour la tâche ' . $tache->titre));
+            
+            // Message de succès
+            $this->emit('alert', 'success', 'Participant et objectif ajoutés avec succès');
         } catch (\Throwable $th) {
             // throw $th;
             $this->emit('alert', 'error', 'Echec de l\'opération, Réessayez svp ou Recharger la page ');

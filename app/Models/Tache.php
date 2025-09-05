@@ -23,13 +23,21 @@ class Tache extends Model
      * @var array
      */
     protected $casts = [
-        'date_debut' => 'date',
-        'date_fin' => 'date',
+        'date_debut' => 'datetime',
+        'date_fin' => 'datetime',
     ];
 
     public function commentaires()
     {
         return $this->hasMany(Commentaire::class);
+    }
+
+    /**
+     * Relation avec les objectifs de la tâche
+     */
+    public function objectifs()
+    {
+        return $this->hasMany(TacheObjectif::class);
     }
 
     public function getTacheStatutIdAttribute($value)
@@ -65,19 +73,23 @@ class Tache extends Model
         }
     }
 
-    public function objectifs()
-    {
-        return $this->hasMany(TacheObjectif::class);
-    }
-
     public function isForDirection() {
         return $this->agents()->first()->pivot->type == Direction::class;
     }
 
     public static function getTachesForCurrentUser()
     {
+        $agent = Auth::user()->agent;
         
-        return Auth::user()->agent->taches->unique('id');
+        // Récupérer les tâches via la relation many-to-many
+        $taches = $agent->taches()
+            ->with(['agents', 'objectifs', 'tache_statut']) // Charger les relations nécessaires
+            ->wherePivot('type', 'App\Models\Agent') // S'assurer que le type est bien Agent
+            ->wherePivot('type_id', $agent->id) // Filtrer par l'ID de l'agent
+            ->get()
+            ->unique('id');
+            
+        return $taches;
     }
 
 
@@ -131,7 +143,7 @@ class Tache extends Model
     {
         return $query->where('statut_id', 1);
     }
-
+    
     /**
      * Scope a query to only include encours
      *
@@ -169,13 +181,14 @@ class Tache extends Model
     }
 
     /**
-     * Get the document that owns the Tache
+     * Relation many-to-many avec les documents via la table pivot tache_documents
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function documents()
     {
-        return $this->belongsToMany(Document::class, TacheDocument::class, 'tache_id', 'document_id');
+        return $this->belongsToMany(Document::class, TacheDocument::class, 'tache_id', 'document_id')
+            ->withTimestamps();
     }
 
     /**

@@ -1,0 +1,82 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+class DirectionSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $now = now();
+
+        // Liste des directions et départements
+        $entries = [
+            ['titre' => 'Departement Appro', 'code' => 'DEPART', 'description' => 'Département'],
+            ['titre' => 'Departement Business Analyse', 'code' => 'DEPART', 'description' => 'Département'],
+            ['titre' => 'Departement HSSEQ (PFSO)', 'code' => 'DEPART', 'description' => 'Département'],
+            ['titre' => 'Direction Administratif', 'code' => 'DIR', 'description' => 'Direction'],
+            ['titre' => 'Direction Commerciale', 'code' => 'DIR', 'description' => 'Direction'],
+            ['titre' => 'Direction Financier', 'code' => 'DIR', 'description' => 'Direction'],
+            ['titre' => 'Direction Technique', 'code' => 'DIR', 'description' => 'Direction'],
+            ['titre' => 'Direction des Opérations', 'code' => 'DIR', 'description' => 'Direction'],
+        ];
+
+        $divisionData = [];
+
+        // Direction Générale initiale
+        $dgId = DB::table('directions')->insertGetId([
+            'titre' => 'Direction Générale',
+            'code' => 'DG',
+            'description' => 'Direction Générale',
+            'lieu_id' => 1,
+            'responsable_id' => null,
+            'slug' => 'direction-generale',
+            'adjoint_id' => null,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $divisionData[] = [
+            'libelle' => 'Direction Générale',
+            'description' => 'Direction Générale',
+            'direction_id' => $dgId,
+            'responsable_id' => null,
+            'statut_id' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
+
+        // Boucle pour insérer les directions et divisions pour lieu_id 1 à 3
+        foreach (range(1, 3) as $lieuId) {
+            foreach ($entries as $entry) {
+                $directionId = DB::table('directions')->insertGetId([
+                    'titre' => $entry['titre'],
+                    'code' => $entry['code'],
+                    'description' => $entry['description'],
+                    'lieu_id' => $lieuId,
+                    'responsable_id' => null,
+                    'slug' => Str::slug($entry['titre']),
+                    'adjoint_id' => null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+
+                $divisionData[] = [
+                    'libelle' => $entry['titre'],
+                    'description' => $entry['description'],
+                    'direction_id' => $directionId,
+                    'responsable_id' => null,
+                    'statut_id' => 1,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        // Insérer les divisions
+        DB::table('divisions')->insert($divisionData);
+    }
+}

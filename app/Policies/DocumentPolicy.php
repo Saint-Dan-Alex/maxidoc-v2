@@ -47,8 +47,13 @@ class DocumentPolicy
      */
     public function view(User $user, Document $document)
     {
-        // Vérifier si l'utilisateur a le rôle 'Admin'
-        if ($user->hasRole('Admin')) {
+        // Vérifier si c'est un document par défaut
+        if ($document->is_default) {
+            return $user->can('Voir les documents');
+        }
+
+        // Vérifier si l'utilisateur a le rôle 'Admin', 'DG' ou 'Assistant DG'
+        if ($user->hasRole(['Admin', 'Directeur Générale'])) {
             return true;
         }
 
@@ -69,8 +74,15 @@ class DocumentPolicy
         $isSameDirectionAndResponsable = $user->agent->direction_id === $document->author->direction_id
             && $user->agent->isResponsable();
 
+        // Vérifier si l'utilisateur est DG
+        $isDG = $user->hasRole('Directeur Générale');
+        
+        // Vérifier si l'utilisateur est Assistant DG et si l'auteur est dans la même direction
+        $isAssistantDG = $user->hasRole('Assistant DG') && 
+                         $document->author->direction_id === $user->agent->direction_id;
+
         // Retourner la permission finale
-        return $isAuthor || $isFollower || $isSameDirectionAndResponsable;
+        return $isAuthor || $isFollower || $isSameDirectionAndResponsable || $isDG || $isAssistantDG;
     }
 
     /**

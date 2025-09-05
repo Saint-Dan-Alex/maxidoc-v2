@@ -1,3 +1,7 @@
+@php
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
 
@@ -26,6 +30,85 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.16.0/pdf-lib.min.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <style>
+        /* Style pour les boutons avec icônes */
+        .link-nav {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            color: var(--colorTitre);
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+        
+        .link-nav i, .link-nav svg {
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+        
+        .link-nav span {
+            position: absolute;
+            white-space: nowrap;
+            left: 100%;
+            margin-left: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .link-nav:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            width: auto;
+            padding-right: 12px;
+        }
+        
+        .link-nav:hover span {
+            opacity: 1;
+            visibility: visible;
+            position: static;
+            margin-left: 8px;
+        }
+        
+        #pdf-contents {
+            position: relative;
+            min-height: 500px; /* Hauteur minimale pour éviter les sauts de mise en page */
+        }
+        
+        .loader-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            border-radius: 8px;
+            margin: 0 auto;
+            width: 100%;
+            height: 100%;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .loader-content {
+            text-align: center;
+        }
+        .loader-text {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #333;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primaryColor);
+        }
         #upload-button {
             width: 150px;
             display: block;
@@ -386,14 +469,40 @@
 </head>
 
 <body>
+    <!-- Flash Messages -->
+    @if(session('success'))
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <i class="fi fi-rr-check-circle me-2"></i>
+                <strong class="me-auto">Succès</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Fermer"></button>
+            </div>
+            <div class="toast-body">
+                {{ session('success') }}
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Loader -->
+    <div class="loader-overlay" id="document-loader">
+        <div class="loader-content">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <div class="loader-text">Chargement du document en cours...</div>
+        </div>
+    </div>
+    
     @php
         $docToShow = '';
         $nameDocToShow = '';
         $docToShowId = '';
-        if ($tache?->documents->last()) {
-            $docToShow = str_replace('\\', '/', files($tache->documents->last()->document)->link);
-            $nameDocToShow = files($tache->documents->last()->document)->name;
-            $docToShowId = $tache->documents->last()->id;
+        if ($tache?->documents->first()) {
+            $docToShow = str_replace('\\', '/', files($tache->documents->first()->document)->link);
+            $nameDocToShow = files($tache->documents->first()->document)->name;
+            $docToShowId = $tache->documents->first()->id;
         }
         // dd(class_exists('imagick'));
     @endphp
@@ -522,31 +631,47 @@
                         <div class="links-nav d-flex align-items-center gap-2">
                             @if (Auth::user()->agent->isSecretaire() && $tache->isForDirection())
                             @else
-                                @if ($tache->documents->first())
-                                    <a href="{{ route('regidoc.documents.sign', ['doc_id' => $tache->documents->last()?->id, 'tache_id' => $tache->id, 'is_original' => $tache->documents->count() <= 1]) }}"
-                                        class="link-nav" @disabled($tache->tache_statut_id == 3)>
-                                        <svg viewBox="0 0 24 24" width="512" height="512">
-                                            <path
-                                                d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1,.45,1,1Z" />
-                                        </svg>
-                                        Demander eSignature
-                                    </a>
-                                @endif
-                                <a href="#offcanvasAnno" class="link-nav" data-bs-toggle="offcanvas">
+                                @php
+                                    $isTaskFinished = $tache->tache_statut_id == 3;
+                                    $disabledClass = $isTaskFinished ? 'disabled' : '';
+                                    $disabledAttr = $isTaskFinished ? 'style="opacity: 0.6; pointer-events: none;"' : '';
+                                @endphp
+                                
+                                <a href="#offcanvasAnno" class="link-nav {{ $disabledClass }}" data-bs-toggle="offcanvas" title="Annotations" {!! $disabledAttr !!}>
                                     <svg viewBox="0 0 24 24">
                                         <path
                                             d="m22.75,9.693c.806.914,1.25,2.088,1.25,3.307v5c0,2.757-2.243,5-5,5H5c-2.757,0-5-2.243-5-5v-5c0-2.757,2.243-5,5-5h4c.553,0,1,.448,1,1s-.447,1-1,1h-4c-1.654,0-3,1.346-3,3v5c0,1.654,1.346,3,3,3h14c1.654,0,3-1.346,3-3v-5c0-.731-.267-1.436-.75-1.984-.365-.414-.326-1.046.089-1.412.413-.364,1.045-.326,1.411.088ZM5,15.5c0,.828.672,1.5,1.5,1.5s1.5-.672,1.5-1.5-.672-1.5-1.5-1.5-1.5.672-1.5,1.5Zm6.5,1.5c.828,0,1.5-.672,1.5-1.5s-.672-1.5-1.5-1.5-1.5.672-1.5,1.5.672,1.5,1.5,1.5Zm.5-6v-1.586c0-1.068.416-2.073,1.172-2.828L18.879.879c1.17-1.17,3.072-1.17,4.242,0,.566.566.879,1.32.879,2.121s-.313,1.555-.879,2.122l-5.707,5.707c-.755.755-1.76,1.172-2.828,1.172h-1.586c-.553,0-1-.448-1-1Zm2-1h.586c.534,0,1.036-.208,1.414-.586l5.707-5.707c.189-.189.293-.44.293-.707s-.104-.518-.293-.707c-.391-.391-1.023-.39-1.414,0l-5.707,5.707c-.372.373-.586.888-.586,1.414v.586Z" />
                                     </svg>
-                                    Annotations
+                                    <span>Annotations</span>
                                 </a>
-                                <a href="#offcanvasComment" class="link-nav" data-bs-toggle="offcanvas">
+                                
+                                <a href="#offcanvasComment" class="link-nav {{ $disabledClass }}" data-bs-toggle="offcanvas" title="Commentaires" {!! $disabledAttr !!}>
                                     <i class="fi fi-rr-comments"></i>
-                                    Commentaires
+                                    <span>Commentaires</span>
                                 </a>
-                                <a href="#offcanvasDoc" class="link-nav" data-bs-toggle="offcanvas">
+                                @if ($tache->documents->first())
+                                    <a href="{{ route('regidoc.documents.sign', ['doc_id' => $tache->documents->last()?->id, 'tache_id' => $tache->id, 'is_original' => $tache->documents->count() <= 1]) }}"
+                                        class="link-nav {{ $disabledClass }}" @disabled($tache->tache_statut_id == 3) title="Demander eSignature" {!! $disabledAttr !!}>
+                                        <svg viewBox="0 0 24 24" width="512" height="512">
+                                            <path
+                                                d="M9,16h1.59c1.07,0,2.07-.42,2.83-1.17L23.12,5.12c.57-.57,.88-1.32,.88-2.12s-.31-1.55-.88-2.12c-1.17-1.17-3.07-1.17-4.24,0L9.17,10.59c-.76,.76-1.17,1.76-1.17,2.83v1.59c0,.55,.45,1,1,1ZM21.71,2.29c.19,.19,.29,.44,.29,.71s-.1,.52-.29,.71l-1.29,1.29-1.41-1.41,1.29-1.29c.39-.39,1.02-.39,1.41,0ZM10,13.41c0-.53,.21-1.04,.59-1.41l7-7,1.41,1.41-7,7c-.38,.38-.88,.59-1.41,.59h-.59v-.59Zm14,9.59c0,.55-.45,1-1,1-1.54,0-2.29-1.12-2.83-1.95-.5-.75-.75-1.05-1.17-1.05-.51,0-.9,.44-1.51,1.15-.7,.83-1.57,1.85-3.03,1.85s-2.32-1.03-3-1.87c-.58-.7-.96-1.13-1.46-1.13-.39,0-.63,.25-1.16,.91-.72,.88-1.71,2.09-3.84,2.09-2.76,0-5-2.24-5-5s2.24-5,5-5c.55,0,1,.45,1,1s-.45,1-1,1c-1.65,0-3,1.35-3,3s1.35,3,3,3c1.18,0,1.67-.6,2.29-1.36,.6-.73,1.34-1.64,2.71-1.64,1.47,0,2.32,1.03,3,1.87,.58,.7,.96,1.13,1.46,1.13s.9-.44,1.51-1.15c.7-.83,1.57-1.85,3.03-1.85s2.29,1.12,2.83,1.95c.5,.75,.75,1.05,1.17,1.05,.55,0,1,.45,1,1Z" />
+                                        </svg>
+                                        <span>Demander eSignature</span>
+                                    </a>
+                                @endif
+                                <a href="#offcanvasDoc" class="link-nav {{ $disabledClass }}" data-bs-toggle="offcanvas" title="Pièces jointes" {!! $disabledAttr !!}>
                                     <i class="fi fi-rr-clip"></i>
-                                    Pièce jointes
+                                    <span>Pièces jointes</span>
                                 </a>
+                                @if (Auth::user()->agent->isDG() || Auth::id() == $tache->user_id)
+                                    <a href="{{ $isTaskFinished ? 'javascript:void(0)' : route('regidoc.taches.edit', $tache->id) }}" 
+                                       class="link-nav {{ $disabledClass }}" 
+                                       title="{{ $isTaskFinished ? 'Modification désactivée - Tâche terminée' : 'Modifier la tâche' }}" 
+                                       {!! $disabledAttr !!}>
+                                        <i class="fi fi-rr-edit"></i>
+                                        <span>Modifier la tâche</span>
+                                    </a>
+                                @endif
                             @endif
 
                         </div>
@@ -623,6 +748,59 @@
             </div>
         </div>
 
+        {{-- Barre de sélection des documents --}}
+        @if($documents->count() > 1)
+        <div class="document-selector-bar py-2 px-3" style="background-color: #f8f9fa; border-top: 1px solid #dee2e6; border-bottom: 1px solid #dee2e6;">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label for="document-select" class="form-label mb-0">Document actuel :</label>
+                </div>
+                <div class="col-md-8">
+                    <select class="form-select form-select-sm" id="document-select" onchange="changeDocument(this.value)">
+                        @php
+                            $firstDocumentId = $tache->documents->first() ? $tache->documents->first()->id : null;
+                        @endphp
+                        @foreach($documents as $index => $document)
+                            @php
+                                // Récupérer le nom du document de différentes manières
+                                $docName = 'Document ' . $loop->iteration; // Valeur par défaut
+                                
+                                // Essayer de récupérer le nom via la fonction files()
+                                try {
+                                    $fileInfo = files($document->document);
+                                    if (is_object($fileInfo) && property_exists($fileInfo, 'name') && !empty($fileInfo->name)) {
+                                        $docName = $fileInfo->name;
+                                    } elseif (is_array($fileInfo) && isset($fileInfo['name'])) {
+                                        $docName = $fileInfo['name'];
+                                    } elseif (is_string($fileInfo)) {
+                                        $docName = basename($fileInfo);
+                                    }
+                                } catch (Exception $e) {
+                                    // En cas d'erreur, on garde le nom par défaut
+                                }
+                                
+                                // Si le document a un libellé, on l'utilise
+                                if (!empty($document->libelle)) {
+                                    $docName = $document->libelle;
+                                }
+                                
+                                // Déterminer si le document est sélectionné
+                                $isSelected = ($document->id == $firstDocumentId) || 
+                                           ($document->id == request('document_id')) || 
+                                           ($loop->first && !request('document_id'));
+                            @endphp
+                            <option value="{{ $document->id }}" 
+                                    data-url="{{ $document->document_url }}" 
+                                    {{ $isSelected ? 'selected' : '' }}>
+                                {{ $docName }}{{ $loop->first ? ' (Original)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <div class="container-fluid">
             <div class="row justify-content-end">
                 <div class="mx-auto text-center col-12" style="display: flex; justify-content: center;">
@@ -646,7 +824,7 @@
     </div>
     <div class="sidebar-tache left d-flex flex-column">
         <div class="header d-flex align-items-center" style="padding-top: 10px">
-            <a href="javascript:history.back()" class="mb-0 back me-3">
+            <a href="{{ route('regidoc.taches.index') }}" class="mb-0 back me-3">
                 <i class="fi fi-rr-angle-left"></i>
                 <div class="tooltip-indicator">
                     Retour
@@ -658,11 +836,23 @@
             <div class="all-comments" style="overflow: hidden; height: auto!important;">
                 @livewire('taches.objectif-check', ['tache' => $tache], key($tache->id))
             </div>
+            
         </div>
     </div>
+    <!-- Section pour les pièces jointes -->
     <div class="sidebar-tache right d-flex flex-column">
         <div class="header d-flex align-items-center">
-            <h5 class="mb-0">Détailles de la tâche</h5>
+            <h5 class="mb-0">Pièces jointes</h5>
+        </div>
+        <div class="body flex-grow-1 pt-0" style="overflow: hidden!important">
+            @livewire('taches.tache-pane', ['tache' => $tache, 'pan' => 3], key('tache-pane-'.$tache->id))
+        </div>
+    </div>
+
+    <!-- Section des détails de la tâche -->
+    <div class="sidebar-tache right d-flex flex-column">
+        <div class="header d-flex align-items-center">
+            <h5 class="mb-0">Détails de la tâche</h5>
         </div>
         <div class="body flex-grow-1 pt-0" style="overflow: hidden!important">
             <div class="block-moreInfo-doc h-100" style="background: var(--bgContent);">
@@ -742,7 +932,7 @@
                                 </div>
                                 <div class="col-lg-12">
                                     <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                        {{ $tache->created_at?->isoFormat('LL') }}
+                                        {{ $tache->created_at?->isoFormat('LL [à] HH:mm') }}
                                     </p>
                                 </div>
                             </div>
@@ -761,14 +951,14 @@
                                     </div>
                                     <div class="col-lg-12">
                                         <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                            {{ $tache->date_fin?->isoFormat('LL') }}
+                                            {{ $tache->date_fin?->isoFormat('LL [à] HH:mm') }}
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     @endif
-
+                    @if($tache->description)
                     <div class="col-12">
                         <div class="item">
                             <div class="row">
@@ -785,7 +975,7 @@
                             </div>
                         </div>
                     </div>
-
+                    @endif
                     <div class="col-12">
                         <div class="item">
                             <div class="row">
@@ -796,13 +986,13 @@
                                 </div>
                                 <div class="col-lg-12">
                                     <p style="font-size: 13px; color: var(--colorTitre)" class="mb-0">
-                                        {{ Str::ucfirst($tache->user?->agent?->nom . ' ' . $tache->user?->agent?->post_nom ?? ('' . $tache->user?->agent?->prenom ?? '')) }}
+                                        {{ Str::ucfirst($tache->user?->agent?->nom . ' ' . $tache->user?->agent?->prenom ?? ('' . $tache->user?->agent?->prenom ?? '')) }}
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-12">
+                    {{-- <div class="col-12">
                         <div class="item">
                             <div class="row">
                                 <div class="col-12">
@@ -812,13 +1002,13 @@
                                 </div>
                                 <div class="col-12">
                                     <p>
-                                        {{ $tache->date_fin ? 'Du' . $tache->date_debut?->format('d/m/Y') : $tache->date_debut?->format('d-m-Y') }}
+                                        {{ $tache->date_fin ? 'Du ' . $tache->date_debut?->format('d/m/Y') : $tache->date_debut?->format('d-m-Y') }}
                                         {{ $tache->date_fin ? 'Au ' . $tache->date_fin?->format('d/m/Y') : '' }}
                                     </p>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
                 </div>
             </div>
@@ -1043,12 +1233,41 @@
             @php
                 $urls = [];
                 foreach ($tache->documents as $document) {
-                    array_push($urls, [
-                        'link' => files($document->document)->link,
-                        'id' => $document->id,
-                        'tache_id' => $tache->id ?? '',
-                    ]);
+                    try {
+                        $fileInfo = files($document->document);
+                        $url = is_object($fileInfo) ? $fileInfo->link : '';
+                        
+                        // Ajouter des logs pour le débogage
+                        \Log::info('Génération URL document', [
+                            'document_id' => $document->id,
+                            'document_data' => $document->document,
+                            'url_generée' => $url,
+                            'tache_id' => $tache->id ?? null
+                        ]);
+                        
+                        if ($url) {
+                            array_push($urls, [
+                                'link' => $url,
+                                'id' => $document->id,
+                                'tache_id' => $tache->id ?? '',
+                                'original_name' => is_object($fileInfo) ? $fileInfo->name : basename($url)
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('Erreur lors de la génération de l\'URL du document', [
+                            'document_id' => $document->id,
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                    }
                 }
+                
+                // Ajouter un log avec le nombre de documents traités
+                \Log::info('Documents traités pour la tâche', [
+                    'tache_id' => $tache->id ?? null,
+                    'nb_documents' => count($urls),
+                    'documents' => $urls
+                ]);
             @endphp
             <h6 class="mb-4">Toutes les pièces jointes</h6>
             <div class="doc-vignette d-flex gap-1 flex-wrap" data-url="{{ json_encode($urls) }}"></div>
@@ -1229,10 +1448,154 @@
     </script>
 
     <script>
-        // Livewire.on('documentAdded', (e) => {
-        //     $(".doc-vignette").empty();
-        //     showFirstPageImg(e, $(".doc-vignette"));
-        // });
+        // Fermer automatiquement les messages flash après 5 secondes
+        document.addEventListener('DOMContentLoaded', function() {
+            const toast = document.querySelector('.toast');
+            if (toast) {
+                setTimeout(() => {
+                    const toastInstance = bootstrap.Toast.getOrCreateInstance(toast);
+                    toastInstance.hide();
+                    
+                    // Supprimer le toast du DOM après l'animation
+                    toast.addEventListener('hidden.bs.toast', function() {
+                        toast.remove();
+                    });
+                }, 5000);
+            }
+        });
+
+        // Fonction pour changer le document affiché
+        function changeDocument(documentId) {
+            try {
+                console.log('Changement de document, ID:', documentId);
+                
+                // Trouver le document sélectionné dans la liste des documents
+                const documentSelect = document.getElementById('document-select');
+                if (!documentSelect) {
+                    console.error('Élément de sélection de document non trouvé');
+                    return;
+                }
+                
+                const selectedOption = documentSelect.options[documentSelect.selectedIndex];
+                if (!selectedOption) {
+                    console.error('Option sélectionnée non trouvée');
+                    return;
+                }
+                
+                let documentUrl = selectedOption.getAttribute('data-url');
+                if (!documentUrl) {
+                    console.error('URL du document non trouvée pour le document ID:', documentId);
+                    alert('Impossible de charger le document : URL non disponible');
+                    return;
+                }
+
+                // Nettoyer l'URL
+                console.log('URL brute du document:', documentUrl);
+                
+                // Supprimer les échappements et guillemets
+                documentUrl = documentUrl.replace(/\\/g, '/').replace(/^["\[\]{}]|["\[\]{},]$/g, '');
+                
+                // Si l'URL ne commence pas par http ou /storage, ajouter le préfixe /storage/documents/
+                if (!documentUrl.match(/^(http|\/storage\/)/)) {
+                    if (documentUrl.startsWith('documents/')) {
+                        documentUrl = '/storage/' + documentUrl;
+                    } else if (documentUrl.startsWith('July2025/')) {
+                        documentUrl = '/storage/documents/' + documentUrl;
+                    } else if (!documentUrl.startsWith('/')) {
+                        documentUrl = '/storage/documents/July2025/' + documentUrl;
+                    }
+                }
+                
+                // Si l'URL est relative, ajouter le domaine
+                if (!documentUrl.startsWith('http') && !documentUrl.startsWith(window.location.origin)) {
+                    if (documentUrl.startsWith('/')) {
+                        documentUrl = window.location.origin + documentUrl;
+                    } else {
+                        documentUrl = window.location.origin + '/storage/documents/July2025/' + documentUrl;
+                    }
+                }
+                
+                console.log('URL du document après nettoyage:', documentUrl);
+
+                console.log('Chargement du document avec URL:', documentUrl);
+                
+                // Afficher un indicateur de chargement
+                const pdfContainer = document.querySelector('#pdf-contents');
+                if (pdfContainer) {
+                    pdfContainer.innerHTML = `
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <p class="mt-2">Chargement du document en cours...</p>
+                        </div>`;
+                }
+
+                // Mettre à jour l'URL sans recharger la page
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('document_id', documentId);
+                window.history.pushState({}, '', newUrl);
+
+                // Vider le conteneur PDF existant
+                if (pdfContainer) {
+                    pdfContainer.innerHTML = '';
+                }
+                
+                // Mettre à jour l'URL du document dans le conteneur principal
+                const pdfMainContainer = document.querySelector('#pdf-main-container');
+                if (!pdfMainContainer) {
+                    console.error('Conteneur PDF principal non trouvé');
+                    return;
+                }
+                
+                pdfMainContainer.setAttribute('data-url', documentUrl);
+                pdfMainContainer.setAttribute('data-docid', documentId);
+                
+                // Vérifier si la fonction showPDF est disponible
+                if (typeof window.showPDF !== 'function') {
+                    console.error('La fonction showPDF n\'est pas disponible');
+                    window.location.reload();
+                    return;
+                }
+                
+                // Réinitialiser les variables globales
+                window.__PDF_DOC = null;
+                window.__TOTAL_PAGES = 0;
+                window.__CURRENT_PAGE = 1;
+                window.__PAGE_RENDERING_IN_PROGRESS = 0;
+                
+                // Charger le nouveau document
+                window.showPDF(documentUrl);
+                
+            } catch (error) {
+                console.error('Erreur lors du changement de document:', error);
+                
+                // Afficher un message d'erreur à l'utilisateur
+                const errorContainer = document.querySelector('#pdf-contents') || document.body;
+                if (errorContainer) {
+                    errorContainer.innerHTML = `
+                        <div class="alert alert-danger m-3">
+                            <h5>Erreur lors du chargement du document</h5>
+                            <p>Une erreur est survenue lors du chargement du document sélectionné.</p>
+                            <p><small>${error.message || 'Erreur inconnue'}</small></p>
+                            <button onclick="window.location.reload()" class="btn btn-sm btn-primary">Réessayer</button>
+                        </div>`;
+                } else {
+                    alert('Erreur lors du chargement du document: ' + (error.message || 'Erreur inconnue'));
+                }
+            }
+        }
+
+        Livewire.on('documentAdded', function(e) {
+            // Vider les vignettes existantes
+            $(".doc-vignette").empty();
+            
+            // Mettre à jour l'attribut data-url avec les nouvelles URLs
+            $(".doc-vignette").attr('data-url', JSON.stringify(e));
+            
+            // Régénérer les vignettes
+            showFirstPageImg(e, $(".doc-vignette")[0]);
+        });
 
         Livewire.on('documentChanged', function(evt) {
             $('#pdf-contents').empty();

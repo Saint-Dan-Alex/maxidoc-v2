@@ -95,36 +95,86 @@ if (!function_exists('getYear')) {
 // }
 
 if (!function_exists('files')) {
+    /**
+     * Transforme un champ 'document' (JSON ou string) en objet ou collection d'objets
+     * contenant l'URL publique et le nom du fichier.
+     * 
+     * @param mixed $file  JSON, string ou array représentant un ou plusieurs fichiers
+     * @param bool  $multiple  Si true, retourne une collection même pour un seul fichier
+     * @return \stdClass|Collection  Objet (si !multiple) ou collection de fichiers
+     */
     function files($file, $multiple = false)
     {
+        // 1. Si c'est un tableau PHP, on l'encode en JSON
         if (is_array($file)) {
-            $file = json_encode($file);
+            $file = json_encode($file, JSON_UNESCAPED_SLASHES);
         }
 
-        $files = json_decode($file);
+        // 2. Si ce n'est pas une chaîne, on ne peut pas traiter
+        if (!is_string($file) || empty(trim($file))) {
+            return $multiple ? collect() : (object)['link' => '', 'name' => ''];
+        }
+
+        // 3. Décodage du JSON
+        $decoded = json_decode($file);
+
+        // 4. Gestion des erreurs de décodage ou format brut
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            // Cas : chaîne brute (ex: "documents/August2025/file.pdf")
+            $fileObj = new stdClass;
+            $fileObj->download_link = trim($file);
+            $fileObj->original_name = basename($fileObj->download_link);
+            $decoded = [$fileObj];
+        } elseif (is_object($decoded) && isset($decoded->download_link)) {
+            // Cas : objet unique
+            $decoded = [$decoded];
+        } elseif (!is_array($decoded)) {
+            // Cas inattendu
+            $decoded = [];
+        }
+
         $results = collect();
 
-        if (is_null($files) || (is_countable($files) && (count($files) <= 0))) {
-            $fichier = new stdClass;
-            $fichier->link = '';
-            $fichier->name = '';
-            return $fichier;
-        }
+        foreach ($decoded as $item) {
+            if (!isset($item->download_link) || empty(trim($item->download_link))) {
+                continue;
+            }
 
-        foreach ($files ?? [] as $file) {
-            $link = str_replace('\\', DIRECTORY_SEPARATOR, $file->download_link);
-            $url = str_replace('\\', '/', asset('storage') . DIRECTORY_SEPARATOR . $link);
+            $link = trim($item->download_link);
+            $name = $item->original_name ?? basename($link);
+
+            // 🔧 Normalisation du chemin
+            $link = str_replace(['\\/', '\\\\', '\\'], '/', $link);  // Remplace les séparateurs échappés
+            $link = urldecode($link);                                // Décodage des %20
+            $link = preg_replace('#^[/]+#', '', $link);              // Supprime les / en début
+            $link = preg_replace('#^storage[/]#i', '', $link);       // Évite storage/storage
+
+            // 📁 Chemin dans le disque 'public'
+            $storagePath = rtrim($link, '/');
+
+            // 🔍 Vérifie que le fichier existe physiquement dans storage/app/public
+            if (!Storage::disk('public')->exists($storagePath)) {
+                \Log::warning("Fichier introuvable : storage/app/public/{$storagePath}");
+                continue; // Ignore si le fichier n'existe pas
+            }
+
+            // ✅ Construit l'URL publique via asset()
+            // Ex: http://maxidoc.test/storage/documents/August2025/file.pdf
+            $url = asset('storage/' . $storagePath);
+
             $fichier = new stdClass;
             $fichier->link = $url;
-            $fichier->name = $file->original_name;
+            $fichier->name = $name;
             $results->push($fichier);
         }
 
-        if (!$multiple) {
-            $results = count($results) ? $results[0] : collect();
+        // 🔚 Retourne le premier élément si !multiple
+        if (!$multiple && $results->isNotEmpty()) {
+            return $results->first();
         }
 
-        return $results;
+        // Retourne la collection ou un objet vide
+        return $results->isNotEmpty() ? $results : (object)['link' => '', 'name' => ''];
     }
 }
 

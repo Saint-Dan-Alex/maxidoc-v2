@@ -6,6 +6,7 @@ use App\Events\CourrierCreated;
 use App\Models\AccuseReception;
 use App\Models\Agent;
 use App\Models\Historique;
+use App\Models\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use App\Models\Courrier;
@@ -42,185 +43,373 @@ class AccuserReception extends Component
     public function mount($courrier)
     {
         $this->courrier = $courrier;
+        
+        // Pour les courriers internes, on passe directement en mode traitement
+        if ($courrier->type_id == 3) {
+            $this->mode = 'edit';
+            $this->emit('modeChanged');
+        }
     }
 
     public function render()
     {
+        $this->courrier->load(['accuseReceptions.user.agent']);
         return view('livewire.courrier.accuser-reception');
     }
 
-    public function accuserReception()
-    {
-        if ($this->courrier->type_id == 1) {
+    // public function accuserReception()
+    // {
+    //     if ($this->courrier->type_id == 1) {
 
+    //         $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
+    //         $this->courrier->etapes->last()->pivot->save();
+
+    //         $courrier = Courrier::find($this->courrier->id);
+    //         $courrier->statut_id = 2;
+    //         $courrier->save();
+
+    //         $agent = null;
+
+    //         if ($this->courrier->accuseReceptions->count() == 0) {
+    //             $agent = $this->courrier->author;
+    //         } else {
+    //             $agent = $this->courrier->accuseReceptions->last()->user->agent;
+    //         }
+
+    //         AccuseReception::create([
+    //             'user_id' => Auth::user()->id,
+    //             'courrier_id' => $courrier->id,
+    //         ]);
+
+    //         if ($agent) {
+    //             event(new CourrierCreated($this->courrier, $agent, 'A accusé reception du courrier transmis'));
+    //         }
+
+    //         Historique::create([
+    //             "key" => "Accusé de reception",
+    //             "historiquecable_id" => $this->courrier->id,
+    //             "historiquecable_type" => Courrier::class,
+    //             "description" => "A accusé reception du courrier",
+    //             "user_id" => Auth::user()->id,
+    //         ]);
+
+    //         if (Auth::user()->agent->isSecretaire() || Auth::user()->agent->isAssistant())
+    //         {
+    //             // is DGA's assistant or Sercretaire
+    //             $dgaSecretaires = Direction::find(1)->dgaSecretaires->pluck('responsable_id')->toArray();
+
+    //             $dgaAssistants = Direction::find(1)->dgaAssistanats->pluck('responsable_id')->toArray();
+    //             if(in_array(Auth::user()->agent->id, $dgaSecretaires) || in_array(Auth::user()->agent->id, $dgaAssistants))
+    //             {
+    //                 $this->validerTraitementDGA();
+    //             }
+
+    //             $this->emit('assistantSeen');
+    //         }
+
+    //     } elseif ($this->courrier->type_id == 2) {
+
+    //         if ($this->courrier->etapes->last()) {
+    //             $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
+    //             $this->courrier->etapes->last()->pivot->save();
+    //         }
+
+    //         $agent = null;
+
+    //         if ($this->courrier->accuseReceptions->count() == 0) {
+    //             $agent = $this->courrier->author;
+    //         } else {
+    //             $agent = $this->courrier->accuseReceptions->last()->agent;
+    //         }
+
+    //         AccuseReception::create([
+    //             'user_id' => Auth::user()->id,
+    //             'courrier_id' => $this->courrier->id,
+    //         ]);
+
+    //         if ($agent) {
+    //             event(new CourrierCreated($this->courrier, $agent, 'A accusé reception du courrier transmis'));
+    //         }
+
+    //         Historique::create([
+    //             "key" => "Accusé de reception",
+    //             "historiquecable_id" => $this->courrier->id,
+    //             "historiquecable_type" => Courrier::class,
+    //             "description" => "A accusé reception du courrier",
+    //             "user_id" => Auth::user()->id,
+    //         ]);
+
+    //         if (Auth::user()->agent->isSecretaire()) {
+    //             $this->validerTraitementSecretaire();
+    //         } elseif (Auth::user()->agent->isAssistant()) {
+
+    //             // I save traitement
+    //             $traitement = new CourrierTraitement();
+    //             $traitement->agent_id = Auth::user()->agent->id;
+    //             $traitement->save();
+
+    //             $this->courrier->traitements()->attach($traitement);
+
+    //             // I change the stap
+    //             $this->courrier->etapes()->attach(2);
+
+    //             $this->courrier->destinateurs()->attach(Auth::user()->agent->direction->secretaire);
+
+    //             Historique::create([
+    //                 "key" => "Accusé de reception",
+    //                 "historiquecable_id" => $this->courrier->id,
+    //                 "historiquecable_type" => Courrier::class,
+    //                 "description" => "A effectué des traitements sur ce courrier",
+    //                 "user_id" => Auth::user()->id,
+    //             ]);
+
+    //             $destinateurToNotify = $this->courrier->destinateurs->where('id', '!=', Auth::user()->agent->id)->where('id', '!=', Auth::user()->agent->direction->responsable->id);
+
+    //             if (count($destinateurToNotify)) {
+    //                 event(new CourrierCreated(
+    //                     $this->courrier,
+    //                     $destinateurToNotify,
+    //                     'Vous a transmi un courrier sortant !'
+    //                 ));
+    //             }
+
+    //             $this->emit('assistantSeen');
+    //         } else {
+    //             $courrier = Courrier::find($this->courrier->id);
+    //             $courrier->statut_id = 3;
+    //             $courrier->save();
+    //         }
+    //     } else {
+    //         $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
+    //         $this->courrier->etapes->last()->pivot->save();
+
+    //         $courrier = Courrier::find($this->courrier->id);
+    //         $courrier->statut_id = 2;
+    //         $courrier->save();
+
+    //         $agent = null;
+
+    //         if ($this->courrier->accuseReceptions->count() == 0) {
+    //             $agent = $this->courrier->author;
+    //         } else {
+    //             $agent = $this->courrier->accuseReceptions->last()->user->agent;
+    //         }
+
+    //         AccuseReception::create([
+    //             'user_id' => Auth::user()->id,
+    //             'courrier_id' => $courrier->id,
+    //         ]);
+
+    //         if ($agent) {
+    //             event(new CourrierCreated($this->courrier, $agent, 'A accusé reception du courrier transmis'));
+    //         }
+
+    //         Historique::create([
+    //             "key" => "Accusé de reception",
+    //             "historiquecable_id" => $this->courrier->id,
+    //             "historiquecable_type" => Courrier::class,
+    //             "description" => "A accusé reception du courrier",
+    //             "user_id" => Auth::user()->id,
+    //         ]);
+
+    //         if (Auth::user()->agent->isSecretaire() || Auth::user()->agent->isAssistant())
+    //         {
+    //             // is DGA's assistant or Sercretaire
+    //             $dgaSecretaires = Direction::find(1)->dgaSecretaires->pluck('responsable_id')->toArray();
+    //             $dgaAssistants = Direction::find(1)->dgaAssistanats->pluck('responsable_id')->toArray();
+
+    //             if(in_array(Auth::user()->agent->id, $dgaSecretaires) || in_array(Auth::user()->agent->id, $dgaAssistants))
+    //             {
+    //                 $this->validerTraitementDGA();
+    //             }
+
+    //             $this->emit('assistantSeen');
+    //         }
+    //     }
+
+    //     $this->emit('alert', 'success', 'Accuser de reception effectué avec succès');
+    // }
+    public function accuserReception()
+{
+    if ($this->courrier->type_id == 1) {
+
+        $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
+        $this->courrier->etapes->last()->pivot->save();
+
+        $courrier = Courrier::find($this->courrier->id);
+        $courrier->statut_id = 2;
+        $courrier->save();
+
+        $agent = null;
+
+        if ($this->courrier->accuseReceptions->count() == 0) {
+            $agent = $this->courrier->author;
+        } else {
+            $agent = $this->courrier->accuseReceptions->last()->user->agent;
+        }
+
+        AccuseReception::create([
+            'user_id' => Auth::user()->id,
+            'courrier_id' => $courrier->id,
+        ]);
+
+        if ($agent) {
+            event(new CourrierCreated($this->courrier, $agent, 'A accusé reception du courrier transmis'));
+        }
+
+        Historique::create([
+            "key" => "Accusé de reception",
+            "historiquecable_id" => $this->courrier->id,
+            "historiquecable_type" => Courrier::class,
+            "description" => Auth::user()->name." a accusé reception de ce document.",
+            "user_id" => Auth::user()->id,
+        ]);
+
+        if (Auth::user()->agent->isSecretaire() || Auth::user()->agent->isAssistant()) {
+            $dgaSecretaires = Direction::find(1)->dgaSecretaires->pluck('responsable_id')->toArray();
+            $dgaAssistants = Direction::find(1)->dgaAssistanats->pluck('responsable_id')->toArray();
+
+            if (in_array(Auth::user()->agent->id, $dgaSecretaires) || in_array(Auth::user()->agent->id, $dgaAssistants)) {
+                $this->validerTraitementDGA();
+            }
+
+            $this->emit('assistantSeen');
+        }
+
+    } elseif ($this->courrier->type_id == 2) {
+
+    if ($this->courrier->etapes->last()) {
+        $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
+        $this->courrier->etapes->last()->pivot->save();
+    }
+
+    $agent = null;
+
+    if ($this->courrier->accuseReceptions->count() == 0) {
+        $agent = $this->courrier->author;
+    } else {
+        $agent = $this->courrier->accuseReceptions->last()->agent;
+    }
+
+    AccuseReception::create([
+        'user_id' => Auth::user()->id,
+        'courrier_id' => $this->courrier->id,
+    ]);
+
+    if ($agent) {
+        event(new CourrierCreated($this->courrier, $agent, 'A accusé reception du courrier transmis'));
+    }
+
+    Historique::create([
+        "key" => "Accusé de reception",
+        "historiquecable_id" => $this->courrier->id,
+        "historiquecable_type" => Courrier::class,
+        "description" => Auth::user()->name." a accusé reception de ce document.",
+        "user_id" => Auth::user()->id,
+    ]);
+
+    // if (Auth::user()->agent->isSecretaire()) {
+
+    //     // ✅ Met à jour le statut directement
+    //     $this->courrier->statut_id = 2;
+    //     $this->courrier->save();
+
+    //     $this->validerTraitementSecretaire();
+
+    // } elseif (Auth::user()->agent->isAssistant()) {
+
+    //     $this->courrier->statut_id = 2;
+    //     $this->courrier->save();
+
+    //     $this->validerTraitementSecretaire();
+
+    //     // Pour l'assistant du DG, on marque le courrier comme terminé
+    //     $this->courrier->etapes()->detach();
+    //     $this->courrier->etapes()->attach(1, ['view_by' => Auth::user()->id]);
+        
+    //     $this->courrier->statut_id = 2; // Statut "Traité"
+    //     // $this->courrier->mark_as_done = 1;
+    //     $this->courrier->save();
+
+    //     if ($this->courrier->document) {
+    //         $this->courrier->document->statut_id = 1;
+    //         $this->courrier->document->save();
+    //     }
+
+    //     Historique::create([
+    //         "key" => "Traitement terminé",
+    //         "historiquecable_id" => $this->courrier->id,
+    //         "historiquecable_type" => Courrier::class,
+    //         "description" => "Le traitement du courrier sortant est terminé par l'assistant du DG",
+    //         "user_id" => Auth::user()->id,
+    //     ]);
+
+    //     $this->emit('alert', 'success', 'Le courrier a été marqué comme traité avec succès.');
+
+    // } else {
+    //     $courrier = Courrier::find($this->courrier->id);
+    //     $courrier->statut_id = 2;
+    //     $courrier->save();
+    // }
+    }
+    else {
+        // Si le courrier a des étapes, on met à jour la dernière
+        if ($this->courrier->etapes->isNotEmpty() && $this->courrier->etapes->last()->pivot) {
             $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
             $this->courrier->etapes->last()->pivot->save();
-
-            $courrier = Courrier::find($this->courrier->id);
-            $courrier->statut_id = 2;
-            $courrier->save();
-
-            $agent = null;
-
-            if ($this->courrier->accuseReceptions->count() == 0) {
-                $agent = $this->courrier->author;
-            } else {
-                $agent = $this->courrier->accuseReceptions->last()->user->agent;
-            }
-
-            AccuseReception::create([
-                'user_id' => Auth::user()->id,
-                'courrier_id' => $courrier->id,
-            ]);
-
-            if ($agent) {
-                event(new CourrierCreated($this->courrier, $agent, 'A accusé reception du courrier transmis'));
-            }
-
-            Historique::create([
-                "key" => "Accusé de reception",
-                "historiquecable_id" => $this->courrier->id,
-                "historiquecable_type" => Courrier::class,
-                "description" => "A accusé reception du courrier",
-                "user_id" => Auth::user()->id,
-            ]);
-
-            if (Auth::user()->agent->isSecretaire() || Auth::user()->agent->isAssistant())
-            {
-                // is DGA's assistant or Sercretaire
-                $dgaSecretaires = Direction::find(1)->dgaSecretaires->pluck('responsable_id')->toArray();
-
-                $dgaAssistants = Direction::find(1)->dgaAssistanats->pluck('responsable_id')->toArray();
-                if(in_array(Auth::user()->agent->id, $dgaSecretaires) || in_array(Auth::user()->agent->id, $dgaAssistants))
-                {
-                    $this->validerTraitementDGA();
-                }
-
-                $this->emit('assistantSeen');
-            }
-
-        } elseif ($this->courrier->type_id == 2) {
-
-            if ($this->courrier->etapes->last()) {
-                $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
-                $this->courrier->etapes->last()->pivot->save();
-            }
-
-            $agent = null;
-
-            if ($this->courrier->accuseReceptions->count() == 0) {
-                $agent = $this->courrier->author;
-            } else {
-                $agent = $this->courrier->accuseReceptions->last()->agent;
-            }
-
+        } else {
+            // Pour les courriers sans étapes, on crée un nouvel enregistrement dans la table views
             AccuseReception::create([
                 'user_id' => Auth::user()->id,
                 'courrier_id' => $this->courrier->id,
             ]);
-
-            if ($agent) {
-                event(new CourrierCreated($this->courrier, $agent, 'A accusé reception du courrier transmis'));
-            }
-
-            Historique::create([
-                "key" => "Accusé de reception",
-                "historiquecable_id" => $this->courrier->id,
-                "historiquecable_type" => Courrier::class,
-                "description" => "A accusé reception du courrier",
-                "user_id" => Auth::user()->id,
-            ]);
-
-            if (Auth::user()->agent->isSecretaire()) {
-                $this->validerTraitementSecretaire();
-            } elseif (Auth::user()->agent->isAssistant()) {
-
-                // I save traitement
-                $traitement = new CourrierTraitement();
-                $traitement->agent_id = Auth::user()->agent->id;
-                $traitement->save();
-
-                $this->courrier->traitements()->attach($traitement);
-
-                // I change the stap
-                $this->courrier->etapes()->attach(2);
-
-                $this->courrier->destinateurs()->attach(Auth::user()->agent->direction->secretaire);
-
-                Historique::create([
-                    "key" => "Accusé de reception",
-                    "historiquecable_id" => $this->courrier->id,
-                    "historiquecable_type" => Courrier::class,
-                    "description" => "A effectué des traitements sur ce courrier",
-                    "user_id" => Auth::user()->id,
-                ]);
-
-                $destinateurToNotify = $this->courrier->destinateurs->where('id', '!=', Auth::user()->agent->id)->where('id', '!=', Auth::user()->agent->direction->responsable->id);
-
-                if (count($destinateurToNotify)) {
-                    event(new CourrierCreated(
-                        $this->courrier,
-                        $destinateurToNotify,
-                        'Vous a transmi un courrier sortant !'
-                    ));
-                }
-
-                $this->emit('assistantSeen');
-            } else {
-                $courrier = Courrier::find($this->courrier->id);
-                $courrier->statut_id = 3;
-                $courrier->save();
-            }
-        } else {
-            $this->courrier->etapes->last()->pivot->view_by = Auth::user()->id;
-            $this->courrier->etapes->last()->pivot->save();
-
-            $courrier = Courrier::find($this->courrier->id);
-            $courrier->statut_id = 2;
-            $courrier->save();
-
-            $agent = null;
-
-            if ($this->courrier->accuseReceptions->count() == 0) {
-                $agent = $this->courrier->author;
-            } else {
-                $agent = $this->courrier->accuseReceptions->last()->user->agent;
-            }
-
-            AccuseReception::create([
-                'user_id' => Auth::user()->id,
-                'courrier_id' => $courrier->id,
-            ]);
-
-            if ($agent) {
-                event(new CourrierCreated($this->courrier, $agent, 'A accusé reception du courrier transmis'));
-            }
-
-            Historique::create([
-                "key" => "Accusé de reception",
-                "historiquecable_id" => $this->courrier->id,
-                "historiquecable_type" => Courrier::class,
-                "description" => "A accusé reception du courrier",
-                "user_id" => Auth::user()->id,
-            ]);
-
-            if (Auth::user()->agent->isSecretaire() || Auth::user()->agent->isAssistant())
-            {
-                // is DGA's assistant or Sercretaire
-                $dgaSecretaires = Direction::find(1)->dgaSecretaires->pluck('responsable_id')->toArray();
-                $dgaAssistants = Direction::find(1)->dgaAssistanats->pluck('responsable_id')->toArray();
-
-                if(in_array(Auth::user()->agent->id, $dgaSecretaires) || in_array(Auth::user()->agent->id, $dgaAssistants))
-                {
-                    $this->validerTraitementDGA();
-                }
-
-                $this->emit('assistantSeen');
-            }
+        
         }
 
-        $this->emit('alert', 'success', 'Accuser de reception effectué avec succès');
+        // Mise à jour du statut du courrier
+        $courrier = Courrier::find($this->courrier->id);
+        $courrier->statut_id = 2; // "En cours de traitement"
+        $courrier->save();
+
+        // Détermination de l'agent concerné
+        $agent = null;
+        if ($this->courrier->accuseReceptions->isEmpty()) {
+            $agent = $this->courrier->author;
+        } else {
+            $agent = $this->courrier->accuseReceptions->last()->user->agent;
+        }
+
+        AccuseReception::create([
+            'user_id' => Auth::user()->id,
+            'courrier_id' => $courrier->id,
+        ]);
+
+        if ($agent) {
+            event(new CourrierCreated($this->courrier, $agent, 'A accusé reception du courrier transmis'));
+        }
+
+        Historique::create([
+            "key" => "Accusé de reception",
+            "historiquecable_id" => $this->courrier->id,
+            "historiquecable_type" => Courrier::class,
+            "description" => Auth::user()->name." a accusé reception de ce document.",
+            "user_id" => Auth::user()->id,
+        ]);
+
+        if (Auth::user()->agent->isSecretaire() || Auth::user()->agent->isAssistant()) {
+            $dgaSecretaires = Direction::find(1)->dgaSecretaires->pluck('responsable_id')->toArray();
+            $dgaAssistants = Direction::find(1)->dgaAssistanats->pluck('responsable_id')->toArray();
+
+            if (in_array(Auth::user()->agent->id, $dgaSecretaires) || in_array(Auth::user()->agent->id, $dgaAssistants)) {
+                $this->validerTraitementDGA();
+            }
+
+            $this->emit('assistantSeen');
+        }
     }
+
+    $this->emit('alert', 'success', Auth::user()->name.' a accusé de reception de ce document');
+}
 
     public function validerTraitementDGA()
     {
@@ -272,7 +461,7 @@ class AccuserReception extends Component
                     "key" => "Accusé de reception",
                     "historiquecable_id" => $courrier->id,
                     "historiquecable_type" => Courrier::class,
-                    "description" => "A  apporté des modifications sur le traitement à effectué",
+                    "description" => Auth::user()->name." a apporté des modifications sur le traitement à effectué",
                     "user_id" => Auth::user()->id,
                 ]);
 
@@ -376,7 +565,7 @@ class AccuserReception extends Component
                 "key" => "Accusé de reception",
                 "historiquecable_id" => $this->courrier->id,
                 "historiquecable_type" => Courrier::class,
-                "description" => "A effectué des traitements sur ce courrier",
+                "description" => Auth::user()->name." a effectué des traitements sur ce document",
                 "user_id" => Auth::user()->id,
             ]);
 
@@ -439,7 +628,7 @@ class AccuserReception extends Component
                     "key" => "Accusé de reception",
                     "historiquecable_id" => $this->courrier->id,
                     "historiquecable_type" => Courrier::class,
-                    "description" => "A effectué des traitements sur ce courrier",
+                    "description" => Auth::user()->name." a effectué des traitements sur ce document.",
                     "user_id" => Auth::user()->id,
                 ]);
 
@@ -458,7 +647,7 @@ class AccuserReception extends Component
                     "key" => "Accusé de reception",
                     "historiquecable_id" => $this->courrier->id,
                     "historiquecable_type" => Courrier::class,
-                    "description" => "A effectué des traitements sur ce courrier",
+                    "description" => Auth::user()->name." a effectué des traitements sur ce document.",
                     "user_id" => Auth::user()->id,
                 ]);
 
@@ -499,7 +688,7 @@ class AccuserReception extends Component
                 "key" => "Accusé de reception",
                 "historiquecable_id" => $this->courrier->id,
                 "historiquecable_type" => Courrier::class,
-                "description" => "A joint un fichier à ce courrier",
+                "description" => Auth::user()->name." a joint un fichier à ce document.",
                 "user_id" => Auth::user()->id,
             ]);
         }
