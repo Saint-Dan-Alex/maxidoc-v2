@@ -115,7 +115,7 @@
                                 <label for="inputPassword" class="col-5 col-form-label">Catégorie</label>
                                 <div class="col-7">
                                     <p class="items">
-                                        {{ $find_document->categorie->title ? Str::ucfirst($find_document->categorie->title) : 'Non spécifiée' }}
+                                        {{ $find_document->categorie->title ??'Non spécifiée' }}
 
                                     </p>
                                 </div>
