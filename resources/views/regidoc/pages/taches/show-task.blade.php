@@ -824,7 +824,7 @@ use Illuminate\Support\Facades\Storage;
     </div>
     <div class="sidebar-tache left d-flex flex-column">
         <div class="header d-flex align-items-center" style="padding-top: 10px">
-            <a href="javascript:history.back()" class="mb-0 back me-3">
+            <a href="{{ route('regidoc.taches.index') }}" class="mb-0 back me-3">
                 <i class="fi fi-rr-angle-left"></i>
                 <div class="tooltip-indicator">
                     Retour
