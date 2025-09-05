@@ -18468,3 +18468,4 @@
 #68 C:\\wamp64\\www\\maxidoc-projet-origine\\public\\index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
 #69 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\wamp64\\\\www\\\\m...')
 #70 {main}"} 
+[2025-09-05 14:59:19] local.INFO: Fichier stocké avec succès {"chemin":"documents/September2025/EN9vmCJvQglPmOR9sejq.pdf","nom_original":"SEANCE N002 CONCEPTION ET ELABORATION.pdf"} 

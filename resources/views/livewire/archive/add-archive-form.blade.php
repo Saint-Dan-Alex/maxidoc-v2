@@ -27,7 +27,6 @@
                 <input type="hidden" name="categorie" value="{{ $categorie ?? '' }}" wire:ignore/>
                 <input type="hidden" name="ref" value="{{ $ref ?? '' }}" wire:ignore/>
                 <input type="hidden" name="ref_interne" value="{{ $ref_interne ?? '' }}" wire:ignore/>
-                <input type="hidden" name="title" value="{{ $title ?? '' }}" wire:ignore/>
                 <input type="hidden" name="nature" value="{{ $nature ?? '' }}" wire:ignore/>
                 <input type="hidden" name="date-doc" value="{{ $date_doc ?? now()->format('Y-m-d') }}" wire:ignore/>
                 <input type="hidden" name="date-arriv" value="{{ $date_arriv ?? now()->format('Y-m-d\TH:i') }}" wire:ignore/>
@@ -303,7 +302,7 @@
                     <div class="row">
                         <label class="col-5 col-form-label">Destination</label>
                         <div class="col-7">
-                            <input type="text" class="form-control" name="destination" required>
+                            <input type="text" class="form-control" name="destination" required value="LerexcomPetroleum">
                         </div>
                     </div>
                 </div>
