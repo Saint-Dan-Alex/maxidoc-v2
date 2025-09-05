@@ -19,6 +19,7 @@ Route::post('/login', [AuthenticationController::class, 'login'])->name('login.a
 Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout.api');
 Route::get('/redirect', [AuthenticationController::class, 'authorization'])->name('authorize.api');
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+// Routes protégées par authentification
+Route::middleware('auth:sanctum')->group(function () {
+    // Vos autres routes API protégées ici
+});

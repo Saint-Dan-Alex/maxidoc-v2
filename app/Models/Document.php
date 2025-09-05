@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
-use \Venturecraft\Revisionable\RevisionableTrait;
+use \Venturecraft\Revisionable\Revisionabluse App\Models\Redacteur;
+use App\Models\Destination;
 
 class Document extends Model
 {
@@ -40,6 +41,52 @@ class Document extends Model
      * @var array
      */
     protected $casts = [
+        'document' => 'array',
+    ];
+
+    protected $fillable = [
+        'dossier_id',
+        'category_id',
+        'reference',
+        'reference_courrier',
+        'reference_interne',
+        'libelle',
+        'title',
+        'emetteur',
+        'destination_id',
+        'redacteur_id',
+        'type',
+        'description',
+        'objet',
+        'observations',
+        'document',
+        'date_du_courrier',
+        'date_arrive',
+        'date_fin',
+        'archived_at',
+        'desarchive_at',
+        'confidentiel',
+        'is_classified',
+        'password',
+        'user_id',
+    ];
+
+    /**
+     * Get the redacteur associated with the document.
+     */
+    public function redacteur()
+    {
+        return $this->belongsTo(Redacteur::class, 'redacteur_id');
+    }
+
+    /**
+     * Get the destination associated with the document.
+     */
+    public function destination()
+    {
+        return $this->belongsTo(Destination::class, 'destination_id');
+    }
+ [
         'document' => 'array',
     ];
 

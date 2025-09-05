@@ -211,6 +211,14 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::get('courriers/signer/{id}', [CourrierController::class, 'signer'])->name('courriers.signer');
 
 
+            // Routes pour les rédacteurs
+            Route::resource('redacteurs', \App\Http\Controllers\RedacteurController::class)
+                ->only('index', 'store', 'update', 'destroy');
+                
+            // Routes pour les destinations
+            Route::resource('destinations', \App\Http\Controllers\DestinationController::class)
+                ->only('index', 'store', 'update', 'destroy');
+                
             // Routes pour les courriers
             Route::prefix('courriers')->group(function () {
                 // Routes sans ID

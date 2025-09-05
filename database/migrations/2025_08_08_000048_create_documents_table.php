@@ -25,9 +25,9 @@ return new class extends Migration
             $table->string('reference_interne', 200)->nullable();
             $table->string('libelle', 255)->nullable();
             $table->text('title')->nullable();
-            $table->text('emetteur')->nullable();
-            $table->text('destination')->nullable();
-            $table->text('redacteur')->nullable();
+            // $table->text('emetteur')->nullable();
+            // $table->text('destination')->nullable();
+            // $table->text('redacteur')->nullable();
             $table->foreignId('type')->nullable()->constrained('document_types')->nullOnDelete();
             $table->text('description')->nullable();
             $table->text('objet')->nullable();
@@ -64,6 +64,9 @@ return new class extends Migration
             // $table->text('expediteur_externe')->nullable(); // Ex: entreprise, particulier
             $table->foreignId('expediteur_interne_id')->nullable()->constrained('agents')->nullOnDelete();
             $table->foreignId('expediteur_externe')->nullable()->constrained('courrier_expediteurs')->nullOnDelete();
+            $table->foreignId('emetteur')->nullable()->nullOnDelete();
+            $table->foreignId('destination_id')->nullable()->constrained('destinations')->nullOnDelete();
+            $table->foreignId('redacteur_id')->nullable()->constrained('redacteurs')->nullOnDelete();
 
             // 🔹 Destinataire
             $table->foreignId('destinataire_externe_id')->nullable()->constrained('courrier_destinateur_externes')->nullOnDelete();
