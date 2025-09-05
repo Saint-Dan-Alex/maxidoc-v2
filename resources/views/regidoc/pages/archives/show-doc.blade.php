@@ -94,12 +94,13 @@
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Description</label>
                                 <div class="col-7">
                                     <p class="items scrollable-text">
-                                        {{ Str::ucfirst($find_document->description ?? '') }}
+                                        {{ Str::ucfirst($find_document->description ?? 'Non défini') }}
                                     </p>
                                 </div>
                             </div>
@@ -111,7 +112,7 @@
                                 <label for="inputPassword" class="col-5 col-form-label">Catégorie</label>
                                 <div class="col-7">
                                     <p class="items">
-                                        {{-- {{ $find_document->categorie->title ? Str::ucfirst($find_document->categorie->title) : 'Non spécifiée' }} --}}
+                                        {{ $find_document->categorie->title ? Str::ucfirst($find_document->categorie->title) : 'Non spécifiée' }}
 
                                     </p>
                                 </div>
@@ -127,20 +128,20 @@
                                 </div>
                             </div>
                         </div>
-                        @if($find_document->nature)
+                        {{-- @if($find_document->nature) --}}
                         <div class="col-12">
                             <div class="item">
                                 <div class="row">
                                     <div class="col-5">
-                                        <span>Nature</span>
+                                        <label for="inputPassword" class="col-5 col-form-label">Nature</label>
                                     </div>
                                     <div class="col-7">
-                                        <p class="items mb-0">{{ $find_document->nature->titre ?? '' }}</p>
+                                        <p class="items mb-0">{{ $find_document->courrier->nature->titre ?? 'Non défini' }}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @endif
+                        {{-- @endif --}}
                         @if($find_document->service)
                         <div class="col-12">
                             <div class="item">
