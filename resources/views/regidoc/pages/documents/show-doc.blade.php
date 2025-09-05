@@ -205,7 +205,7 @@
                                             </span>
                                         </div>
                                         <div class="col-7">
-                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-1">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-1" name="expediteur_externe" id="expediteur_externe">
                                                 {{ $find_document->courrier->externExpediteur->nom }}
                                             </p>
                                         </div>
