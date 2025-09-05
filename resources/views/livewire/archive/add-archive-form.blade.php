@@ -24,6 +24,14 @@
                 {{-- AFFICHAGE POUR LES AUTRES UTILISATEURS : FORMULAIRE COMPLET --}}
 
                  <input type="hidden" name="type" value="1" wire:ignore/>
+                <input type="hidden" name="categorie" value="{{ $categorie ?? '' }}" wire:ignore/>
+                <input type="hidden" name="ref" value="{{ $ref ?? '' }}" wire:ignore/>
+                <input type="hidden" name="ref_interne" value="{{ $ref_interne ?? '' }}" wire:ignore/>
+                <input type="hidden" name="title" value="{{ $title ?? '' }}" wire:ignore/>
+                <input type="hidden" name="nature" value="{{ $nature ?? '' }}" wire:ignore/>
+                <input type="hidden" name="date-doc" value="{{ $date_doc ?? now()->format('Y-m-d') }}" wire:ignore/>
+                <input type="hidden" name="date-arriv" value="{{ $date_arriv ?? now()->format('Y-m-d\TH:i') }}" wire:ignore/>
+                <input type="hidden" name="objet" value="{{ $objet ?? '' }}" wire:ignore/>
 
                 @if (!$selectedDoc)
                     <div class="col-12 select_doc" onclick="scanToPdf();" wire:ignore>
@@ -36,6 +44,8 @@
                         </div>
                     </div>
                     <input type="hidden" name="is_scan" id="server_response" wire:ignore />
+                    
+
                     <div class="col-12" wire:ignore>
                         <div class="block-file ">
                             <input type="file" id="file-upload" name="document" accept=".pdf" required>
@@ -272,6 +282,43 @@
                         </div>
                     </div>
                 @endcan
+                <!-- Champs supplémentaires -->
+                <div class="col-12">
+                    <div class="row">
+                        <label class="col-5 col-form-label">Rédacteur</label>
+                        <div class="col-7">
+                            <input type="text" class="form-control" name="redacteur" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="row">
+                        <label class="col-5 col-form-label">Emetteur</label>
+                        <div class="col-7">
+                            <input type="text" class="form-control" name="expediteur_externe" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="row">
+                        <label class="col-5 col-form-label">Destination</label>
+                        <div class="col-7">
+                            <input type="text" class="form-control" name="destination" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <div class="row">
+                        <label class="col-5 col-form-label">Observations</label>
+                        <div class="col-7">
+                            <textarea name="observations" id="" cols="30" rows="3" class="form-control" style="resize: none"
+                                placeholder="Observations"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+              
 
                 <div class="col-12">
                     <div class="row">

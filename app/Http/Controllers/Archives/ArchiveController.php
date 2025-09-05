@@ -166,9 +166,14 @@ class ArchiveController extends Controller
                 $document->type = $request->get('type');
                 $document->nature_id = $request->get('nature');
                 $document->priorite_id = $request->get('priorite');
-                $document->date_ = $request->get('date-doc');
+                $document->date_du_courrier = $request->get('date-doc');
                 $document->date_arrive = $request->get('date-arriv');
                 $document->description = $request->get('objet');
+
+                $document->emetteur = $request->get('expediteur_externe');
+                $document->destination = $request->get('destination');
+                $document->observations = $request->get('observations');                
+                $document->redacteur = $request->get('redacteur');
 
                 // Utilisation de la classe File pour stocker le fichier
                 $document->document = (new File())->handle($request, 'document', 'documents');
@@ -214,9 +219,13 @@ class ArchiveController extends Controller
         $document->type = $request->get('type');
         $document->nature_id = $request->get('nature');
         $document->priorite_id = $request->get('priorite');
-        $document->date_arrive = $request->get('date-doc');
+        $document->date_du_courrier = $request->get('date-doc');
         $document->date_arrive = $request->get('date-arriv');
         $document->description = $request->get('objet');
+        $document->redacteur = $request->get('redacteur');
+        $document->emetteur = $request->get('expediteur_externe');
+        $document->destination = $request->get('destination');
+        $document->observations = $request->get('observations');
         $document->user_id = Auth::user()->id;
         $document->statut_id = 6; // Statut 'Archivé' ou autre à définir
         $document->created_by = Auth::user()->agent->id;
