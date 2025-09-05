@@ -792,7 +792,7 @@ class DocumentController extends Controller
         // Si c'est un courrier entrant, on utilise expediteur_interne_id
         if ($document->type === 1 && $document->courrier) {
             $document->emetteur = $request->expediteur_externe;
-            
+            $document->destination = $request->destination;
         } else {
             // Pour les autres types, on utilise expediteur_externe
             $document->expediteur_interne_id = $request->expediteur_interne_id;
