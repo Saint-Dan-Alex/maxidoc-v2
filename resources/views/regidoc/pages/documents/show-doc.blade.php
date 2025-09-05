@@ -523,27 +523,83 @@
 
     {{-- @livewire('document.modal-document-share', ['document' => $find_document]) --}}
 
-    <div class="modal fade" id="modal-new-archive" tabindex="-1" aria-labelledby="exampleModalLabel">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal fade" id="modal-new-archive" tabindex="-1" aria-labelledby="archiveModalLabel">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
+                    <h5 class="modal-title" id="archiveModalLabel">Archivage du document</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="form-group row g-3">
-                        <form action="{{ route('regidoc.documents.archive') }}" method="post">
-                            @csrf
-                            <input type="hidden" name="document_id" id="" value="{{ $find_document->id }}">
-                            <div class="content-text text-center">
-                                <h5>Archivage du document</h5>
-                                <p class="mb-0">Vous êtes sur le point d'archiver ce document, êtes-vous sûr de vouloir continuer ?</p>
-                            </div>
-                            <div class="col-lg-12 text-center mb-3">
-                                <button class="btn btn-add mt-2 w-100" type="submit">Confirmer</button>
-                            </div>
-                        </form>
+                <form action="{{ route('regidoc.documents.archive') }}" method="post" id="archiveForm">
+                    @csrf
+                    <input type="hidden" name="document_id" value="{{ $find_document->id }}">
+                    
+                    <div class="modal-body">
+                        <!-- 1. Date d'émission -->
+                        <div class="mb-3">
+                            <label for="date_emission" class="form-label">Date d'émission</label>
+                            @php
+                                $dateArrive = $find_document->date_arrive ? (is_string($find_document->date_arrive) ? \Carbon\Carbon::parse($find_document->date_arrive) : $find_document->date_arrive) : now();
+                            @endphp
+                            <input type="text" class="form-control" id="date_emission" 
+                                   value="{{ $dateArrive->format('d/m/Y') }}" 
+                                   disabled>
+                        </div>
+
+                        <!-- 2. Émetteur -->
+                        <div class="mb-3">
+                            <label for="emetteur" class="form-label">Émetteur</label>
+                            @if($find_document->type === 'courrier_entrant' && $find_document->courrier)
+                                <select class="form-select" id="expediteur_interne_id" name="expediteur_interne_id" required>
+                                    <option value="">Sélectionner un expéditeur</option>
+                                    @foreach($expediteurs as $expediteur)
+                                        <option value="{{ $expediteur->id }}" {{ $find_document->courrier->expediteur_interne_id == $expediteur->id ? 'selected' : '' }}>
+                                            {{ $expediteur->nom }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input type="text" class="form-control" id="expediteur_externe" name="expediteur_externe" 
+                                       value="{{ $find_document->courrier->externExpediteur->nom ?? 'Veillez selectionner un expéditeur' }}" required>
+                            @endif
+                        </div>
+
+                        <!-- 3. Rédacteur -->
+                        <div class="mb-3">
+                            <label for="redacteur" class="form-label">Rédacteur</label>
+                            <input type="text" class="form-control" id="redacteur" name="redacteur" required>
+                        </div>
+
+                        <!-- 4. Destination -->
+                        <div class="mb-3">
+                            <label for="destination" class="form-label">Destination</label>
+                            @if($find_document->type === 1)
+                                <input type="text" class="form-control" value="LerexcomPetroleum" disabled>
+                                <input type="hidden" name="destination" value="LerexcomPetroleum">
+                            @else
+                                <select class="form-select" id="destinataire_interne_id" name="destinataire_interne_id" required>
+                                    <option value="">Sélectionner un destinataire</option>
+                                    @foreach($agents as $agent)
+                                        <option value="{{ $agent->id }}">
+                                            {{ $agent->nom }} {{ $agent->prenom }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
+                        </div>
+
+                        <!-- 5. Observations -->
+                        <div class="mb-3">
+                            <label for="observations" class="form-label">Observations</label>
+                            <textarea class="form-control" id="observations" name="observations" rows="3"></textarea>
+                        </div>
                     </div>
-                </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Archiver le document</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

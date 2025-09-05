@@ -112,20 +112,35 @@ class DocumentController extends Controller
 
     public function showDoc(Request $request)
     {
-        if ($request->fichier_id && $request->tache_id) {
-            $doc = Document::findOrFail($request->fichier_id);
-            $tache = Tache::findOrFail($request->tache_id);
-            // if ($tache->agents->contains('id', Auth::user()->agent->id) || Auth::id() == $tache->user_id) {
-            // code...
-            return view('regidoc.pages.documents.show-task-doc')->with(
-                ['doc' => $doc, 'tache' => $tache]
-            );
-            // }
-        } elseif($request->fichier_id) {
-            $doc = Document::findOrFail($request->fichier_id);
-            return view('regidoc.pages.documents.show-task-doc')->with(
-                ['doc' => $doc,]
-            );
+        if ($request->fichier_id) {
+            $find_document = Document::with(['courrier', 'dossier'])->findOrFail($request->fichier_id);
+            
+            // Récupération des expéditeurs pour les courriers entrants
+            $expediteurs = [];
+            if ($find_document->type === 'courrier_entrant') {
+                $expediteurs = \App\Models\CourrierExpediteur::all();
+            }
+            
+            // Récupération des agents pour la destination (pour les documents sortants)
+            $agents = \App\Models\Agent::select('id', 'nom', 'prenom')->get();
+            
+            if ($request->tache_id) {
+                $tache = Tache::findOrFail($request->tache_id);
+                // if ($tache->agents->contains('id', Auth::user()->agent->id) || Auth::id() == $tache->user_id) {
+                return view('regidoc.pages.documents.show-task-doc')->with([
+                    'doc' => $find_document,
+                    'tache' => $tache,
+                    'expediteurs' => $expediteurs,
+                    'agents' => $agents
+                ]);
+                // }
+            } else {
+                return view('regidoc.pages.documents.show-doc')->with([
+                    'find_document' => $find_document,
+                    'expediteurs' => $expediteurs,
+                    'agents' => $agents
+                ]);
+            }
         }
         return abort('403');
     }
@@ -629,21 +644,30 @@ class DocumentController extends Controller
      */
     public function show(Document $document)
     {
- 
         $classeurs = Classeur::all();
         $dossiers = Dossier::all();
-        
-        // Récupérer les deux premiers documents avec is_default = 1
-        $defaultPdfs = Document::where('is_default', 1)
-            ->orderBy('id', 'asc')
+        $documents = Document::where('dossier_id', $document->dossier_id)
+            ->where('id', '!=', $document->id)
+            ->orderBy('created_at', 'desc')
             ->take(2)
             ->get();
             
-        return view('regidoc.pages.documents.show-doc')->with([
+        // Récupération des expéditeurs pour les courriers entrants
+        $expediteurs = [];
+        if ($document->type === 'courrier_entrant' && $document->courrier) {
+            $expediteurs = \App\Models\CourrierExpediteur::all();
+        }
+        
+        // Récupération des agents pour la destination (pour les documents sortants)
+        $agents = \App\Models\Agent::select('id', 'nom', 'prenom')->get();
+            
+        return view('regidoc.pages.documents.show-doc', [
             'find_document' => $document,
             'classeurs' => $classeurs,
             'dossiers' => $dossiers,
-            'defaultPdfs' => $defaultPdfs,
+            'expediteurs' => $expediteurs,
+            'agents' => $agents,
+            'documents' => $documents
         ]);
     }
 
@@ -749,15 +773,47 @@ class DocumentController extends Controller
 
     public function archive(Request $request)
     {
+        $request->validate([
+            'document_id' => 'required|exists:documents,id',
+            'redacteur' => 'required|string|max:255',
+            'observations' => 'nullable|string',
+            'expediteur_interne_id' => 'nullable|exists:courrier_expediteurs,id',
+            'expediteur_externe' => 'nullable|string|max:255',
+            'destinataire_interne_id' => 'nullable|exists:agents,id',
+            'destination' => 'nullable|string|max:255'
+        ]);
+
         $document = Document::find($request->document_id);
+        
+        // Mise à jour des champs du document
         $document->statut_id = 6;
-        $document-> archived_at = Carbon::now();
+        $document->archived_at = Carbon::now();
+        
+        // Si c'est un courrier entrant, on utilise expediteur_interne_id
+        if ($document->type === 'courrier_entrant' && $document->courrier) {
+            $document->courrier->expediteur_interne_id = $request->expediteur_interne_id;
+            $document->courrier->save();
+        } else {
+            // Pour les autres types, on utilise expediteur_externe
+            $document->expediteur_externe = $request->expediteur_externe;
+        }
+        
+        // Gestion du destinataire pour les documents sortants
+        if ($document->type !== 'courrier_entrant' && $request->has('destinataire_interne_id')) {
+            $document->destinataire_interne_id = $request->destinataire_interne_id;
+        }
+        
+        // Sauvegarde des informations d'archivage
+        $document->redacteur = $request->redacteur;
+        $document->observations = $request->observations;
+        
         $document->save();
 
         $content = json_encode([
             'name' => 'Document',
             'statut' => 'success',
-            'message' => 'Document archivé avec succès !',
+            'message' => 'Document archivé avec s
+            uccès !',
         ]);
 
         session()->flash(

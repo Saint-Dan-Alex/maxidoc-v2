@@ -25,9 +25,11 @@ return new class extends Migration
             $table->string('reference_interne', 200)->nullable();
             $table->string('libelle', 255)->nullable();
             $table->text('title')->nullable();
+            $table->text('redacteur')->nullable();
             $table->foreignId('type')->nullable()->constrained('document_types')->nullOnDelete();
             $table->text('description')->nullable();
             $table->text('objet')->nullable();
+            $table->text('observations')->nullable();
             $table->text('document')->nullable(); // JSON des fichiers
 
             // 🔹 Dates
@@ -57,8 +59,9 @@ return new class extends Migration
                   ->nullOnDelete();
 
             // 🔹 Expéditeur
-            $table->text('expediteur_externe')->nullable(); // Ex: entreprise, particulier
-            $table->foreignId('expediteur_interne_id')->nullable()->constrained('courrier_expediteurs')->nullOnDelete();
+            // $table->text('expediteur_externe')->nullable(); // Ex: entreprise, particulier
+            $table->foreignId('expediteur_interne_id')->nullable()->constrained('agents')->nullOnDelete();
+            $table->foreignId('expediteur_externe')->nullable()->constrained('courrier_expediteurs')->nullOnDelete();
 
             // 🔹 Destinataire
             $table->foreignId('destinataire_externe_id')->nullable()->constrained('courrier_destinateur_externes')->nullOnDelete();
