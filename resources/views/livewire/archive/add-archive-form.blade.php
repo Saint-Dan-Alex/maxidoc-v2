@@ -285,20 +285,6 @@
                 <div class="type-1-group d-none" wire:ignore>
                     <div class="col-12 mb-3" >
                         <div class="row">
-                            <label class="col-5 col-form-label">Rédacteur</label>
-                            <div class="col-7">
-                                <select class="form-select form-control select2" name="redacteur" required
-                                    data-placeholder="Sélectionnez"
-                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
-                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
-                                    data-get-items-field="nom" data-method="get" data-label="nom" data-max-selection="1"
-                                    data-related-model="CourrierExpediteur" data-tags="true"  @if ($type == [1]) required @endif>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 mb-3" >
-                        <div class="row">
                             <label class="col-5 col-form-label">Emetteur</label>
                             <div class="col-7">
                                 <select class="form-select form-control select2" name="expediteur_externe" required
@@ -311,6 +297,21 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-12 mb-3" >
+                        <div class="row">
+                            <label class="col-5 col-form-label">Rédacteur</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="redacteur" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.redacteurs') }}"
+                                    data-route="{{ route('regidoc.ajax.redacteurs.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom" data-max-selection="1"
+                                    data-related-model="Redacteur" data-tags="true"  @if ($type == [1]) required @endif>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="col-12 mb-3" >
                         <div class="row">
                             <label class="col-5 col-form-label">Destination</label>
