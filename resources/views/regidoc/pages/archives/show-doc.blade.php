@@ -71,7 +71,7 @@
                                 {{-- <label for="inputPassword" class="col-5 col-form-label">Nom</label> --}}
 
                                     <div class="col-5">
-                                        <span>N° d'enregistrement</span>
+                                        <label for="inputPassword" class="col-form-label">N° d'enregistrement</label>
                                     </div>
                                     <div class="col-7">
                                         <p class="items mb-0">{{ $find_document->reference_interne }}</p>

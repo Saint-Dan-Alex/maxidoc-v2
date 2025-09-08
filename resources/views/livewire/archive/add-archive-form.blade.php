@@ -24,24 +24,7 @@
                 {{-- AFFICHAGE POUR LES AUTRES UTILISATEURS : FORMULAIRE COMPLET --}}
 
                 
-                <div class="col-12">
-                    <div class="row" wire:ignore>
-                        <label class="col-5 col-form-label">Type de document</label>
-                        <div class="col-7">
-                            <select class="form-select form-control select autreSelect2"
-                                aria-label="Default select example" name="type" id="type_id" required wire:model='type' onchange="console.log('[UI] Type choisi:', this.value); var v=this.value; if(v==1){$('.type-3-group').addClass('d-none').hide();$('.type-1-group').removeClass('d-none').show();}else if(v==3){$('.type-1-group').addClass('d-none').hide();$('.type-3-group').removeClass('d-none').show();}else{$('.type-1-group,.type-3-group').addClass('d-none').hide();}">
-                                <option value="" selected disabled>Selectionnez</option>
-                                @foreach ($types as $type)
-                                    @if ($type->id != 2)
-                                        <option value="{{ $type->id }}">
-                                            {{ $type->titre }}
-                                        </option>
-                                    @endif
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                
 
                 @if (!$selectedDoc)
                     <div class="col-12 select_doc" onclick="scanToPdf();" wire:ignore>
@@ -103,8 +86,26 @@
                 @else
                     <input type="hidden" name="selected_doc" value="{{ $fileName }}" id="" wire:ignore />
                 @endif
+                <div class="col-12">
+                    <div class="row" wire:ignore>
+                        <label class="col-5 col-form-label">Type de document</label>
+                        <div class="col-7">
+                            <select class="form-select form-control select autreSelect2"
+                                aria-label="Default select example" name="type" id="type_id" required wire:model='type' onchange="console.log('[UI] Type choisi:', this.value); var v=this.value; if(v==1){$('.type-3-group').addClass('d-none').hide();$('.type-1-group').removeClass('d-none').show();}else if(v==3){$('.type-1-group').addClass('d-none').hide();$('.type-3-group').removeClass('d-none').show();}else{$('.type-1-group,.type-3-group').addClass('d-none').hide();}">
+                                <option value="" selected disabled>Selectionnez</option>
+                                @foreach ($types as $type)
+                                    @if ($type->id != 2)
+                                        <option value="{{ $type->id }}">
+                                            {{ $type->titre }}
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 
-                {{-- <div class="col-12 categorie_field" wire:ignore>
+                <div class="col-12 categorie_field" wire:ignore>
                     <div class="row">
                         <label class="col-5 col-form-label">Catégorie</label>
                         <div class="col-7" wire:ignore>
@@ -118,7 +119,8 @@
                             </select>
                         </div>
                     </div>
-                </div> --}}
+                </div>
+                
 
                 {{-- <div class="col-12" wire:ignore>
                     <h5 class="mt-1 title-info">Destination du courrier</h5>
@@ -265,20 +267,23 @@
                         </div>
                     </div>
                     
-                    <div class="col-12 priote_field" wire:ignore>
-                        <div class="row">
-                            <label class="col-5 col-form-label">Priorité</label>
-                            <div class="col-7" wire:ignore>
-                                <select class="form-select form-control select2" aria-label="Default select example"
-                                    name="priorite" data-placeholder="Sélectionnez"
-                                    data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
-                                    data-get-items-field="titre" data-method="get" data-label="titre"
-                                    data-related-model="Priorite" @if ($type == [1, 3]) required @endif>
-                                </select>
-                            </div>
+                    
+                @endcan
+                <div class="col-12 nature_field" wire:ignore>
+                    <div class="row">
+                        <label class="col-5 col-form-label">Nature</label>
+                        <div class="col-7" wire:ignore>
+                            <select class="form-select form-control select2" aria-label="Default select example"
+                                name="nature" data-placeholder="Sélectionnez"
+                                data-get-items-route="{{ route('regidoc.ajax.naturecourriers') }}"
+                                data-route="{{ route('regidoc.ajax.naturecourriers.save') }}"
+                                data-get-items-field="titre" data-method="get" data-label="titre"
+                                data-related-model="CourrierNature" data-tags="true"
+                                @if ($type == [1, 3]) required @endif>
+                            </select>
                         </div>
                     </div>
-                @endcan
+                </div>
                 <!-- Champs supplémentaires -->
                 <!-- Groupes d'inputs spécifiques par type -->
                 <!-- Type 1: Courrier entrant -->
