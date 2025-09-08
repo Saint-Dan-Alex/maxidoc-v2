@@ -280,6 +280,14 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 Route::get('types/courriers', [AjaxController::class, 'typescourriers'])->name('ajax.typescourriers'); 
                 Route::get('/priorites', [AjaxController::class, 'priorites'])->name('ajax.priorites');
                 Route::get('types/get/all/agents', [DirectionController::class, 'getAgents'])->name('ajax.getAgents');
+                // JSON endpoint for Select2: list agents
+                Route::get('types/get/all/agents/json', function (\Illuminate\Http\Request $request) {
+                    return app(\App\Http\Controllers\RH\DirectionController::class)->relation($request, 'agent');
+                })->name('ajax.getAgents.json');
+                // JSON endpoint for Select2: list services
+                Route::get('types/get/all/services/json', function (\Illuminate\Http\Request $request) {
+                    return app(\App\Http\Controllers\RH\DirectionController::class)->relation($request, 'service');
+                })->name('ajax.getServices.json');
                 Route::get('categories/courriers', [AjaxController::class, 'categorycourriers'])->name('ajax.categorycourriers');
                 Route::post('categories/courriers/save', [AjaxController::class, 'categoryCourriersSave'])->name('ajax.categorycourriers.save');
                 Route::get('natures/courriers', [AjaxController::class, 'naturecourriers'])->name('ajax.naturecourriers');

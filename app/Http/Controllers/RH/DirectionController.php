@@ -387,6 +387,15 @@ class DirectionController extends Controller
 
     $query = app($modelClass)::query();
 
+    // Si on demande des agents et qu'un filtre "relative_id" est fourni,
+    // filtrer par service (service_id)
+    if (strtolower($slug) === 'agent') {
+        $relativeId = $request->input('relative_id');
+        if (!empty($relativeId)) {
+            $query->where('service_id', $relativeId);
+        }
+    }
+
     if ($search) {
         foreach ($labels as $index => $label) {
             if ($index === 0) {
@@ -416,7 +425,21 @@ class DirectionController extends Controller
     foreach ($relationshipOptions as $item) {
         $text = '';
         foreach ($labels as $label) {
-            $text .= $item->{$label} . ' ';
+            // Sécuriser l'accès aux attributs inexistants
+            $value = isset($item->{$label}) ? $item->{$label} : '';
+            $text .= $value . ' ';
+        }
+
+        // Si on liste des agents, ajouter le service entre parenthèses si disponible
+        if (strtolower($slug) === 'agent') {
+            try {
+                $serviceName = $item->service->titre ?? $item->service->nom ?? null;
+            } catch (\Throwable $e) {
+                $serviceName = null;
+            }
+            if (!empty($serviceName)) {
+                $text = trim($text) . ' (' . $serviceName . ')';
+            }
         }
 
         $results[] = [
