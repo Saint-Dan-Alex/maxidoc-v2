@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Archive;
 
 use Livewire\Component;
 use App\Models\CourrierFollower;
+use App\Models\Document;
 
 class AddArchiveForm extends Component
 {
@@ -46,7 +47,23 @@ class AddArchiveForm extends Component
 
     public function changeNumRef()
     {
-        $this->num = uniqid('doc-');
+        // Format attendu: Doc-YYYY-00000001 (incrément annuel)
+        $year = now()->year;
+        $prefix = sprintf('Doc-%d-', $year);
+
+        // Récupérer la dernière référence de l'année courante
+        $lastRef = Document::where('reference_interne', 'like', $prefix . '%')
+            ->orderBy('reference_interne', 'desc')
+            ->value('reference_interne');
+
+        $next = 1;
+        if ($lastRef) {
+            // Extraire les 8 derniers chiffres et incrémenter
+            $lastSeq = (int) substr($lastRef, -8);
+            $next = $lastSeq + 1;
+        }
+
+        $this->num = $prefix . str_pad((string) $next, 8, '0', STR_PAD_LEFT);
     }
 
     public function render()
