@@ -294,6 +294,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 Route::post('natures/courriers/save', [AjaxController::class, 'natureCourriersSave'])->name('ajax.naturecourriers.save');
                 Route::get('expediteurs/courriers', [AjaxController::class, 'expediteurcourriers'])->name('ajax.expediteurcourriers');
                 Route::post('expediteurs/courriers/save', [AjaxController::class, 'expediteurCourriersSave'])->name('ajax.expediteurcourriers.save');
+                // Redacteurs (AJAX for Select2)
+                Route::get('redacteurs', [AjaxController::class, 'redacteurs'])->name('ajax.redacteurs');
+                Route::post('redacteurs/save', [AjaxController::class, 'redacteursSave'])->name('ajax.redacteurs.save');
                 Route::get('destinataires/courriers', [AjaxController::class, 'destinatairecourriers'])->name('ajax.destinatairecourriers');
                 Route::post('destinataires/courriers/save', [AjaxController::class, 'destinatairecourriersSave'])->name('ajax.destinatairecourriers.save');
                 // Archives destinations
