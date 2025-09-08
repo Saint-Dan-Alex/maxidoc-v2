@@ -23,21 +23,13 @@
           
                 {{-- AFFICHAGE POUR LES AUTRES UTILISATEURS : FORMULAIRE COMPLET --}}
 
-                 <input type="hidden" name="type" value="1" wire:ignore/>
-                <input type="hidden" name="categorie" value="{{ $categorie ?? '' }}" wire:ignore/>
-                <input type="hidden" name="ref" value="{{ $ref ?? '' }}" wire:ignore/>
-                <input type="hidden" name="ref_interne" value="{{ $ref_interne ?? '' }}" wire:ignore/>
-                <input type="hidden" name="nature" value="{{ $nature ?? '' }}" wire:ignore/>
-                <input type="hidden" name="date-doc" value="{{ $date_doc ?? now()->format('Y-m-d') }}" wire:ignore/>
-                <input type="hidden" name="date-arriv" value="{{ $date_arriv ?? now()->format('Y-m-d\TH:i') }}" wire:ignore/>
-                <input type="hidden" name="objet" value="{{ $objet ?? '' }}" wire:ignore/>
-
+                
                 <div class="col-12">
                     <div class="row" wire:ignore>
                         <label class="col-5 col-form-label">Type de document</label>
                         <div class="col-7">
                             <select class="form-select form-control select autreSelect2"
-                                aria-label="Default select example" name="type" id="type_id" required>
+                                aria-label="Default select example" name="type" id="type_id" required wire:model='type' >
                                 <option value="" selected disabled>Selectionnez</option>
                                 @foreach ($types as $type)
                                     @if ($type->id != 2)
@@ -291,7 +283,7 @@
                 <!-- Groupes d'inputs spécifiques par type -->
                 <!-- Type 1: Courrier entrant -->
                 <div class="type-1-group">
-                    <div class="col-12 mb-3" wire:ignore>
+                    <div class="col-12 mb-3" >
                         <div class="row">
                             <label class="col-5 col-form-label">Rédacteur</label>
                             <div class="col-7">
@@ -300,12 +292,12 @@
                                     data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
                                     data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
                                     data-get-items-field="nom" data-method="get" data-label="nom" data-max-selection="1"
-                                    data-related-model="CourrierExpediteur" data-tags="true">
+                                    data-related-model="CourrierExpediteur" data-tags="true"  @if ($type == [1]) required @endif>
                                 </select>
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 mb-3" wire:ignore>
+                    <div class="col-12 mb-3" >
                         <div class="row">
                             <label class="col-5 col-form-label">Emetteur</label>
                             <div class="col-7">
@@ -314,12 +306,12 @@
                                     data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
                                     data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
                                     data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="CourrierExpediteur" data-tags="true">
+                                    data-related-model="CourrierExpediteur" data-tags="true" @if ($type == [1]) required @endif>
                                 </select>
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 mb-3" wire:ignore>
+                    <div class="col-12 mb-3" >
                         <div class="row">
                             <label class="col-5 col-form-label">Destination</label>
                             <div class="col-7">
@@ -328,7 +320,7 @@
                                     data-get-items-route="{{ route('regidoc.ajax.destinatairearchives') }}"
                                     data-route="{{ route('regidoc.ajax.destinatairearchives.save') }}"
                                     data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="Destination" data-tags="true" data-max-selection="1" multiple>
+                                    data-related-model="Destination" data-tags="true" data-max-selection="1" multiple @if ($type == [1]) required @endif>
                                 </select>
                             </div>
                         </div>
@@ -337,41 +329,41 @@
 
                 <!-- Type 3: Courrier sortant -->
                 <div class="type-3-group d-none">
-                    <div class="col-12 mb-3" wire:ignore>
+                    <div class="col-12 mb-3" >
                         <div class="row">
-                            <label class="col-5 col-form-label">Rédacteur</label>
+                            <label class="col-5 col-form-label">Rédacteur 2</label>
                             <div class="col-7">
                                 <select class="form-select form-control select2" name="redacteur" required
                                     data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
                                     data-route=""
                                     data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="Agent" data-tags="false">
+                                    data-related-model="Agent" data-tags="false" @if ($type == [3]) required @endif>
                                 </select>
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 mb-3" wire:ignore>
+                    <div class="col-12 mb-3" >
                         <div class="row">
-                            <label class="col-5 col-form-label">Emetteur</label>
+                            <label class="col-5 col-form-label">Emetteur 2</label>
                             <div class="col-7">
                                 <select class="form-select form-control select2" name="expediteur_externe" required
                                     data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
                                     data-route=""
                                     data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="Agent" data-tags="false">
+                                    data-related-model="Agent" data-tags="false" @if ($type == [3]) required @endif>
                                 </select>
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 mb-3" wire:ignore>
+                    <div class="col-12 mb-3" >
                         <div class="row">
-                            <label class="col-5 col-form-label">Destination</label>
+                            <label class="col-5 col-form-label">Destination 2</label>
                             <div class="col-7">
                                 <select class="form-select form-control select2" name="destination" required
                                     data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
                                     data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
                                     data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="CourrierExpediteur" data-tags="true">
+                                    data-related-model="CourrierExpediteur" data-tags="true" @if ($type == [3]) required @endif>
                                 </select>
                             </div>
                         </div>
@@ -487,468 +479,192 @@
 </div>
 {{-- @dd(Storage::get('public/tmp/file.pdf')) --}}
 @push('livewireScripts')
-    <script src="{{ asset('vendor/scannerjs/scanner.js') }}"></script>
-
-    <script>
-        //https://github.com/Asprise/scannerjs.javascript-scanner-access-in-browsers-chrome-ie.scanner.js/blob/master/demo-04-scan-pdf-upload-directly.htm
-        function scanToPdf() {
-            scanner.scan(displayServerResponse, {
-                "can_app_enabled": false,
-                "java_applet_enabled": true,
-                "output_settings": [{
-                    "type": "save",
-                    "format": "pdf",
-                    "save_path": "{{ str_replace('\\', '/', storage_path() . '\\app\\public\\tmp_scanne\\file.pdf') }}"
-                }]
-            });
-
-            // Pas de filtre de catégorie voulu: aucun relative_id n'est forcé
-        }
-
-        /** Processes the scan result */
-        function displayServerResponse(successful, mesg, response) {
-            var myInput = document.getElementById('file-upload');
-            var file = "{{ asset('storage') . '/tmp_scanne/file.pdf' }}"
-            console.log(file);
-            const iframe = document.querySelector('.content-scanner iframe');
-            $(iframe).attr('src', "{{ asset('storage') . '/tmp_scanne/file.pdf' }}");
-            console.log('Test :' + iframe.src);
-            $('block-no-file').addClass('d-none');
-            $(iframe).removeClass('d-none')
-            $(iframe).addClass('show')
-            $(iframe).addClass('fade')
-            document.getElementById('server_response').value = 'true';
-            // Le scan remplace le fichier: on enlève le required du champ fichier pour ne pas bloquer la soumission
-            $('#file-upload').prop('required', false);
-        }
-    </script>
-    <script>
-        document.getElementById("file-upload").addEventListener("change", function() {
-            const file = this.files[0];
-
-            if (file) {
-                const fileURL = URL.createObjectURL(file);
-                const iframe = document.getElementById("fileDisplay");
-
-                // Affiche le fichier dans l'iframe
-                iframe.src = fileURL;
-            } else {
-                alert("Veuillez sélectionner un fichier valide.");
-            }
-
-            // Les fonctions toggleTypeGroups et syncRequiredVisibility sont définies dans le scope global (voir plus bas)
+<script src="{{ asset('vendor/scannerjs/scanner.js') }}"></script>
+<script>
+    function scanToPdf() {
+        scanner.scan(displayServerResponse, {
+            "can_app_enabled": false,
+            "java_applet_enabled": true,
+            "output_settings": [{
+                "type": "save",
+                "format": "pdf",
+                "save_path": "{{ str_replace('\\', '/', storage_path() . '/app/public/tmp_scanne/file.pdf') }}"
+            }]
         });
-        $(document).ready(function() {
-            // Afficher/Masquer les groupes spécifiques au type (disponible partout)
-            function toggleTypeGroups(typeVal) {
-                // Sélecteurs utiles
-                const g1 = $('.type-1-group');
-                const g3 = $('.type-3-group');
+    }
 
-                // Fonction utilitaire pour (dés)activer les champs d'un groupe
-                const setGroupState = (groupEl, visible) => {
-                    if (visible) {
-                        groupEl.removeClass('d-none');
-                        groupEl.find('select, input, textarea').prop('disabled', false);
-                        // Rétablir le required uniquement sur les champs marqués explicitement
-                        groupEl.find('[name="redacteur"], [name="expediteur_externe"], [name="destination"]').attr('required', true);
-                    } else {
-                        groupEl.addClass('d-none');
-                        groupEl.find('select, input, textarea').prop('disabled', true).attr('required', false);
-                    }
-                };
+    function displayServerResponse(successful, mesg, response) {
+        const fileURL = "{{ asset('storage/tmp_scanne/file.pdf') }}";
+        const iframe = document.querySelector('.content-scanner iframe');
+        $(iframe).attr('src', fileURL + '?t=' + new Date().getTime());
+        $('.block-no-file').addClass('d-none');
+        $(iframe).removeClass('d-none').addClass('show fade');
+        document.getElementById('server_response').value = 'true';
+        $('#file-upload').prop('required', false);
+    }
+</script>
 
-                if (typeVal == 1) {
-                    setGroupState(g1, true);
-                    setGroupState(g3, false);
-                } else if (typeVal == 3) {
-                    setGroupState(g1, false);
-                    setGroupState(g3, true);
-                } else {
-                    setGroupState(g1, false);
-                    setGroupState(g3, false);
-                }
-                // Synchroniser les champs requis selon la visibilité
-                syncRequiredVisibility();
-            }
+<script>
+    document.getElementById("file-upload").addEventListener("change", function() {
+        const file = this.files[0];
+        if (file) {
+            const fileURL = URL.createObjectURL(file);
+            document.getElementById("fileDisplay").src = fileURL;
+        }
+    });
 
-            // Retirer automatiquement 'required' sur les champs non visibles et le réactiver quand ils redeviennent visibles
-            function syncRequiredVisibility() {
-                // Marquer l'état d'origine une fois
-                $('[required]').each(function () {
-                    const $el = $(this);
-                    if ($el.data('orig-required') === undefined) {
-                        $el.data('orig-required', true);
-                    }
-                });
+    document.addEventListener('livewire:initialized', () => {
+        // Fonction pour afficher/masquer les groupes selon le type
+        function toggleTypeGroups(typeVal) {
+            const g1 = $('.type-1-group');
+            const g3 = $('.type-3-group');
 
-                // Parcourir tous les champs potentiellement requis
-                $('input, select, textarea').each(function () {
-                    const $el = $(this);
-                    const origReq = $el.data('orig-required') === true;
-                    const isVisible = $el.is(':visible');
-                    if (!isVisible) {
-                        // Cacher => pas required
-                        if ($el.prop('required')) $el.prop('required', false);
-                    } else if (origReq) {
-                        // Visible et marqué requis d'origine => réactiver
-                        if (!$el.prop('required')) $el.prop('required', true);
-                    }
-                });
-            }
-
-            // Initialisation affichage selon le type sélectionné (si sélecteur présent)
-            if ($('#type_id').length) {
-                setEntrat($('#type_id').val());
-                toggleTypeGroups($('#type_id').val());
-            } else {
-                // Pas de sélecteur de type visible: synchroniser au moins les required/visibility
-                syncRequiredVisibility();
-            }
-
-            $('#type_id').on('change', function(e) {
-                var data = e.target.value;
-                setEntrat(data);
-                toggleTypeGroups(data);
-            });
-
-            $('.col-12.d-none div > div > input').attr('required', false);
-            $('.col-12.d-none div > div > select').attr('required', false);
-
-            function setEntrat(data) {
-                @this.type = data;
-                @this.changeNumRef();
-
-                if (data == 2 || data == 3) {
-
-                    $('.isConfidentiel').addClass('d-none')
-                    $('#copie').removeClass('d-none')
-
-                    $('.exped_extern').addClass('d-none');
-                    $('.exped_intern').removeClass('d-none');
-                    $('.block_traitant').removeClass('d-none');
-                    $('.block_initiateur').removeClass('d-none');
-                    $('.block_echeance').removeClass('d-none');
-
-                    $('.categorie_field').addClass('d-none');
-                    $('.priote_field').removeClass('d-none');
-                    // $('.datearrive_field').removeClass('d-none');
-                    $('.datearrive_field').addClass('d-none');
-                    $('.nature_field').removeClass('d-none');
-
-                    $('#destination2').removeClass('d-none');
-
-                    $('.exped_intern select').val("");
-                    $('.exped_intern select').attr("disabled", false);
-
-                    $('')
-                } else {
-
-                    $('.isConfidentiel').removeClass('d-none')
-                    $('#copie').addClass('d-none')
-
-                    $('.exped_extern').removeClass('d-none');
-                    $('.exped_intern').addClass('d-none');
-                    $('.block_traitant').addClass('d-none');
-                    $('.block_initiateur').addClass('d-none');
-                    $('.block_echeance').addClass('d-none');
-                    $('.dest-interne').addClass('d-none');
-
-                    $('.categorie_field').removeClass('d-none');
-                    $('.priote_field').removeClass('d-none');
-                    $('.datearrive_field').removeClass('d-none');
-                    $('.nature_field').removeClass('d-none');
-
-                    $('#destination2').addClass('d-none');
-
-                    $('#destination').parent().parent().parent().addClass('d-none');
-
-                    $('.exped_intern select').val("");
-                    $('.exped_intern select').attr("disabled", false);
-                }
-
-                if (data == 2) {
-                    $('.priote_field').addClass('d-none');
-                    $('.datearrive_field').addClass('d-none');
-                    $('.block_echeance').addClass('d-none');
-                    $('.nature_field').addClass('d-none');
-                    $('.exped_intern select').val("");
-                    $('.exped_intern select').attr("disabled", false);
-
-                    $('#destination').parent().parent().parent().removeClass('d-none');
-                    $('#destination2').parent().parent().parent().addClass('d-none');
-                }
-
-                if (data == 3) {
-                    $('.exped_intern select').val("{{ Auth::user()->agent->id }}");
-                    $('.exped_intern select').attr("disabled", true);
-                    $('#destination2').parent().parent().parent().removeClass('d-none');
-                    $('#destination').parent().parent().parent().addClass('d-none');
-                }
-            }
-
-            $('.selectCopie').select2({
-                tags: $(this).data('tags') ? $(this).data('tags') : false,
-                placeholder: $(this).data('placeholder'),
-                language: "fr",
-                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') :
-                    null,
-                width: "100%"
-            });
-
-            $('.autreSelect2').select2({
-                tags: $(this).data('tags') ? $(this).data('tags') : false,
-                placeholder: $(this).data('placeholder'),
-                language: "fr",
-                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') :
-                    null,
-                width: "100%"
-            });
-
-            // Initialisation générique pour tous les .select2 avec attributs data-
-            $('.select2').each(function() {
-                const $el = $(this);
-                const getUrl = $el.data('get-items-route');
-                const saveUrl = $el.data('route');
-                const label = $el.data('get-items-field') || $el.data('label');
-                const model = $el.data('related-model');
-                const tags = String($el.data('tags')) === 'true';
-                const maxSel = $el.data('max-selection') || null;
-                const placeholder = $el.data('placeholder') || 'Sélectionnez';
-
-                $el.select2({
-                    tags: tags,
-                    placeholder: placeholder,
-                    language: 'fr',
-                    maximumSelectionLength: maxSel,
-                    minimumInputLength: 0,
-                    width: '100%',
-                    ajax: getUrl ? {
-                        url: getUrl,
-                        dataType: 'json',
-                        delay: 250,
-                        headers: { 'Accept': 'application/json' },
-                        data: function(params) {
-                            const page = params.page || 1;
-                            const term = params.term || '';
-                            const relativeId = $el.data('relative-id') || null;
-                            const method = $el.data('method') || 'add';
-                            return {
-                                search: term,
-                                page: page,
-                                label: label,
-                                model: model,
-                                relative_id: relativeId,
-                                method: method
-                            };
-                        },
-                        processResults: function(data, params) {
-                            params.page = params.page || 1;
-                            // Format AjaxController: { results: [{id,text}], pagination: {more: bool} }
-                            if (data && Array.isArray(data.results)) {
-                                return { results: data.results, pagination: { more: data.pagination ? !!data.pagination.more : false } };
-                            }
-                            // Format Resource paginate: { data: [...], current_page, last_page }
-                            if (data && Array.isArray(data.data)) {
-                                const items = data.data.map(function(item) {
-                                    return { id: item.id, text: item[label] || item.nom || item.titre || item.title };
-                                });
-                                const more = data.current_page && data.last_page ? (data.current_page < data.last_page) : false;
-                                return { results: items, pagination: { more: more } };
-                            }
-                            // Fallback
-                            return { results: [] };
-                        },
-                        error: function(xhr) {
-                            console && console.error && console.error('Select2 AJAX error', getUrl, xhr);
-                        }
-                    } : null
-                });
-
-                // Sauvegarde des nouveaux tags si autorisé
-                if (tags && saveUrl) {
-                    $el.on('select2:select', function(e) {
-                        const data = e.params.data;
-                        // Si l'élément sélectionné n'a pas d'id numérique, on tente de le créer côté serveur
-                        if (!data.id || isNaN(Number(data.id))) {
-                            const payload = {};
-                            payload[label] = data.text;
-                            const relativeId = $el.data('relative-id');
-                            if (typeof relativeId !== 'undefined') payload['relative_id'] = relativeId;
-
-                            $.ajax({
-                                url: saveUrl,
-                                method: 'POST',
-                                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-                                data: payload,
-                                success: function(resp) {
-                                    // AjaxController renvoie {results: {...}}
-                                    const created = resp && (resp.results || resp);
-                                    const newId = created.id || (created.results ? created.results.id : null);
-                                    if (newId) {
-                                        // Remplacer la valeur temporaire par l'ID créé
-                                        const option = new Option(data.text, newId, true, true);
-                                        $el.append(option).trigger('change');
-                                    }
-                                },
-                                error: function() {
-                                    // Rejeter la sélection si la création a échoué
-                                    $el.find('option[value="' + data.id + '"]').remove();
-                                    $el.trigger('change');
-                                }
-                            });
+            const setGroupState = (groupEl, visible) => {
+                if (visible) {
+                    groupEl.removeClass('d-none');
+                    // Réinitialiser les select2 après affichage
+                    groupEl.find('.select2').each(function() {
+                        const $el = $(this);
+                        if (!$el.data('select2')) {
+                            $el.select2($el.data('select2-options') || {});
                         }
                     });
-                }
-            });
-
-            // $('#file-upload').on('change', function(e) {
-            //     let files = e.target.files;
-            //     if (files.length > 0) {
-            //         $('.select_doc').addClass('d-none');
-            //     } else {
-            //         $('.select_doc').removeClass('d-none');
-            //     }
-            // });
-
-            $('select[name="service_init"]').on('change', function(e) {
-                @this.changeServiceInit(e.target.value);
-            });
-
-            // Gestion explicite du clic sur le bouton pour montrer le premier champ invalide
-            $('#submit-btn').on('click', function(e) {
-                const btn = this;
-                if (btn.hasAttribute('disabled')) {
-                    return; // bouton inactif => ne rien faire
-                }
-                const form = document.getElementById('archive-form');
-                if (!form.checkValidity()) {
-                    e.preventDefault();
-                    const invalid = form.querySelector(':invalid');
-                    if (invalid) {
-                        invalid.focus();
-                        if (typeof invalid.reportValidity === 'function') invalid.reportValidity();
-                    }
-                    return false;
-                }
-                // Soumettre explicitement (évite toute interception silencieuse)
-                console.log('Soumission du formulaire Archive vers', form.action);
-                form.submit();
-            });
-
-            $('select[name="categorie"]').on('change', function(e) {
-                $('select[name=exp]').data('relative-id', e.target.value);
-                $('select[name=exp]').attr('data-relative-id', e.target.value);
-                $('select[name=exp]').trigger('change');
-            });
-
-            $('select[name="exp"]').select2({
-                tags: $('select[name="exp"]').data('tags') ? $('select[name="exp"]').data('tags') : false,
-                placeholder: $('select[name="exp"]').data('placeholder'),
-                language: "fr",
-                createTag: function(params) {
-                    var term = $.trim(params.term);
-
-                    if (term === '') {
-                        return null;
-                    }
-
-                    return {
-                        id: term,
-                        text: term,
-                        newTag: true
-                    }
-                },
-                ajax: {
-                    url: $('select[name="exp"]').data('get-items-route'),
-                    data: function(params) {
-                        var query = {
-                            search: params.term,
-                            type: $('select[name="exp"]').data('get-items-field'),
-                            method: $('select[name="exp"]').data('method'),
-                            id: $('select[name="exp"]').data('id'),
-                            page: params.page || 1,
-                            model: $('select[name="exp"]').data('related-model'),
-                            label: $('select[name="exp"]').data('label'),
-                            relative_id: $('select[name="exp"]').data('relative-id'),
-                        }
-                        return query;
-                    }
-                },
-                width: '100%',
-                maximumSelectionLength: $('select[name="exp"]').data('max-selection') ? $(
-                    'select[name="exp"]').data('max-selection') : null,
-            });
-
-            $('select[name="exp"]').on('select2:select', function(e) {
-                var data = e.params.data;
-
-                if (data.id == '') {
-                    // "None" was selected. Clear all selected options
-                    $('select[name="exp"]').val([]).trigger('change');
                 } else {
-                    $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected',
-                        'selected');
+                    groupEl.addClass('d-none');
                 }
-            });
+            };
 
-            $('select[name="exp"]').on('select2:unselect', function(e) {
-                var data = e.params.data;
-                $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected',
-                    false);
-            });
+            if (typeVal == 1) {
+                setGroupState(g1, true);
+                setGroupState(g3, false);
+            } else if (typeVal == 3) {
+                setGroupState(g1, false);
+                setGroupState(g3, true);
+            } else {
+                setGroupState(g1, false);
+                setGroupState(g3, false);
+            }
+        }
 
-            $('select[name="exp"]').on('select2:selecting', function(e) {
+        // Enregistrer les options Select2 pour réutilisation
+        $('.autreSelect2, .select2').each(function() {
+            const $el = $(this);
+            const getUrl = $el.data('get-items-route');
+            const saveUrl = $el.data('route');
+            const label = $el.data('get-items-field') || $el.data('label');
+            const model = $el.data('related-model');
+            const tags = $el.data('tags') === true || $el.data('tags') === 'true';
+            const maxSel = $el.data('max-selection') || null;
+            const placeholder = $el.data('placeholder') || 'Sélectionnez';
 
-                if (!$('select[name="exp"]').data('tags')) {
-                    return;
-                }
-                var $el = $('select[name="exp"]');
-                var route = $el.data('route');
-                var label = $el.data('label');
-                var relativeId = $el.data('relative-id');
-                var errorMessage = $el.data('error-message');
-                var newTag = e.params.args.data.newTag;
-
-                if (!newTag) return;
-
-                $el.select2('close');
-
-                $.post(route, {
-                    [label]: e.params.args.data.text,
-                    relative_id: relativeId,
-                    _tagging: true,
-                }).done(function(data) {
-                    console.log(data);
-                    var newOption = new Option(e.params.args.data.text, data.results.id,
-                        false, true);
-                    $el.append(newOption).trigger('change');
-                }).fail(function(error) {
-                    // toastr.error(errorMessage);
-                    console.log(errorMessage);
-                });
-
-                return false;
-            });
-
-
-            // select all required fields
-            $('input[required], select[required]').on('change', function() {
-                var fields = $('input[required], select[required]');
-                console.log(fields);
-
-                fields.each(function() {
-                    if ($(this).val() == '') {
-                        // $(this).addClass('is-invalid');
-                        @this.set('isFormValid', false)
-                    } else {
-                        @this.set('isFormValid', true)
-                        // $(this).removeClass('is-invalid');
+            const config = {
+                tags: tags,
+                placeholder: placeholder,
+                language: 'fr',
+                maximumSelectionLength: maxSel,
+                width: '100%',
+                ajax: getUrl ? {
+                    url: getUrl,
+                    dataType: 'json',
+                    delay: 250,
+                    headers: { 'Accept': 'application/json' },
+                    data: (params) => ({
+                        search: params.term || '',
+                        page: params.page || 1,
+                        label: label,
+                        model: model,
+                        relative_id: $el.data('relative-id') || null,
+                        method: $el.data('method') || 'get'
+                    }),
+                    processResults: (data) => {
+                        if (data.results) {
+                            return { results: data.results, pagination: { more: !!data.pagination?.more } };
+                        }
+                        if (data.data) {
+                            const items = data.data.map(item => ({
+                                id: item.id,
+                                text: item[label] || item.nom || item.titre
+                            }));
+                            return {
+                                results: items,
+                                pagination: { more: data.current_page < data.last_page }
+                            };
+                        }
+                        return { results: [] };
                     }
-                })
-            });
+                } : null
+            };
+
+            // Stocker la config pour réutilisation
+            $el.data('select2-options', config);
+
+            // Initialiser uniquement si pas déjà fait
+            if (!$el.data('select2')) {
+                $el.select2(config);
+            }
+
+            // Gestion des nouveaux tags
+            if (tags && saveUrl) {
+                $el.off('select2:select').on('select2:select', function(e) {
+                    const data = e.params.data;
+                    if (!data.id || isNaN(Number(data.id))) {
+                        $.ajax({
+                            url: saveUrl,
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                            data: { [label]: data.text, relative_id: $el.data('relative-id') },
+                            success: (resp) => {
+                                const newId = resp.results?.id || resp.id;
+                                if (newId) {
+                                    const option = new Option(data.text, newId, true, true);
+                                    $el.append(option).trigger('change');
+                                }
+                            }
+                        });
+                    }
+                });
+            }
         });
-    </script>
+
+        // Écouteur sur le changement de type
+        $('#type_id').on('change', function(e) {
+            const val = e.target.value;
+            @this.set('type', val);
+            @this.call('changeNumRef');
+            toggleTypeGroups(val);
+        });
+
+        // Initialisation au chargement
+        const initialType = $('#type_id').val();
+        if (initialType) {
+            @this.set('type', initialType);
+            @this.call('changeNumRef');
+            toggleTypeGroups(initialType);
+        }
+    });
+
+    // Gestion du bouton de soumission
+    document.addEventListener('livewire:initialized', () => {
+        $('#submit-btn').on('click', function(e) {
+            const form = document.getElementById('archive-form');
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                const invalid = form.querySelector(':invalid');
+                if (invalid) invalid.focus();
+            } else {
+                form.submit();
+            }
+        });
+    });
+
+    // Initialisation des tooltips
+    document.addEventListener('DOMContentLoaded', () => {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(tooltipEl => {
+            new bootstrap.Tooltip(tooltipEl);
+        });
+    });
+</script>
 @endpush
 
 
