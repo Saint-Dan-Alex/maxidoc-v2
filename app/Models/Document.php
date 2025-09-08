@@ -9,6 +9,7 @@ use Laravel\Scout\Searchable;
 use \Venturecraft\Revisionable\RevisionableTrait;
 use App\Models\Redacteur;
 use App\Models\Destination;
+use App\Models\CourrierExpediteur;
 
 class Document extends Model
 {
@@ -87,7 +88,10 @@ class Document extends Model
     {
         return $this->belongsTo(Destination::class, 'destination_id');
     }
-
+    public function externExpediteur()
+    {
+        return $this->belongsTo(CourrierExpediteur::class, 'emetteur');
+    }
     protected $guarded = [];
     /**
      * Get all pieces jointes for the document.
@@ -152,6 +156,16 @@ class Document extends Model
     public function followers()
     {
         return $this->belongsToMany(Agent::class, DocumentFollower::class);
+    }
+
+    /**
+     * Get the agent associated with the Document
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function agent()
+    {
+        return $this->belongsTo(Agent::class, 'user_id');
     }
 
     /**

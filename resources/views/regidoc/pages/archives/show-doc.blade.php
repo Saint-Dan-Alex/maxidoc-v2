@@ -124,39 +124,39 @@
                         
                         @if($find_document->emetteur)
 
-                            @if($find_document->type == 1)
+                            @if($find_document->emetteur)
                                 <div class="col-12">
                                     <div class="row align-items-center">
                                         <label for="inputPassword" class="col-5 col-form-label">Emetteur</label>
                                         <div class="col-7">
-                                            <p class="items">
-                                                {{ $find_document->courrier->externExpediteur->nom ?? 'Non défini' }}
-                                            </p>
+                                            @if($find_document->type==1)
+                                                <p class="items">
+                                                    {{ $find_document->externExpediteur->nom ?? 'Non défini' }}
+                                                </p>
+                                            @else
+                                                {{ $find_document->courrier->service->name ?? 'Non défini' }}
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
-                            @else
-                                <div class="col-12">
-                                    <div class="row align-items-center">
-                                        <label for="inputPassword" class="col-5 col-form-label">Emetteur</label>
-                                        <div class="col-7">
-                                            <p class="items">
-                                                {{ optional($find_document->courrier)->service->name ?? 'Non défini' }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+                            
                             @endif
                         @endif
                         
-                        @if($find_document->destination)
+                        @if($find_document->destination_id)
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Destination</label>
                                 <div class="col-7">
-                                    <p class="items">
-                                        {{$find_document->destination}}
-                                    </p>
+                                    @if($find_document->type==1)
+                                        <p class="items">
+                                            {{$find_document->destination->nom}}
+                                        </p>
+                                    @else
+                                        <p class="items">
+                                            {{$find_document->agent->nom }}  {{$find_document->agent->prenom }}
+                                        </p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
