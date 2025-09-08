@@ -30,7 +30,7 @@
                         <div class="col-7">
                             <select class="form-select form-control select autreSelect2"
                                 aria-label="Default select example" name="type" id="type_id" required wire:model='type' onchange="console.log('[UI] Type choisi:', this.value); var v=this.value; if(v==1){$('.type-3-group').addClass('d-none').hide();$('.type-1-group').removeClass('d-none').show();}else if(v==3){$('.type-1-group').addClass('d-none').hide();$('.type-3-group').removeClass('d-none').show();}else{$('.type-1-group,.type-3-group').addClass('d-none').hide();}">
-                                <option value="" selected >Selectionnez</option>
+                                <option value="" selected disabled>Selectionnez</option>
                                 @foreach ($types as $type)
                                     @if ($type->id != 2)
                                         <option value="{{ $type->id }}">
@@ -331,30 +331,31 @@
                 <div class="type-3-group d-none" wire:ignore>
                     <div class="col-12 mb-3" >
                         <div class="row">
-                            <label class="col-5 col-form-label">Rédacteur 2</label>
+                            <label class="col-5 col-form-label">Emetteur 2</label>
                             <div class="col-7">
-                                <select class="form-select form-control select2" name="redacteur" required
-                                    data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
+                                <select class="form-select form-control select2" name="expediteur_externe" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getServices.json') }}"
                                     data-route=""
-                                    data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="Agent" data-tags="false" @if ($type == [3]) required @endif>
+                                    data-method="get" data-label="titre"
+                                    data-related-model="Service" data-tags="false" @if ($type == [3]) required @endif>
                                 </select>
                             </div>
                         </div>
                     </div>
                     <div class="col-12 mb-3" >
                         <div class="row">
-                            <label class="col-5 col-form-label">Emetteur 2</label>
+                            <label class="col-5 col-form-label">Rédacteur 2</label>
                             <div class="col-7">
-                                <select class="form-select form-control select2" name="expediteur_externe" required
-                                    data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
+                                <select class="form-select form-control select2" name="redacteur" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getAgents.json') }}"
                                     data-route=""
-                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-method="get" data-label="prenom,nom,post_nom"
                                     data-related-model="Agent" data-tags="false" @if ($type == [3]) required @endif>
                                 </select>
                             </div>
                         </div>
                     </div>
+                    
                     <div class="col-12 mb-3" >
                         <div class="row">
                             <label class="col-5 col-form-label">Destination 2</label>
