@@ -549,41 +549,62 @@
                         <!-- 2. Émetteur -->
                         <div class="mb-3">
                             <label for="emetteur" class="form-label">Émetteur</label>
-                            @if($find_document->type === 'courrier_entrant' && $find_document->courrier)
-                                <select class="form-select" id="expediteur_interne_id" name="expediteur_interne_id" required>
-                                    <option value="">Sélectionner un expéditeur</option>
-                                    @foreach($expediteurs as $expediteur)
-                                        <option value="{{ $expediteur->id }}" {{ $find_document->courrier->expediteur_interne_id == $expediteur->id ? 'selected' : '' }}>
-                                            {{ $expediteur->nom }}
-                                        </option>
-                                    @endforeach
+                            @if($find_document->type == 1)
+                                <select class="form-select form-control select2" name="expediteur_externe" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true">
                                 </select>
-                            @else
-                                <input type="text" class="form-control" id="expediteur_externe" name="expediteur_externe" 
-                                       value="{{ $find_document->courrier->externExpediteur->nom ?? 'Veillez selectionner un expéditeur' }}" required>
+                            @elseif($find_document->type == 3)
+                                <select class="form-select form-control select2" name="expediteur_externe" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getServices.json') }}"
+                                    data-route=""
+                                    data-method="get" data-label="titre"
+                                    data-related-model="Service" data-tags="false">
+                                </select>
                             @endif
                         </div>
 
                         <!-- 3. Rédacteur -->
                         <div class="mb-3">
                             <label for="redacteur" class="form-label">Rédacteur</label>
-                            <input type="text" class="form-control" id="redacteur" name="redacteur" required>
+                            @if($find_document->type == 1)
+                                <select class="form-select form-control select2" name="redacteur" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.redacteurs') }}"
+                                    data-route="{{ route('regidoc.ajax.redacteurs.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom" data-max-selection="1"
+                                    data-related-model="Redacteur" data-tags="true" multiple>
+                                </select>
+                            @elseif($find_document->type == 3)
+                                <select class="form-select form-control select2" name="redacteur" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getAgents.json') }}"
+                                    data-route=""
+                                    data-method="get" data-label="prenom,nom,post_nom"
+                                    data-related-model="Agent" data-tags="false">
+                                </select>
+                            @endif
                         </div>
 
                         <!-- 4. Destination -->
                         <div class="mb-3">
                             <label for="destination" class="form-label">Destination</label>
-                            @if($find_document->type === 1)
-                                <input type="text" class="form-control" value="LerexcomPetroleum" disabled>
-                                <input type="hidden" name="destination" value="LerexcomPetroleum">
-                            @else
-                                <select class="form-select" id="destinataire_interne_id" name="destinataire_interne_id" required>
-                                    <option value="">Sélectionner un destinataire</option>
-                                    @foreach($agents as $agent)
-                                        <option value="{{ $agent->id }}">
-                                            {{ $agent->nom }} {{ $agent->prenom }}
-                                        </option>
-                                    @endforeach
+                            @if($find_document->type == 1)
+                                <select class="form-select form-control select2" name="destination" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.destinatairearchives') }}"
+                                    data-route="{{ route('regidoc.ajax.destinatairearchives.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="Destination" data-tags="true" data-max-selection="1" multiple>
+                                </select>
+                            @elseif($find_document->type == 3)
+                                <select class="form-select form-control select2" name="destination" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getAgents.json') }}"
+                                    data-route=""
+                                    data-method="get" data-label="prenom,nom,post_nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true">
                                 </select>
                             @endif
                         </div>
@@ -669,5 +690,69 @@
             });
         });
     });
+</script>
+@endpush
+
+@push('scripts')
+<script>
+// Initialisation/refixe Select2 dans le modal d'archivage pour garantir l'affichage correct
+// et la gestion des tags (création via AJAX) comme ailleurs dans l'application.
+$(document).on('shown.bs.modal', '#modal-new-archive', function () {
+    const $modal = $(this);
+    $modal.find('select.select2').each(function () {
+        const $el = $(this);
+        try { if ($el.data('select2')) { $el.select2('destroy'); } } catch (e) {}
+
+        const cfg = {
+            dropdownParent: $modal,
+            tags: $el.data('tags') ? $el.data('tags') : false,
+            placeholder: $el.data('placeholder') || 'Sélectionnez',
+            language: 'fr',
+            width: '100%',
+            maximumSelectionLength: $el.data('max-selection') ? $el.data('max-selection') : null,
+        };
+
+        const getUrl = $el.data('get-items-route');
+        if (getUrl) {
+            cfg.ajax = {
+                url: getUrl,
+                data: function (params) {
+                    return {
+                        search: params.term,
+                        type: $el.data('get-items-field'),
+                        method: $el.data('method'),
+                        id: $el.data('id'),
+                        page: params.page || 1,
+                        model: $el.data('related-model'),
+                        label: $el.data('label'),
+                    };
+                }
+            };
+        }
+
+        $el.select2(cfg);
+
+        // Création dynamique (tags)
+        $el.off('select2:selecting.modalTags').on('select2:selecting.modalTags', function (e) {
+            if (!$el.data('tags')) return;
+            const route = $el.data('route');
+            const label = $el.data('label');
+            const relativeId = $el.data('relative-id');
+            const newTag = e.params.args?.data?.newTag;
+            if (!newTag || !route || !label) return;
+
+            $el.select2('close');
+            $.post(route, { [label]: e.params.args.data.text, relative_id: relativeId, _tagging: true })
+                .done(function (data) {
+                    const id = data.results?.id || data.id;
+                    if (id) {
+                        const opt = new Option(e.params.args.data.text, id, false, true);
+                        $el.append(opt).trigger('change');
+                    }
+                });
+            e.preventDefault();
+        });
+    });
+});
 </script>
 @endpush

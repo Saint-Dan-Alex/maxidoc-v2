@@ -362,9 +362,9 @@
                             <label class="col-5 col-form-label">Destination 2</label>
                             <div class="col-7">
                                 <select class="form-select form-control select2" name="destination" required
-                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
-                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
-                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                data-get-items-route="{{ route('regidoc.ajax.getAgents.json') }}"
+                                data-route=""
+                                data-method="get" data-label="prenom,nom,post_nom"
                                     data-related-model="CourrierExpediteur" data-tags="true" @if ($type == [3]) required @endif>
                                 </select>
                             </div>
