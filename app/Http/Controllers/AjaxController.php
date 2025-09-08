@@ -135,6 +135,25 @@ class AjaxController extends Controller
     {
         return $this->relation($request, 'courrier-destinateur-externes');
     }
+    public function destinatairearchives(Request $request)
+    {
+        return $this->relation($request, 'destination');
+    }
+
+    public function destinatairearchivesSave(Request $request)
+    {
+        $request->validate([
+            'nom' => 'required|string|max:255',
+        ]);
+
+        $dest = new \App\Models\Destination();
+        $dest->nom = $request->nom;
+        $dest->save();
+
+        return response()->json([
+            'results' => $dest,
+        ]);
+    }
 
     public function destinatairecourriersSave(Request $request)
     {
