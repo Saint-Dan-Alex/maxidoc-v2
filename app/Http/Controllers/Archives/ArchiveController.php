@@ -171,9 +171,9 @@ class ArchiveController extends Controller
                 $document->description = $request->get('objet');
 
                 $document->emetteur = $request->get('expediteur_externe');
-                $document->destination = $request->get('destination');
+                $document->destination_id = $request->get('destination');
                 $document->observations = $request->get('observations');                
-                $document->redacteur = $request->get('redacteur');
+                $document->redacteur_id = $request->get('redacteur');
 
                 // Utilisation de la classe File pour stocker le fichier
                 $document->document = (new File())->handle($request, 'document', 'documents');

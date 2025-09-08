@@ -121,19 +121,33 @@
                                 </div>
                             </div>
                         </div>
+                        
                         @if($find_document->emetteur)
-                        <div class="col-12">
-                            <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Emetteur</label>
-                                <div class="col-7">
-                                    <p class="items">
-                                        {{$find_document->emetteur}}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
 
+                            @if($find_document->type == 1)
+                                <div class="col-12">
+                                    <div class="row align-items-center">
+                                        <label for="inputPassword" class="col-5 col-form-label">Emetteur</label>
+                                        <div class="col-7">
+                                            <p class="items">
+                                                {{ $find_document->courrier->externExpediteur->nom ?? 'Non défini' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="col-12">
+                                    <div class="row align-items-center">
+                                        <label for="inputPassword" class="col-5 col-form-label">Emetteur</label>
+                                        <div class="col-7">
+                                            <p class="items">
+                                                {{ optional($find_document->courrier)->service->name ?? 'Non défini' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endif
                         
                         @if($find_document->destination)
                         <div class="col-12">
@@ -147,6 +161,19 @@
                             </div>
                         </div>
                         @endif
+                        @if($find_document->redacteur_id)
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Rédacteur</label>
+                                <div class="col-7">
+                                    <p class="items">
+                                        {{ optional($find_document->redacteur)->nom ?? 'Non défini' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
 
 
 

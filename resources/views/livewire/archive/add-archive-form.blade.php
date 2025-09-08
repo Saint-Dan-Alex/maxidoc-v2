@@ -306,7 +306,7 @@
                                     data-get-items-route="{{ route('regidoc.ajax.redacteurs') }}"
                                     data-route="{{ route('regidoc.ajax.redacteurs.save') }}"
                                     data-get-items-field="nom" data-method="get" data-label="nom" data-max-selection="1"
-                                    data-related-model="Redacteur" data-tags="true"  @if ($type == [1]) required @endif>
+                                    data-related-model="Redacteur" data-tags="true" multiple @if ($type == [1]) required @endif>
                                 </select>
                             </div>
                         </div>
