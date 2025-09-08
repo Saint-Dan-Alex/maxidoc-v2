@@ -15,8 +15,5 @@ class Redacteur extends Model
     /**
      * Get all documents for the redacteur.
      */
-    public function documents(): HasMany
-    {
-        return $this->hasMany(Document::class, 'redacteur_id');
-    }
+    
 }

@@ -10,6 +10,7 @@ use \Venturecraft\Revisionable\RevisionableTrait;
 use App\Models\Redacteur;
 use App\Models\Destination;
 use App\Models\CourrierExpediteur;
+use App\Models\CourrierNature;
 
 class Document extends Model
 {
@@ -92,6 +93,10 @@ class Document extends Model
     {
         return $this->belongsTo(CourrierExpediteur::class, 'emetteur');
     }
+    public function nature()
+    {
+        return $this->belongsTo(CourrierNature::class, 'nature_id');
+    }
     protected $guarded = [];
     /**
      * Get all pieces jointes for the document.
@@ -157,7 +162,10 @@ class Document extends Model
     {
         return $this->belongsToMany(Agent::class, DocumentFollower::class);
     }
-
+    public function service()
+    {
+        return $this->belongsTo(Service::class, 'emetteur');
+    }
     /**
      * Get the agent associated with the Document
      *
@@ -165,7 +173,11 @@ class Document extends Model
      */
     public function agent()
     {
-        return $this->belongsTo(Agent::class, 'user_id');
+        return $this->belongsTo(Agent::class, 'redacteur_id');
+    }
+    public function agentDest()
+    {
+        return $this->belongsTo(Agent::class, 'destination_id');
     }
 
     /**

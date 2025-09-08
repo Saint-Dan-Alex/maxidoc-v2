@@ -134,7 +134,9 @@
                                                     {{ $find_document->externExpediteur->nom ?? 'Non défini' }}
                                                 </p>
                                             @else
-                                                {{ $find_document->courrier->service->name ?? 'Non défini' }}
+                                            <p class="items">
+                                                {{ $find_document->service->titre ?? 'Non défini' }}
+                                            </p>
                                             @endif
                                         </div>
                                     </div>
@@ -150,11 +152,11 @@
                                 <div class="col-7">
                                     @if($find_document->type==1)
                                         <p class="items">
-                                            {{$find_document->destination->nom}}
+                                            {{ optional($find_document->destination)->nom ?? 'Non défini' }}
                                         </p>
                                     @else
                                         <p class="items">
-                                            {{$find_document->agent->nom }}  {{$find_document->agent->prenom }}
+                                            {{$find_document->agentDest->nom }}  {{$find_document->agentDest->prenom }}
                                         </p>
                                     @endif
                                 </div>
@@ -166,9 +168,15 @@
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Rédacteur</label>
                                 <div class="col-7">
+                                    @if($find_document->type==1)
                                     <p class="items">
                                         {{ optional($find_document->redacteur)->nom ?? 'Non défini' }}
                                     </p>
+                                    @else
+                                    <p class="items">
+                                        {{ $find_document->agent->nom }} {{$find_document->agent->prenom}}
+                                    </p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -177,7 +185,7 @@
 
 
 
-                        @if($find_document->courrier)
+                        @if($find_document->type)
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Type de document</label>
@@ -189,7 +197,7 @@
                             </div>
                         </div>
                         @endif
-                        {{-- @if($find_document->nature) --}}
+                        @if($find_document->nature_id)
                         <div class="col-12">
                             <div class="item">
                                 <div class="row">
@@ -197,12 +205,12 @@
                                         <label for="inputPassword" class="col-5 col-form-label">Nature</label>
                                     </div>
                                     <div class="col-7">
-                                        <p class="items mb-0">{{ $find_document->courrier->nature->titre ?? 'Non défini' }}</p>
+                                        <p class="items mb-0">{{ $find_document->nature->titre ?? 'Non défini' }}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        {{-- @endif --}}
+                        @endif
                         @if($find_document->service)
                         <div class="col-12">
                             <div class="item">

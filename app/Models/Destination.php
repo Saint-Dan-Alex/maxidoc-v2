@@ -15,8 +15,5 @@ class Destination extends Model
     /**
      * Get all documents for the destination.
      */
-    public function documents(): HasMany
-    {
-        return $this->hasMany(Document::class, 'destination_id');
-    }
+    
 }
