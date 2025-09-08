@@ -606,16 +606,45 @@
             const val = $(this).val();
             const text = $(this).find('option:selected').text().trim();
             console.debug('[Type change]', { val, text, event: e.type });
+            // helper pour basculer l'état des champs d'un groupe
+            const toggleGroup = (selector, show) => {
+                const $group = $(selector);
+                if (show) {
+                    $group.removeClass('d-none').show();
+                    // Activer et marquer requis si l'élément le demande
+                    $group.find('input, select, textarea').each(function() {
+                        const $el = $(this);
+                        $el.prop('disabled', false);
+                        if ($el.data('visible-required') === true || $el.attr('data-visible-required') === 'true') {
+                            $el.prop('required', true);
+                        }
+                    });
+                } else {
+                    $group.addClass('d-none').hide();
+                    // Désactiver pour ignorer la validation, et retirer required
+                    $group.find('input, select, textarea').each(function() {
+                        const $el = $(this);
+                        $el.prop('required', false).prop('disabled', true);
+                        // Nettoyer la valeur pour éviter des incohérences
+                        if ($el.is('select')) {
+                            $el.val(null).trigger('change');
+                        } else if ($el.is(':checkbox') || $el.is(':radio')) {
+                            $el.prop('checked', false);
+                        } else {
+                            $el.val('');
+                        }
+                    });
+                }
+            };
             if (val == 1) {
-                $('.type-3-group').addClass('d-none').hide();
-                $('.type-1-group').removeClass('d-none').show();
+                toggleGroup('.type-3-group', false);
+                toggleGroup('.type-1-group', true);
             } else if (val == 3) {
-                $('.type-1-group').addClass('d-none').hide();
-                $('.type-3-group').removeClass('d-none').show();
+                toggleGroup('.type-1-group', false);
+                toggleGroup('.type-3-group', true);
             } else {
-                // aucune sélection valide => masquer tout
-                $('.type-1-group').addClass('d-none').hide();
-                $('.type-3-group').addClass('d-none').hide();
+                toggleGroup('.type-1-group', false);
+                toggleGroup('.type-3-group', false);
             }
 
             // Appels Livewire après le toggle UI
@@ -629,14 +658,35 @@
         $(function() {
             const initialType = $('#type_id').val();
             // appliquer la même logique simple au chargement
+            const toggleGroup = (selector, show) => {
+                const $group = $(selector);
+                if (show) {
+                    $group.removeClass('d-none').show();
+                    $group.find('input, select, textarea').prop('disabled', false);
+                } else {
+                    $group.addClass('d-none').hide();
+                    $group.find('input, select, textarea').each(function() {
+                        const $el = $(this);
+                        $el.prop('required', false).prop('disabled', true);
+                        if ($el.is('select')) {
+                            $el.val(null).trigger('change');
+                        } else if ($el.is(':checkbox') || $el.is(':radio')) {
+                            $el.prop('checked', false);
+                        } else {
+                            $el.val('');
+                        }
+                    });
+                }
+            };
             if (initialType == 1) {
-                $('.type-3-group').addClass('d-none').hide();
-                $('.type-1-group').removeClass('d-none').show();
+                toggleGroup('.type-3-group', false);
+                toggleGroup('.type-1-group', true);
             } else if (initialType == 3) {
-                $('.type-1-group').addClass('d-none').hide();
-                $('.type-3-group').removeClass('d-none').show();
+                toggleGroup('.type-1-group', false);
+                toggleGroup('.type-3-group', true);
             } else {
-                $('.type-1-group, .type-3-group').addClass('d-none').hide();
+                toggleGroup('.type-1-group', false);
+                toggleGroup('.type-3-group', false);
             }
         });
         // (Suppression du hook Livewire message.processed)
@@ -653,27 +703,69 @@
                     @this.set('type', val);
                     @this.call('changeNumRef');
                 }
+                const toggleGroup = (selector, show) => {
+                    const $group = $(selector);
+                    if (show) {
+                        $group.removeClass('d-none').show();
+                        $group.find('input, select, textarea').prop('disabled', false);
+                    } else {
+                        $group.addClass('d-none').hide();
+                        $group.find('input, select, textarea').each(function() {
+                            const $el = $(this);
+                            $el.prop('required', false).prop('disabled', true);
+                            if ($el.is('select')) {
+                                $el.val(null).trigger('change');
+                            } else if ($el.is(':checkbox') || $el.is(':radio')) {
+                                $el.prop('checked', false);
+                            } else {
+                                $el.val('');
+                            }
+                        });
+                    }
+                };
                 if (val == 1) {
-                    $('.type-3-group').addClass('d-none').hide();
-                    $('.type-1-group').removeClass('d-none').show();
+                    toggleGroup('.type-3-group', false);
+                    toggleGroup('.type-1-group', true);
                 } else if (val == 3) {
-                    $('.type-1-group').addClass('d-none').hide();
-                    $('.type-3-group').removeClass('d-none').show();
+                    toggleGroup('.type-1-group', false);
+                    toggleGroup('.type-3-group', true);
                 } else {
-                    $('.type-1-group, .type-3-group').addClass('d-none').hide();
+                    toggleGroup('.type-1-group', false);
+                    toggleGroup('.type-3-group', false);
                 }
             });
             window.__typeHandlerBound = true;
         }
         const initialType = $('#type_id').val();
+        const toggleGroupInit = (selector, show) => {
+            const $group = $(selector);
+            if (show) {
+                $group.removeClass('d-none').show();
+                $group.find('input, select, textarea').prop('disabled', false);
+            } else {
+                $group.addClass('d-none').hide();
+                $group.find('input, select, textarea').each(function() {
+                    const $el = $(this);
+                    $el.prop('required', false).prop('disabled', true);
+                    if ($el.is('select')) {
+                        $el.val(null).trigger('change');
+                    } else if ($el.is(':checkbox') || $el.is(':radio')) {
+                        $el.prop('checked', false);
+                    } else {
+                        $el.val('');
+                    }
+                });
+            }
+        };
         if (initialType == 1) {
-            $('.type-3-group').addClass('d-none').hide();
-            $('.type-1-group').removeClass('d-none').show();
+            toggleGroupInit('.type-3-group', false);
+            toggleGroupInit('.type-1-group', true);
         } else if (initialType == 3) {
-            $('.type-1-group').addClass('d-none').hide();
-            $('.type-3-group').removeClass('d-none').show();
+            toggleGroupInit('.type-1-group', false);
+            toggleGroupInit('.type-3-group', true);
         } else {
-            $('.type-1-group, .type-3-group').addClass('d-none').hide();
+            toggleGroupInit('.type-1-group', false);
+            toggleGroupInit('.type-3-group', false);
         }
     });
 
