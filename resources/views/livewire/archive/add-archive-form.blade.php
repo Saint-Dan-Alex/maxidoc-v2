@@ -29,11 +29,11 @@
                         <label class="col-5 col-form-label">Type de document</label>
                         <div class="col-7">
                             <select class="form-select form-control select autreSelect2"
-                                aria-label="Default select example" name="type" id="type_id" required wire:model='type' >
-                                <option value="" selected disabled>Selectionnez</option>
+                                aria-label="Default select example" name="type" id="type_id" required wire:model='type' onchange="console.log('[UI] Type choisi:', this.value); var v=this.value; if(v==1){$('.type-3-group').addClass('d-none').hide();$('.type-1-group').removeClass('d-none').show();}else if(v==3){$('.type-1-group').addClass('d-none').hide();$('.type-3-group').removeClass('d-none').show();}else{$('.type-1-group,.type-3-group').addClass('d-none').hide();}">
+                                <option value="" selected >Selectionnez</option>
                                 @foreach ($types as $type)
                                     @if ($type->id != 2)
-                                        <option value="{{ $type->id }}" @selected($loop->first)>
+                                        <option value="{{ $type->id }}">
                                             {{ $type->titre }}
                                         </option>
                                     @endif
@@ -282,7 +282,7 @@
                 <!-- Champs supplémentaires -->
                 <!-- Groupes d'inputs spécifiques par type -->
                 <!-- Type 1: Courrier entrant -->
-                <div class="type-1-group d-none">
+                <div class="type-1-group d-none" wire:ignore>
                     <div class="col-12 mb-3" >
                         <div class="row">
                             <label class="col-5 col-form-label">Rédacteur</label>
@@ -328,7 +328,7 @@
                 </div>
 
                 <!-- Type 3: Courrier sortant -->
-                <div class="type-3-group d-none">
+                <div class="type-3-group d-none" wire:ignore>
                     <div class="col-12 mb-3" >
                         <div class="row">
                             <label class="col-5 col-form-label">Rédacteur 2</label>
@@ -505,60 +505,9 @@
 </script>
 
 <script>
-$(document).ready(function() {
-
-setEntrat($('#type_id').val());
-
-$('#type_id').on('change', function(e) {
-    var data = e.target.value;
-    setEntrat(data);
-});
-
-$('.col-12.d-none div > div > input').attr('required', false);
-$('.col-12.d-none div > div > select').attr('required', false);
-
-function setEntrat(data) {
-    @this.type = data;
-    @this.changeNumRef();
-
-    if (data == 2 || data == 3) {
-
-        $('.type-3-group').addClass('d-none')
-        $('.type-1-group').removeClass('d-none')
-
-    } else {
-
-       $('.type-1-group').addClass('d-none')
-       $('.type-3-group').removeClass('d-none')
-    }
-
-    
-    
-}
-
-
-
-
-
-
-
-
-// select all required fields
-$('input[required], select[required]').on('change', function() {
-    var fields = $('input[required], select[required]');
-    console.log(fields);
-
-    fields.each(function() {
-        if ($(this).val() == '') {
-            // $(this).addClass('is-invalid');
-            @this.set('isFormValid', false)
-        } else {
-            @this.set('isFormValid', true)
-            // $(this).removeClass('is-invalid');
-        }
-    })
-});
-});
+// Note: La logique d'affichage/masquage est gérée plus bas via toggleTypeGroups
+// et l'écouteur délégué sur #type_id (change/select2). Aucune initialisation
+// supplémentaire n'est nécessaire ici.
     document.getElementById("file-upload").addEventListener("change", function() {
         const file = this.files[0];
         if (file) {
@@ -568,70 +517,7 @@ $('input[required], select[required]').on('change', function() {
     });
 
     document.addEventListener('livewire:initialized', () => {
-        // Fonction pour afficher/masquer les groupes selon le type (exposée globalement)
-        window.toggleTypeGroups = function(typeVal) {
-            const g1 = $('.type-1-group');
-            const g3 = $('.type-3-group');
-
-            // Marquer les champs requis à l'initialisation (une seule fois)
-            [g1, g3].forEach(group => {
-                group.find('select, input, textarea').each(function() {
-                    const $el = $(this);
-                    if (!$el.attr('data-was-required')) {
-                        if ($el.prop('required')) {
-                            $el.attr('data-was-required', '1');
-                        } else {
-                            $el.attr('data-was-required', '0');
-                        }
-                    }
-                });
-            });
-
-            const setGroupState = (groupEl, visible) => {
-                if (visible) {
-                    groupEl.removeClass('d-none');
-                    // Réactiver champs et rétablir l'attribut required si nécessaire
-                    groupEl.find('select, input, textarea').each(function() {
-                        const $el = $(this);
-                        const wasReq = $el.attr('data-was-required') === '1';
-                        $el.prop('disabled', false);
-                        $el.prop('required', wasReq);
-                        if ($el.hasClass('select2-hidden-accessible')) {
-                            $el.trigger('change.select2');
-                        }
-                    });
-                    // Réinitialiser les select2 après affichage si non initialisés
-                    groupEl.find('.select2').each(function() {
-                        const $el = $(this);
-                        if (!$el.data('select2')) {
-                            $el.select2($el.data('select2-options') || {});
-                        }
-                    });
-                } else {
-                    // Masquer et désactiver les champs pour éviter les erreurs de validation
-                    groupEl.addClass('d-none');
-                    groupEl.find('select, input, textarea').each(function() {
-                        const $el = $(this);
-                        $el.prop('required', false);
-                        $el.prop('disabled', true);
-                        if ($el.hasClass('select2-hidden-accessible')) {
-                            $el.trigger('change.select2');
-                        }
-                    });
-                }
-            };
-
-            if (typeVal == 1) {
-                setGroupState(g1, true);
-                setGroupState(g3, false);
-            } else if (typeVal == 3) {
-                setGroupState(g1, false);
-                setGroupState(g3, true);
-            } else {
-                setGroupState(g1, false);
-                setGroupState(g3, false);
-            }
-        }
+        // (Suppression de la logique robuste toggleTypeGroups)
 
         // Enregistrer les options Select2 pour réutilisation
         $('.autreSelect2, .select2').each(function() {
@@ -713,55 +599,79 @@ $('input[required], select[required]').on('change', function() {
             }
         });
 
-        // Écouteur sur le changement de type (gère Select2 et change natif) - délégation
+        // Écouteur simple sur le changement de type - délégation
         $(document).on('change select2:select select2:clear', '#type_id', function(e) {
             const val = $(this).val();
-            console.debug('[Type change]', { val, event: e.type });
+            const text = $(this).find('option:selected').text().trim();
+            console.debug('[Type change]', { val, text, event: e.type });
+            if (val == 1) {
+                $('.type-3-group').addClass('d-none').hide();
+                $('.type-1-group').removeClass('d-none').show();
+            } else if (val == 3) {
+                $('.type-1-group').addClass('d-none').hide();
+                $('.type-3-group').removeClass('d-none').show();
+            } else {
+                // aucune sélection valide => masquer tout
+                $('.type-1-group').addClass('d-none').hide();
+                $('.type-3-group').addClass('d-none').hide();
+            }
+
+            // Appels Livewire après le toggle UI
             @this.set('type', val);
             @this.call('changeNumRef');
-            toggleTypeGroups(val);
         });
         // Indiquer que le handler est attaché
         window.__typeHandlerBound = true;
 
-        // Initialisation au chargement du DOM
+        // Initialisation au chargement du DOM (sans logique robuste)
         $(function() {
             const initialType = $('#type_id').val();
-            if (initialType) {
-                @this.set('type', initialType);
-                @this.call('changeNumRef');
+            // appliquer la même logique simple au chargement
+            if (initialType == 1) {
+                $('.type-3-group').addClass('d-none').hide();
+                $('.type-1-group').removeClass('d-none').show();
+            } else if (initialType == 3) {
+                $('.type-1-group').addClass('d-none').hide();
+                $('.type-3-group').removeClass('d-none').show();
+            } else {
+                $('.type-1-group, .type-3-group').addClass('d-none').hide();
             }
-            toggleTypeGroups(initialType);
         });
-
-        // Réappliquer après chaque mise à jour Livewire (DOM re-morph)
-        if (window.Livewire && typeof Livewire.hook === 'function') {
-            Livewire.hook('message.processed', (message, component) => {
-                const current = $('#type_id').val();
-                toggleTypeGroups(current);
-            });
-        }
+        // (Suppression du hook Livewire message.processed)
     });
 
-    // Fallback si Livewire n'initialise pas ce script: binder et initialiser au chargement du DOM
+    // Fallback: attacher le même gestionnaire au chargement du DOM si Livewire n'initialise pas
     document.addEventListener('DOMContentLoaded', () => {
         if (!window.__typeHandlerBound) {
             $(document).on('change select2:select select2:clear', '#type_id', function(e) {
                 const val = $(this).val();
-                console.debug('[Type change - fallback]', { val, event: e.type });
-                if (window.Livewire && typeof window.Livewire.find === 'function') {
+                const text = $(this).find('option:selected').text().trim();
+                console.debug('[Type change - DOMContentLoaded]', { val, text, event: e.type });
+                if (window.Livewire) {
                     @this.set('type', val);
                     @this.call('changeNumRef');
                 }
-                if (typeof window.toggleTypeGroups === 'function') {
-                    window.toggleTypeGroups(val);
+                if (val == 1) {
+                    $('.type-3-group').addClass('d-none').hide();
+                    $('.type-1-group').removeClass('d-none').show();
+                } else if (val == 3) {
+                    $('.type-1-group').addClass('d-none').hide();
+                    $('.type-3-group').removeClass('d-none').show();
+                } else {
+                    $('.type-1-group, .type-3-group').addClass('d-none').hide();
                 }
             });
             window.__typeHandlerBound = true;
         }
-        const current = $('#type_id').val();
-        if (typeof window.toggleTypeGroups === 'function') {
-            window.toggleTypeGroups(current);
+        const initialType = $('#type_id').val();
+        if (initialType == 1) {
+            $('.type-3-group').addClass('d-none').hide();
+            $('.type-1-group').removeClass('d-none').show();
+        } else if (initialType == 3) {
+            $('.type-1-group').addClass('d-none').hide();
+            $('.type-3-group').removeClass('d-none').show();
+        } else {
+            $('.type-1-group, .type-3-group').addClass('d-none').hide();
         }
     });
 
