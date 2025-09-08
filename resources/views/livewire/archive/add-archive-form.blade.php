@@ -11,7 +11,7 @@
             <h4 class="ms-0 ms-2">Archivage du document</h4>
         </div>
         {{--  --}}
-        <form action="{{ route('regidoc.archivages.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="archive-form" action="{{ route('regidoc.archivages.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="body-siderbar">
         <div class="form-group row g-3">
@@ -31,6 +31,25 @@
                 <input type="hidden" name="date-doc" value="{{ $date_doc ?? now()->format('Y-m-d') }}" wire:ignore/>
                 <input type="hidden" name="date-arriv" value="{{ $date_arriv ?? now()->format('Y-m-d\TH:i') }}" wire:ignore/>
                 <input type="hidden" name="objet" value="{{ $objet ?? '' }}" wire:ignore/>
+
+                <div class="col-12">
+                    <div class="row" wire:ignore>
+                        <label class="col-5 col-form-label">Type de document</label>
+                        <div class="col-7">
+                            <select class="form-select form-control select autreSelect2"
+                                aria-label="Default select example" name="type" id="type_id" required>
+                                <option value="" selected disabled>Selectionnez</option>
+                                @foreach ($types as $type)
+                                    @if ($type->id != 2)
+                                        <option value="{{ $type->id }}" @selected($loop->first)>
+                                            {{ $type->titre }}
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
                 @if (!$selectedDoc)
                     <div class="col-12 select_doc" onclick="scanToPdf();" wire:ignore>
@@ -226,7 +245,7 @@
                     </div>
                 </div>
                 
-                <div class="col-12">
+               <div class="col-12">
                     <div class="row">
                         <label class="col-5 col-form-label">Titre</label>
                         <div class="col-7">
@@ -234,24 +253,11 @@
                                 placeholder="Titre / objet" required></textarea>
                         </div>
                     </div>
-                </div>
+                </div> 
 
-                <div class="col-12 nature_field" wire:ignore>
-                    <div class="row">
-                        <label class="col-5 col-form-label">Nature</label>
-                        <div class="col-7" wire:ignore>
-                            <select class="form-select form-control select2" aria-label="Default select example"
-                                name="nature" data-placeholder="Sélectionnez"
-                                data-get-items-route="{{ route('regidoc.ajax.naturecourriers') }}"
-                                data-route="{{ route('regidoc.ajax.naturecourriers.save') }}"
-                                data-get-items-field="titre" data-method="get" data-label="titre"
-                                data-related-model="CourrierNature" data-tags="true"
-                                @if ($type == [1, 3]) required @endif>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
+                @php
+                    $show_traitement = auth()->user()->can('Definir le traitement');
+                @endphp
                 @can('Definir le traitement')
                     <div class="col-12 d-none">
                         <div class="row">
@@ -282,40 +288,97 @@
                     </div>
                 @endcan
                 <!-- Champs supplémentaires -->
-                <div class="col-12">
-                    <div class="row">
-                        <label class="col-5 col-form-label">Rédacteur</label>
-                        <div class="col-7">
-                            <input type="text" class="form-control" name="redacteur" required>
+                <!-- Groupes d'inputs spécifiques par type -->
+                <!-- Type 1: Courrier entrant -->
+                <div class="type-1-group">
+                    <div class="col-12 mb-3" wire:ignore>
+                        <div class="row">
+                            <label class="col-5 col-form-label">Rédacteur</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="redacteur" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom" data-max-selection="1"
+                                    data-related-model="CourrierExpediteur" data-tags="true">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3" wire:ignore>
+                        <div class="row">
+                            <label class="col-5 col-form-label">Emetteur</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="expediteur_externe" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3" wire:ignore>
+                        <div class="row">
+                            <label class="col-5 col-form-label">Destination</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="destination" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.destinatairearchives') }}"
+                                    data-route="{{ route('regidoc.ajax.destinatairearchives.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="Destination" data-tags="true" data-max-selection="1" multiple>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-12">
-                    <div class="row">
-                        <label class="col-5 col-form-label">Emetteur</label>
-                        <div class="col-7">
-                            <input type="text" class="form-control" name="expediteur_externe" required>
+
+                <!-- Type 3: Courrier sortant -->
+                <div class="type-3-group d-none">
+                    <div class="col-12 mb-3" wire:ignore>
+                        <div class="row">
+                            <label class="col-5 col-form-label">Rédacteur</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="redacteur" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
+                                    data-route=""
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="Agent" data-tags="false">
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-12">
-                    <div class="row">
-                        <label class="col-5 col-form-label">Destination</label>
-                        <div class="col-7">
-                            <input type="text" class="form-control" name="destination" required value="LerexcomPetroleum">
+                    <div class="col-12 mb-3" wire:ignore>
+                        <div class="row">
+                            <label class="col-5 col-form-label">Emetteur</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="expediteur_externe" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getAgents') }}"
+                                    data-route=""
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="Agent" data-tags="false">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3" wire:ignore>
+                        <div class="row">
+                            <label class="col-5 col-form-label">Destination</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="destination" required
+                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true">
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="col-12">
-                    <div class="row">
-                        <label class="col-5 col-form-label">Observations</label>
-                        <div class="col-7">
-                            <textarea name="observations" id="" cols="30" rows="3" class="form-control" style="resize: none"
-                                placeholder="Observations"></textarea>
-                        </div>
-                    </div>
-                </div>
+                
 
               
 
@@ -384,7 +447,7 @@
     
     <div class="footer-sidebar">
         <a href="{{ route('regidoc.archivages.index') }}" class="btn btn-concel">Annuler</a>
-        <button class="btn btn-valid" @disabled(!$isFormValid)>Archiver</button>
+        <button type="submit" id="submit-btn" @disabled(!$isFormValid) class="btn btn-valid">Archiver</button>
     </div>
 </form>
     </div>
@@ -438,6 +501,8 @@
                     "save_path": "{{ str_replace('\\', '/', storage_path() . '\\app\\public\\tmp_scanne\\file.pdf') }}"
                 }]
             });
+
+            // Pas de filtre de catégorie voulu: aucun relative_id n'est forcé
         }
 
         /** Processes the scan result */
@@ -453,6 +518,8 @@
             $(iframe).addClass('show')
             $(iframe).addClass('fade')
             document.getElementById('server_response').value = 'true';
+            // Le scan remplace le fichier: on enlève le required du champ fichier pour ne pas bloquer la soumission
+            $('#file-upload').prop('required', false);
         }
     </script>
     <script>
@@ -468,14 +535,81 @@
             } else {
                 alert("Veuillez sélectionner un fichier valide.");
             }
+
+            // Les fonctions toggleTypeGroups et syncRequiredVisibility sont définies dans le scope global (voir plus bas)
         });
         $(document).ready(function() {
+            // Afficher/Masquer les groupes spécifiques au type (disponible partout)
+            function toggleTypeGroups(typeVal) {
+                // Sélecteurs utiles
+                const g1 = $('.type-1-group');
+                const g3 = $('.type-3-group');
 
-            setEntrat($('#type_id').val());
+                // Fonction utilitaire pour (dés)activer les champs d'un groupe
+                const setGroupState = (groupEl, visible) => {
+                    if (visible) {
+                        groupEl.removeClass('d-none');
+                        groupEl.find('select, input, textarea').prop('disabled', false);
+                        // Rétablir le required uniquement sur les champs marqués explicitement
+                        groupEl.find('[name="redacteur"], [name="expediteur_externe"], [name="destination"]').attr('required', true);
+                    } else {
+                        groupEl.addClass('d-none');
+                        groupEl.find('select, input, textarea').prop('disabled', true).attr('required', false);
+                    }
+                };
+
+                if (typeVal == 1) {
+                    setGroupState(g1, true);
+                    setGroupState(g3, false);
+                } else if (typeVal == 3) {
+                    setGroupState(g1, false);
+                    setGroupState(g3, true);
+                } else {
+                    setGroupState(g1, false);
+                    setGroupState(g3, false);
+                }
+                // Synchroniser les champs requis selon la visibilité
+                syncRequiredVisibility();
+            }
+
+            // Retirer automatiquement 'required' sur les champs non visibles et le réactiver quand ils redeviennent visibles
+            function syncRequiredVisibility() {
+                // Marquer l'état d'origine une fois
+                $('[required]').each(function () {
+                    const $el = $(this);
+                    if ($el.data('orig-required') === undefined) {
+                        $el.data('orig-required', true);
+                    }
+                });
+
+                // Parcourir tous les champs potentiellement requis
+                $('input, select, textarea').each(function () {
+                    const $el = $(this);
+                    const origReq = $el.data('orig-required') === true;
+                    const isVisible = $el.is(':visible');
+                    if (!isVisible) {
+                        // Cacher => pas required
+                        if ($el.prop('required')) $el.prop('required', false);
+                    } else if (origReq) {
+                        // Visible et marqué requis d'origine => réactiver
+                        if (!$el.prop('required')) $el.prop('required', true);
+                    }
+                });
+            }
+
+            // Initialisation affichage selon le type sélectionné (si sélecteur présent)
+            if ($('#type_id').length) {
+                setEntrat($('#type_id').val());
+                toggleTypeGroups($('#type_id').val());
+            } else {
+                // Pas de sélecteur de type visible: synchroniser au moins les required/visibility
+                syncRequiredVisibility();
+            }
 
             $('#type_id').on('change', function(e) {
                 var data = e.target.value;
                 setEntrat(data);
+                toggleTypeGroups(data);
             });
 
             $('.col-12.d-none div > div > input').attr('required', false);
@@ -571,6 +705,103 @@
                 width: "100%"
             });
 
+            // Initialisation générique pour tous les .select2 avec attributs data-
+            $('.select2').each(function() {
+                const $el = $(this);
+                const getUrl = $el.data('get-items-route');
+                const saveUrl = $el.data('route');
+                const label = $el.data('get-items-field') || $el.data('label');
+                const model = $el.data('related-model');
+                const tags = String($el.data('tags')) === 'true';
+                const maxSel = $el.data('max-selection') || null;
+                const placeholder = $el.data('placeholder') || 'Sélectionnez';
+
+                $el.select2({
+                    tags: tags,
+                    placeholder: placeholder,
+                    language: 'fr',
+                    maximumSelectionLength: maxSel,
+                    minimumInputLength: 0,
+                    width: '100%',
+                    ajax: getUrl ? {
+                        url: getUrl,
+                        dataType: 'json',
+                        delay: 250,
+                        headers: { 'Accept': 'application/json' },
+                        data: function(params) {
+                            const page = params.page || 1;
+                            const term = params.term || '';
+                            const relativeId = $el.data('relative-id') || null;
+                            const method = $el.data('method') || 'add';
+                            return {
+                                search: term,
+                                page: page,
+                                label: label,
+                                model: model,
+                                relative_id: relativeId,
+                                method: method
+                            };
+                        },
+                        processResults: function(data, params) {
+                            params.page = params.page || 1;
+                            // Format AjaxController: { results: [{id,text}], pagination: {more: bool} }
+                            if (data && Array.isArray(data.results)) {
+                                return { results: data.results, pagination: { more: data.pagination ? !!data.pagination.more : false } };
+                            }
+                            // Format Resource paginate: { data: [...], current_page, last_page }
+                            if (data && Array.isArray(data.data)) {
+                                const items = data.data.map(function(item) {
+                                    return { id: item.id, text: item[label] || item.nom || item.titre || item.title };
+                                });
+                                const more = data.current_page && data.last_page ? (data.current_page < data.last_page) : false;
+                                return { results: items, pagination: { more: more } };
+                            }
+                            // Fallback
+                            return { results: [] };
+                        },
+                        error: function(xhr) {
+                            console && console.error && console.error('Select2 AJAX error', getUrl, xhr);
+                        }
+                    } : null
+                });
+
+                // Sauvegarde des nouveaux tags si autorisé
+                if (tags && saveUrl) {
+                    $el.on('select2:select', function(e) {
+                        const data = e.params.data;
+                        // Si l'élément sélectionné n'a pas d'id numérique, on tente de le créer côté serveur
+                        if (!data.id || isNaN(Number(data.id))) {
+                            const payload = {};
+                            payload[label] = data.text;
+                            const relativeId = $el.data('relative-id');
+                            if (typeof relativeId !== 'undefined') payload['relative_id'] = relativeId;
+
+                            $.ajax({
+                                url: saveUrl,
+                                method: 'POST',
+                                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                                data: payload,
+                                success: function(resp) {
+                                    // AjaxController renvoie {results: {...}}
+                                    const created = resp && (resp.results || resp);
+                                    const newId = created.id || (created.results ? created.results.id : null);
+                                    if (newId) {
+                                        // Remplacer la valeur temporaire par l'ID créé
+                                        const option = new Option(data.text, newId, true, true);
+                                        $el.append(option).trigger('change');
+                                    }
+                                },
+                                error: function() {
+                                    // Rejeter la sélection si la création a échoué
+                                    $el.find('option[value="' + data.id + '"]').remove();
+                                    $el.trigger('change');
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
             // $('#file-upload').on('change', function(e) {
             //     let files = e.target.files;
             //     if (files.length > 0) {
@@ -582,6 +813,27 @@
 
             $('select[name="service_init"]').on('change', function(e) {
                 @this.changeServiceInit(e.target.value);
+            });
+
+            // Gestion explicite du clic sur le bouton pour montrer le premier champ invalide
+            $('#submit-btn').on('click', function(e) {
+                const btn = this;
+                if (btn.hasAttribute('disabled')) {
+                    return; // bouton inactif => ne rien faire
+                }
+                const form = document.getElementById('archive-form');
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    const invalid = form.querySelector(':invalid');
+                    if (invalid) {
+                        invalid.focus();
+                        if (typeof invalid.reportValidity === 'function') invalid.reportValidity();
+                    }
+                    return false;
+                }
+                // Soumettre explicitement (évite toute interception silencieuse)
+                console.log('Soumission du formulaire Archive vers', form.action);
+                form.submit();
             });
 
             $('select[name="categorie"]').on('change', function(e) {

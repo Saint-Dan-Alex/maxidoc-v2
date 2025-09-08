@@ -288,6 +288,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 Route::post('expediteurs/courriers/save', [AjaxController::class, 'expediteurCourriersSave'])->name('ajax.expediteurcourriers.save');
                 Route::get('destinataires/courriers', [AjaxController::class, 'destinatairecourriers'])->name('ajax.destinatairecourriers');
                 Route::post('destinataires/courriers/save', [AjaxController::class, 'destinatairecourriersSave'])->name('ajax.destinatairecourriers.save');
+                // Archives destinations
+                Route::get('destinataires/archives', [AjaxController::class, 'destinatairearchives'])->name('ajax.destinatairearchives');
+                Route::post('destinataires/archives/save', [AjaxController::class, 'destinatairearchivesSave'])->name('ajax.destinatairearchives.save');
 
                 Route::get('signatures/get/user/image', [AjaxController::class, 'getUserSignature'])->name('ajax.signature');
                 Route::post('signatures/save/user/image', [AjaxController::class, 'saveUserSignature'])->name('ajax.signature.save');
