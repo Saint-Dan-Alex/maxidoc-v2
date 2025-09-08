@@ -20,7 +20,7 @@ class AddArchiveForm extends Component
     public $followers;
     public $type;
     public $num;
-    public $isFormValid = false;
+    public $isFormValid = true;
     public $selectedDoc = false;
     public $isConfidentiel = false;
     public $ref;
