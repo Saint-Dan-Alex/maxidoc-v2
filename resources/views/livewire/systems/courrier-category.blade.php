@@ -96,6 +96,7 @@
     </div>
 
     <!-- Modal Ajout -->
+    @php($types = \App\Models\CourrierType::select('id','titre')->orderBy('titre')->get())
     <div class="modal fade" id="modal-new-category" tabindex="-1" aria-labelledby="modalNewCategory" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -113,6 +114,15 @@
                             @error('title')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="type_id" class="form-label">Type</label>
+                            <select name="type_id" id="type_id" class="form-control select2">
+                                <option value="">Sélectionner</option>
+                                @foreach($types as $type)
+                                    <option value="{{ $type->id }}" @selected(old('type_id')==$type->id)>{{ $type->titre }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -148,6 +158,15 @@
                                 @error('title')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label for="type_id_edit_{{ $category->id }}" class="form-label">Type</label>
+                                <select name="type_id" id="type_id_edit_{{ $category->id }}" class="form-control select2">
+                                    <option value="">Sélectionner</option>
+                                    @foreach($types as $type)
+                                        <option value="{{ $type->id }}" @selected(old('type_id', $category->type_id)==$type->id)>{{ $type->titre }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                         <div class="modal-footer">
