@@ -133,6 +133,12 @@ class DirectionController extends Controller
                 }
             }
 
+            $content = json_encode([
+                'name' => 'Systèmes',
+                'statut' => 'success',
+                'message' => 'Direction ajoutée avec succès',
+            ]);
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
@@ -141,18 +147,16 @@ class DirectionController extends Controller
                 ]);
             }
 
-            $content = json_encode([
-                'name' => 'Systèmes',
-                'statut' => 'success',
-                'message' => 'Direction ajoutée avec succès',
-            ]);
-            return back()->with('session', $content);
+            return redirect()->route('regidoc.directions.index')->with('session', $content);
         } catch (ValidationException $e) {
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
                 'message' => 'La validation a échoué. Veuillez vérifier le formulaire.',
             ]);
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Erreur lors de la création de la Direction'], 500);
+            }
             return back()->with('session', $content)->withErrors($e->errors())->withInput();
         } catch (\Throwable $th) {
             if ($request->wantsJson()) {
@@ -274,12 +278,24 @@ class DirectionController extends Controller
                 'message' => 'Direction modifiée avec succès',
             ]);
 
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Direction modifiée avec succès',
+                    'data' => $direction,
+                ]);
+            }
+
+            return redirect()->route('regidoc.directions.index')->with('session', $content);
         } catch (ValidationException $e) {
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
                 'message' => 'La validation a échoué. Veuillez vérifier le formulaire.',
             ]);
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Erreur lors de la mise à jour'], 500);
+            }
             return back()->with('session', $content)->withErrors($e->errors())->withInput();
         } catch (\Throwable $th) {
             $content = json_encode([
@@ -292,12 +308,6 @@ class DirectionController extends Controller
             }
             return back()->with('session', $content);
         }
-
-        if ($request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Direction modifiée avec succès', 'data' => $direction]);
-        }
-
-        return back()->with('session', $content);
     }
 
     /**
@@ -317,10 +327,12 @@ class DirectionController extends Controller
                 'statut' => 'success',
                 'message' => 'Direction supprimée avec succès',
             ]);
+
             if (request()->wantsJson()) {
                 return response()->json(['success' => true, 'message' => 'Direction supprimée avec succès']);
             }
-            return back()->with('session', $content);
+
+            return redirect()->route('regidoc.directions.index')->with('session', $content);
         } catch (\Throwable $th) {
             $content = json_encode([
                 'name' => 'Systèmes',
