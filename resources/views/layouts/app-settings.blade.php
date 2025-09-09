@@ -331,6 +331,21 @@
     <!-- Scripts -->
     @include('regidoc.layouts.partials.head.scripts')
     @stack('scripts')
+    @if (session()->has('session'))
+    <script>
+        // Make flash messages visible when present
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.message-flash').forEach(function(el){
+                el.classList.add('show');
+            });
+            setTimeout(function(){
+                document.querySelectorAll('.message-flash').forEach(function(el){
+                    el.classList.remove('show');
+                });
+            }, 5000);
+        });
+    </script>
+    @endif
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
