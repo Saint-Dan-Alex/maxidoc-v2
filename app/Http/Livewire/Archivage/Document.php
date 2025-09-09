@@ -53,16 +53,16 @@ class Document extends Component
     public function render()
     {
         $query = ModelsDocument::archive()->where('dossier_id', $this->dossier->id);
-        
+
         // Appliquer les filtres
         $query = $this->applyFilters($query);
-        
-        // Récupérer les documents avec pagination
-        $documents = $query->paginate(10);
+
+        // Déterminer le tri à appliquer côté SQL
+        [$sortField, $sortDirection] = $this->getSortOptions();
+
+        // Récupérer les documents avec tri et pagination (le tri est appliqué dans la requête)
+        $documents = $query->orderBy($sortField, $sortDirection)->paginate(10);
         $this->documents = $documents->getCollection();
-        
-        // Appliquer le tri
-        $this->applySorting();
         
         // Désactiver le loader une fois le rendu terminé
         $this->loading = false;
@@ -126,24 +126,23 @@ class Document extends Component
         return $query;
     }
     
-    protected function applySorting()
+    protected function getSortOptions(): array
     {
+        // Valeurs par défaut: plus récent archivé au plus ancien
         $sortField = 'archived_at';
         $sortDirection = 'desc';
-        
+
         switch ($this->filter) {
             case 1: // Par défaut
-                $sortField = 'archived_at';
-                $sortDirection = 'desc';
                 $this->filterText = 'Filtre';
                 break;
-            case 2: // A-Z
-                $sortField = 'titre';
+            case 2: // A - Z (sur le libellé du document)
+                $sortField = 'libelle';
                 $sortDirection = 'asc';
                 $this->filterText = 'A - Z';
                 break;
-            case 3: // Z-A
-                $sortField = 'titre';
+            case 3: // Z - A
+                $sortField = 'libelle';
                 $sortDirection = 'desc';
                 $this->filterText = 'Z - A';
                 break;
@@ -158,11 +157,8 @@ class Document extends Component
                 $this->filterText = 'Date de modification';
                 break;
         }
-        
-        $this->documents = $this->documents->sortBy($sortField, SORT_REGULAR, $sortDirection === 'desc');
-   
 
-        return view('livewire.archivage.document');
+        return [$sortField, $sortDirection];
     }
 
     public function updatedLieuQuery($value)
