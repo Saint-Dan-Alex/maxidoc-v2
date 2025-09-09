@@ -26,10 +26,14 @@ class CourrierCategoryController extends Controller
     {
         try {
             $validated = $request->validate([
-                'title' => 'required|string|max:255'
+                'title' => 'required|string|max:255',
+                'type_id' => 'nullable|exists:courrier_types,id',
             ]);
 
-            $category = CourrierCategory::create($validated);
+            $category = CourrierCategory::create([
+                'title' => $validated['title'],
+                'type_id' => $validated['type_id'] ?? null,
+            ]);
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -74,10 +78,14 @@ class CourrierCategoryController extends Controller
             $category = CourrierCategory::findOrFail($id);
             
             $validated = $request->validate([
-                'title' => 'required|string|max:255'
+                'title' => 'required|string|max:255',
+                'type_id' => 'nullable|exists:courrier_types,id',
             ]);
 
-            $category->update($validated);
+            $category->update([
+                'title' => $validated['title'],
+                'type_id' => $validated['type_id'] ?? null,
+            ]);
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -136,7 +144,7 @@ class CourrierCategoryController extends Controller
                 'statut' => 'error',
                 'message' => 'La suppression de la Catégorie a échoué !',
             ]);
-            return redirect()->back()->with('session', $content);
+            return redirect()->route('regidoc.categories.index')->with('session', $content);
         }
     }
 }
