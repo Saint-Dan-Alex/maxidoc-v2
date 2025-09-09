@@ -834,7 +834,10 @@ class DocumentController extends Controller
             $content
         );
 
-        return redirect()->route('regidoc.documents.index', $document->dossier);
+        return redirect()->route('regidoc.archive-classeurs.archive-dossiers.show', [
+            'archive_classeur' => $document->dossier->classeur_id,
+            'archive_dossier' => $document->dossier_id,
+        ]);
     }
 
     

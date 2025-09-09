@@ -290,14 +290,14 @@ class ArchiveController extends Controller
 
         // 5. Redirection avec le message flash
         session()->flash('session', $content);
+        if (isset($document) && $document) {
+            return redirect()->route('regidoc.archive-classeurs.archive-dossiers.show', [
+                'archive_classeur' => $document->dossier->classeur_id,
+                'archive_dossier' => $document->dossier_id,
+            ]);
+        }
         return redirect()->route('regidoc.archivages.index');
     }
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         //
