@@ -67,8 +67,7 @@ class FonctionController extends Controller
             ]);
         }
 
-        session()->flash('session', $content);
-        return back();
+        return redirect()->back()->with('session', $content);
     }
 
     /**
