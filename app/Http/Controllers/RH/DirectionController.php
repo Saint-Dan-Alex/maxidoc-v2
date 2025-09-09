@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class DirectionController extends Controller
 {
@@ -79,65 +80,94 @@ class DirectionController extends Controller
     public function store(Request $request)
     {
         try {
+            $validated = $request->validate([
+                'code' => 'nullable|string|max:50',
+                'libelle' => 'required|string|max:255',
+                'responsable_id' => 'nullable|exists:agents,id',
+                'adjoint_id' => 'nullable|exists:agents,id',
+                'lieu_id' => 'required|exists:lieu_affectations,id',
+                'description' => 'nullable|string',
+            ]);
+
             // Création de la direction
             $direction = Direction::create([
-                "code" => $request->code,
-                "titre" => $request->libelle,
-                "responsable_id" => $request->responsable_id,
-                "adjoint_id" => $request->adjoint_id,
-                "lieu_id" => $request->lieu_id,
-                "description" => $request->description,
+                'code' => $validated['code'] ?? null,
+                'titre' => $validated['libelle'],
+                'responsable_id' => $validated['responsable_id'] ?? null,
+                'adjoint_id' => $validated['adjoint_id'] ?? null,
+                'lieu_id' => $validated['lieu_id'],
+                'description' => $validated['description'] ?? null,
             ]);
 
             // Création automatique d'une division avec le même nom
-            $division = $direction->divisions()->create([
-                'libelle' => $request->libelle,
-                'description' => $request->description,
-                'responsable_id' => $request->responsable_id,
+            $direction->divisions()->create([
+                'libelle' => $validated['libelle'],
+                'description' => $validated['description'] ?? null,
+                'responsable_id' => $validated['responsable_id'] ?? null,
                 'statut_id' => 1, // Statut actif par défaut
             ]);
 
             $fonction = Fonction::firstOrCreate([
-                'titre' => 'Adjoint Responsable ' . $request->libelle,
+                'titre' => 'Adjoint Responsable ' . $validated['libelle'],
             ], [
-                "direction_id" => $direction->id,
+                'direction_id' => $direction->id,
             ]);
 
-            $agent = Agent::find($request->responsable_id);
-            if ($agent) {
-                $agent->update([
-                    'fonction_id' => $fonction->id,
-                    'direction_id' => $direction->id
-                ]);
+            if (!empty($validated['responsable_id'])) {
+                $agent = Agent::find($validated['responsable_id']);
+                if ($agent) {
+                    $agent->update([
+                        'fonction_id' => $fonction->id,
+                        'direction_id' => $direction->id
+                    ]);
+                }
             }
 
-            $agentAdjoint = Agent::find($request->adjoint_id);
-            if ($agentAdjoint) {
-                $agent->update([
-                    'fonction_id' => $fonction->id,
-                    'direction_id' => $direction->id
+            if (!empty($validated['adjoint_id'])) {
+                $agentAdjoint = Agent::find($validated['adjoint_id']);
+                if ($agentAdjoint) {
+                    $agentAdjoint->update([
+                        'fonction_id' => $fonction->id,
+                        'direction_id' => $direction->id
+                    ]);
+                }
+            }
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Direction ajoutée avec succès',
+                    'data' => $direction,
                 ]);
             }
 
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'success',
-                'message' => "Direction ajouté avec succès",
+                'message' => 'Direction ajoutée avec succès',
             ]);
-        } catch (\Throwable $th) {
+            return back()->with('session', $content);
+        } catch (ValidationException $e) {
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
-                'message' => 'L\'ajout de la Direction a échoué !',
+                'message' => 'La validation a échoué. Veuillez vérifier le formulaire.',
             ]);
+            return back()->with('session', $content)->withErrors($e->errors())->withInput();
+        } catch (\Throwable $th) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors de la création de la Direction',
+                ], 500);
+            }
+            $content = json_encode([
+                'name' => 'Systèmes',
+                'statut' => 'error',
+                'message' => "L'ajout de la Direction a échoué !",
+            ]);
+            return back()->with('session', $content);
         }
-
-        session()->flash(
-            'session',
-            $content
-        );
-
-        return back();
     }
 
 
@@ -153,38 +183,47 @@ class DirectionController extends Controller
         try {
             $direction = Direction::findOrFail($id);
 
+            $validated = $request->validate([
+                'code' => 'nullable|string|max:50',
+                'libelle' => 'required|string|max:255',
+                'responsable_id' => 'nullable|exists:agents,id',
+                'adjoint_id' => 'nullable|exists:agents,id',
+                'lieu_id' => 'required|exists:lieu_affectations,id',
+                'description' => 'nullable|string',
+            ]);
+
             $direction->update([
-                "code" => $request->code,
-                "titre" => $request->libelle,
-                "responsable_id" => $request->responsable_id,
-                "adjoint_id" => $request->adjoint_id,
-                "lieu" => $request->lieu_id,
-                "description" => $request->description,
+                'code' => $validated['code'] ?? null,
+                'titre' => $validated['libelle'],
+                'responsable_id' => $validated['responsable_id'] ?? null,
+                'adjoint_id' => $validated['adjoint_id'] ?? null,
+                'lieu_id' => $validated['lieu_id'],
+                'description' => $validated['description'] ?? null,
             ]);
 
             // Mise à jour de la division principale
             $division = $direction->divisions()->first();
             if ($division) {
                 $division->update([
-                    'libelle' => $request->libelle,
-                    'description' => $request->description,
-                    'responsable_id' => $request->responsable_id,
+                    'libelle' => $validated['libelle'],
+                    'description' => $validated['description'] ?? null,
+                    'responsable_id' => $validated['responsable_id'] ?? null,
                 ]);
             } else {
                 // Si aucune division n'existe, on en crée une nouvelle
                 $direction->divisions()->create([
-                    'libelle' => $request->libelle,
-                    'description' => $request->description,
-                    'responsable_id' => $request->responsable_id,
+                    'libelle' => $validated['libelle'],
+                    'description' => $validated['description'] ?? null,
+                    'responsable_id' => $validated['responsable_id'] ?? null,
                     'statut_id' => 1, // Statut actif par défaut
                 ]);
             }
 
-            $direction->code = $request->code;
+            $direction->code = $validated['code'] ?? null;
             $direction->save();
             // dd($direction->responsable_id != $request->responsable_id);
 
-            if ($direction->responsable_id != $request->responsable_id) {
+            if ($direction->responsable_id != ($validated['responsable_id'] ?? null)) {
                 # code...
                 $ancienAgent = Agent::find($direction->responsable_id);
                 if ($ancienAgent) {
@@ -193,12 +232,12 @@ class DirectionController extends Controller
                     ]);
                 }
                 $fonction = Fonction::firstOrCreate([
-                    'titre' => 'Responsable ' . $request->libelle,
+                    'titre' => 'Responsable ' . $validated['libelle'],
                 ], [
                     "direction_id" => $id,
                 ]);
 
-                $agent = Agent::find($request->responsable_id);
+                $agent = Agent::find($validated['responsable_id'] ?? null);
                 if ($agent) {
                     $agent->update([
                         'fonction_id' => $fonction->id,
@@ -206,7 +245,7 @@ class DirectionController extends Controller
                     ]);
                 }
             }
-            if ($direction->adjoint_id != $request->adjoint_id) {
+            if ($direction->adjoint_id != ($validated['adjoint_id'] ?? null)) {
                 # code...
                 $ancienAgentAdjoint = Agent::find($direction->adjoint_id);
                 if ($ancienAgentAdjoint) {
@@ -215,12 +254,12 @@ class DirectionController extends Controller
                     ]);
                 }
                 $fonction = Fonction::firstOrCreate([
-                    'titre' => 'Adjoint Responsable ' . $request->libelle,
+                    'titre' => 'Adjoint Responsable ' . $validated['libelle'],
                 ], [
                     "direction_id" => $id,
                 ]);
 
-                $agentAjoint = Agent::find($request->adjoint_id);
+                $agentAjoint = Agent::find($validated['adjoint_id'] ?? null);
                 if ($agentAjoint) {
                     $agentAjoint->update([
                         'fonction_id' => $fonction->id,
@@ -232,24 +271,33 @@ class DirectionController extends Controller
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'success',
-                'message' => "Direction modifiée avec succès",
+                'message' => 'Direction modifiée avec succès',
             ]);
 
+        } catch (ValidationException $e) {
+            $content = json_encode([
+                'name' => 'Systèmes',
+                'statut' => 'error',
+                'message' => 'La validation a échoué. Veuillez vérifier le formulaire.',
+            ]);
+            return back()->with('session', $content)->withErrors($e->errors())->withInput();
         } catch (\Throwable $th) {
-            // dd($th);
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
                 'message' => 'La modification de la Direction a échoué ...!',
             ]);
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Erreur lors de la mise à jour'], 500);
+            }
+            return back()->with('session', $content);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Direction modifiée avec succès', 'data' => $direction]);
+        }
 
-        return back();
+        return back()->with('session', $content);
     }
 
     /**
@@ -261,29 +309,29 @@ class DirectionController extends Controller
     public function destroy($id)
     {
         try {
-            $Direction = Direction::find($id);
-
-            $Direction->delete();
+            $direction = Direction::findOrFail($id);
+            $direction->delete();
 
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'success',
-                'message' => "Direction Supprimée avec succès",
+                'message' => 'Direction supprimée avec succès',
             ]);
+            if (request()->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Direction supprimée avec succès']);
+            }
+            return back()->with('session', $content);
         } catch (\Throwable $th) {
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'error',
                 'message' => 'La suppression de la Direction a échoué !',
             ]);
+            if (request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Erreur lors de la suppression'], 500);
+            }
+            return back()->with('session', $content);
         }
-
-        session()->flash(
-            'session',
-            $content
-        );
-
-        return back();
     }
 
     // public function relation(Request $request, $slug)
