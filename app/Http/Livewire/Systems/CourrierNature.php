@@ -97,12 +97,12 @@ class CourrierNature extends Component
             $nature->update([
                 'titre' => $this->titre
             ]);
-            session()->flash('message', 'Nature mise à jour avec succès.');
+            $this->emit('alert', 'success', 'Nature mise à jour avec succès');
         } else {
             NatureModel::create([
                 'titre' => $this->titre
             ]);
-            session()->flash('message', 'Nature créée avec succès.');
+            $this->emit('alert', 'success', 'Nature créée avec succès');
         }
 
         $this->resetForm();
@@ -121,6 +121,6 @@ class CourrierNature extends Component
     {
         $nature = NatureModel::findOrFail($id);
         $nature->delete();
-        session()->flash('message', 'Nature supprimée avec succès.');
+        $this->emit('alert', 'success', 'Nature supprimée avec succès');
     }
 }
