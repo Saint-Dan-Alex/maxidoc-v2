@@ -105,13 +105,13 @@ class CourrierExpediteur extends Component
                 'nom' => $this->nom,
                 'category_id' => $this->category_id,
             ]);
-            session()->flash('message', 'Expéditeur mis à jour avec succès.');
+            $this->emit('alert', 'success', 'Expéditeur mis à jour avec succès');
         } else {
             ExpediteurModel::create([
                 'nom' => $this->nom,
                 'category_id' => $this->category_id,
             ]);
-            session()->flash('message', 'Expéditeur créé avec succès.');
+            $this->emit('alert', 'success', 'Expéditeur créé avec succès');
         }
 
         $this->resetForm();
@@ -129,6 +129,6 @@ class CourrierExpediteur extends Component
     {
         $expediteur = ExpediteurModel::findOrFail($id);
         $expediteur->delete();
-        session()->flash('message', 'Expéditeur supprimé avec succès.');
+        $this->emit('alert', 'success', 'Expéditeur supprimé avec succès');
     }
 }
