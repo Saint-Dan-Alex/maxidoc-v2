@@ -50,14 +50,16 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th scope="col">Libellé</th>
+                        <th scope="col">Libellé</th>                        
+                        <th scope="col">Categorie</th>                        
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($natures as $nature)
                         <tr>
-                            <td>{{ $nature->titre }}</td>
+                            <td>{{ $nature->titre }}</td>                            
+                            <td>{{ $nature->category->title ?? 'Non défini' }}</td>                            
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
                                     <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
@@ -113,6 +115,21 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Catégorie</label>
+                            <select class="form-select @error('category_id') is-invalid @enderror" 
+                                id="category_id" name="category_id">
+                                <option value="">Sélectionnez une catégorie</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                        {{ $category->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -145,6 +162,21 @@
                                 <input type="text" class="form-control @error('titre') is-invalid @enderror"
                                     id="titre-edit-{{ $nature->id }}" name="titre" value="{{ old('titre', $nature->titre) }}" required>
                                 @error('titre')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit_category_id_{{ $nature->id }}" class="form-label">Catégorie</label>
+                                <select class="form-select @error('category_id') is-invalid @enderror" 
+                                    id="edit_category_id_{{ $nature->id }}" name="category_id">
+                                    <option value="">Sélectionnez une catégorie</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" {{ (old('category_id', $nature->category_id) == $category->id) ? 'selected' : '' }}>
+                                            {{ $category->title }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('category_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>

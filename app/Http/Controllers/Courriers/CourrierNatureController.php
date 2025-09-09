@@ -26,10 +26,16 @@ class CourrierNatureController extends Controller
     {
         try {
             $validated = $request->validate([
-                'titre' => 'required|string|max:255'
+                'titre' => 'required|string|max:100',
+                'category_id' => 'nullable|exists:courrier_categories,id',
+                'modele' => 'nullable|string',
             ]);
 
-            $nature = CourrierNature::create($validated);
+            $nature = CourrierNature::create([
+                'titre' => $validated['titre'],
+                'category_id' => $validated['category_id'] ?? null,
+                'modele' => $validated['modele'] ?? null,
+            ]);
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -44,7 +50,7 @@ class CourrierNatureController extends Controller
                 'statut' => 'success',
                 'message' => 'Nature de courrier créée avec succès',
             ]);
-            return redirect()->route('regidoc.natures.index')->with('session', $content);
+            return redirect()->route('regidoc.natures.index')->with('session', $content)->with('success', 'Nature de courrier créée avec succès');
         } catch (ValidationException $e) {
             $content = json_encode([
                 'name' => 'Systèmes',
@@ -74,10 +80,16 @@ class CourrierNatureController extends Controller
             $nature = CourrierNature::findOrFail($id);
             
             $validated = $request->validate([
-                'titre' => 'required|string|max:255'
+                'titre' => 'required|string|max:100',
+                'category_id' => 'nullable|exists:courrier_categories,id',
+                'modele' => 'nullable|string',
             ]);
 
-            $nature->update($validated);
+            $nature->update([
+                'titre' => $validated['titre'],
+                'category_id' => $validated['category_id'] ?? null,
+                'modele' => $validated['modele'] ?? null,
+            ]);
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -92,7 +104,7 @@ class CourrierNatureController extends Controller
                 'statut' => 'success',
                 'message' => 'Nature de courrier mise à jour avec succès',
             ]);
-            return redirect()->route('regidoc.natures.index')->with('session', $content);
+            return redirect()->route('regidoc.natures.index')->with('session', $content)->with('success', 'Nature de courrier créée avec succès');
         } catch (ValidationException $e) {
             $content = json_encode([
                 'name' => 'Systèmes',

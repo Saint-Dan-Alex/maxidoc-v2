@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Systems;
 
 use App\Models\CourrierNature as NatureModel;
+use App\Models\CourrierCategory;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -15,6 +16,7 @@ class CourrierNature extends Component
     public $search;
     public $titre;
     public $editingId = null;
+    public $category_id;
 
     protected $paginationTheme = 'bootstrap-5';
     protected $queryString = [
@@ -23,7 +25,8 @@ class CourrierNature extends Component
     ];
 
     protected $rules = [
-        'titre' => 'required|string|max:255'
+        'titre' => 'required|string|max:100',
+        'category_id' => 'nullable|exists:courrier_categories,id',
     ];
 
     public function mount()
@@ -70,9 +73,11 @@ class CourrierNature extends Component
         }
 
         $natures = $query->paginate(10);
+        $categories = CourrierCategory::orderBy('title')->get();
         
         return view('livewire.systems.courrier-nature', [
-            'natures' => $natures
+            'natures' => $natures,
+            'categories' => $categories,
         ]);
     }
 
@@ -84,7 +89,7 @@ class CourrierNature extends Component
 
     public function resetForm()
     {
-        $this->reset(['titre', 'editingId']);
+        $this->reset(['titre', 'category_id', 'editingId']);
         $this->resetErrorBag();
     }
 
@@ -95,12 +100,14 @@ class CourrierNature extends Component
         if ($this->editingId) {
             $nature = NatureModel::findOrFail($this->editingId);
             $nature->update([
-                'titre' => $this->titre
+                'titre' => $this->titre,
+                'category_id' => $this->category_id,
             ]);
             $this->emit('alert', 'success', 'Nature mise à jour avec succès');
         } else {
             NatureModel::create([
-                'titre' => $this->titre
+                'titre' => $this->titre,
+                'category_id' => $this->category_id,
             ]);
             $this->emit('alert', 'success', 'Nature créée avec succès');
         }
@@ -114,6 +121,7 @@ class CourrierNature extends Component
         $nature = NatureModel::findOrFail($id);
         $this->editingId = $id;
         $this->titre = $nature->titre;
+        $this->category_id = $nature->category_id;
         $this->dispatchBrowserEvent('show-edit-modal');
     }
 
