@@ -716,16 +716,31 @@ $(document).on('shown.bs.modal', '#modal-new-archive', function () {
         if (getUrl) {
             cfg.ajax = {
                 url: getUrl,
+                dataType: 'json',
+                delay: 250,
+                headers: { 'Accept': 'application/json' },
                 data: function (params) {
                     return {
-                        search: params.term,
-                        type: $el.data('get-items-field'),
-                        method: $el.data('method'),
-                        id: $el.data('id'),
+                        search: params.term || '',
                         page: params.page || 1,
                         model: $el.data('related-model'),
-                        label: $el.data('label'),
+                        label: $el.data('get-items-field') || $el.data('label'),
+                        method: $el.data('method') || 'get',
+                        id: $el.data('id')
                     };
+                },
+                processResults: function (data) {
+                    if (data && data.results) {
+                        return { results: data.results, pagination: { more: !!(data.pagination && data.pagination.more) } };
+                    }
+                    if (data && data.data) {
+                        const label = $el.data('get-items-field') || $el.data('label');
+                        const items = data.data.map(function (item) {
+                            return { id: item.id, text: item[label] || item.nom || item.titre };
+                        });
+                        return { results: items, pagination: { more: (data.current_page || 1) < (data.last_page || 1) } };
+                    }
+                    return { results: [] };
                 }
             };
         }
@@ -733,24 +748,62 @@ $(document).on('shown.bs.modal', '#modal-new-archive', function () {
         $el.select2(cfg);
 
         // Création dynamique (tags)
-        $el.off('select2:selecting.modalTags').on('select2:selecting.modalTags', function (e) {
+        $el.off('select2:select.modalTags').on('select2:select.modalTags', function (e) {
             if (!$el.data('tags')) return;
             const route = $el.data('route');
-            const label = $el.data('label');
+            const label = $el.data('get-items-field') || $el.data('label');
             const relativeId = $el.data('relative-id');
-            const newTag = e.params.args?.data?.newTag;
-            if (!newTag || !route || !label) return;
+            const data = e.params.data;
+            if (!route || !label || !data) return;
 
-            $el.select2('close');
-            $.post(route, { [label]: e.params.args.data.text, relative_id: relativeId, _tagging: true })
-                .done(function (data) {
-                    const id = data.results?.id || data.id;
-                    if (id) {
-                        const opt = new Option(e.params.args.data.text, id, false, true);
-                        $el.append(opt).trigger('change');
+            // Si l'élément sélectionné possède déjà un id numérique, ce n'est pas un nouveau tag
+            if (data.id && !isNaN(Number(data.id))) {
+                return;
+            }
+
+            const csrf = $('meta[name="csrf-token"]').attr('content') || $modal.find('input[name="_token"]').val();
+            $.ajax({
+                url: route,
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf },
+                data: { [label]: data.text, relative_id: relativeId },
+                success: function (resp) {
+                    const newId = (resp && (resp.results?.id ?? resp.id)) ? (resp.results?.id ?? resp.id) : null;
+                    if (newId) {
+                        // 1) Supprimer l'option temporaire (id non numérique) déjà sélectionnée
+                        if (data.id) {
+                            $el.find('option').filter(function(){ return $(this).val() == String(data.id); }).remove();
+                        }
+                        // 2) Éviter un doublon éventuel si une option avec le même newId existe déjà
+                        $el.find('option').filter(function(){ return $(this).val() == String(newId); }).remove();
+                        // 2bis) Éviter un doublon sur le même libellé (au cas où une option avec même texte mais autre id existe)
+                        $el.find('option').filter(function(){ return ($(this).text() || '').trim() === (data.text || '').trim(); }).remove();
+
+                        // Si la sélection est limitée à 1, on forcera la valeur plus bas
+                        const maxSel = $el.data('max-selection');
+
+                        // 3) Ajouter l'option persistée (si elle n'existe pas déjà)
+                        if ($el.find('option[value="' + String(newId) + '"]').length === 0) {
+                            const option = new Option(data.text, newId, true, true);
+                            $el.append(option);
+                        }
+
+                        if (maxSel && Number(maxSel) === 1) {
+                            // Forcer explicitement la valeur unique sur le nouvel ID
+                            $el.val([String(newId)]).trigger('change');
+                        } else {
+                            // Dédupliquer la sélection en mode multiple
+                            let vals = $el.val() || [];
+                            vals.push(String(newId));
+                            const unique = Array.from(new Set(vals.filter(v => v != null && v !== '')));
+                            $el.val(unique).trigger('change');
+                        }
                     }
-                });
-            e.preventDefault();
+                },
+                error: function (xhr) {
+                    console.error('Echec de création du tag', xhr?.responseText || xhr);
+                }
+            });
         });
     });
 });
