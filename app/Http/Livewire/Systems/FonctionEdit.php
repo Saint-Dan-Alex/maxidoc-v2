@@ -62,22 +62,19 @@ class FonctionEdit extends Component
 
     public function save()
     {
+        $this->validate([
+            'titre' => 'required|string|max:255',
+        ]);
+
         try {
-            //code...
             $this->fonction->update([
                 "titre" => $this->titre,
-                "section_id" => $this->section_id ?? null,
-                "service_id" => $this->service_id ?? null,
-                "division_id" => $this->division_id ?? null,
-                "direction_id" => $this->direction_id ?? null,
-                "description" => $this->description ?? null,
             ]);
 
             $this->mount($this->fonction);
             $this->emit('reloadFonction');
             $this->emit('alert', 'success', 'Fonction modifiée avec succès');
         } catch (\Throwable $th) {
-            //throw $th;
             $this->emit('alert', 'error', 'Echec');
         }
 

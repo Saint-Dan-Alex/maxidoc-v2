@@ -77,4 +77,37 @@
             </div>
         </div>
     @endforeach
+    <script>
+        document.addEventListener('livewire:load', function () {
+            if (window.Livewire && typeof Livewire.on === 'function') {
+                Livewire.on('alert', (statut, message) => {
+                    try {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = `message-flash ${statut} show`;
+                        wrapper.innerHTML = `
+                            <div class="content-text d-flex justify-content-center gap-2">
+                                <div class="content-text-imageBox d-flex justify-content-center align-items-center">
+                                    ${statut === 'success'
+                                        ? `<img src='${@json(asset('assets/images/icons/iconvert-maxidoc.svg'))}' alt='icon success'>`
+                                        : statut === 'warning' || statut === 'warnig'
+                                            ? `<img src='${@json(asset('assets/images/icons/iconorange-maxidoc.svg'))}' alt='icon warning'>`
+                                            : `<img src='${@json(asset('assets/images/icons/error-icon.png'))}' alt='icon error'>`}
+                                </div>
+                                <div class="text-star">
+                                    <h6>Informations</h6>
+                                    <p>${message ?? ''}</p>
+                                </div>
+                            </div>`;
+                        document.body.appendChild(wrapper);
+                        setTimeout(() => {
+                            wrapper.classList.remove('show');
+                            setTimeout(() => wrapper.remove(), 300);
+                        }, 5000);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                });
+            }
+        });
+    </script>
 @endsection

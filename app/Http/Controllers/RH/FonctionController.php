@@ -41,21 +41,10 @@ class FonctionController extends Controller
         try {
             $request->validate([
                 'libelle' => 'required|string|max:255',
-                'section_id' => 'nullable|exists:sections,id',
-                'service_id' => 'nullable|exists:services,id',
-                'division_id' => 'nullable|exists:divisions,id',
-                'direction_id' => 'nullable|exists:directions,id',
-                'description' => 'nullable|string',
             ]);
             Fonction::firstOrCreate([
                 "titre" => $request->libelle,
-                "section_id" => $request->section_id,
-                "service_id" => $request->service_id,
-                "division_id" => $request->division_id,
-                "direction_id" => $request->direction_id,
-            ], [
-                "description" => $request->description
-            ]);
+            ], );
 
             $content = json_encode([
                 'name' => 'Systèmes',
@@ -89,22 +78,12 @@ class FonctionController extends Controller
     {
         try {
             $request->validate([
-                'libelle' => 'required|string|max:255',
-                'section_id' => 'nullable|exists:sections,id',
-                'service_id' => 'nullable|exists:services,id',
-                'division_id' => 'nullable|exists:divisions,id',
-                'direction_id' => 'nullable|exists:directions,id',
-                'description' => 'nullable|string',
+                'titre' => 'required|string|max:255',
             ]);
             $fonction = Fonction::findOrFail($id);
 
             $fonction->update([
-                "titre" => $request->libelle,
-                "section_id" => $request->section_id,
-                "service_id" => $request->service_id,
-                "division_id" => $request->division_id,
-                "direction_id" => $request->direction_id,
-                "description" => $request->description,
+                "titre" => $request->titre,                
             ]);
 
             $content = json_encode([

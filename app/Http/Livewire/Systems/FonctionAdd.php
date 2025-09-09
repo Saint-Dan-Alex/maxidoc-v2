@@ -55,17 +55,16 @@ class FonctionAdd extends Component
 
     public function save()
     {
+        $this->validate([
+            'titre' => 'required|string|max:255',
+        ]);
+
         try {
             Fonction::create([
                 "titre" => $this->titre,
-                "section_id" => $this->section_id ?? null,
-                "service_id" => $this->service_id ?? null,
-                "division_id" => $this->division_id ?? null,
-                "direction_id" => $this->direction_id ?? null,
-                "description" => $this->description ?? null,
             ]);
 
-            $this->reset();
+            $this->reset(['titre','description']);
             $this->mount();
             $this->emit('reloadFonction');
             $this->emit('alert','success','Fonction ajoutée avec succès');
