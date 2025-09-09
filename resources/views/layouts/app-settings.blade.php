@@ -1,5 +1,5 @@
 <!Doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="">
 <!--
     # Project developed by Newtech Consulting SARL
     # Contact : Tél: +(243) 977 776 901
@@ -14,7 +14,21 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>MaxiDoc | Paramètres</title>
-    
+    <script>
+        // Early theme init to prevent flash
+        (function() {
+            try {
+                var saved = localStorage.getItem('data-theme');
+                if (!saved) {
+                    // If not saved, fallback to system preference
+                    saved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-theme', saved);
+            } catch (e) {
+                // noop
+            }
+        })();
+    </script>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -83,6 +97,31 @@
             padding: 20px 0;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.03);
             z-index: 100;
+        }
+        .settings-logo-back {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            padding: 10px 20px 8px 20px;
+            margin-bottom: 8px;
+        }
+        .settings-logo-back a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--colorTitre);
+        }
+        .settings-logo-back a .fi {
+            font-size: 18px;
+        }
+        .settings-logo-back img {
+            height: 28px;
+        }
+        .settings-logo-back a:hover .fi {
+            transform: translateX(-2px);
+            transition: transform .2s ease;
         }
         
         .settings-sidebar-header {
@@ -173,6 +212,7 @@
                     <div class="col-lg-6 col-4 col-sm-6 ps-0">
                         <div class="d-flex align-items-center">
                             <div class="logo-header">
+                                
                                 <a href="/">
                                     <div class="block-logo">
                                         <img src="{{ asset('assets/regidoc/icon.png') }}" class="theme-light-show">
@@ -194,6 +234,11 @@
         
         <!-- Settings Sidebar -->
         <div class="settings-sidebar" style="top: 70px; height: calc(100vh - 70px);">
+            <div class="settings-logo-back">
+                <a href="javascript:history.back()" title="Retour">
+                    <img src="{{ asset('assets/regidoc/logo.png') }}" alt="MAXIDOC">
+                </a>
+            </div>
             <div class="settings-sidebar-header">
                 <h3>Paramètres</h3>
             </div>
@@ -339,6 +384,86 @@
         });
     </script>
     
+    <script>
+        // Theme switcher (synced with app-user logic)
+        document.addEventListener('DOMContentLoaded', function() {
+            var items = [].slice.call(document.querySelectorAll('[data-element="mode"]'));
+
+            items.map(function(item) {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var menuMode = item.getAttribute('data-value');
+                    var mode = menuMode;
+                    if (menuMode === 'system') {
+                        mode = getSystemMode();
+                    }
+                    setMode(mode, menuMode);
+                });
+            });
+
+            function getMode() {
+                if (document.documentElement.hasAttribute('data-theme')) {
+                    return document.documentElement.getAttribute('data-theme');
+                } else if (localStorage.getItem('data-theme') !== null) {
+                    return localStorage.getItem('data-theme');
+                } else if (getMenuMode() === 'system') {
+                    return getSystemMode();
+                }
+                return 'light';
+            }
+
+            function setMode(mode, menuMode) {
+                if (menuMode === 'system') {
+                    if (getSystemMode() !== mode) {
+                        mode = getSystemMode();
+                    }
+                } else if (mode !== menuMode) {
+                    menuMode = mode;
+                }
+
+                var activeMenuItem = document.querySelector('[data-element="mode"][data-value="' + menuMode + '"]');
+
+                document.documentElement.setAttribute('data-theme-mode-switching', 'true');
+                document.documentElement.setAttribute('data-theme', mode);
+                setTimeout(function() {
+                    document.documentElement.removeAttribute('data-theme-mode-switching');
+                }, 300);
+
+                localStorage.setItem('data-theme', mode);
+                if (activeMenuItem) {
+                    localStorage.setItem('data-theme-mode', menuMode);
+                    setActiveMenuItem(activeMenuItem);
+                }
+            }
+
+            function getMenuMode() {
+                var menuItem = document.querySelector('.active[data-element="mode"]');
+                if (menuItem && menuItem.getAttribute('data-value')) {
+                    return menuItem.getAttribute('data-value');
+                } else if (document.documentElement.hasAttribute('data-theme-mode')) {
+                    return document.documentElement.getAttribute('data-theme-mode');
+                } else if (localStorage.getItem('data-theme-mode') !== null) {
+                    return localStorage.getItem('data-theme-mode');
+                } else {
+                    return 'light';
+                }
+            }
+
+            function getSystemMode() {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+
+            function setActiveMenuItem(item) {
+                var menuMode = item.getAttribute('data-value');
+                var activeItem = document.querySelector('.active[data-element="mode"]');
+                if (activeItem) {
+                    activeItem.classList.remove('active');
+                }
+                item.classList.add('active');
+                localStorage.setItem('data-theme-mode', menuMode);
+            }
+        });
+    </script>
     @if ($errors->any())
         <div class="message-flash error">
             <div class="content-text d-flex">

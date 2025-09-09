@@ -11,7 +11,7 @@
             <h4 class="ms-0 ms-2">Archivage du document</h4>
         </div>
         {{--  --}}
-        <form action="{{ route('regidoc.archivages.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="archive-form" action="{{ route('regidoc.archivages.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="body-siderbar">
         <div class="form-group row g-3">
@@ -23,7 +23,8 @@
           
                 {{-- AFFICHAGE POUR LES AUTRES UTILISATEURS : FORMULAIRE COMPLET --}}
 
-                 <input type="hidden" name="type" value="1" wire:ignore/>
+                
+                
 
                 @if (!$selectedDoc)
                     <div class="col-12 select_doc" onclick="scanToPdf();" wire:ignore>
@@ -36,6 +37,8 @@
                         </div>
                     </div>
                     <input type="hidden" name="is_scan" id="server_response" wire:ignore />
+                    
+
                     <div class="col-12" wire:ignore>
                         <div class="block-file ">
                             <input type="file" id="file-upload" name="document" accept=".pdf" required>
@@ -83,8 +86,26 @@
                 @else
                     <input type="hidden" name="selected_doc" value="{{ $fileName }}" id="" wire:ignore />
                 @endif
+                <div class="col-12">
+                    <div class="row" wire:ignore>
+                        <label class="col-5 col-form-label">Type de document</label>
+                        <div class="col-7">
+                            <select class="form-select form-control select autreSelect2"
+                                aria-label="Default select example" name="type" id="type_id" required wire:model='type' onchange="console.log('[UI] Type choisi:', this.value); var v=this.value; if(v==1){$('.type-3-group').addClass('d-none').hide();$('.type-1-group').removeClass('d-none').show();}else if(v==3){$('.type-1-group').addClass('d-none').hide();$('.type-3-group').removeClass('d-none').show();}else{$('.type-1-group,.type-3-group').addClass('d-none').hide();}">
+                                <option value="" selected disabled>Selectionnez</option>
+                                @foreach ($types as $type)
+                                    @if ($type->id != 2)
+                                        <option value="{{ $type->id }}">
+                                            {{ $type->titre }}
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 
-                {{-- <div class="col-12 categorie_field" wire:ignore>
+                <div class="col-12 categorie_field" wire:ignore>
                     <div class="row">
                         <label class="col-5 col-form-label">Catégorie</label>
                         <div class="col-7" wire:ignore>
@@ -98,7 +119,8 @@
                             </select>
                         </div>
                     </div>
-                </div> --}}
+                </div>
+                
 
                 {{-- <div class="col-12" wire:ignore>
                     <h5 class="mt-1 title-info">Destination du courrier</h5>
@@ -217,7 +239,7 @@
                     </div>
                 </div>
                 
-                <div class="col-12">
+               <div class="col-12">
                     <div class="row">
                         <label class="col-5 col-form-label">Titre</label>
                         <div class="col-7">
@@ -225,24 +247,11 @@
                                 placeholder="Titre / objet" required></textarea>
                         </div>
                     </div>
-                </div>
+                </div> 
 
-                <div class="col-12 nature_field" wire:ignore>
-                    <div class="row">
-                        <label class="col-5 col-form-label">Nature</label>
-                        <div class="col-7" wire:ignore>
-                            <select class="form-select form-control select2" aria-label="Default select example"
-                                name="nature" data-placeholder="Sélectionnez"
-                                data-get-items-route="{{ route('regidoc.ajax.naturecourriers') }}"
-                                data-route="{{ route('regidoc.ajax.naturecourriers.save') }}"
-                                data-get-items-field="titre" data-method="get" data-label="titre"
-                                data-related-model="CourrierNature" data-tags="true"
-                                @if ($type == [1, 3]) required @endif>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
+                @php
+                    $show_traitement = auth()->user()->can('Definir le traitement');
+                @endphp
                 @can('Definir le traitement')
                     <div class="col-12 d-none">
                         <div class="row">
@@ -258,20 +267,119 @@
                         </div>
                     </div>
                     
-                    <div class="col-12 priote_field" wire:ignore>
+                    
+                @endcan
+                <div class="col-12 nature_field" wire:ignore>
+                    <div class="row">
+                        <label class="col-5 col-form-label">Nature</label>
+                        <div class="col-7" wire:ignore>
+                            <select class="form-select form-control select2" aria-label="Default select example"
+                                name="nature" data-placeholder="Sélectionnez"
+                                data-get-items-route="{{ route('regidoc.ajax.naturecourriers') }}"
+                                data-route="{{ route('regidoc.ajax.naturecourriers.save') }}"
+                                data-get-items-field="titre" data-method="get" data-label="titre"
+                                data-related-model="CourrierNature" data-tags="true"
+                                @if ($type == [1, 3]) required @endif>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- Champs supplémentaires -->
+                <!-- Groupes d'inputs spécifiques par type -->
+                <!-- Type 1: Courrier entrant -->
+                <div class="type-1-group d-none" wire:ignore>
+                    <div class="col-12 mb-3" >
                         <div class="row">
-                            <label class="col-5 col-form-label">Priorité</label>
-                            <div class="col-7" wire:ignore>
-                                <select class="form-select form-control select2" aria-label="Default select example"
-                                    name="priorite" data-placeholder="Sélectionnez"
-                                    data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
-                                    data-get-items-field="titre" data-method="get" data-label="titre"
-                                    data-related-model="Priorite" @if ($type == [1, 3]) required @endif>
+                            <label class="col-5 col-form-label">Emetteur</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="expediteur_externe" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true" @if ($type == [1]) required @endif>
                                 </select>
                             </div>
                         </div>
                     </div>
-                @endcan
+                    <div class="col-12 mb-3" >
+                        <div class="row">
+                            <label class="col-5 col-form-label">Rédacteur</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="redacteur" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.redacteurs') }}"
+                                    data-route="{{ route('regidoc.ajax.redacteurs.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom" data-max-selection="1"
+                                    data-related-model="Redacteur" data-tags="true" multiple @if ($type == [1]) required @endif>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 mb-3" >
+                        <div class="row">
+                            <label class="col-5 col-form-label">Destination</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="destination" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.destinatairearchives') }}"
+                                    data-route="{{ route('regidoc.ajax.destinatairearchives.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="Destination" data-tags="true" data-max-selection="1" multiple @if ($type == [1]) required @endif>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Type 3: Courrier sortant -->
+                <div class="type-3-group d-none" wire:ignore>
+                    <div class="col-12 mb-3" >
+                        <div class="row">
+                            <label class="col-5 col-form-label">Emetteur 2</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="expediteur_externe" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getServices.json') }}"
+                                    data-route=""
+                                    data-method="get" data-label="titre"
+                                    data-related-model="Service" data-tags="false" @if ($type == [3]) required @endif>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3" >
+                        <div class="row">
+                            <label class="col-5 col-form-label">Rédacteur 2</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="redacteur" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getAgents.json') }}"
+                                    data-route=""
+                                    data-method="get" data-label="prenom,nom,post_nom"
+                                    data-related-model="Agent" data-tags="false" @if ($type == [3]) required @endif>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 mb-3" >
+                        <div class="row">
+                            <label class="col-5 col-form-label">Destination 2</label>
+                            <div class="col-7">
+                                <select class="form-select form-control select2" name="destination" required
+                                data-get-items-route="{{ route('regidoc.ajax.getAgents.json') }}"
+                                data-route=""
+                                data-method="get" data-label="prenom,nom,post_nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true" @if ($type == [3]) required @endif>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                
+
+              
 
                 <div class="col-12">
                     <div class="row">
@@ -338,7 +446,7 @@
     
     <div class="footer-sidebar">
         <a href="{{ route('regidoc.archivages.index') }}" class="btn btn-concel">Annuler</a>
-        <button class="btn btn-valid" @disabled(!$isFormValid)>Archiver</button>
+        <button type="submit" id="submit-btn" @disabled(!$isFormValid) class="btn btn-valid">Archiver</button>
     </div>
 </form>
     </div>
@@ -378,279 +486,316 @@
 </div>
 {{-- @dd(Storage::get('public/tmp/file.pdf')) --}}
 @push('livewireScripts')
-    <script src="{{ asset('vendor/scannerjs/scanner.js') }}"></script>
-
-    <script>
-        //https://github.com/Asprise/scannerjs.javascript-scanner-access-in-browsers-chrome-ie.scanner.js/blob/master/demo-04-scan-pdf-upload-directly.htm
-        function scanToPdf() {
-            scanner.scan(displayServerResponse, {
-                "can_app_enabled": false,
-                "java_applet_enabled": true,
-                "output_settings": [{
-                    "type": "save",
-                    "format": "pdf",
-                    "save_path": "{{ str_replace('\\', '/', storage_path() . '\\app\\public\\tmp_scanne\\file.pdf') }}"
-                }]
-            });
-        }
-
-        /** Processes the scan result */
-        function displayServerResponse(successful, mesg, response) {
-            var myInput = document.getElementById('file-upload');
-            var file = "{{ asset('storage') . '/tmp_scanne/file.pdf' }}"
-            console.log(file);
-            const iframe = document.querySelector('.content-scanner iframe');
-            $(iframe).attr('src', "{{ asset('storage') . '/tmp_scanne/file.pdf' }}");
-            console.log('Test :' + iframe.src);
-            $('block-no-file').addClass('d-none');
-            $(iframe).removeClass('d-none')
-            $(iframe).addClass('show')
-            $(iframe).addClass('fade')
-            document.getElementById('server_response').value = 'true';
-        }
-    </script>
-    <script>
-        document.getElementById("file-upload").addEventListener("change", function() {
-            const file = this.files[0];
-
-            if (file) {
-                const fileURL = URL.createObjectURL(file);
-                const iframe = document.getElementById("fileDisplay");
-
-                // Affiche le fichier dans l'iframe
-                iframe.src = fileURL;
-            } else {
-                alert("Veuillez sélectionner un fichier valide.");
-            }
+<script src="{{ asset('vendor/scannerjs/scanner.js') }}"></script>
+<script>
+    function scanToPdf() {
+        scanner.scan(displayServerResponse, {
+            "can_app_enabled": false,
+            "java_applet_enabled": true,
+            "output_settings": [{
+                "type": "save",
+                "format": "pdf",
+                "save_path": "{{ str_replace('\\', '/', storage_path() . '/app/public/tmp_scanne/file.pdf') }}"
+            }]
         });
-        $(document).ready(function() {
+    }
 
-            setEntrat($('#type_id').val());
+    function displayServerResponse(successful, mesg, response) {
+        const fileURL = "{{ asset('storage/tmp_scanne/file.pdf') }}";
+        const iframe = document.querySelector('.content-scanner iframe');
+        $(iframe).attr('src', fileURL + '?t=' + new Date().getTime());
+        $('.block-no-file').addClass('d-none');
+        $(iframe).removeClass('d-none').addClass('show fade');
+        document.getElementById('server_response').value = 'true';
+        $('#file-upload').prop('required', false);
+    }
+</script>
 
-            $('#type_id').on('change', function(e) {
-                var data = e.target.value;
-                setEntrat(data);
-            });
+<script>
+// Note: La logique d'affichage/masquage est gérée plus bas via toggleTypeGroups
+// et l'écouteur délégué sur #type_id (change/select2). Aucune initialisation
+// supplémentaire n'est nécessaire ici.
+    document.getElementById("file-upload").addEventListener("change", function() {
+        const file = this.files[0];
+        if (file) {
+            const fileURL = URL.createObjectURL(file);
+            document.getElementById("fileDisplay").src = fileURL;
+        }
+    });
 
-            $('.col-12.d-none div > div > input').attr('required', false);
-            $('.col-12.d-none div > div > select').attr('required', false);
+    document.addEventListener('livewire:initialized', () => {
+        // (Suppression de la logique robuste toggleTypeGroups)
 
-            function setEntrat(data) {
-                @this.type = data;
-                @this.changeNumRef();
+        // Enregistrer les options Select2 pour réutilisation
+        $('.autreSelect2, .select2').each(function() {
+            const $el = $(this);
+            const getUrl = $el.data('get-items-route');
+            const saveUrl = $el.data('route');
+            const label = $el.data('get-items-field') || $el.data('label');
+            const model = $el.data('related-model');
+            const tags = $el.data('tags') === true || $el.data('tags') === 'true';
+            const maxSel = $el.data('max-selection') || null;
+            const placeholder = $el.data('placeholder') || 'Sélectionnez';
 
-                if (data == 2 || data == 3) {
-
-                    $('.isConfidentiel').addClass('d-none')
-                    $('#copie').removeClass('d-none')
-
-                    $('.exped_extern').addClass('d-none');
-                    $('.exped_intern').removeClass('d-none');
-                    $('.block_traitant').removeClass('d-none');
-                    $('.block_initiateur').removeClass('d-none');
-                    $('.block_echeance').removeClass('d-none');
-
-                    $('.categorie_field').addClass('d-none');
-                    $('.priote_field').removeClass('d-none');
-                    // $('.datearrive_field').removeClass('d-none');
-                    $('.datearrive_field').addClass('d-none');
-                    $('.nature_field').removeClass('d-none');
-
-                    $('#destination2').removeClass('d-none');
-
-                    $('.exped_intern select').val("");
-                    $('.exped_intern select').attr("disabled", false);
-
-                    $('')
-                } else {
-
-                    $('.isConfidentiel').removeClass('d-none')
-                    $('#copie').addClass('d-none')
-
-                    $('.exped_extern').removeClass('d-none');
-                    $('.exped_intern').addClass('d-none');
-                    $('.block_traitant').addClass('d-none');
-                    $('.block_initiateur').addClass('d-none');
-                    $('.block_echeance').addClass('d-none');
-                    $('.dest-interne').addClass('d-none');
-
-                    $('.categorie_field').removeClass('d-none');
-                    $('.priote_field').removeClass('d-none');
-                    $('.datearrive_field').removeClass('d-none');
-                    $('.nature_field').removeClass('d-none');
-
-                    $('#destination2').addClass('d-none');
-
-                    $('#destination').parent().parent().parent().addClass('d-none');
-
-                    $('.exped_intern select').val("");
-                    $('.exped_intern select').attr("disabled", false);
-                }
-
-                if (data == 2) {
-                    $('.priote_field').addClass('d-none');
-                    $('.datearrive_field').addClass('d-none');
-                    $('.block_echeance').addClass('d-none');
-                    $('.nature_field').addClass('d-none');
-                    $('.exped_intern select').val("");
-                    $('.exped_intern select').attr("disabled", false);
-
-                    $('#destination').parent().parent().parent().removeClass('d-none');
-                    $('#destination2').parent().parent().parent().addClass('d-none');
-                }
-
-                if (data == 3) {
-                    $('.exped_intern select').val("{{ Auth::user()->agent->id }}");
-                    $('.exped_intern select').attr("disabled", true);
-                    $('#destination2').parent().parent().parent().removeClass('d-none');
-                    $('#destination').parent().parent().parent().addClass('d-none');
-                }
-            }
-
-            $('.selectCopie').select2({
-                tags: $(this).data('tags') ? $(this).data('tags') : false,
-                placeholder: $(this).data('placeholder'),
-                language: "fr",
-                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') :
-                    null,
-                width: "100%"
-            });
-
-            $('.autreSelect2').select2({
-                tags: $(this).data('tags') ? $(this).data('tags') : false,
-                placeholder: $(this).data('placeholder'),
-                language: "fr",
-                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') :
-                    null,
-                width: "100%"
-            });
-
-            // $('#file-upload').on('change', function(e) {
-            //     let files = e.target.files;
-            //     if (files.length > 0) {
-            //         $('.select_doc').addClass('d-none');
-            //     } else {
-            //         $('.select_doc').removeClass('d-none');
-            //     }
-            // });
-
-            $('select[name="service_init"]').on('change', function(e) {
-                @this.changeServiceInit(e.target.value);
-            });
-
-            $('select[name="categorie"]').on('change', function(e) {
-                $('select[name=exp]').data('relative-id', e.target.value);
-                $('select[name=exp]').attr('data-relative-id', e.target.value);
-                $('select[name=exp]').trigger('change');
-            });
-
-            $('select[name="exp"]').select2({
-                tags: $('select[name="exp"]').data('tags') ? $('select[name="exp"]').data('tags') : false,
-                placeholder: $('select[name="exp"]').data('placeholder'),
-                language: "fr",
-                createTag: function(params) {
-                    var term = $.trim(params.term);
-
-                    if (term === '') {
-                        return null;
-                    }
-
-                    return {
-                        id: term,
-                        text: term,
-                        newTag: true
-                    }
-                },
-                ajax: {
-                    url: $('select[name="exp"]').data('get-items-route'),
-                    data: function(params) {
-                        var query = {
-                            search: params.term,
-                            type: $('select[name="exp"]').data('get-items-field'),
-                            method: $('select[name="exp"]').data('method'),
-                            id: $('select[name="exp"]').data('id'),
-                            page: params.page || 1,
-                            model: $('select[name="exp"]').data('related-model'),
-                            label: $('select[name="exp"]').data('label'),
-                            relative_id: $('select[name="exp"]').data('relative-id'),
-                        }
-                        return query;
-                    }
-                },
+            const config = {
+                tags: tags,
+                placeholder: placeholder,
+                language: 'fr',
+                maximumSelectionLength: maxSel,
                 width: '100%',
-                maximumSelectionLength: $('select[name="exp"]').data('max-selection') ? $(
-                    'select[name="exp"]').data('max-selection') : null,
-            });
-
-            $('select[name="exp"]').on('select2:select', function(e) {
-                var data = e.params.data;
-
-                if (data.id == '') {
-                    // "None" was selected. Clear all selected options
-                    $('select[name="exp"]').val([]).trigger('change');
-                } else {
-                    $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected',
-                        'selected');
-                }
-            });
-
-            $('select[name="exp"]').on('select2:unselect', function(e) {
-                var data = e.params.data;
-                $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected',
-                    false);
-            });
-
-            $('select[name="exp"]').on('select2:selecting', function(e) {
-
-                if (!$('select[name="exp"]').data('tags')) {
-                    return;
-                }
-                var $el = $('select[name="exp"]');
-                var route = $el.data('route');
-                var label = $el.data('label');
-                var relativeId = $el.data('relative-id');
-                var errorMessage = $el.data('error-message');
-                var newTag = e.params.args.data.newTag;
-
-                if (!newTag) return;
-
-                $el.select2('close');
-
-                $.post(route, {
-                    [label]: e.params.args.data.text,
-                    relative_id: relativeId,
-                    _tagging: true,
-                }).done(function(data) {
-                    console.log(data);
-                    var newOption = new Option(e.params.args.data.text, data.results.id,
-                        false, true);
-                    $el.append(newOption).trigger('change');
-                }).fail(function(error) {
-                    // toastr.error(errorMessage);
-                    console.log(errorMessage);
-                });
-
-                return false;
-            });
-
-
-            // select all required fields
-            $('input[required], select[required]').on('change', function() {
-                var fields = $('input[required], select[required]');
-                console.log(fields);
-
-                fields.each(function() {
-                    if ($(this).val() == '') {
-                        // $(this).addClass('is-invalid');
-                        @this.set('isFormValid', false)
-                    } else {
-                        @this.set('isFormValid', true)
-                        // $(this).removeClass('is-invalid');
+                ajax: getUrl ? {
+                    url: getUrl,
+                    dataType: 'json',
+                    delay: 250,
+                    headers: { 'Accept': 'application/json' },
+                    data: (params) => ({
+                        search: params.term || '',
+                        page: params.page || 1,
+                        label: label,
+                        model: model,
+                        relative_id: $el.data('relative-id') || null,
+                        method: $el.data('method') || 'get'
+                    }),
+                    processResults: (data) => {
+                        if (data.results) {
+                            return { results: data.results, pagination: { more: !!data.pagination?.more } };
+                        }
+                        if (data.data) {
+                            const items = data.data.map(item => ({
+                                id: item.id,
+                                text: item[label] || item.nom || item.titre
+                            }));
+                            return {
+                                results: items,
+                                pagination: { more: data.current_page < data.last_page }
+                            };
+                        }
+                        return { results: [] };
                     }
-                })
-            });
+                } : null
+            };
+
+            // Stocker la config pour réutilisation
+            $el.data('select2-options', config);
+
+            // Initialiser uniquement si pas déjà fait
+            if (!$el.data('select2')) {
+                $el.select2(config);
+            }
+
+            // Gestion des nouveaux tags
+            if (tags && saveUrl) {
+                $el.off('select2:select').on('select2:select', function(e) {
+                    const data = e.params.data;
+                    if (!data.id || isNaN(Number(data.id))) {
+                        $.ajax({
+                            url: saveUrl,
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                            data: { [label]: data.text, relative_id: $el.data('relative-id') },
+                            success: (resp) => {
+                                const newId = resp.results?.id || resp.id;
+                                if (newId) {
+                                    const option = new Option(data.text, newId, true, true);
+                                    $el.append(option).trigger('change');
+                                }
+                            }
+                        });
+                    }
+                });
+            }
         });
-    </script>
+
+        // Écouteur simple sur le changement de type - délégation
+        $(document).on('change select2:select select2:clear', '#type_id', function(e) {
+            const val = $(this).val();
+            const text = $(this).find('option:selected').text().trim();
+            console.debug('[Type change]', { val, text, event: e.type });
+            // helper pour basculer l'état des champs d'un groupe
+            const toggleGroup = (selector, show) => {
+                const $group = $(selector);
+                if (show) {
+                    $group.removeClass('d-none').show();
+                    // Activer et marquer requis si l'élément le demande
+                    $group.find('input, select, textarea').each(function() {
+                        const $el = $(this);
+                        $el.prop('disabled', false);
+                        if ($el.data('visible-required') === true || $el.attr('data-visible-required') === 'true') {
+                            $el.prop('required', true);
+                        }
+                    });
+                } else {
+                    $group.addClass('d-none').hide();
+                    // Désactiver pour ignorer la validation, et retirer required
+                    $group.find('input, select, textarea').each(function() {
+                        const $el = $(this);
+                        $el.prop('required', false).prop('disabled', true);
+                        // Nettoyer la valeur pour éviter des incohérences
+                        if ($el.is('select')) {
+                            $el.val(null).trigger('change');
+                        } else if ($el.is(':checkbox') || $el.is(':radio')) {
+                            $el.prop('checked', false);
+                        } else {
+                            $el.val('');
+                        }
+                    });
+                }
+            };
+            if (val == 1) {
+                toggleGroup('.type-3-group', false);
+                toggleGroup('.type-1-group', true);
+            } else if (val == 3) {
+                toggleGroup('.type-1-group', false);
+                toggleGroup('.type-3-group', true);
+            } else {
+                toggleGroup('.type-1-group', false);
+                toggleGroup('.type-3-group', false);
+            }
+
+            // Appels Livewire après le toggle UI
+            @this.set('type', val);
+            @this.call('changeNumRef');
+        });
+        // Indiquer que le handler est attaché
+        window.__typeHandlerBound = true;
+
+        // Initialisation au chargement du DOM (sans logique robuste)
+        $(function() {
+            const initialType = $('#type_id').val();
+            // appliquer la même logique simple au chargement
+            const toggleGroup = (selector, show) => {
+                const $group = $(selector);
+                if (show) {
+                    $group.removeClass('d-none').show();
+                    $group.find('input, select, textarea').prop('disabled', false);
+                } else {
+                    $group.addClass('d-none').hide();
+                    $group.find('input, select, textarea').each(function() {
+                        const $el = $(this);
+                        $el.prop('required', false).prop('disabled', true);
+                        if ($el.is('select')) {
+                            $el.val(null).trigger('change');
+                        } else if ($el.is(':checkbox') || $el.is(':radio')) {
+                            $el.prop('checked', false);
+                        } else {
+                            $el.val('');
+                        }
+                    });
+                }
+            };
+            if (initialType == 1) {
+                toggleGroup('.type-3-group', false);
+                toggleGroup('.type-1-group', true);
+            } else if (initialType == 3) {
+                toggleGroup('.type-1-group', false);
+                toggleGroup('.type-3-group', true);
+            } else {
+                toggleGroup('.type-1-group', false);
+                toggleGroup('.type-3-group', false);
+            }
+        });
+        // (Suppression du hook Livewire message.processed)
+    });
+
+    // Fallback: attacher le même gestionnaire au chargement du DOM si Livewire n'initialise pas
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.__typeHandlerBound) {
+            $(document).on('change select2:select select2:clear', '#type_id', function(e) {
+                const val = $(this).val();
+                const text = $(this).find('option:selected').text().trim();
+                console.debug('[Type change - DOMContentLoaded]', { val, text, event: e.type });
+                if (window.Livewire) {
+                    @this.set('type', val);
+                    @this.call('changeNumRef');
+                }
+                const toggleGroup = (selector, show) => {
+                    const $group = $(selector);
+                    if (show) {
+                        $group.removeClass('d-none').show();
+                        $group.find('input, select, textarea').prop('disabled', false);
+                    } else {
+                        $group.addClass('d-none').hide();
+                        $group.find('input, select, textarea').each(function() {
+                            const $el = $(this);
+                            $el.prop('required', false).prop('disabled', true);
+                            if ($el.is('select')) {
+                                $el.val(null).trigger('change');
+                            } else if ($el.is(':checkbox') || $el.is(':radio')) {
+                                $el.prop('checked', false);
+                            } else {
+                                $el.val('');
+                            }
+                        });
+                    }
+                };
+                if (val == 1) {
+                    toggleGroup('.type-3-group', false);
+                    toggleGroup('.type-1-group', true);
+                } else if (val == 3) {
+                    toggleGroup('.type-1-group', false);
+                    toggleGroup('.type-3-group', true);
+                } else {
+                    toggleGroup('.type-1-group', false);
+                    toggleGroup('.type-3-group', false);
+                }
+            });
+            window.__typeHandlerBound = true;
+        }
+        const initialType = $('#type_id').val();
+        const toggleGroupInit = (selector, show) => {
+            const $group = $(selector);
+            if (show) {
+                $group.removeClass('d-none').show();
+                $group.find('input, select, textarea').prop('disabled', false);
+            } else {
+                $group.addClass('d-none').hide();
+                $group.find('input, select, textarea').each(function() {
+                    const $el = $(this);
+                    $el.prop('required', false).prop('disabled', true);
+                    if ($el.is('select')) {
+                        $el.val(null).trigger('change');
+                    } else if ($el.is(':checkbox') || $el.is(':radio')) {
+                        $el.prop('checked', false);
+                    } else {
+                        $el.val('');
+                    }
+                });
+            }
+        };
+        if (initialType == 1) {
+            toggleGroupInit('.type-3-group', false);
+            toggleGroupInit('.type-1-group', true);
+        } else if (initialType == 3) {
+            toggleGroupInit('.type-1-group', false);
+            toggleGroupInit('.type-3-group', true);
+        } else {
+            toggleGroupInit('.type-1-group', false);
+            toggleGroupInit('.type-3-group', false);
+        }
+    });
+
+    // Gestion du bouton de soumission
+    document.addEventListener('livewire:initialized', () => {
+        $('#submit-btn').on('click', function(e) {
+            const form = document.getElementById('archive-form');
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                const invalid = form.querySelector(':invalid');
+                if (invalid) invalid.focus();
+            } else {
+                form.submit();
+            }
+        });
+    });
+
+    // Initialisation des tooltips
+    document.addEventListener('DOMContentLoaded', () => {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(tooltipEl => {
+            new bootstrap.Tooltip(tooltipEl);
+        });
+    });
+</script>
 @endpush
 
 

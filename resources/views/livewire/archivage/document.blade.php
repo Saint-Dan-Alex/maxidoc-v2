@@ -5,6 +5,7 @@
             {{ $dossier->classeur->created_at->format('Y') . '/' . $dossier->classeur->titre . '/' }}
             <span class="text-primary text-capitalize"> {{ $dossier->titre }} </span>
         </p>
+        
         {{-- <a href="@if (count($documents)) {{ route('regidoc.archive-classeurs.archive-dossiers.show', [$documents[0]->dossier->classeur, $documents[0]->dossier]) }} @else {{ back() }} @endif"
             class="back">
             <i class="fi fi-rr-angle-left"></i> Retour
@@ -14,6 +15,15 @@
         {{-- <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-new-archive-document">Ajouter</button> --}}
         {{-- </div> --}}
     </div>
+    @can('Archiver')
+    <div class="d-flex align-items-center justify-content-between my-2">
+        <h1 class="mb-0 "></h1>
+        <a href="{{ route('regidoc.archivages.create') }}" class="btn" style="background: var(--bgBtnPrimary); color: var(--whiteColor); font-size: 14px; padding: 10px 24px; font-weight: 600; border-radius: 12px; display: inline-flex; align-items: center;">
+           
+            <span>Archiver un document</span>
+        </a>
+    </div>
+    @endcan
     <div class="pb-5 card card-table position-relative" style="overflow:inherit; min-height: 200px;">
         <!-- Overlay de chargement -->
         <div class="d-none position-absolute loader-card d-flex justify-content-center m-0"

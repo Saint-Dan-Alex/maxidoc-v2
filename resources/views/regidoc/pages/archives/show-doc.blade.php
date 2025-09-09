@@ -68,8 +68,10 @@
                         <div class="col-12">
                             <div class="item">
                                 <div class="row">
+                                {{-- <label for="inputPassword" class="col-5 col-form-label">Nom</label> --}}
+
                                     <div class="col-5">
-                                        <span>N° d'enregistrement</span>
+                                        <label for="inputPassword" class="col-form-label">N° d'enregistrement</label>
                                     </div>
                                     <div class="col-7">
                                         <p class="items mb-0">{{ $find_document->reference_interne }}</p>
@@ -95,6 +97,7 @@
                             </div>
                         </div>
                         
+                        @if($find_document->description)                        
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Description</label>
@@ -105,19 +108,84 @@
                                 </div>
                             </div>
                         </div>
-
+                        @endif
 
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Catégorie</label>
                                 <div class="col-7">
                                     <p class="items">
-                                        {{ $find_document->categorie->title ? Str::ucfirst($find_document->categorie->title) : 'Non spécifiée' }}
+                                        {{ $find_document->categorie->title ??'Non spécifiée' }}
 
                                     </p>
                                 </div>
                             </div>
                         </div>
+                        
+                        @if($find_document->emetteur)
+
+                            @if($find_document->emetteur)
+                                <div class="col-12">
+                                    <div class="row align-items-center">
+                                        <label for="inputPassword" class="col-5 col-form-label">Emetteur</label>
+                                        <div class="col-7">
+                                            @if($find_document->type==1)
+                                                <p class="items">
+                                                    {{ $find_document->externExpediteur->nom ?? 'Non défini' }}
+                                                </p>
+                                            @else
+                                            <p class="items">
+                                                {{ $find_document->service->titre ?? 'Non défini' }}
+                                            </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                            @endif
+                        @endif
+                        
+                        @if($find_document->destination_id)
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Destination</label>
+                                <div class="col-7">
+                                    @if($find_document->type==1)
+                                        <p class="items">
+                                            {{ optional($find_document->destination)->nom ?? 'Non défini' }}
+                                        </p>
+                                    @else
+                                        <p class="items">
+                                            {{$find_document->agentDest->nom }}  {{$find_document->agentDest->prenom }}
+                                        </p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        @if($find_document->redacteur_id)
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Rédacteur</label>
+                                <div class="col-7">
+                                    @if($find_document->type==1)
+                                    <p class="items">
+                                        {{ optional($find_document->redacteur)->nom ?? 'Non défini' }}
+                                    </p>
+                                    @else
+                                    <p class="items">
+                                        {{ $find_document->agent->nom }} {{$find_document->agent->prenom}}
+                                    </p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+
+
+
+                        @if($find_document->type)
                         <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Type de document</label>
@@ -128,7 +196,8 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- @if($find_document->nature) --}}
+                        @endif
+                        @if($find_document->nature_id)
                         <div class="col-12">
                             <div class="item">
                                 <div class="row">
@@ -136,12 +205,12 @@
                                         <label for="inputPassword" class="col-5 col-form-label">Nature</label>
                                     </div>
                                     <div class="col-7">
-                                        <p class="items mb-0">{{ $find_document->courrier->nature->titre ?? 'Non défini' }}</p>
+                                        <p class="items mb-0">{{ $find_document->nature->titre ?? 'Non défini' }}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        {{-- @endif --}}
+                        @endif
                         @if($find_document->service)
                         <div class="col-12">
                             <div class="item">
@@ -156,16 +225,20 @@
                             </div>
                         </div>
                         @endif
+
+                        @if ($find_document->date_arrive)
                         <div class="col-12">
                             <div class="row align-items-center">
-                                <label for="inputPassword" class="col-5 col-form-label">Date de création</label>
+                                <label for="inputPassword" class="col-5 col-form-label">Date d'émission</label>
                                 <div class="col-7">
                                     <p class="items">
-                                        {{ $find_document->created_at->isoFormat('LL') }}
+
+                                        {{ \Carbon\Carbon::parse($find_document->date_arrive)->isoFormat('LL') }}
                                     </p>
                                 </div>
                             </div>
                         </div>
+                        @endif
                         @if ($find_document->priorite)
                             <div class="col-12">
                                 <div class="item">
@@ -184,7 +257,7 @@
                                 </div>
                             </div>
                         @endif
-                        <div class="col-12">
+                        {{-- <div class="col-12">
                             <div class="row align-items-center">
                                 <label for="inputPassword" class="col-5 col-form-label">Ajouté par</label>
                                 <div class="col-7">
@@ -194,7 +267,7 @@
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
                     </div>
                 </div>

@@ -205,7 +205,7 @@
                                             </span>
                                         </div>
                                         <div class="col-7">
-                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-1">
+                                            <p style="font-size: 13px; color: var(--colorTitre)" class="mb-1" name="expediteur_externe" id="expediteur_externe">
                                                 {{ $find_document->courrier->externExpediteur->nom }}
                                             </p>
                                         </div>
@@ -523,27 +523,104 @@
 
     {{-- @livewire('document.modal-document-share', ['document' => $find_document]) --}}
 
-    <div class="modal fade" id="modal-new-archive" tabindex="-1" aria-labelledby="exampleModalLabel">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal fade" id="modal-new-archive" tabindex="-1" aria-labelledby="archiveModalLabel">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
+                    <h5 class="modal-title" id="archiveModalLabel">Archivage du document</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="form-group row g-3">
-                        <form action="{{ route('regidoc.documents.archive') }}" method="post">
-                            @csrf
-                            <input type="hidden" name="document_id" id="" value="{{ $find_document->id }}">
-                            <div class="content-text text-center">
-                                <h5>Archivage du document</h5>
-                                <p class="mb-0">Vous êtes sur le point d'archiver ce document, êtes-vous sûr de vouloir continuer ?</p>
-                            </div>
-                            <div class="col-lg-12 text-center mb-3">
-                                <button class="btn btn-add mt-2 w-100" type="submit">Confirmer</button>
-                            </div>
-                        </form>
+                <form action="{{ route('regidoc.documents.archive') }}" method="post" id="archiveForm">
+                    @csrf
+                    <input type="hidden" name="document_id" value="{{ $find_document->id }}">
+                    
+                    <div class="modal-body">
+                        <!-- 1. Date d'émission -->
+                        <div class="mb-3">
+                            <label for="date_emission" class="form-label">Date d'émission</label>
+                            @php
+                                $dateArrive = $find_document->date_arrive ? (is_string($find_document->date_arrive) ? \Carbon\Carbon::parse($find_document->date_arrive) : $find_document->date_arrive) : now();
+                            @endphp
+                            <input type="text" class="form-control" id="date_emission" 
+                                   value="{{ $dateArrive->format('d/m/Y') }}" 
+                                   disabled>
+                        </div>
+
+                        <!-- 2. Émetteur -->
+                        <div class="mb-3">
+                            <label for="emetteur" class="form-label">Émetteur</label>
+                            @if($find_document->type == 1)
+                                <select class="form-select form-control select2" name="expediteur_externe" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
+                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true">
+                                </select>
+                            @elseif($find_document->type == 3)
+                                <select class="form-select form-control select2" name="expediteur_externe" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getServices.json') }}"
+                                    data-route=""
+                                    data-method="get" data-label="titre"
+                                    data-related-model="Service" data-tags="false">
+                                </select>
+                            @endif
+                        </div>
+
+                        <!-- 3. Rédacteur -->
+                        <div class="mb-3">
+                            <label for="redacteur" class="form-label">Rédacteur</label>
+                            @if($find_document->type == 1)
+                                <select class="form-select form-control select2" name="redacteur" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.redacteurs') }}"
+                                    data-route="{{ route('regidoc.ajax.redacteurs.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom" data-max-selection="1"
+                                    data-related-model="Redacteur" data-tags="true" multiple>
+                                </select>
+                            @elseif($find_document->type == 3)
+                                <select class="form-select form-control select2" name="redacteur" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getAgents.json') }}"
+                                    data-route=""
+                                    data-method="get" data-label="prenom,nom,post_nom"
+                                    data-related-model="Agent" data-tags="false">
+                                </select>
+                            @endif
+                        </div>
+
+                        <!-- 4. Destination -->
+                        <div class="mb-3">
+                            <label for="destination" class="form-label">Destination</label>
+                            @if($find_document->type == 1)
+                                <select class="form-select form-control select2" name="destination" required
+                                    data-placeholder="Sélectionnez"
+                                    data-get-items-route="{{ route('regidoc.ajax.destinatairearchives') }}"
+                                    data-route="{{ route('regidoc.ajax.destinatairearchives.save') }}"
+                                    data-get-items-field="nom" data-method="get" data-label="nom"
+                                    data-related-model="Destination" data-tags="true" data-max-selection="1" multiple>
+                                </select>
+                            @elseif($find_document->type == 3)
+                                <select class="form-select form-control select2" name="destination" required
+                                    data-get-items-route="{{ route('regidoc.ajax.getAgents.json') }}"
+                                    data-route=""
+                                    data-method="get" data-label="prenom,nom,post_nom"
+                                    data-related-model="CourrierExpediteur" data-tags="true">
+                                </select>
+                            @endif
+                        </div>
+
+                        <!-- 5. Observations -->
+                        <div class="mb-3">
+                            <label for="observations" class="form-label">Observations</label>
+                            <textarea class="form-control" id="observations" name="observations" rows="3"></textarea>
+                        </div>
                     </div>
-                </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Archiver le document</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -613,5 +690,122 @@
             });
         });
     });
+</script>
+@endpush
+
+@push('scripts')
+<script>
+// Initialisation/refixe Select2 dans le modal d'archivage pour garantir l'affichage correct
+// et la gestion des tags (création via AJAX) comme ailleurs dans l'application.
+$(document).on('shown.bs.modal', '#modal-new-archive', function () {
+    const $modal = $(this);
+    $modal.find('select.select2').each(function () {
+        const $el = $(this);
+        try { if ($el.data('select2')) { $el.select2('destroy'); } } catch (e) {}
+
+        const cfg = {
+            dropdownParent: $modal,
+            tags: $el.data('tags') ? $el.data('tags') : false,
+            placeholder: $el.data('placeholder') || 'Sélectionnez',
+            language: 'fr',
+            width: '100%',
+            maximumSelectionLength: $el.data('max-selection') ? $el.data('max-selection') : null,
+        };
+
+        const getUrl = $el.data('get-items-route');
+        if (getUrl) {
+            cfg.ajax = {
+                url: getUrl,
+                dataType: 'json',
+                delay: 250,
+                headers: { 'Accept': 'application/json' },
+                data: function (params) {
+                    return {
+                        search: params.term || '',
+                        page: params.page || 1,
+                        model: $el.data('related-model'),
+                        label: $el.data('get-items-field') || $el.data('label'),
+                        method: $el.data('method') || 'get',
+                        id: $el.data('id')
+                    };
+                },
+                processResults: function (data) {
+                    if (data && data.results) {
+                        return { results: data.results, pagination: { more: !!(data.pagination && data.pagination.more) } };
+                    }
+                    if (data && data.data) {
+                        const label = $el.data('get-items-field') || $el.data('label');
+                        const items = data.data.map(function (item) {
+                            return { id: item.id, text: item[label] || item.nom || item.titre };
+                        });
+                        return { results: items, pagination: { more: (data.current_page || 1) < (data.last_page || 1) } };
+                    }
+                    return { results: [] };
+                }
+            };
+        }
+
+        $el.select2(cfg);
+
+        // Création dynamique (tags)
+        $el.off('select2:select.modalTags').on('select2:select.modalTags', function (e) {
+            if (!$el.data('tags')) return;
+            const route = $el.data('route');
+            const label = $el.data('get-items-field') || $el.data('label');
+            const relativeId = $el.data('relative-id');
+            const data = e.params.data;
+            if (!route || !label || !data) return;
+
+            // Si l'élément sélectionné possède déjà un id numérique, ce n'est pas un nouveau tag
+            if (data.id && !isNaN(Number(data.id))) {
+                return;
+            }
+
+            const csrf = $('meta[name="csrf-token"]').attr('content') || $modal.find('input[name="_token"]').val();
+            $.ajax({
+                url: route,
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf },
+                data: { [label]: data.text, relative_id: relativeId },
+                success: function (resp) {
+                    const newId = (resp && (resp.results?.id ?? resp.id)) ? (resp.results?.id ?? resp.id) : null;
+                    if (newId) {
+                        // 1) Supprimer l'option temporaire (id non numérique) déjà sélectionnée
+                        if (data.id) {
+                            $el.find('option').filter(function(){ return $(this).val() == String(data.id); }).remove();
+                        }
+                        // 2) Éviter un doublon éventuel si une option avec le même newId existe déjà
+                        $el.find('option').filter(function(){ return $(this).val() == String(newId); }).remove();
+                        // 2bis) Éviter un doublon sur le même libellé (au cas où une option avec même texte mais autre id existe)
+                        $el.find('option').filter(function(){ return ($(this).text() || '').trim() === (data.text || '').trim(); }).remove();
+
+                        // Si la sélection est limitée à 1, on forcera la valeur plus bas
+                        const maxSel = $el.data('max-selection');
+
+                        // 3) Ajouter l'option persistée (si elle n'existe pas déjà)
+                        if ($el.find('option[value="' + String(newId) + '"]').length === 0) {
+                            const option = new Option(data.text, newId, true, true);
+                            $el.append(option);
+                        }
+
+                        if (maxSel && Number(maxSel) === 1) {
+                            // Forcer explicitement la valeur unique sur le nouvel ID
+                            $el.val([String(newId)]).trigger('change');
+                        } else {
+                            // Dédupliquer la sélection en mode multiple
+                            let vals = $el.val() || [];
+                            vals.push(String(newId));
+                            const unique = Array.from(new Set(vals.filter(v => v != null && v !== '')));
+                            $el.val(unique).trigger('change');
+                        }
+                    }
+                },
+                error: function (xhr) {
+                    console.error('Echec de création du tag', xhr?.responseText || xhr);
+                }
+            });
+        });
+    });
+});
 </script>
 @endpush

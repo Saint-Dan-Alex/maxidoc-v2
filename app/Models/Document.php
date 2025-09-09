@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use \Venturecraft\Revisionable\RevisionableTrait;
+use App\Models\Redacteur;
+use App\Models\Destination;
+use App\Models\CourrierExpediteur;
+use App\Models\CourrierNature;
 
 class Document extends Model
 {
@@ -43,6 +47,56 @@ class Document extends Model
         'document' => 'array',
     ];
 
+    protected $fillable = [
+        'dossier_id',
+        'category_id',
+        'reference',
+        'reference_courrier',
+        'reference_interne',
+        'libelle',
+        'title',
+        'emetteur',
+        'destination_id',
+        'redacteur_id',
+        'type',
+        'description',
+        'objet',
+        'observations',
+        'document',
+        'date_du_courrier',
+        'date_arrive',
+        'date_fin',
+        'archived_at',
+        'desarchive_at',
+        'confidentiel',
+        'is_classified',
+        'password',
+        'user_id',
+    ];
+
+    /**
+     * Get the redacteur associated with the document.
+     */
+    public function redacteur()
+    {
+        return $this->belongsTo(Redacteur::class, 'redacteur_id');
+    }
+
+    /**
+     * Get the destination associated with the document.
+     */
+    public function destination()
+    {
+        return $this->belongsTo(Destination::class, 'destination_id');
+    }
+    public function externExpediteur()
+    {
+        return $this->belongsTo(CourrierExpediteur::class, 'emetteur');
+    }
+    public function nature()
+    {
+        return $this->belongsTo(CourrierNature::class, 'nature_id');
+    }
     protected $guarded = [];
     /**
      * Get all pieces jointes for the document.
@@ -107,6 +161,23 @@ class Document extends Model
     public function followers()
     {
         return $this->belongsToMany(Agent::class, DocumentFollower::class);
+    }
+    public function service()
+    {
+        return $this->belongsTo(Service::class, 'emetteur');
+    }
+    /**
+     * Get the agent associated with the Document
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function agent()
+    {
+        return $this->belongsTo(Agent::class, 'redacteur_id');
+    }
+    public function agentDest()
+    {
+        return $this->belongsTo(Agent::class, 'destination_id');
     }
 
     /**

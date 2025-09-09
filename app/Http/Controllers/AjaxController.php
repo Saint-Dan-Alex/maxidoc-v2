@@ -18,6 +18,7 @@ use App\Models\CourrierTraitement;
 use App\Models\Direction;
 use App\Models\Document;
 use App\Models\Dossier;
+use App\Models\Redacteur;
 use App\Models\Historique;
 use App\Models\Image;
 use Illuminate\Http\Request;
@@ -82,6 +83,22 @@ class AjaxController extends Controller
         return $this->relation($request, 'courrier-expediteur');
     }
 
+    public function redacteurs(Request $request)
+    {
+        // Utilise la méthode générique pour retourner les rédacteurs (App\Models\Redacteur)
+        return $this->relation($request, 'redacteur');
+    }
+
+    public function redacteursSave(Request $request)
+    {
+        $redacteur = new Redacteur();
+        $redacteur->nom = $request->nom;
+        $redacteur->save();
+        return response()->json([
+            'results' => $redacteur,
+        ]);
+    }
+
     public function contactsExpediteur(Request $request)
     {
         $expediteurId = $request->input('expediteur_id');
@@ -134,6 +151,25 @@ class AjaxController extends Controller
     public function destinatairecourriers(Request $request)
     {
         return $this->relation($request, 'courrier-destinateur-externes');
+    }
+    public function destinatairearchives(Request $request)
+    {
+        return $this->relation($request, 'destination');
+    }
+
+    public function destinatairearchivesSave(Request $request)
+    {
+        $request->validate([
+            'nom' => 'required|string|max:255',
+        ]);
+
+        $dest = new \App\Models\Destination();
+        $dest->nom = $request->nom;
+        $dest->save();
+
+        return response()->json([
+            'results' => $dest,
+        ]);
     }
 
     public function destinatairecourriersSave(Request $request)
@@ -663,21 +699,36 @@ class AjaxController extends Controller
         // If search query, use LIKE to filter results depending on field label
         if ($search) {
             if ($slug == 'courrier-expediteur') {
-                $total_count = $model->where($request->input('label'), 'LIKE', '%' . $search . '%')->where('category_id', $request->input('relative_id'))->count();
-                $relationshipOptions = $model->take($on_page)->skip($skip)
-                    ->where('category_id', $request->input('relative_id'))
-                    ->where($request->input('label'), 'LIKE', '%' . $search . '%')
-                    ->get();
+                $query = $model->where($request->input('label'), 'LIKE', '%' . $search . '%');
+        
+                // On filtre par catégorie seulement si 'relative_id' est fourni
+                if ($request->filled('relative_id')) {
+                    $query = $query->where('category_id', $request->input('relative_id'));
+                }
+        
+                $total_count = $query->count();
+        
+                $relationshipOptions = $query->take($on_page)->skip($skip)->get();
+        
             } else {
                 $total_count = $model->where($request->input('label'), 'LIKE', '%' . $search . '%')->count();
+        
                 $relationshipOptions = $model->take($on_page)->skip($skip)
                     ->where($request->input('label'), 'LIKE', '%' . $search . '%')
                     ->get();
             }
         } else {
             if ($slug == 'courrier-expediteur') {
-                $total_count = $model->where('category_id', $request->input('relative_id'))->count();
-                $relationshipOptions = $model->take($on_page)->skip($skip)->where('category_id', $request->input('relative_id'))->get();
+                $query = $model;
+        
+                // Même logique : filtre sur category_id uniquement si 'relative_id' est fourni
+                if ($request->filled('relative_id')) {
+                    $query = $query->where('category_id', $request->input('relative_id'));
+                }
+        
+                $total_count = $query->count();
+                $relationshipOptions = $query->take($on_page)->skip($skip)->get();
+        
             } else {
                 $total_count = $model->count();
                 $relationshipOptions = $model->take($on_page)->skip($skip)->get();

@@ -112,20 +112,35 @@ class DocumentController extends Controller
 
     public function showDoc(Request $request)
     {
-        if ($request->fichier_id && $request->tache_id) {
-            $doc = Document::findOrFail($request->fichier_id);
-            $tache = Tache::findOrFail($request->tache_id);
-            // if ($tache->agents->contains('id', Auth::user()->agent->id) || Auth::id() == $tache->user_id) {
-            // code...
-            return view('regidoc.pages.documents.show-task-doc')->with(
-                ['doc' => $doc, 'tache' => $tache]
-            );
-            // }
-        } elseif($request->fichier_id) {
-            $doc = Document::findOrFail($request->fichier_id);
-            return view('regidoc.pages.documents.show-task-doc')->with(
-                ['doc' => $doc,]
-            );
+        if ($request->fichier_id) {
+            $find_document = Document::with(['courrier', 'dossier'])->findOrFail($request->fichier_id);
+            
+            // Récupération des expéditeurs pour les courriers entrants
+            $expediteurs = [];
+            if ($find_document->type === 'courrier_entrant') {
+                $expediteurs = \App\Models\CourrierExpediteur::all();
+            }
+            
+            // Récupération des agents pour la destination (pour les documents sortants)
+            $agents = \App\Models\Agent::select('id', 'nom', 'prenom')->get();
+            
+            if ($request->tache_id) {
+                $tache = Tache::findOrFail($request->tache_id);
+                // if ($tache->agents->contains('id', Auth::user()->agent->id) || Auth::id() == $tache->user_id) {
+                return view('regidoc.pages.documents.show-task-doc')->with([
+                    'doc' => $find_document,
+                    'tache' => $tache,
+                    'expediteurs' => $expediteurs,
+                    'agents' => $agents
+                ]);
+                // }
+            } else {
+                return view('regidoc.pages.documents.show-doc')->with([
+                    'find_document' => $find_document,
+                    'expediteurs' => $expediteurs,
+                    'agents' => $agents
+                ]);
+            }
         }
         return abort('403');
     }
@@ -629,21 +644,30 @@ class DocumentController extends Controller
      */
     public function show(Document $document)
     {
- 
         $classeurs = Classeur::all();
         $dossiers = Dossier::all();
-        
-        // Récupérer les deux premiers documents avec is_default = 1
-        $defaultPdfs = Document::where('is_default', 1)
-            ->orderBy('id', 'asc')
+        $documents = Document::where('dossier_id', $document->dossier_id)
+            ->where('id', '!=', $document->id)
+            ->orderBy('created_at', 'desc')
             ->take(2)
             ->get();
             
-        return view('regidoc.pages.documents.show-doc')->with([
+        // Récupération des expéditeurs pour les courriers entrants
+        $expediteurs = [];
+        if ($document->type === 'courrier_entrant' && $document->courrier) {
+            $expediteurs = \App\Models\CourrierExpediteur::all();
+        }
+        
+        // Récupération des agents pour la destination (pour les documents sortants)
+        $agents = \App\Models\Agent::select('id', 'nom', 'prenom')->get();
+            
+        return view('regidoc.pages.documents.show-doc', [
             'find_document' => $document,
             'classeurs' => $classeurs,
             'dossiers' => $dossiers,
-            'defaultPdfs' => $defaultPdfs,
+            'expediteurs' => $expediteurs,
+            'agents' => $agents,
+            'documents' => $documents
         ]);
     }
 
@@ -749,9 +773,54 @@ class DocumentController extends Controller
 
     public function archive(Request $request)
     {
-        $document = Document::find($request->document_id);
-        $document->statut_id = 6;
-        $document-> archived_at = Carbon::now();
+        // 1) Validation de base pour récupérer le document
+        $request->validate([
+            'document_id' => 'required|exists:documents,id',
+            'observations' => 'nullable|string',
+            // Les champs Select2 renvoient des IDs (ou un tableau si multiple). On valide comme entiers.
+            'redacteur' => 'required',
+            'expediteur_externe' => 'required',
+            'destination' => 'required',
+        ]);
+
+        $document = Document::findOrFail($request->document_id);
+
+        // 2) Normaliser les valeurs provenant de Select2 (peuvent être tableau si multiple)
+        $toId = function ($value) {
+            if (is_array($value)) {
+                // On prend la première valeur s'il y en a plusieurs (max-selection=1 dans le formulaire)
+                return count($value) ? (int) array_values($value)[0] : null;
+            }
+            return is_numeric($value) ? (int) $value : null;
+        };
+
+        $redacteurId = $toId($request->input('redacteur'));
+        $emetteurId = $toId($request->input('expediteur_externe'));
+        $destinationId = $toId($request->input('destination'));
+
+        // 3) Sécuriser les IDs requis
+        if (!$redacteurId || !$emetteurId || !$destinationId) {
+            return back()->with('error', 'Veuillez sélectionner un rédacteur, un émetteur et une destination valides.');
+        }
+
+        // 4) Mise à jour des champs du document
+        $document->statut_id = 6; // Archivé
+        $document->archived_at = Carbon::now();
+
+        // Emetteur et destination selon le type
+        // Type 1 (courrier entrant):
+        //  - emetteur = id de CourrierExpediteur
+        //  - destination_id = id de Destination
+        // Type 3 (document interne/sortant):
+        //  - emetteur = id de Service (selon le select)
+        //  - destination_id = id d'Agent (sélection Agents)
+        $document->emetteur = $emetteurId;
+        $document->destination_id = $destinationId;
+
+        // Rédacteur (selon les écrans, peut venir de Redacteur ou Agent) -> stocké dans redacteur_id
+        $document->redacteur_id = $redacteurId;
+        $document->observations = $request->input('observations');
+
         $document->save();
 
         $content = json_encode([
@@ -765,7 +834,10 @@ class DocumentController extends Controller
             $content
         );
 
-        return redirect()->route('regidoc.documents.index', $document->dossier);
+        return redirect()->route('regidoc.archive-classeurs.archive-dossiers.show', [
+            'archive_classeur' => $document->dossier->classeur_id,
+            'archive_dossier' => $document->dossier_id,
+        ]);
     }
 
     

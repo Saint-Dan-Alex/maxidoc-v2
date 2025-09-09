@@ -211,6 +211,14 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::get('courriers/signer/{id}', [CourrierController::class, 'signer'])->name('courriers.signer');
 
 
+            // Routes pour les rédacteurs
+            Route::resource('redacteurs', \App\Http\Controllers\RedacteurController::class)
+                ->only('index', 'store', 'update', 'destroy');
+                
+            // Routes pour les destinations
+            Route::resource('destinations', \App\Http\Controllers\DestinationController::class)
+                ->only('index', 'store', 'update', 'destroy');
+                
             // Routes pour les courriers
             Route::prefix('courriers')->group(function () {
                 // Routes sans ID
@@ -272,14 +280,28 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 Route::get('types/courriers', [AjaxController::class, 'typescourriers'])->name('ajax.typescourriers'); 
                 Route::get('/priorites', [AjaxController::class, 'priorites'])->name('ajax.priorites');
                 Route::get('types/get/all/agents', [DirectionController::class, 'getAgents'])->name('ajax.getAgents');
+                // JSON endpoint for Select2: list agents
+                Route::get('types/get/all/agents/json', function (\Illuminate\Http\Request $request) {
+                    return app(\App\Http\Controllers\RH\DirectionController::class)->relation($request, 'agent');
+                })->name('ajax.getAgents.json');
+                // JSON endpoint for Select2: list services
+                Route::get('types/get/all/services/json', function (\Illuminate\Http\Request $request) {
+                    return app(\App\Http\Controllers\RH\DirectionController::class)->relation($request, 'service');
+                })->name('ajax.getServices.json');
                 Route::get('categories/courriers', [AjaxController::class, 'categorycourriers'])->name('ajax.categorycourriers');
                 Route::post('categories/courriers/save', [AjaxController::class, 'categoryCourriersSave'])->name('ajax.categorycourriers.save');
                 Route::get('natures/courriers', [AjaxController::class, 'naturecourriers'])->name('ajax.naturecourriers');
                 Route::post('natures/courriers/save', [AjaxController::class, 'natureCourriersSave'])->name('ajax.naturecourriers.save');
                 Route::get('expediteurs/courriers', [AjaxController::class, 'expediteurcourriers'])->name('ajax.expediteurcourriers');
                 Route::post('expediteurs/courriers/save', [AjaxController::class, 'expediteurCourriersSave'])->name('ajax.expediteurcourriers.save');
+                // Redacteurs (AJAX for Select2)
+                Route::get('redacteurs', [AjaxController::class, 'redacteurs'])->name('ajax.redacteurs');
+                Route::post('redacteurs/save', [AjaxController::class, 'redacteursSave'])->name('ajax.redacteurs.save');
                 Route::get('destinataires/courriers', [AjaxController::class, 'destinatairecourriers'])->name('ajax.destinatairecourriers');
                 Route::post('destinataires/courriers/save', [AjaxController::class, 'destinatairecourriersSave'])->name('ajax.destinatairecourriers.save');
+                // Archives destinations
+                Route::get('destinataires/archives', [AjaxController::class, 'destinatairearchives'])->name('ajax.destinatairearchives');
+                Route::post('destinataires/archives/save', [AjaxController::class, 'destinatairearchivesSave'])->name('ajax.destinatairearchives.save');
 
                 Route::get('signatures/get/user/image', [AjaxController::class, 'getUserSignature'])->name('ajax.signature');
                 Route::post('signatures/save/user/image', [AjaxController::class, 'saveUserSignature'])->name('ajax.signature.save');
