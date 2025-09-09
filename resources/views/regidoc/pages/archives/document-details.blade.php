@@ -7,6 +7,7 @@
                 Retour
             </div>
         </a>
+        
         <div class="row g-lg-3">
             @livewire('archivage.document', ['dossier' => $dossier])
         </div>

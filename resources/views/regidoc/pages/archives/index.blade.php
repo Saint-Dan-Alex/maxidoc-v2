@@ -2,6 +2,7 @@
 
 @section('content')
     <div class="card card-lg mb-4">
+        @can('Archiver')       
         <div class="d-flex align-items-center justify-content-between">
             <h1 class="mb-0 ">Archivages</h1>
             <a href="{{ route('regidoc.archivages.create') }}" class="btn" style="background: var(--bgBtnPrimary); color: var(--whiteColor); font-size: 14px; padding: 10px 24px; font-weight: 600; border-radius: 12px; display: inline-flex; align-items: center;">
@@ -9,6 +10,7 @@
                 <span>Archiver un document</span>
             </a>
         </div>
+        @endcan
         {{-- <div class="block-circle">
             <div class="circle-white"></div>
             <div class="circle-white"></div>
