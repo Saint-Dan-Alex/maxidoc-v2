@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Agent;
+use Illuminate\Validation\ValidationException;
 
 class ServiceController extends Controller
 {
@@ -106,6 +107,14 @@ class ServiceController extends Controller
                 'statut' => 'success',
                 'message' => "Service créé avec succès",
             ]);
+        } catch (ValidationException $e) {
+            $content = json_encode([
+                'name' => 'Systèmes',
+                'statut' => 'error',
+                'message' => "La validation a échoué. Veuillez vérifier le formulaire.",
+            ]);
+            session()->flash('session', $content);
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Throwable $th) {
             Log::error('Erreur lors de la création du service : ' . $th->getMessage(), [
                 'exception' => $th,
@@ -232,6 +241,14 @@ class ServiceController extends Controller
                 'statut' => 'success',
                 'message' => "Service et section associée mis à jour avec succès",
             ]);
+        } catch (ValidationException $e) {
+            $content = json_encode([
+                'name' => 'Systèmes',
+                'statut' => 'error',
+                'message' => "La validation a échoué. Veuillez vérifier le formulaire.",
+            ]);
+            session()->flash('session', $content);
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Throwable $th) {
             Log::error('Erreur lors de la mise à jour du service : ' . $th->getMessage(), [
                 'exception' => $th,
@@ -279,11 +296,6 @@ class ServiceController extends Controller
             ]);
         }
 
-        session()->flash(
-            'session',
-            $content
-        );
-
-        return back();
+        return redirect()->back()->with('session', $content);
     }
 }
