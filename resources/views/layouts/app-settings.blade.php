@@ -84,6 +84,31 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.03);
             z-index: 100;
         }
+        .settings-logo-back {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            padding: 10px 20px 8px 20px;
+            margin-bottom: 8px;
+        }
+        .settings-logo-back a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--colorTitre);
+        }
+        .settings-logo-back a .fi {
+            font-size: 18px;
+        }
+        .settings-logo-back img {
+            height: 28px;
+        }
+        .settings-logo-back a:hover .fi {
+            transform: translateX(-2px);
+            transition: transform .2s ease;
+        }
         
         .settings-sidebar-header {
             padding: 0 20px 15px;
@@ -173,6 +198,7 @@
                     <div class="col-lg-6 col-4 col-sm-6 ps-0">
                         <div class="d-flex align-items-center">
                             <div class="logo-header">
+                                
                                 <a href="/">
                                     <div class="block-logo">
                                         <img src="{{ asset('assets/regidoc/icon.png') }}" class="theme-light-show">
@@ -194,6 +220,11 @@
         
         <!-- Settings Sidebar -->
         <div class="settings-sidebar" style="top: 70px; height: calc(100vh - 70px);">
+            <div class="settings-logo-back">
+                <a href="javascript:history.back()" title="Retour">
+                    <img src="{{ asset('assets/regidoc/logo.png') }}" alt="MAXIDOC">
+                </a>
+            </div>
             <div class="settings-sidebar-header">
                 <h3>Paramètres</h3>
             </div>
