@@ -773,47 +773,60 @@ class DocumentController extends Controller
 
     public function archive(Request $request)
     {
+        // 1) Validation de base pour récupérer le document
         $request->validate([
             'document_id' => 'required|exists:documents,id',
-            'redacteur' => 'required|string|max:255',
             'observations' => 'nullable|string',
-            'expediteur_interne_id' => 'nullable|exists:courrier_expediteurs,id',
-            'expediteur_externe' => 'nullable|string|max:255',
-            'destinataire_interne_id' => 'nullable|exists:agents,id',
-            'destination' => 'nullable|string|max:255'
+            // Les champs Select2 renvoient des IDs (ou un tableau si multiple). On valide comme entiers.
+            'redacteur' => 'required',
+            'expediteur_externe' => 'required',
+            'destination' => 'required',
         ]);
 
-        $document = Document::find($request->document_id);
-        
-        // Mise à jour des champs du document
-        $document->statut_id = 6;
+        $document = Document::findOrFail($request->document_id);
+
+        // 2) Normaliser les valeurs provenant de Select2 (peuvent être tableau si multiple)
+        $toId = function ($value) {
+            if (is_array($value)) {
+                // On prend la première valeur s'il y en a plusieurs (max-selection=1 dans le formulaire)
+                return count($value) ? (int) array_values($value)[0] : null;
+            }
+            return is_numeric($value) ? (int) $value : null;
+        };
+
+        $redacteurId = $toId($request->input('redacteur'));
+        $emetteurId = $toId($request->input('expediteur_externe'));
+        $destinationId = $toId($request->input('destination'));
+
+        // 3) Sécuriser les IDs requis
+        if (!$redacteurId || !$emetteurId || !$destinationId) {
+            return back()->with('error', 'Veuillez sélectionner un rédacteur, un émetteur et une destination valides.');
+        }
+
+        // 4) Mise à jour des champs du document
+        $document->statut_id = 6; // Archivé
         $document->archived_at = Carbon::now();
-        
-        // Si c'est un courrier entrant, on utilise expediteur_interne_id
-        if ($document->type === 1 && $document->courrier) {
-            $document->emetteur = $request->expediteur_externe;
-            $document->destination = $request->destination;
-        } else {
-            // Pour les autres types, on utilise expediteur_externe
-            $document->expediteur_interne_id = $request->expediteur_interne_id;
-        }
-        
-        // Gestion du destinataire pour les documents sortants
-        if ($document->type !== 1 && $request->has('destinataire_interne_id')) {
-            $document->destinataire_interne_id = $request->destinataire_interne_id;
-        }
-        
-        // Sauvegarde des informations d'archivage
-        $document->redacteur = $request->redacteur;
-        $document->observations = $request->observations;
-        
+
+        // Emetteur et destination selon le type
+        // Type 1 (courrier entrant):
+        //  - emetteur = id de CourrierExpediteur
+        //  - destination_id = id de Destination
+        // Type 3 (document interne/sortant):
+        //  - emetteur = id de Service (selon le select)
+        //  - destination_id = id d'Agent (sélection Agents)
+        $document->emetteur = $emetteurId;
+        $document->destination_id = $destinationId;
+
+        // Rédacteur (selon les écrans, peut venir de Redacteur ou Agent) -> stocké dans redacteur_id
+        $document->redacteur_id = $redacteurId;
+        $document->observations = $request->input('observations');
+
         $document->save();
 
         $content = json_encode([
             'name' => 'Document',
             'statut' => 'success',
-            'message' => 'Document archivé avec s
-            uccès !',
+            'message' => 'Document archivé avec succès !',
         ]);
 
         session()->flash(
