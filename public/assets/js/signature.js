@@ -660,7 +660,15 @@ $(".resend-code").on("click", function (event) {
     url: "/ajax/signatures/get/user/image",
     method: "get",
     success: function (data) {
-      $("#modal-password .modal-body").find("#imgData").val(data.image);
+      // Mettre à jour le contexte
+      window.__lastSignatureMeta = {
+        agent_nom: data.agent_nom || "",
+        agent_prenom: data.agent_prenom || "",
+        direction_titre: data.direction_titre || "",
+      };
+      try { console.debug('[signature] meta reçu', window.__lastSignatureMeta); } catch(e) {}
+      var img = data.image_url ? data.image_url : data.image;
+      $("#modal-password .modal-body").find("#imgData").val(img);
       $("#modal-password .modal-body").find("#pass").val(data.password);
 
       $("#waiting-password").modal("hide");
@@ -822,7 +830,8 @@ function createSignatureElement() {
     span1.innerText = "Signé avec Maxidoc";
 
     var span2 = document.createElement("span");
-    span2.innerText = generateRandomString(20);
+    // Code déterministe basé sur l'agent, la direction, la date/heure et un empreinte appareil
+    span2.innerText = generateSignatureCode(window.__lastSignatureMeta);
 
     var signeContainer = document.createElement("div");
     signeContainer.classList.add("signe-img-container");
@@ -859,17 +868,57 @@ function createSignatureElement() {
   }
 }
 
-function generateRandomString(length) {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    result += characters.charAt(randomIndex);
+// Empreinte simple basée sur des infos navigateur (MAC non accessible en navigateur)
+function deviceFingerprint() {
+  try {
+    const nav = navigator || {};
+    const parts = [
+      nav.userAgent || "",
+      nav.language || "",
+      nav.platform || "",
+      (screen && screen.width) ? screen.width : "",
+      (screen && screen.height) ? screen.height : "",
+      new Date().getTimezoneOffset()
+    ].join("|");
+    let hash = 0;
+    for (let i = 0; i < parts.length; i++) {
+      hash = (hash << 5) - hash + parts.charCodeAt(i);
+      hash |= 0; // 32-bit
+    }
+    return Math.abs(hash).toString(36);
+  } catch (e) {
+    return "dev";
   }
+}
 
-  return result;
+function formatDateTimeSignature(d = new Date()) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const HH = String(d.getHours()).padStart(2, "0");
+  const MM = String(d.getMinutes()).padStart(2, "0");
+  const SS = String(d.getSeconds()).padStart(2, "0");
+  return `${yyyy}${mm}${dd}${HH}${MM}${SS}`;
+}
+
+function generateSignatureCode(meta) {
+  // Fallbacks par champ: d'abord meta (AJAX), sinon page (__pageUserMeta), sinon vide
+  const ajax = meta || window.__lastSignatureMeta || {};
+  const pageMeta = window.__pageUserMeta || {};
+  const nom = ajax.agent_nom || pageMeta.agent_nom || "";
+  const prenom = ajax.agent_prenom || pageMeta.agent_prenom || "";
+  const direction = ajax.direction_titre || pageMeta.direction_titre || "";
+
+  const sanitize = (s) => s.toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z]/g, '');
+  const pNom = sanitize(nom).toUpperCase().substring(0, 2);
+  const pPrenom = sanitize(prenom).toUpperCase().substring(0, 2);
+  const pDir = sanitize(direction).toUpperCase().substring(0, 3);
+  const dateStr = formatDateTimeSignature(new Date());
+  const fp = deviceFingerprint();
+
+  const code = `${pNom}${pPrenom}${pDir}-${dateStr}-${fp}`;
+  try { console.debug('[signature] parts', {nom, prenom, direction, pNom, pPrenom, pDir, code}); } catch(e) {}
+  return code;
 }
 
 function createSignatureElement2() {

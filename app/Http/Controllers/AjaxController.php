@@ -233,6 +233,12 @@ class AjaxController extends Controller
 
         $data['password'] = $password;
         $data['action'] = 1;
+        // Contexte utilisateur pour composer le code de signature côté client
+        $user = Auth::user();
+        $agent = $user?->agent;
+        $data['agent_nom'] = $agent?->nom ?? '';
+        $data['agent_prenom'] = $agent?->prenom ?? '';
+        $data['direction_titre'] = $agent?->direction?->titre ?? '';
 
         return response()->json($data);
     }
