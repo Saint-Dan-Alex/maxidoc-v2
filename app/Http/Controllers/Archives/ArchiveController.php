@@ -109,13 +109,18 @@ class ArchiveController extends Controller
             ]
         );
 
-        // 2. Création ou récupération du dossier 'Courriers'
+        // 2. Création ou récupération du dossier du service
+        $service = Auth::user()->agent->service;
         $dossier = Dossier::firstOrCreate(
-            ['titre' => 'Courriers', 'classeur_id' => $classeur->id], 
             [
-                'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
+                'titre' => $service ? $service->nom : 'Sans service', 
+                'classeur_id' => $classeur->id
+            ], 
+            [
+                'reference' => 'SVC/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
                 'created_by' => Auth::user()->agent->id,
                 'updated_by' => Auth::user()->agent->id,
+                'description' => $service ? 'Dossier du service ' . $service->nom : 'Dossier par défaut',
             ]
         );
 
