@@ -613,13 +613,15 @@ $(".btn-paraphe").on("click", function (event) {
     success: function (data) {
       $("#waiting-password").modal("hide");
       if (!$("#waiting-password").hasClass("show")) {
-        $("#modal-password .modal-body").find("#imgData").val(data.image);
+        var img = data.image_url ? data.image_url : data.image;
+        $("#modal-password .modal-body").find("#imgData").val(img);
         $("#modal-password .modal-body").find("#pass").val(data.password);
         $("#modal-password .modal-body").find("#action").val(data.action);
         $("#modal-password").modal("show");
       } else {
         $("#waiting-password").modal("hide");
-        $("#modal-password .modal-body").find("#imgData").val(data.image);
+        var img2 = data.image_url ? data.image_url : data.image;
+        $("#modal-password .modal-body").find("#imgData").val(img2);
         $("#modal-password .modal-body").find("#pass").val(data.password);
         $("#modal-password .modal-body").find("#action").val(data.action);
         $("#modal-password").modal("show");
@@ -717,12 +719,16 @@ $(".btn-valid-password").on("click", function () {
 
   if (passwordValue == password) {
     if (imgData !== "" && imgData !== undefined && imgData !== null) {
-      var signatureElement = createSignatureElement2();
+      var signatureElement;
       if (action == 1) {
+        // Créer le bloc avec certificat
+        signatureElement = createSignatureElement();
         signatureElement.classList.add("signature");
       } else if (action == 2) {
+        signatureElement = createSignatureElement2();
         signatureElement.classList.add("paraphe");
       } else {
+        signatureElement = createSignatureElement2();
         signatureElement.classList.add("tampon");
       }
       var imgElement = document.createElement("img");
@@ -733,7 +739,13 @@ $(".btn-valid-password").on("click", function () {
 
       $(imgElement).attr("src", imgData);
 
-      $(signatureElement).append(imgElement);
+      // Si "signature" avec certificat, injecter dans le conteneur prévu
+      var targetContainer = $(signatureElement).find(".signe-img-container");
+      if (targetContainer.length) {
+        targetContainer.empty().append(imgElement);
+      } else {
+        $(signatureElement).append(imgElement);
+      }
       signatureElement.style.left = event.clientX + 5 + "px";
       signatureElement.style.top = event.clientY + 5 + "px";
 
@@ -776,7 +788,8 @@ $(".btn-tampon").on("click", function (event) {
     url: "/ajax/signatures/get/user/tampon/image",
     method: "get",
     success: function (data) {
-      if (data.image !== "" && data.image !== undefined) {
+      var img = data.image_url ? data.image_url : data.image;
+      if (img !== "" && img !== undefined) {
         var signatureElement = createSignatureElement2();
         signatureElement.classList.add("tampon");
         var imgElement = document.createElement("img");
@@ -784,7 +797,7 @@ $(".btn-tampon").on("click", function (event) {
         $(imgElement).css({
           objectFit: "contain",
         });
-        $(imgElement).attr("src", data.image);
+        $(imgElement).attr("src", img);
 
         $(signatureElement).append(imgElement);
         signatureElement.style.left = event.clientX + 5 + "px";
