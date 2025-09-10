@@ -757,7 +757,7 @@
                                     Parapher
                                 </div>
                             </a>
-                            <a href="javascript:void(0)" href="#" class="btn btn-tools btn-edit-sign">
+                            {{-- <a href="javascript:void(0)" href="#" class="btn btn-tools btn-edit-sign">
                                 <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1"
                                     viewBox="0 0 24 24">
                                     <path
@@ -766,7 +766,7 @@
                                 <div class="tooltip-indicator">
                                     Editer la signature
                                 </div>
-                            </a>
+                            </a> --}}
                         </div>
                     </div>
                 </div>
