@@ -67946,3 +67946,18 @@
 [2025-09-10 13:00:07] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":20,"user_id":10} 
 [2025-09-10 13:29:09] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":20,"user_id":10} 
 [2025-09-10 14:05:56] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":20,"user_id":10} 
+[2025-09-10 14:24:07] local.INFO: Fichier stocké avec succès {"chemin":"documents/September2025/47x2dFEnRhTH11Hz73AD.pdf","nom_original":"Firefox.pdf"} 
+[2025-09-10 14:24:13] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":20,"user_id":10} 
+[2025-09-10 14:24:26] local.INFO: 🟢 Début du traitement  
+[2025-09-10 14:24:26] local.INFO: 📩 Courrier chargé {"courrier_id":20} 
+[2025-09-10 14:24:26] local.INFO: ➡️ Traitement du courrier interne  
+[2025-09-10 14:24:27] local.INFO: 🗂️ Document interne marqué comme traité  
+[2025-09-10 14:24:27] local.INFO: 🟩 Courrier interne mis à jour avec traitement  
+[2025-09-10 14:24:27] local.INFO: ✅ Fin du traitement avec succès  
+[2025-09-10 14:24:30] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":20,"user_id":10} 
+[2025-09-10 14:25:08] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":20,"user_id":10} 
+[2025-09-10 14:25:14] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":20,"user_id":10} 
+[2025-09-10 14:25:22] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":20,"user_id":10} 
+[2025-09-10 14:26:00] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":20,"user_id":2} 
+[2025-09-10 14:26:20] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":20,"user_id":2} 
+[2025-09-10 14:26:56] local.INFO: AccuserReception - hasSeen value {"hasSeen":true,"courrier_id":20,"user_id":2} 
