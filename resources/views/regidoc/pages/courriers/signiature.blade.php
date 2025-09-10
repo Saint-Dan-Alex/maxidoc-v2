@@ -937,6 +937,14 @@
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="{{ asset('vendor/jsPDF/html2canvas.min.js') }}"></script>
     <script src="{{ asset('assets/js/showPDF.js') }}"></script>
+    <script>
+        // Métadonnées utilisateur accessibles côté front pour la génération du code de signature
+        window.__pageUserMeta = {
+            agent_nom: @json(Auth::user()->agent->nom ?? ''),
+            agent_prenom: @json(Auth::user()->agent->prenom ?? ''),
+            direction_titre: @json(Auth::user()->agent->direction->titre ?? ''),
+        };
+    </script>
     <script src="{{ asset('assets/js/signature.js') }}"></script>
 
     <script>
