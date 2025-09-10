@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Nette\Utils\Random;
+use Illuminate\Support\Facades\Log;
 use Intervention\Image\Image as InterventionImage;
 
 
@@ -283,20 +284,27 @@ class AjaxController extends Controller
     public function getUserParaphe()
     {
         $password = Random::generate(6,'0-9');
-        Mail::to("contact@newtech-rdc.net")->send(new SignaturesMail($password));
+        
+        // Envoi de l'email à l'utilisateur connecté
+        try {
+            $recipient = Auth::user()->email;
+            if ($recipient) {
+                Mail::to($recipient)->send(new SignaturesMail($password));
+            }
+        } catch (\Throwable $e) {
+            // On ne bloque pas le flux en cas d'erreur d'envoi d'email
+            Log::error("Erreur lors de l'envoi de l'email de signature: " . $e->getMessage());
+        }
 
         $data = [];
-        $image = Image::select('image_url','password')->where('user_id', Auth::id())->where('type_image', 'INITIALES')->first();
+        $image = Image::select('image_url','password')
+            ->where('user_id', Auth::id())
+            ->where('type_image', 'INITIALES')
+            ->first();
        
         $data['image'] = '';
-        // Mail::to("contact@newtech-rdc.net")->send(new SignaturesMail($password));
-
         
         if ($image) {
-            // $details = ['email' => 'makombo.mwinaminayi@regideso.cd', 'password' => $password];
-
-            //SendEmail::dispatch(Auth::user()->email, new SignaturesMail($password));
-
             $image->password = $password;
             $image->save();
 
