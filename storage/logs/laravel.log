@@ -68107,3 +68107,7 @@
 #68 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\wamp64\\\\www\\\\m...')
 #69 {main}
 "} 
+[2025-09-10 16:15:09] local.WARNING: Fichier introuvable : storage/app/public/documents/September2025/eG3EC3slsRxPuUnwa1Ch.pdf  
+[2025-09-10 16:15:18] local.WARNING: Fichier introuvable : storage/app/public/documents/September2025/eG3EC3slsRxPuUnwa1Ch.pdf  
+[2025-09-10 16:26:11] local.WARNING: Fichier introuvable : storage/app/public/documents/September2025/eG3EC3slsRxPuUnwa1Ch.pdf  
+[2025-09-10 16:27:05] local.INFO: Fichier stocké avec succès {"chemin":"documents/September2025/IWKDW0rYQ42eQqDyfBDu.pdf","nom_original":"cv test.pdf"} 
