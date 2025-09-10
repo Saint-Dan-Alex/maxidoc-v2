@@ -185,7 +185,15 @@ class AjaxController extends Controller
     public function getUserSignature(Request $request)
     {
         $password = Random::generate(6,'0-9');
-        Mail::to("contact@newtech-rdc.net")->send(new SignaturesMail($password));  
+        // Envoyer le code à l'utilisateur connecté
+        try {
+            $recipient = Auth::user()->email;
+            if ($recipient) {
+                Mail::to($recipient)->send(new SignaturesMail($password));
+            }
+        } catch (\Throwable $e) {
+            // on ne bloque pas le flux, mais on informe côté client
+        }
         
         $data = [];
         // Permettre de cibler la signature d'un agent spécifique (cas RH)
@@ -232,7 +240,14 @@ class AjaxController extends Controller
     public function checkUserSignaturePassWord()
     {
         $password = Random::generate(6,'0-9');
-        Mail::to("contact@newtech-rdc.net")->send(new SignaturesMail($password));
+        try {
+            $recipient = Auth::user()->email;
+            if ($recipient) {
+                Mail::to($recipient)->send(new SignaturesMail($password));
+            }
+        } catch (\Throwable $e) {
+            // idem: on ignore mais l'appelant peut gérer l'erreur via un autre canal
+        }
 
         $data = [];
         $image = Image::select('image_url','password')->where('user_id', Auth::id())->where('type_image', 'SIGNATURE')->first();

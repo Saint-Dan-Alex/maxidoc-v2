@@ -67940,3 +67940,6 @@
 [2025-09-10 11:59:18] local.INFO: Fichier stocké avec succès {"chemin":"documents/September2025/uvjroRiRWU4NslpMUYm0.pdf","nom_original":"Firefox.pdf"} 
 [2025-09-10 11:59:20] local.INFO: ✅ Courrier interne créé {"courrier_id":20} 
 [2025-09-10 12:01:40] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":20,"user_id":10} 
+[2025-09-10 12:27:52] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":20,"user_id":10} 
+[2025-09-10 12:35:13] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":20,"user_id":10} 
+[2025-09-10 12:36:52] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":20,"user_id":10} 
