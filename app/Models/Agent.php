@@ -112,28 +112,11 @@ class Agent extends Model
     }
 
     /**
-     * The fonctions that belong to the Agent
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
-    public function fonctions()
-    {
-        return $this->belongsToMany(Fonction::class, PivotAgentFonction::class)->withPivot([
-            'statut_id',
-            'date_debut',
-            'created_by',
-            'updated_by'
-        ])->withTimestamps();
-    }
-
-    /**
-     * The fonctions that belong to the Agent
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * Get the fonction that owns the agent
      */
     public function fonction()
     {
-        return $this->fonctions()->wherePivot('statut_id', '=', 1)->first();
+        return $this->belongsTo(Fonction::class, 'fonction_id');
     }
 
     /**
