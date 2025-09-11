@@ -13,6 +13,7 @@ use App\Models\Agent;
 use App\Models\Service;
 use App\Models\CourrierType;
 use App\Models\CourrierNature;
+use App\Models\CourrierCategory;
 use App\Models\Direction;
 use App\Http\Controllers\File;
 use App\Http\Controllers\ScanFile;
@@ -109,13 +110,51 @@ class ArchiveController extends Controller
             ]
         );
 
-        // 2. Création ou récupération du dossier 'Courriers'
-        $dossier = Dossier::firstOrCreate(
-            ['titre' => 'Courriers', 'classeur_id' => $classeur->id], 
+        // 2. Création ou récupération du dossier du service
+        $service = Auth::user()->agent->service;
+        $serviceDossier = Dossier::firstOrCreate(
             [
-                'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
+                'titre' => $service ? $service->titre : 'Sans service', 
+                'classeur_id' => $classeur->id,
+                'parent_id' => null
+            ], 
+            [
+                'reference' => 'SVC/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
                 'created_by' => Auth::user()->agent->id,
                 'updated_by' => Auth::user()->agent->id,
+                'description' => $service ? 'Dossier du service ' . $service->nom : 'Dossier par défaut',
+            ]
+        );
+
+        // 3. Création ou récupération du dossier de catégorie
+        $categorie = CourrierCategory::find($request->get('categorie'));
+        $categorieDossier = Dossier::firstOrCreate(
+            [
+                'titre' => $categorie ? $categorie->title : 'Sans catégorie',
+                'classeur_id' => $classeur->id,
+                'parent_id' => $serviceDossier->id
+            ],
+            [
+                'reference' => 'CAT/' . Str::padLeft(Dossier::count() + 1, 4, '0'),
+                'created_by' => Auth::user()->agent->id,
+                'updated_by' => Auth::user()->agent->id,
+                'description' => $categorie ? 'Dossier de la catégorie ' . $categorie->title : 'Catégorie non spécifiée',
+            ]
+        );
+
+        // 4. Création ou récupération du dossier de nature
+        $nature = CourrierNature::find($request->get('nature'));
+        $dossier = Dossier::firstOrCreate(
+            [
+                'titre' => $nature ? $nature->titre : 'Sans nature',
+                'classeur_id' => $classeur->id,
+                'parent_id' => $categorieDossier->id
+            ],
+            [
+                'reference' => 'NAT/' . Str::padLeft(Dossier::count() + 1, 4, '0'),
+                'created_by' => Auth::user()->agent->id,
+                'updated_by' => Auth::user()->agent->id,
+                'description' => $nature ? 'Dossier de la nature ' . $nature->titre : 'Nature non spécifiée',
             ]
         );
 

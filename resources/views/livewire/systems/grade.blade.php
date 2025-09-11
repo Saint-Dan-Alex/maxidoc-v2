@@ -50,6 +50,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Nom</th>
+                        <th scope="col">Nbe Agents</th>
                         {{-- <th scope="col">Responsable</th>
                         <th scope="col">Description</th> --}}
                         <th scope="col">Action</th>
@@ -59,6 +60,7 @@
                     @forelse ($grades as $grade)
                         <tr>
                             <td> {{ $grade->titre }} </td>
+                            <td> {{ $grade->agents->count() }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
                                     {{-- <a href="#" class="btn btn-primary me-2" data-bs-toggle="modal"

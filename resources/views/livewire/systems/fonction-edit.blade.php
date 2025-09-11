@@ -16,7 +16,7 @@
                             <input type="text" name="titre" class="form-control" wire:model='titre'
                                 value="{{ $fonction->titre }}" placeholder="Nom du fonction" required>
                         </div>
-                        <div class="col-lg-12">
+                        {{-- <div class="col-lg-12">
                             <label for="">Direction</label>
                             <select name="direction_id" class="form-control" wire:model='direction_id' required>
                                 <option value="">Selectionnez la direction</option>
@@ -58,15 +58,12 @@
                                         {{ $section->titre }} </option>
                                 @endforeach
                             </select>
-                        </div>
+                        </div> --}}
 
 
 
                     </div>
-                    <div class="col-lg-12">
-                        <label for="">Description</label>
-                        <textarea name="description" class="form-control" cols="30" rows="5"> {{ $fonction->description }} </textarea>
-                    </div>
+                   
 
                     <div class="col-lg-12 text-end">
                         <button class="btn btn-add" type="submit" data-bs-dismiss="modal">Modifier</button>

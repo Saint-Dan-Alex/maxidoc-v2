@@ -23,50 +23,63 @@ class Dossiers extends Component
         $this->filter = "Tous";
     }
 
-    public function render()
+    private function getNestedDossiers($parentId = null, $level = 0)
     {
-        $this->dossiers = Dossier::whereHas('documents', function ($query)
-        {
-            $query->where('statut_id', 6);
-        })->where('classeur_id', $this->classeur->id)->get();
-
-        // ->filter(function ($dossier)
-        // {
-        //     return Gate::allows('view_dossier', $dossier);
-        // })
+        $query = Dossier::where('classeur_id', $this->classeur->id)
+            ->where('parent_id', $parentId)
+            ->whereHas('documents', function ($query) {
+                $query->where('statut_id', 6);
+            });
 
         if ($this->search) {
-            $this->dossiers = $this->dossiers->filter(function ($dossier)
-            {
-                return Str::contains($dossier->titre, $this->search) || Str::contains($dossier->reference, $this->search);
+            $query->where(function($q) {
+                $q->where('titre', 'like', '%' . $this->search . '%')
+                  ->orWhere('reference', 'like', '%' . $this->search . '%');
             });
         }
 
+        // Appliquer le tri
         switch ($this->filter) {
-            case 1:
-                $this->filterText = 'Filtre';
-                $this->dossiers = $this->dossiers->sortByDesc('created_at');
-                break;
             case 2:
+                $query->orderBy('titre');
                 $this->filterText = 'A - Z';
-                $this->dossiers = $this->dossiers->sortBy('titre');
                 break;
             case 3:
+                $query->orderByDesc('titre');
                 $this->filterText = 'Z - A';
-                $this->dossiers = $this->dossiers->sortByDesc('titre');
                 break;
             case 4:
+                $query->orderByDesc('created_at');
                 $this->filterText = "Date d'ajout";
-                $this->dossiers = $this->dossiers->sortByDesc('created_at');
                 break;
             case 5:
+                $query->orderByDesc('updated_at');
                 $this->filterText = 'Date de modification';
-                $this->dossiers = $this->dossiers->sortByDesc('updated_at');
                 break;
             default:
-                # code...
+                $query->orderBy('titre');
+                $this->filterText = 'Filtre';
                 break;
         }
+
+        $dossiers = $query->get();
+        
+        $result = collect();
+        foreach ($dossiers as $dossier) {
+            $dossier->level = $level;
+            $result->push($dossier);
+            
+            // Récupérer les sous-dossiers
+            $subDossiers = $this->getNestedDossiers($dossier->id, $level + 1);
+            $result = $result->merge($subDossiers);
+        }
+        
+        return $result;
+    }
+
+    public function render()
+    {
+        $this->dossiers = $this->getNestedDossiers();
 
         return view('livewire.archivage.dossiers');
     }

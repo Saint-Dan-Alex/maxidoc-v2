@@ -12,6 +12,7 @@ return new class extends Migration
         Schema::create('courrier_natures', function (Blueprint $table) {
             $table->id();
             $table->string('titre', 100)->nullable();
+            $table->foreignId('category_id')->nullable();
             $table->longText('modele')->nullable();
             $table->timestamps();
             $table->softDeletes();

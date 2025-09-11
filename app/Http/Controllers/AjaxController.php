@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Nette\Utils\Random;
+use Illuminate\Support\Facades\Log;
 use Intervention\Image\Image as InterventionImage;
 
 
@@ -182,13 +183,37 @@ class AjaxController extends Controller
         ]);
     }
 
-    public function getUserSignature()
+    public function getUserSignature(Request $request)
     {
         $password = Random::generate(6,'0-9');
-        Mail::to("contact@newtech-rdc.net")->send(new SignaturesMail($password));  
+        // Envoyer le code à l'utilisateur connecté
+        try {
+            $recipient = Auth::user()->email;
+            if ($recipient) {
+                Mail::to($recipient)->send(new SignaturesMail($password));
+            }
+        } catch (\Throwable $e) {
+            // on ne bloque pas le flux, mais on informe côté client
+        }
         
         $data = [];
-        $image = Image::select('image_url','password')->where('user_id', Auth::id())->where('type_image', 'SIGNATURE')->first();
+        // Permettre de cibler la signature d'un agent spécifique (cas RH)
+        $targetUserId = Auth::id();
+        if ($request->filled('agent_id')) {
+            $agent = Agent::find($request->input('agent_id'));
+            if (!$agent) {
+                return response()->json(['message' => 'Agent introuvable'], 404);
+            }
+            if (!$agent->user_id) {
+                return response()->json(['message' => 'Aucun utilisateur lié à cet agent'], 422);
+            }
+            $targetUserId = $agent->user_id;
+        }
+
+        $image = Image::select('image_url','password')
+            ->where('user_id', $targetUserId)
+            ->where('type_image', 'SIGNATURE')
+            ->first();
        
         $data['image'] = '';
 
@@ -198,14 +223,23 @@ class AjaxController extends Controller
             // $details = ['email' => 'makombo.mwinaminayi@regideso.cd', 'password' => $password];
 
             //SendEmail::dispatch(Auth::user()->email, new SignaturesMail($password)); 
-            $image->password = $password;
-            $image->save();
+            // On n'écrase le mot de passe que pour l'utilisateur courant
+            if ($targetUserId === Auth::id()) {
+                $image->password = $password;
+                $image->save();
+            }
 
             $data['image'] = image($image->image_url); //$image; 
         }
 
         $data['password'] = $password;
         $data['action'] = 1;
+        // Contexte utilisateur pour composer le code de signature côté client
+        $user = Auth::user();
+        $agent = $user?->agent;
+        $data['agent_nom'] = $agent?->nom ?? '';
+        $data['agent_prenom'] = $agent?->prenom ?? '';
+        $data['direction_titre'] = $agent?->direction?->titre ?? '';
 
         return response()->json($data);
     }
@@ -213,7 +247,14 @@ class AjaxController extends Controller
     public function checkUserSignaturePassWord()
     {
         $password = Random::generate(6,'0-9');
-        Mail::to("contact@newtech-rdc.net")->send(new SignaturesMail($password));
+        try {
+            $recipient = Auth::user()->email;
+            if ($recipient) {
+                Mail::to($recipient)->send(new SignaturesMail($password));
+            }
+        } catch (\Throwable $e) {
+            // idem: on ignore mais l'appelant peut gérer l'erreur via un autre canal
+        }
 
         $data = [];
         $image = Image::select('image_url','password')->where('user_id', Auth::id())->where('type_image', 'SIGNATURE')->first();
@@ -243,20 +284,27 @@ class AjaxController extends Controller
     public function getUserParaphe()
     {
         $password = Random::generate(6,'0-9');
-        Mail::to("contact@newtech-rdc.net")->send(new SignaturesMail($password));
+        
+        // Envoi de l'email à l'utilisateur connecté
+        try {
+            $recipient = Auth::user()->email;
+            if ($recipient) {
+                Mail::to($recipient)->send(new SignaturesMail($password));
+            }
+        } catch (\Throwable $e) {
+            // On ne bloque pas le flux en cas d'erreur d'envoi d'email
+            Log::error("Erreur lors de l'envoi de l'email de signature: " . $e->getMessage());
+        }
 
         $data = [];
-        $image = Image::select('image_url','password')->where('user_id', Auth::id())->where('type_image', 'INITIALES')->first();
+        $image = Image::select('image_url','password')
+            ->where('user_id', Auth::id())
+            ->where('type_image', 'INITIALES')
+            ->first();
        
         $data['image'] = '';
-        // Mail::to("contact@newtech-rdc.net")->send(new SignaturesMail($password));
-
         
         if ($image) {
-            // $details = ['email' => 'makombo.mwinaminayi@regideso.cd', 'password' => $password];
-
-            //SendEmail::dispatch(Auth::user()->email, new SignaturesMail($password));
-
             $image->password = $password;
             $image->save();
 
@@ -290,12 +338,19 @@ class AjaxController extends Controller
         $file = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->image));
         Storage::disk('public')->put($name, $file, 'public');
 
-        // $image = (new InterventionImage)->make(Storage::disk('public')->get($name))->trim();
+        // Déterminer l'utilisateur cible: par défaut l'utilisateur courant, sinon l'agent indiqué (si valide)
+        $targetUserId = Auth::id();
+        if ($request->filled('agent_id')) {
+            $agent = Agent::find($request->input('agent_id'));
+            if ($agent && $agent->user_id) {
+                $targetUserId = $agent->user_id;
+            }
+        }
 
         Image::updateOrCreate(
             [
                 "type_image" => "SIGNATURE",
-                "user_id" => Auth::user()->id
+                "user_id" => $targetUserId,
             ],
             [
                 "image_url" => $name,

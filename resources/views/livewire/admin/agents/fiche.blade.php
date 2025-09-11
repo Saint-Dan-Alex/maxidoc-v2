@@ -235,6 +235,7 @@
                                         aria-controls="authentication" wire:ignore
                                         aria-selected="false">Authentification</button>
                                 </li>
+                                
                             </ul>
                         </div>
 
@@ -880,15 +881,15 @@
                                         </div>
                                     </div>
                                 </div>
+                                
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    @include('components.admin.modals.personals', [ 'fonctions' => $fonctions])
+        @include('components.admin.modals.personals', [ 'fonctions' => $fonctions])
 </div>
 
 @section('scripts')

@@ -16,7 +16,7 @@
                             <input type="text" name="libelle" wire:model='titre' class="form-control"
                                 placeholder="Nom de la fonction" required>
                         </div>
-                        <div class="col-lg-12">
+                        {{-- <div class="col-lg-12">
                             <label for="">Direction</label>
                             <select name="direction_id" wire:model='direction_id' class="form-control" required>
                                 <option value="">Selectionnez la direction</option>
@@ -59,11 +59,8 @@
                                     </option>
                                 @endforeach
                             </select>
-                        </div>
-                        <div class="col-lg-12">
-                            <label for="">Description</label>
-                            <textarea name="description" wire:model='description' class="form-control" cols="30" rows="5"></textarea>
-                        </div>
+                        </div> --}}
+                        
                         <div class="col-lg-12 text-end">
                             <button class="btn btn-add" type="submit" data-bs-dismiss="modal">Ajouter</button>
                         </div>

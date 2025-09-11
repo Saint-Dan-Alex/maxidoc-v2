@@ -11,6 +11,7 @@ use App\Models\Service;
 use App\Models\Statut;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class FonctionController extends Controller
 {
@@ -37,31 +38,27 @@ class FonctionController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'libelle' => 'required|string|max:255',
-            'section_id' => 'nullable|exists:sections,id',
-            'service_id' => 'nullable|exists:services,id',
-            'division_id' => 'nullable|exists:divisions,id',
-            'direction_id' => 'nullable|exists:directions,id',
-            'description' => 'nullable|string',
-        ]);
-
         try {
+            $request->validate([
+                'libelle' => 'required|string|max:255',
+            ]);
             Fonction::firstOrCreate([
                 "titre" => $request->libelle,
-                "section_id" => $request->section_id,
-                "service_id" => $request->service_id,
-                "division_id" => $request->division_id,
-                "direction_id" => $request->direction_id,
-            ], [
-                "description" => $request->description
-            ]);
+            ], );
 
             $content = json_encode([
                 'name' => 'Systèmes',
                 'statut' => 'success',
                 'message' => "Fonction ajoutée avec succès",
             ]);
+        } catch (ValidationException $e) {
+            $content = json_encode([
+                'name' => 'Systèmes',
+                'statut' => 'error',
+                'message' => "La validation a échoué. Veuillez vérifier le formulaire.",
+            ]);
+            session()->flash('session', $content);
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Throwable $th) {
             $content = json_encode([
                 'name' => 'Systèmes',
@@ -70,8 +67,7 @@ class FonctionController extends Controller
             ]);
         }
 
-        session()->flash('session', $content);
-        return back();
+        return redirect()->back()->with('session', $content);
     }
 
     /**
@@ -79,25 +75,14 @@ class FonctionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'libelle' => 'required|string|max:255',
-            'section_id' => 'nullable|exists:sections,id',
-            'service_id' => 'nullable|exists:services,id',
-            'division_id' => 'nullable|exists:divisions,id',
-            'direction_id' => 'nullable|exists:directions,id',
-            'description' => 'nullable|string',
-        ]);
-
         try {
+            $request->validate([
+                'titre' => 'required|string|max:255',
+            ]);
             $fonction = Fonction::findOrFail($id);
 
             $fonction->update([
-                "titre" => $request->libelle,
-                "section_id" => $request->section_id,
-                "service_id" => $request->service_id,
-                "division_id" => $request->division_id,
-                "direction_id" => $request->direction_id,
-                "description" => $request->description,
+                "titre" => $request->titre,                
             ]);
 
             $content = json_encode([
@@ -105,6 +90,14 @@ class FonctionController extends Controller
                 'statut' => 'success',
                 'message' => "Fonction modifiée avec succès",
             ]);
+        } catch (ValidationException $e) {
+            $content = json_encode([
+                'name' => 'Systèmes',
+                'statut' => 'error',
+                'message' => "La validation a échoué. Veuillez vérifier le formulaire.",
+            ]);
+            session()->flash('session', $content);
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Throwable $th) {
             $content = json_encode([
                 'name' => 'Systèmes',

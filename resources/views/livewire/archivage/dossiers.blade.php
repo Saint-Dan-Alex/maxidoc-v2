@@ -39,16 +39,20 @@
         <div class="row g-3 g-lg-5">
             @forelse ($dossiers as $dossier)
                 <div class="col-lg-3">
-                    <div class="col-folder">
-                        <a
-                            href="{{ route('regidoc.archive-classeurs.archive-dossiers.show', [$dossier->classeur, $dossier]) }}">
+                    <div class="col-folder" style="margin-left: {{ $dossier->level * 20 }}px; position: relative;">
+                        @if($dossier->level > 0)
+                            <div class="folder-connector" style="position: absolute; left: -15px; top: 15px; width: 15px; height: 1px; background-color: #ddd;"></div>
+                        @endif
+                        <a href="{{ route('regidoc.archive-classeurs.archive-dossiers.show', [$dossier->classeur, $dossier]) }}">
                             <div class="d-flex align-items-center">
-                                <img src="{{ asset('assets/images/icons/Fichier 22.png') }}" alt=""
-                                    class="me-2">
+                                <img src="{{ asset('assets/images/icons/Fichier 22.png') }}" alt="" class="me-2">
                                 <div class="text-star">
                                     <h6>{{ Str::ucfirst($dossier->titre) }}</h6>
                                     <p>Ref: {{ $dossier->reference }}</p>
                                     <p>Créé le: {{ $dossier->created_at->format('m-d-Y') }}</p>
+                                    @if($dossier->parent_id)
+                                        <small class="text-muted">Sous-dossier de: {{ $dossier->parent->titre ?? 'Racine' }}</small>
+                                    @endif
                                 </div>
                             </div>
                         </a>
