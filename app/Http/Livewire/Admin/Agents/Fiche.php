@@ -198,8 +198,9 @@ class Fiche extends Component
         $this->form_stat['direction_id'] = $id;
         if ($id != 0) {
             $this->services = Service::select('id', 'titre')->where('direction_id', $this->form_stat['direction_id'])->get();
-            $this->fonctions = Fonction::where('direction_id', $this->form_stat['direction_id'])->orderBy('titre')->get();
         }
+        // Récupérer toutes les fonctions sans filtre de direction
+        $this->fonctions = Fonction::orderBy('titre')->get();
     }
 
     public function changeService($id)
