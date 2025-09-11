@@ -590,7 +590,9 @@
                 // Initialiser le sélecteur
                 $categorySelect.select2({
                     placeholder: 'Sélectionnez une catégorie',
+                    maximumSelectionLength: $(this).data('max-selection') || false,
                     language: 'fr',
+
                     width: '100%',
                     allowClear: true,
                     ajax: {
