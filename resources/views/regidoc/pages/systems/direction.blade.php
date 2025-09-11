@@ -62,7 +62,7 @@
                         </div>
                         <div class="col-12 mb-3">
                             <label>Lieu</label>
-                            <select name="lieu_id" class="form-control select2Bis" data-placeholder="Sélectionner le lieu" required multiple >
+                            <select name="lieu_id" class="form-control select2Bis" data-placeholder="Sélectionner le lieu" required>
                                 <option value=""></option>
                                 @foreach ($lieus as $lieu)
                                     <option value="{{ $lieu->id }}">{{ $lieu->titre }}</option>
@@ -113,7 +113,7 @@
                         <div class="form-group row g-3">
                             <div class="col-12 mb-3">
                                 <label>Code</label>
-                                <input type="text" name="code" class="form-control" value="{{ $direction->code }}" required>
+                                <input type="text" name="code" class="form-control" value="{{ $direction->code }}" required >
                             </div>
                             <div class="col-12 mb-3">
                                 <label>Titre</label>
@@ -203,7 +203,19 @@
                 $(this).select2({
                     placeholder: $(this).data('placeholder') || 'Sélectionner...',
                     language: "fr",
-                    dropdownParent: $(this).closest('.modal') // Assure que le menu déroulant s'affiche correctement dans le modal
+                    dropdownParent: $(this).closest('.modal'), // Assure que le menu déroulant s'affiche correctement dans le modal
+                    allowClear: true,
+                    width: '100%',
+                    theme: 'bootstrap-5',
+                    // Pour avoir l'apparence de multiple mais avec une seule sélection
+                    templateResult: function(data) {
+                        if (!data.id) { return data.text; }
+                        return $('<span class="d-flex align-items-center"><span class="flex-grow-1">' + data.text + '</span><span class="badge bg-primary ms-2">1</span></span>');
+                    },
+                    templateSelection: function(data) {
+                        if (!data.id) { return data.text; }
+                        return $('<span class="d-flex align-items-center"><span class="flex-grow-1">' + data.text + '</span><span class="badge bg-primary ms-2">1</span></span>');
+                    }
                 });
             });
         }
@@ -223,6 +235,7 @@
         });
     });
 </script>
+
 @endpush
 
 @endsection
