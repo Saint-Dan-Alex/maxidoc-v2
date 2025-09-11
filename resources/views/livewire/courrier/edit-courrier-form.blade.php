@@ -17,13 +17,13 @@
                         <div class="row" wire:ignore>
                             <label class="col-5 col-form-label">Type de courrier</label>
                             <div class="col-7">
-                                <select class="form-select form-control select" aria-label="Default select example"
-                                    name="type2" id="type_id" {{-- data-placeholder="Selectionner"
+                                <select class="form-select form-control select2" aria-label="Default select example"
+                                    name="type" id="type_id" data-placeholder="Sélectionnez un type"
                                     data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
                                     data-get-items-field="titre"
                                     data-method="get"
                                     data-label="titre"
-                                    data-related-model="CourrierType" --}} disabled>
+                                    data-related-model="CourrierType" disabled>
                                     <option value="" selected disabled>Sélectionnez</option>
                                     @foreach ($types as $type)
                                         <option value="{{ $type->id }}" @selected($courrier->type->id == $type->id)>
@@ -34,7 +34,7 @@
                             </div>
                         </div>
                     </div>
-                    <input type="hidden" name="type" value="1">
+                    <input type="hidden" name="type" value="{{ $courrier->type->id }}">
 
                     <div class="col-12 categorie_field" wire:ignore>
                         <div class="row">
@@ -47,11 +47,11 @@
                                     data-get-items-field="title" data-method="get" data-label="title"
                                     data-related-model="CourrierCategory" data-tags="true" data-max-selection="1"
                                     multiple>
-                                    @foreach ($categories as $category)
-                                        <option value="{{ $category->id }}" @selected($courrier->categorie?->id == $category->id)>
-                                            {{ $category->title }}
+                                    @if($courrier->courrierCategory)
+                                        <option value="{{ $courrier->courrierCategory->id }}" selected>
+                                            {{ $courrier->courrierCategory->title }}
                                         </option>
-                                    @endforeach
+                                    @endif
                                 </select>
                             </div>
                         </div>
@@ -572,6 +572,83 @@
 
             // Vérifier la validité du formulaire au chargement de la page
             checkFormValidity();
+
+            // Fonction d'initialisation du sélecteur de catégories
+            function initCategorySelect() {
+                // Récupérer l'ID de la catégorie actuelle si elle existe
+                var currentCategoryId = '{{ $courrier->courrier_category_id ?? '' }}';
+                var currentCategoryText = '{{ $courrier->courrierCategory->title ?? '' }}';
+                
+                // Configuration du sélecteur de catégories
+                var $categorySelect = $('select[name="categorie"]');
+                
+                // Détruire l'instance existante si elle existe
+                if ($.fn.select2 && $categorySelect.hasClass('select2-hidden-accessible')) {
+                    $categorySelect.select2('destroy');
+                }
+                
+                // Initialiser le sélecteur
+                $categorySelect.select2({
+                    placeholder: 'Sélectionnez une catégorie',
+                    language: 'fr',
+                    width: '100%',
+                    allowClear: true,
+                    ajax: {
+                        url: '{{ route('api.categories.by-type') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                type_id: $('select[name="type"]').val(),
+                                search: params.term
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data
+                            };
+                        },
+                        cache: true
+                    },
+                    minimumInputLength: 0
+                });
+                
+                // Si une catégorie est déjà sélectionnée, on la pré-remplit
+                if (currentCategoryId) {
+                    var option = new Option(currentCategoryText, currentCategoryId, true, true);
+                    $categorySelect.append(option).trigger('change');
+                }
+            }
+
+            // Initialisation des sélecteurs Select2 sauf le sélecteur de catégories
+            // $('.select2').not('select[name="categorie"]').each(function() {
+            //     $(this).select2({
+            //         tags: $(this).data('tags') ? true : false,
+            //         placeholder: $(this).data('placeholder'),
+            //         language: "fr",
+            //         maximumSelectionLength: $(this).data('max-selection') || false,
+            //         width: "100%"
+            //     });
+            // });
+
+            // Initialisation du sélecteur de catégories
+            initCategorySelect();
+
+            // Gestionnaire de changement pour le type de document
+            $('select[name="type"]').on('change', function() {
+                // Mettre à jour la valeur du champ caché
+                $('input[name="type"]').val($(this).val());
+                
+                // Réinitialiser le sélecteur de catégories
+                $('select[name="categorie"]').val(null).trigger('change');
+                
+                // Détruire et réinitialiser le sélecteur de catégories
+                $('select[name="categorie"]').select2('destroy');
+                initCategorySelect();
+                
+                // Mettre à jour la validité du formulaire
+                checkFormValidity();
+            });
 
             // Liste des sélecteurs des champs obligatoires
             const requiredFields = [
