@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthenticationController;
+use App\Http\Controllers\Api\CategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,5 +22,8 @@ Route::get('/redirect', [AuthenticationController::class, 'authorization'])->nam
 
 // Routes protégées par authentification
 Route::middleware('auth:sanctum')->group(function () {
+    // Récupérer les catégories par type de document
+    Route::get('/categories/by-type', [CategoryController::class, 'getCategoriesByType'])->name('api.categories.by-type');
+    
     // Vos autres routes API protégées ici
 });

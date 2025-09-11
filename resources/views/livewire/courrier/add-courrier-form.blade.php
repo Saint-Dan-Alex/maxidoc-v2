@@ -29,7 +29,8 @@
                         <label class="col-5 col-form-label">Type de document</label>
                         <div class="col-7">
                             <select class="form-select form-control select autreSelect2"
-                                aria-label="Default select example" name="type" id="type_id" required>
+                                aria-label="Default select example" name="type" id="type_id" 
+                                wire:model.live="selectedType" required>
                                 <option value="" selected disabled>Selectionnez</option>
                                 @foreach ($types as $type)
                                     @if ($type->id != 2)
@@ -126,7 +127,8 @@
                         <label class="col-5 col-form-label">Type de document</label>
                         <div class="col-7">
                             <select class="form-select form-control select autreSelect2"
-                                aria-label="Default select example" name="type" id="type_id" required>
+                                aria-label="Default select example" name="type" id="type_id" 
+                                wire:model.live="selectedType" required>
                                 <option value="" selected disabled>Selectionnez</option>
                                 @foreach ($types as $type)
                                     @if ($type->id != 2)
@@ -850,22 +852,60 @@
                 }
             }
 
+            // Fonction d'initialisation du sélecteur de catégories
+            function initCategorySelect() {
+                $('select[name="categorie"]').select2({
+                    placeholder: 'Sélectionnez une catégorie',
+                    language: 'fr',
+                    width: '100%',
+                    ajax: {
+                        url: '{{ route('api.categories.by-type') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                type_id: $('select[name="type"]').val(),
+                                search: params.term
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data
+                            };
+                        },
+                        cache: true
+                    },
+                    minimumInputLength: 0
+                });
+            }
+
+            // Initialisation des sélecteurs Select2
             $('.selectCopie').select2({
                 tags: $(this).data('tags') ? $(this).data('tags') : false,
                 placeholder: $(this).data('placeholder'),
                 language: "fr",
-                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') :
-                    null,
                 width: "100%"
             });
 
-            $('.autreSelect2').select2({
+            // Initialisation des autres sélecteurs Select2
+            $('.autreSelect2').not('select[name="categorie"]').select2({
                 tags: $(this).data('tags') ? $(this).data('tags') : false,
                 placeholder: $(this).data('placeholder'),
                 language: "fr",
-                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') :
-                    null,
+                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') : false,
                 width: "100%"
+            });
+
+            // Initialisation du sélecteur de catégories
+            initCategorySelect();
+
+            // Recharger les catégories lorsque le type change
+            $('select[name="type"]').on('change', function() {
+                // Réinitialiser le sélecteur de catégories
+                $('select[name="categorie"]').val(null).trigger('change');
+                // Détruire et réinitialiser le sélecteur
+                $('select[name="categorie"]').select2('destroy');
+                initCategorySelect();
             });
 
             // $('#file-upload').on('change', function(e) {
