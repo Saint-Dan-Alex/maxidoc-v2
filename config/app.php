@@ -185,7 +185,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        // Ligne supprimée : Intervention\Image\ImageServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
 
         /*
         * Package Service Providers...
@@ -194,7 +194,7 @@ return [
             
         Spatie\Permission\PermissionServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
-        // Ligne supprimée : Intervention\Image\ImageServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
         Yadahan\AuthenticationLog\AuthenticationLogServiceProvider::class,
         TeamTNT\Scout\TNTSearchScoutServiceProvider::class,
         Laravel\Scout\ScoutServiceProvider::class,
