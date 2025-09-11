@@ -77,7 +77,6 @@
                     <tr>
                         <th scope="col">Nom</th>
                         <th scope="col">Direction</th>
-                        <th scope="col">Division</th>
                         <th scope="col">Responsable</th>
                         <th scope="col">Nbe agents</th>
                         <th scope="col">Action</th>
@@ -88,8 +87,7 @@
                         <tr>
                             <td class="text-truncate"> {{ $service->titre }} </td>
                             <td class="text-truncate"> {{ $service->direction?->titre }} </td>
-                            <td class="text-truncate"> {{ $service->division?->libelle }} </td>
-                            <td> {{ $service->responsable?->prenom . ' ' . $service->responsable?->nom }} </td>
+                            <td> {{ $service->responsable ? $service->responsable->prenom . ' ' . $service->responsable->nom : 'Non défini' }} </td>
                             <td> {{ $service->agents->count() }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">

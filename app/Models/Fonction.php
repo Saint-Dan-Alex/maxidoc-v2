@@ -23,14 +23,12 @@ class Fonction extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
+    /**
+     * Get all agents for this fonction
+     */
     public function agents()
     {
-        return $this->belongsToMany(Agent::class, PivotAgentFonction::class)->withPivot([
-            'statut_id',
-            'date_debut',
-            'created_by',
-            'updated_by'
-        ])->withTimestamps();
+        return $this->hasMany(Agent::class, 'fonction_id');
     }
 
     /**

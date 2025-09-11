@@ -106,8 +106,8 @@
                             <td> {{ $direction->code }} </td>
                             <td class="text-truncate"> {{ $direction->titre }} </td>
                             <td> {{ $direction->lieu->titre }} </td>
-                            <td> {{ $direction->responsable?->prenom . ' ' . $direction->responsable?->nom }} </td>
-                            <td> {{ $direction->adjoint?->prenom . ' ' . $direction->adjoint?->nom }} </td>
+                            <td> {{ $direction->responsable ? $direction->responsable->prenom . ' ' . $direction->responsable->nom : 'Non défini' }} </td>
+                            <td> {{ $direction->adjoint ? $direction->adjoint->prenom . ' ' . $direction->adjoint->nom : 'Non défini' }} </td>
                             <td> {{ $direction->agents->count() }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table" wire:ignore>
