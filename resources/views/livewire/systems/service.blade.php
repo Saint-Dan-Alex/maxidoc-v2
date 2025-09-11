@@ -154,8 +154,8 @@
                             </div>
                             <div class="col-lg-12">
                                 <label>Direction</label>
-                                <select name="direction_id" class="form-control" required>
-                                    <option value="">Sélectionner</option>
+                                <select name="direction_id" class="form-control select2Bis" data-placeholder="Sélectionner une direction" required>
+                                    <option value=""></option>
                                     @foreach ($allDirections as $direction)
                                         <option value="{{ $direction->id }}">{{ $direction->titre }}</option>
                                     @endforeach
@@ -173,8 +173,8 @@
                             </div> --}}
                             <div class="col-lg-12">
                                 <label>Responsable</label>
-                                <select name="responsable_id" class="form-control">
-                                    <option value="">Sélectionner</option>
+                                <select name="responsable_id" class="form-control select2Bis" data-placeholder="Sélectionner un responsable">
+                                    <option value=""></option>
                                     @foreach ($agents as $agent)
                                         <option value="{{ $agent->id }}">
                                             {{ $agent->prenom }} {{ $agent->nom }}
@@ -188,11 +188,12 @@
                             </div>
                             <div class="col-lg-12">
                                 <label for="">Statut</label>
-                                <select name="statut_id" class="form-control" required>
-                                    <option value="">Selectionnez le statut</option>
+                                <select name="statut_id" class="form-control select2Bis" data-placeholder="Sélectionner un statut" required>
+                                    <option value=""></option>
                                     @foreach ($statuts as $statut)
                                         <option value="{{ $statut->id }}">
-                                            {{ $statut->libelle }} </option>
+                                            {{ $statut->libelle }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div> --}}
@@ -229,7 +230,7 @@
                                 <div class="col-lg-12">
                                     <label for="direction_id">Direction</label>
                                     <select name="direction_id" id="direction_id" class="form-control select2Bis" required
-                                        data-placeholder="Sélectionnez une direction">
+                                        data-placeholder="Sélectionner une direction">
                                         <option value=""></option>
                                         @foreach ($directions as $direction)
                                             <option value="{{ $direction->id }}" {{ $service->direction_id == $direction->id ? 'selected' : '' }}>
@@ -240,8 +241,8 @@
                                 </div>
                                 <div class="col-lg-12">
                                     <label for="responsable_id">Responsable</label>
-                                    <select name="responsable_id" id="responsable_id" class="form-control">
-                                        <option value="">Sélectionner</option>
+                                    <select name="responsable_id" id="responsable_id" class="form-control select2Bis" data-placeholder="Sélectionner un responsable">
+                                        <option value=""></option>
                                         @foreach ($agents as $agent)
                                             <option value="{{ $agent->id }}" @selected($service->responsable_id == $agent->id)>
                                                 {{ $agent->prenom }} {{ $agent->nom }}
@@ -256,7 +257,8 @@
                                 </div>
                                 <div class="col-lg-12">
                                     <label for="statut_id">Statut</label>
-                                    <select name="statut_id" id="statut_id" class="form-control" required>
+                                    <select name="statut_id" id="statut_id" class="form-control select2Bis" data-placeholder="Sélectionner un statut" required>
+                                        <option value=""></option>
                                         @foreach($statuts as $statut)
                                             <option value="{{ $statut->id }}" {{ $service->statut_id == $statut->id ? 'selected' : '' }}>
                                                 {{ $statut->libelle }}
@@ -278,4 +280,49 @@
     @endforeach
 </div>
 
+@push('scripts')
+<script>
+    document.addEventListener('livewire:load', function() {
+        // Initialisation de Select2 pour les modaux
+        function initSelect2() {
+            $('.select2Bis').each(function() {
+                $(this).select2({
+                    placeholder: $(this).data('placeholder') || 'Sélectionner...',
+                    language: "fr",
+                    dropdownParent: $(this).closest('.modal'),
+                    allowClear: true,
+                    width: '100%',
+                    theme: 'bootstrap-5',
+                    // Pour avoir l'apparence de multiple mais avec une seule sélection
+                    templateResult: function(data) {
+                        if (!data.id) { return data.text; }
+                        return $('<span class="d-flex align-items-center"><span class="flex-grow-1">' + data.text + '</span><span class="badge bg-primary ms-2">1</span></span>');
+                    },
+                    templateSelection: function(data) {
+                        if (!data.id) { return data.text; }
+                        return $('<span class="d-flex align-items-center"><span class="flex-grow-1">' + data.text + '</span><span class="badge bg-primary ms-2">1</span></span>');
+                    }
+                });
+            });
+        }
 
+        // Initialisation au chargement de la page
+        initSelect2();
+
+        // Réinitialisation des champs du modal d'ajout quand il est fermé
+        $('#modal-new-service').on('shown.bs.modal', function () {
+            initSelect2();
+        });
+
+        // Réinitialisation des champs du modal d'édition quand il est fermé
+        $('div[id^="modal-edit-service-"]').on('shown.bs.modal', function () {
+            initSelect2();
+        });
+
+        // Réinitialisation de Select2 quand Livewire met à jour le DOM
+        document.addEventListener('livewire:update', function() {
+            initSelect2();
+        });
+    });
+</script>
+@endpush
