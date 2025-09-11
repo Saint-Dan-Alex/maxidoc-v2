@@ -52,7 +52,6 @@
                     <tr>
                         <th scope="col">Nom</th>
                         <th scope="col">Catégorie</th>
-                        <th scope="col">Date de création</th>
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
@@ -62,12 +61,10 @@
                             <td>{{ $expediteur->nom }}</td>
                             <td>
                                 @if($expediteur->category)
-                                    <span class="badge bg-primary">{{ $expediteur->category->title }}</span>
-                                @else
-                                    <span class="text-muted">Non défini</span>
+                                    {{ $expediteur->category->title }}                             @else
+                                    Non défini
                                 @endif
                             </td>
-                            <td>{{ $expediteur->created_at->format('d/m/Y') }}</td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
                                     <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
