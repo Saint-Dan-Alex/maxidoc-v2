@@ -48,6 +48,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Titre</th>
+                        <th scope="col">Type</th>
                         <th scope="col" class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -55,6 +56,7 @@
                     @forelse ($categories as $category)
                         <tr>
                             <td class="text-truncate">{{ $category->title }}</td>
+                            <td>{{ $category->type->titre }}</td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table justify-content-end">
                                     <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
