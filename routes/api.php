@@ -25,5 +25,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Récupérer les catégories par type de document
     Route::get('/categories/by-type', [CategoryController::class, 'getCategoriesByType'])->name('api.categories.by-type');
     
+    // Récupérer les natures par catégorie
+    Route::get('/natures/by-category', [CategoryController::class, 'getNaturesByCategory'])->name('api.natures.by-category');
+    
     // Vos autres routes API protégées ici
 });

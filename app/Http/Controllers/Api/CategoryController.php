@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CourrierCategory;
+use App\Models\CourrierNature;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -26,5 +27,24 @@ class CategoryController extends Controller
             ->get();
             
         return response()->json($categories);
+    }
+
+    /**
+     * Récupère les natures en fonction de la catégorie sélectionnée
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getNaturesByCategory(Request $request)
+    {
+        $categoryId = $request->input('category_id');
+        
+        $natures = CourrierNature::query()
+            ->where('category_id', $categoryId)
+            ->select('id', 'titre as text')
+            ->orderBy('titre')
+            ->get();
+            
+        return response()->json($natures);
     }
 }

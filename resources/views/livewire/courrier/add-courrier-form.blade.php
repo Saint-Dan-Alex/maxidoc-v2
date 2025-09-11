@@ -858,6 +858,7 @@
                     placeholder: 'Sélectionnez une catégorie',
                     language: 'fr',
                     width: '100%',
+                    allowClear: true,
                     ajax: {
                         url: '{{ route('api.categories.by-type') }}',
                         dataType: 'json',
@@ -896,16 +897,64 @@
                 width: "100%"
             });
 
+            // Fonction pour initialiser le sélecteur de natures
+            function initNatureSelect() {
+                $('select[name="nature"]').select2({
+                    placeholder: 'Sélectionnez une nature',
+                    language: 'fr',
+                    width: '100%',
+                    allowClear: true,
+                    ajax: {
+                        url: '{{ route('api.natures.by-category') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                category_id: $('select[name="categorie"]').val(),
+                                search: params.term
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data
+                            };
+                        },
+                        cache: true
+                    },
+                    minimumInputLength: 0
+                });
+            }
+
             // Initialisation du sélecteur de catégories
             initCategorySelect();
-
-            // Recharger les catégories lorsque le type change
+            
+            // Initialisation du sélecteur de natures
+            initNatureSelect();
+            
+            // Gestionnaire de changement pour le type de document
             $('select[name="type"]').on('change', function() {
-                // Réinitialiser le sélecteur de catégories
+                // Réinitialiser les sélecteurs dépendants
                 $('select[name="categorie"]').val(null).trigger('change');
-                // Détruire et réinitialiser le sélecteur
+                $('select[name="nature"]').val(null).trigger('change');
+                
+                // Détruire et réinitialiser les sélecteurs
                 $('select[name="categorie"]').select2('destroy');
+                $('select[name="nature"]').select2('destroy');
+                
                 initCategorySelect();
+                initNatureSelect();
+            });
+            
+            // Gestionnaire de changement pour la catégorie
+            $('select[name="categorie"]').on('change', function() {
+                // Réinitialiser le sélecteur de natures
+                $('select[name="nature"]').val(null).trigger('change');
+                
+                // Si une catégorie est sélectionnée, on réinitialise le sélecteur de natures
+                if ($(this).val()) {
+                    $('select[name="nature"]').select2('destroy');
+                    initNatureSelect();
+                }
             });
 
             // $('#file-upload').on('change', function(e) {
