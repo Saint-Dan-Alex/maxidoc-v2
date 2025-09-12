@@ -213,6 +213,10 @@ class ArchiveController extends Controller
                 $document->destination_id = $request->get('destination');
                 $document->observations = $request->get('observations');                
                 $document->redacteur_id = $request->get('redacteur');
+                $document->redacteur_id = $request->get('redacteur');
+                $document->lieu_id = Auth::user()->agent->lieu_id;
+                $document->service_id = Auth::user()->agent->service_id;
+
 
                 // Utilisation de la classe File pour stocker le fichier
                 $document->document = (new File())->handle($request, 'document', 'documents');
