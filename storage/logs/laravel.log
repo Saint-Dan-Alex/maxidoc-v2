@@ -76388,3 +76388,25 @@
 #7 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
 #8 {main}
 "} 
+[2025-09-11 19:34:13] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":18,"user_id":2} 
+[2025-09-11 19:34:19] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":18,"user_id":2} 
+[2025-09-11 19:40:34] local.INFO: Fichier stocké avec succès {"chemin":"documents/September2025/HYUALklCgPy0yFI0RzX6.pdf","nom_original":"Python concepts from module 1.pdf"} 
+[2025-09-11 19:41:51] local.WARNING: Fichier introuvable : storage/app/public/documents/September2025/QcqYaULPkbrPUkC1NQfi.pdf  
+[2025-09-11 19:42:31] local.WARNING: Fichier introuvable : storage/app/public/documents/September2025/QcqYaULPkbrPUkC1NQfi.pdf  
+[2025-09-11 19:43:50] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-09-11 19:43:51] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":"1","prefix":"K"} 
+[2025-09-11 19:43:51] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":10,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"1","K-%"]} 
+[2025-09-11 19:44:02] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":"3","prefix":"K"} 
+[2025-09-11 19:44:02] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":3,"type":"3","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"3","K-%"]} 
+[2025-09-11 19:44:25] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":"3","prefix":"K"} 
+[2025-09-11 19:44:25] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":3,"type":"3","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"3","K-%"]} 
+[2025-09-11 19:45:26] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":"3","prefix":"K"} 
+[2025-09-11 19:45:26] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":3,"type":"3","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"3","K-%"]} 
+[2025-09-11 19:45:34] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-09-11 19:45:35] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":"1","prefix":"K"} 
+[2025-09-11 19:45:35] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":10,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"1","K-%"]} 
+[2025-09-11 19:45:39] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":"3","prefix":"K"} 
+[2025-09-11 19:45:39] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":3,"type":"3","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"3","K-%"]} 
+[2025-09-11 19:46:12] local.INFO: mount - Paramètres: {"services":[7],"type":1,"prefix":"K"} 
+[2025-09-11 19:46:13] local.INFO: changeNumRef - Paramètres: {"services":[7],"type":"1","prefix":"K"} 
+[2025-09-11 19:46:13] local.INFO: changeNumRef - Résultat du comptage: {"lastNum":10,"type":"1","requete_sql":"select * from `courriers` where (`service_id` in (?) or `service_id` is null) and `type_id` = ? and `reference_interne` LIKE ?","bindings":[7,"1","K-%"]} 
