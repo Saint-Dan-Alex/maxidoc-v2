@@ -35,14 +35,17 @@ class ClasseurIndex extends Component
         
         // Si l'agent n'est pas DG, on filtre par son lieu d'affectation
         if (!$agent->isDG()) {
-            $lieuNom = $agent->lieu->titre ?? null;
+            $lieuId = $agent->lieu_id ?? null;
             
-            if (!$lieuNom) {
+            if (!$lieuId) {
                 $this->classeurs = collect();
                 return view('livewire.archivage.classeur-index');
             }
             
-            $query->where('titre', $lieuNom);
+            // Filtrer les classeurs qui contiennent des documents du même lieu
+            $query->whereHas('documents', function($q) use ($lieuId) {
+                $q->where('lieu_id', $lieuId);
+            });
         }
         
         $this->classeurs = $query->orderBy('created_at', 'desc')->get();
