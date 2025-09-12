@@ -72,6 +72,8 @@ class Document extends Model
         'is_classified',
         'password',
         'user_id',
+        'lieu_id',
+        'service_id',
     ];
 
     /**

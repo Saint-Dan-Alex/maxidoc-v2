@@ -34,9 +34,7 @@ class Dossiers extends Component
                 
                 // Si l'agent n'est pas DG, on filtre par son service
                 if (!$agent->isDG()) {
-                    $query->whereHas('author', function($q) use ($agent) {
-                        $q->where('service_id', $agent->service_id);
-                    });
+                    $query->where('service_id', $agent->service_id);
                 }
             });
 
