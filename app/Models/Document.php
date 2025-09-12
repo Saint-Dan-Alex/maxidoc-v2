@@ -83,6 +83,14 @@ class Document extends Model
     }
 
     /**
+     * Get the category that owns the document.
+     */
+    public function category()
+    {
+        return $this->belongsTo(CourrierCategory::class, 'category_id');
+    }
+
+    /**
      * Get the destination associated with the document.
      */
     public function destination()
