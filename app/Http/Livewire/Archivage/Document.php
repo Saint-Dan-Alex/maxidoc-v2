@@ -43,7 +43,18 @@ class Document extends Component
 
     public function mount(Dossier $dossier)
     {
-        $this->dossier = $dossier;
+        // Charger le dossier avec toutes les relations nécessaires
+        $this->dossier = $dossier->load([
+            'classeur',
+            'documents.category',
+            'documents.nature',
+            'author.direction',
+            'author.service'
+        ]);
+        
+        // Debug: Vérifier les données chargées
+        // dd($this->dossier->documents->first());
+        
         $this->lieus = LieuAffectation::select('id', 'titre')->get();
         $this->directions = collect();
         $this->divisions = collect();
