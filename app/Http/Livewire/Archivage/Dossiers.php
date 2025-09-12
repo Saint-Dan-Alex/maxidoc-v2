@@ -25,10 +25,19 @@ class Dossiers extends Component
 
     private function getNestedDossiers($parentId = null, $level = 0)
     {
+        $agent = auth()->user()->agent;
+        
         $query = Dossier::where('classeur_id', $this->classeur->id)
             ->where('parent_id', $parentId)
-            ->whereHas('documents', function ($query) {
+            ->whereHas('documents', function ($query) use ($agent) {
                 $query->where('statut_id', 6);
+                
+                // Si l'agent n'est pas DG, on filtre par son service
+                if (!$agent->isDG()) {
+                    $query->whereHas('author', function($q) use ($agent) {
+                        $q->where('service_id', $agent->service_id);
+                    });
+                }
             });
 
         if ($this->search) {
