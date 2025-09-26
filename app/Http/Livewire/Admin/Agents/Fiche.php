@@ -690,7 +690,7 @@ class Fiche extends Component
 
     public function render()
     {
-        $queryAgents = Agent::query();
+        $queryAgents = Agent::where('id', '!=', 1); // Exclut l'agent avec l'ID 1 (admin)
 
         // Initialisation des variables avec des requêtes Eloquent vides
         $actifAgents = $queryAgents;
