@@ -83,7 +83,16 @@ class TacheDocumentController extends Controller
             'confidentiel' => 0, // Non confidentiel par défaut
         ]);
 
+        $document->update([
+            'statut_id' => 5,
+        ]);
+        $document->save();
+
+    
+
+
         // Associer le document à la tâche dans la table tache_documents
+        // Le statut est déjà défini lors de la création du document
         $tache->documents()->attach($document->id, [
             'created_by' => Auth::id(),
             'created_at' => now(),
