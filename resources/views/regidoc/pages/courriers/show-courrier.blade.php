@@ -861,7 +861,23 @@
                             </div>
                         </a>
                         @livewire('courrier.traitement-doc-select', ['courrier' => $courrier]) 
-            <h5 class="offcanvas-title" id="offcanvasRightLabel"> <span style="color: white">{!! $courrier->status_badge !!}</span> </h5>
+            <h5 class="offcanvas-title d-flex align-items-center gap-2" id="offcanvasRightLabel"> 
+                <span style="color: white">{!! $courrier->status_badge !!}</span>
+                @if ($courrier->statut_id === 3)
+                    <small class="badge-task-lg normal">Validé</small>
+                @elseif ($courrier->statut_id === 4)
+                    <small class="badge-task-lg" style="background: #ffebee; color: #f44336;">Rejeté</small>
+                @elseif (Auth::user()->can('Valider un document'))
+                    <div class="d-flex gap-2">
+                        <a href="javascript:void(0)" data-bs-target="#modal-validation" data-bs-toggle="modal" class="btn btn-sm btn-success">
+                            Valider
+                        </a>
+                        <a href="javascript:void(0)" data-bs-target="#modal-reject" data-bs-toggle="modal" class="btn btn-sm btn-danger">
+                            Rejeter
+                        </a>
+                    </div>
+                @endif
+            </h5>
 
                         <div class="menu-action d-flex d-lg-none">
                             <i class="fi fi-rr-menu-burger"></i>
@@ -1408,7 +1424,7 @@
                                         </span>
                                     </div>
                                     <div class="col-lg-6">
-                                        <span class="badge bg-success">Validé</span>
+                                        <small class="badge-task-lg normal">Validé</small>
                                     </div>
                                 </div>
                             </div>
