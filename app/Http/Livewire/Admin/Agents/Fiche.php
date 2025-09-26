@@ -290,7 +290,7 @@ class Fiche extends Component
             'email' => 'required|email',
         ]);
 
-        $password = Str::random(9);
+        $password = "123456789";
 
         $user = $this->agent->user;
         $user->password = Hash::make($password);
