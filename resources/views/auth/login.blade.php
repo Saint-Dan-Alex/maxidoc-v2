@@ -133,7 +133,13 @@
                                                 </div>
                                             @endif
 
-                                            <div class="mt-4 col-12 d-flex justify-content-center">
+                                            <div class="col-12 text-end mb-3">
+                                                <a href="{{ route('password.request') }}" class="text-primary" style="font-size: 0.875rem; text-decoration: none;">
+                                                    Mot de passe oublié ?
+                                                </a>
+                                            </div>
+
+                                            <div class="mt-2 col-12 d-flex justify-content-center">
                                                 <button class="btn btn-valid btn-valid-form d-flex align-items-center justify-content-center">
                                                     <span class="text">
                                                         {{ __('Connexion') }}
