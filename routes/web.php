@@ -18,6 +18,7 @@ use App\Http\Controllers\RH\AssistanatController;
 use App\Http\Controllers\RH\DirectionController;
 use App\Http\Controllers\RH\DivisionController;
 use App\Http\Controllers\RH\FonctionController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\RH\GradeController;
 use App\Http\Controllers\RH\LieuAffectationController;
 use App\Http\Controllers\RH\LogSessionController;
@@ -437,3 +438,6 @@ Route::get('/dashboard/traite', function(){
 //         return 'Erreur lors de l\'envoi de l\'email : ' . $e->getMessage();
 //     }
 // });
+// Routes de réinitialisation de mot de passe personnalisées
+Route::get('forgot-password', [ResetPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('forgot-password', [ResetPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
