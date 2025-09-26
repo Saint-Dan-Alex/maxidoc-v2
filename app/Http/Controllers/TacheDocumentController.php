@@ -70,12 +70,16 @@ class TacheDocumentController extends Controller
 
         $document = Document::create([
             'libelle' => $originalName ?? 'Document sans nom',
-            'reference' => 'DOC-' . strtoupper(Str::random(8)),
+            'reference' => 'DT/' . Auth::user()->agent->matricule, // Même format que dans TachePane
             'description' => 'Document lié à la tâche ' . $tache->id,
             'document' => $fileData, // Stockage du JSON complet
             'dossier_id' => $dossier->id,
-            'created_by' => Auth::id(),
-            'statut_id' => 1, // Statut par défaut
+            'category_id' => 5, // Catégorie pour les tâches
+            'type' => 3, // Type pour les pièces jointes
+            'is_piece_jointe' => 1, // Marquer comme pièce jointe
+            'user_id' => Auth::id(),
+            'created_by' => Auth::user()->agent->id,
+            'statut_id' => 5, // Même statut que dans TachePane
             'confidentiel' => 0, // Non confidentiel par défaut
         ]);
 

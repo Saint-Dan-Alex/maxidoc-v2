@@ -202,19 +202,24 @@ class TachePane extends Component
             $document = Document::create([
                 'dossier_id' => $dossier->id,
                 'libelle' => Str::beforeLast($this->file->getClientOriginalName(), '.'),
-                // 'category_id' => 6,
-                'reference' => 'DOC-' . strtoupper(Str::random(8)),
-                'type' => 3,
+                'category_id' => 5, // Correspond à la catégorie des tâches
+                'reference' => 'DT/' . Auth::user()->agent->matricule, // Même format que dans le contrôleur
+                'type' => 3, // Type pour les pièces jointes
                 'document' => $fileData,
                 'user_id' => Auth::user()->id,
-                'statut_id' => 1,
+                'statut_id' => 5, // Même statut que dans le contrôleur
                 'created_by' => Auth::user()->agent->id,
                 'is_piece_jointe' => 1,
             ]);
 
-            // Associer le document à la tâche
+            // Associer le document à la tâche avec les champs supplémentaires
             $tache = Tache::findOrFail($this->tache->id);
-            $tache->documents()->attach($document->id);
+            $tache->documents()->attach($document->id, [
+                'type_relation' => 'piece_jointe',
+                'commentaire' => 'Document joint à la tâche',
+                'version_document' => '1.0',
+                'created_by' => Auth::id()
+            ]);
             
             // Réinitialiser le champ de fichier
             $this->reset('file');
