@@ -1085,8 +1085,9 @@ class TacheController extends Controller
                     'type' => 3,
                     'document' => (new File)->handle($doc, 'document', 'documents'),
                     'user_id' => Auth::user()->id,
-                    'statut_id' => 1,
+                    'statut_id' => 5,
                     'created_by' => $agent->id,
+                    'is_piece_jointe'=>1,
                 ]);
 
                 ArchivePermission::create([

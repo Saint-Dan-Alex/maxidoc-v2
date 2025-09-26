@@ -74,6 +74,7 @@ class Document extends Model
         'user_id',
         'lieu_id',
         'service_id',
+        'is_piece_jointe'
     ];
 
     /**
