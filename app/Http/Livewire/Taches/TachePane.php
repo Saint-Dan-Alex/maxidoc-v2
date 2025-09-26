@@ -202,13 +202,14 @@ class TachePane extends Component
             $document = Document::create([
                 'dossier_id' => $dossier->id,
                 'libelle' => Str::beforeLast($this->file->getClientOriginalName(), '.'),
-                'category_id' => 6,
+                // 'category_id' => 6,
                 'reference' => 'DOC-' . strtoupper(Str::random(8)),
                 'type' => 3,
                 'document' => $fileData,
                 'user_id' => Auth::user()->id,
                 'statut_id' => 1,
                 'created_by' => Auth::user()->agent->id,
+                'is_piece_jointe' => 1,
             ]);
 
             // Associer le document à la tâche
