@@ -235,7 +235,7 @@
         <!-- Settings Sidebar -->
         <div class="settings-sidebar" style="top: 70px; height: calc(100vh - 70px);">
             <div class="settings-logo-back">
-                <a href="javascript:history.back()" title="Retour">
+                <a href="{{route('regidoc.home')}}" title="Retour">
                     <img src="{{ asset('assets/regidoc/logo.png') }}" alt="MAXIDOC">
                 </a>
             </div>
