@@ -49,7 +49,7 @@ class AddArchiveForm extends Component
     {
         // Format attendu: Doc-YYYY-00000001 (incrément annuel)
         $year = now()->year;
-        $prefix = sprintf('Doc-%d-', $year);
+        $prefix = sprintf('Arc-%d-', $year);
 
         // Récupérer la dernière référence de l'année courante
         $lastRef = Document::where('reference_interne', 'like', $prefix . '%')
