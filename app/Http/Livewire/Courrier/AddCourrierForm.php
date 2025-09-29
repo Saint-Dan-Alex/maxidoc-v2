@@ -47,7 +47,6 @@ class AddCourrierForm extends Component
     public $isFormValid = false;
     public $isDestinateur;
     public $title = '';
-    public $selectedType = 1; // Nouvelle propriété pour suivre le type sélectionné
 
     protected $listeners = ['selectDoc'];
     
@@ -56,9 +55,8 @@ class AddCourrierForm extends Component
         $this->isFormValid = !empty(trim($value));
     }
     
-    public function updatedSelectedType($value)
+    public function updatedType($value)
     {
-        $this->type = $value;
         $this->changeNumRef(); // Mettre à jour la référence
         $this->loadCategories(); // Recharger les catégories
     }
@@ -68,7 +66,14 @@ class AddCourrierForm extends Component
         $this->categories = CourrierCategory::where('type_id', $this->type)
             ->orWhereNull('type_id')
             ->select('id', 'title')
+            ->orderBy('title')
             ->get();
+            
+        // Log pour débogage
+        Log::info('Catégories chargées:', [
+            'type_id' => $this->type,
+            'count' => $this->categories->count()
+        ]);
     }
 
     public function mount()
