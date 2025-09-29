@@ -30,7 +30,7 @@
                         <div class="col-7">
                             <select class="form-select form-control select autreSelect2"
                                 aria-label="Default select example" name="type" id="type_id" 
-                                wire:model.live="selectedType" required>
+                                wire:model.live="type" required>
                                 <option value="" selected disabled>Selectionnez</option>
                                 @foreach ($types as $type)
                                     @if ($type->id != 2)
@@ -128,7 +128,7 @@
                         <div class="col-7">
                             <select class="form-select form-control select autreSelect2"
                                 aria-label="Default select example" name="type" id="type_id" 
-                                wire:model.live="selectedType" required>
+                                wire:model.live="type" required>
                                 <option value="" selected disabled>Selectionnez</option>
                                 @foreach ($types as $type)
                                     @if ($type->id != 2)
