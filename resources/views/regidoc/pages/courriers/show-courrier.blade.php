@@ -867,16 +867,8 @@
                     <small class="badge-task-lg normal">Validé</small>
                 @elseif ($courrier->statut_id === 4)
                     <small class="badge-task-lg" style="background: #ffebee; color: #f44336;">Rejeté</small>
-                @elseif (Auth::user()->can('Valider un document'))
-                    <div class="d-flex gap-2">
-                        <a href="javascript:void(0)" data-bs-target="#modal-validation" data-bs-toggle="modal" class="btn btn-sm btn-success">
-                            Valider
-                        </a>
-                        <a href="javascript:void(0)" data-bs-target="#modal-reject" data-bs-toggle="modal" class="btn btn-sm btn-danger">
-                            Rejeter
-                        </a>
-                    </div>
-                @endif
+                
+                @endif 
             </h5>
 
                         <div class="menu-action d-flex d-lg-none">
