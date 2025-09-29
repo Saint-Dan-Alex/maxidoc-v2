@@ -116,6 +116,18 @@
                                 <input type="text" name="code" class="form-control" value="{{ $direction->code }}" required >
                             </div>
                             <div class="col-12 mb-3">
+                                <label for="lieu_id">Lieu d'affectation</label>
+                                <select name="lieu_id" class="form-control" required>
+                                    <option value="">Sélectionner un lieu</option>
+                                    @foreach($lieus as $lieu)
+                                        <option value="{{ $lieu->id }}" @if($lieu->id == $direction->lieu_id) selected @endif>
+                                            {{ $lieu->titre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-12 mb-3">
                                 <label>Titre</label>
                                 <input type="text" name="libelle" class="form-control" value="{{ $direction->titre }}" required>
                             </div>
