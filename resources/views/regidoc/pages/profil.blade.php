@@ -134,7 +134,7 @@
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="signature-tab-btn" data-bs-toggle="tab" data-bs-target="#signature-profile"
-                                type="button" role="tab" aria-controls="signature-profile" aria-selected="false">Signature</button>
+                                type="button" role="tab" aria-controls="signature-profile" aria-selected="false">eSignature</button>
                         </li>
                     </ul>
                 </div>
@@ -456,16 +456,19 @@
                             <div class="info-lg">
                                 <h2>Ma signature</h2>
                                 <p class="text-muted mb-3">Enregistrez votre signature électronique pour l'utiliser lors de la signature des documents.</p>
-                                <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-save-signature-profile">
-                                    Enregistrer / Modifier ma signature
-                                </button>
+                                
                                 <div class="mt-4">
                                     <h6 class="mb-2">Aperçu</h6>
                                     <div id="no-signature-profile" class="text-muted">Aucune signature enregistrée.</div>
                                     <div id="signature-preview-profile" class="d-none">
                                         <img id="signature-preview-img-profile" src="" alt="signature" class="img-fluid border rounded" style="max-width: 260px; background: #fff;">
-                                        <div class="mt-2">
+                                        {{-- <div class="mt-2">
                                             <button class="btn btn-default" data-bs-toggle="modal" data-bs-target="#modal-save-signature-profile">Modifier</button>
+                                        </div> --}}
+                                        <div class="mt-3">
+                                            <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-save-signature-profile">
+                                                Mettre à jour
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
