@@ -80701,3 +80701,7 @@
 #55 {main}
 "} 
 [2025-09-26 18:55:35] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":2,"user_id":10} 
+[2025-09-26 19:33:12] local.INFO: Fichier stocké avec succès {"chemin":"documents/September2025/a3vtvu9bL13q72kX3i2r.pdf","nom_original":"lettre de motivation FirstBank.pdf"} 
+[2025-09-26 19:34:22] local.WARNING: Fichier introuvable : storage/app/public/documents/September2025/QcqYaULPkbrPUkC1NQfi.pdf  
+[2025-09-26 19:34:56] local.WARNING: Fichier introuvable : storage/app/public/documents/September2025/QcqYaULPkbrPUkC1NQfi.pdf  
+[2025-09-26 19:35:24] local.WARNING: Fichier introuvable : storage/app/public/documents/September2025/QcqYaULPkbrPUkC1NQfi.pdf  
