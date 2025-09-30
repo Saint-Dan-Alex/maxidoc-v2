@@ -242,9 +242,20 @@ public function render()
         $currentPage
     );
 
-    // Pour shareds (documents suivis)
-    $sharedQuery = $documentsQuery->whereHas('followers', function($query){
-        $query->where('agent_id', auth()->user()->agent->id);
+    // Pour shareds (documents suivis et pièces jointes partagées)
+    $sharedQuery = $documentsQuery->where(function($query) {
+        $query->whereHas('followers', function($q) {
+            $q->where('agent_id', auth()->user()->agent->id);
+        })->orWhere(function($q) {
+            // Inclure les pièces jointes partagées où l'utilisateur n'est pas l'auteur
+            $q->where('is_piece_jointe', 1)
+            //   ->where('created_by', '!=', auth()->id())
+              ->whereHas('courrier', function($q) {
+                  $q->whereHas('destinateurs', function($q) {
+                      $q->where('agent_id', auth()->user()->agent->id);
+                  });
+              });
+        });
     });
 
     $shareds = $sharedQuery->orderBy('id','desc')->paginate(10);
