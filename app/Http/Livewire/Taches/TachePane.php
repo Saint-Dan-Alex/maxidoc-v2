@@ -208,7 +208,7 @@ class TachePane extends Component
                 'document' => $fileData,
                 'user_id' => Auth::user()->id,
                 'statut_id' => 5, // Même statut que dans le contrôleur
-                'created_by' => Auth::user()->agent->id,
+                'created_by' => Auth::user()->id,
                 'is_piece_jointe' => 1,
             ]);
 
