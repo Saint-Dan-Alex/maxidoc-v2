@@ -24,15 +24,31 @@ class ClasseurIndex extends Component
 
     public function render()
     {
-        $this->classeurs = Classeur::whereHas('documents', function ($query) {
-            $query->where('statut_id', 6);
-        })
-            ->whereYear('created_at', $this->annee)->orderBy('created_at', 'desc')
-            ->get();
-
-            // ->filter(function ($classeur) {
-            //     return Gate::allows('view', $classeur);
-            // });
+        $agent = auth()->user()->agent;
+        
+        // Construction de la requête de base
+        $query = Classeur::query()
+            ->whereHas('documents', function ($query) {
+                $query->where('statut_id', 6);
+            })
+            ->whereYear('created_at', $this->annee);
+        
+        // Si l'agent n'est pas DG, on filtre par son lieu d'affectation
+        if (!$agent->isDG()) {
+            $lieuId = $agent->lieu_id ?? null;
+            
+            if (!$lieuId) {
+                $this->classeurs = collect();
+                return view('livewire.archivage.classeur-index');
+            }
+            
+            // Filtrer les classeurs qui contiennent des documents du même lieu
+            $query->whereHas('documents', function($q) use ($lieuId) {
+                $q->where('lieu_id', $lieuId);
+            });
+        }
+        
+        $this->classeurs = $query->orderBy('created_at', 'desc')->get();
 
         // $this->dossiers = Dossier::orderBy('created_at', 'desc')->get()->filter(function ($dossier)
         // {

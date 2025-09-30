@@ -805,6 +805,9 @@ class DocumentController extends Controller
 
         // 4) Mise à jour des champs du document
         $document->statut_id = 6; // Archivé
+        $document->lieu_id = Auth::user()->agent->lieu_id;
+        $document->service_id = Auth::user()->agent->service_id;
+
         $document->archived_at = Carbon::now();
 
         // Emetteur et destination selon le type

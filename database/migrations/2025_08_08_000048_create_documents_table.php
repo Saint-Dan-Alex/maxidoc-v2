@@ -67,6 +67,8 @@ return new class extends Migration
             $table->foreignId('emetteur')->nullable()->nullOnDelete();
             $table->foreignId('destination_id')->nullable()->constrained('destinations')->nullOnDelete();
             $table->foreignId('redacteur_id')->nullable()->constrained('redacteurs')->nullOnDelete();
+            $table->foreignId('lieu_id')->nullable()->constrained('lieu_affectations')->nullOnDelete();
+            $table->foreignId('service_id')->nullable()->constrained('services')->nullOnDelete();
 
             // 🔹 Destinataire
             $table->foreignId('destinataire_externe_id')->nullable()->constrained('courrier_destinateur_externes')->nullOnDelete();

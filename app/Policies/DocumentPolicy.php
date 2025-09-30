@@ -71,15 +71,18 @@ class DocumentPolicy
             ->exists();
 
         // Vérifier si l'utilisateur est dans la même direction que l'auteur et qu'il est responsable
-        $isSameDirectionAndResponsable = $user->agent->direction_id === $document->author->direction_id
-            && $user->agent->isResponsable();
+        $isSameDirectionAndResponsable = $document->author && $user->agent
+            ? $user->agent->direction_id === $document->author->direction_id
+                && $user->agent->isResponsable()
+            : false;
 
         // Vérifier si l'utilisateur est DG
         $isDG = $user->hasRole('Directeur Générale');
-        
+
         // Vérifier si l'utilisateur est Assistant DG et si l'auteur est dans la même direction
-        $isAssistantDG = $user->hasRole('Assistant DG') && 
-                         $document->author->direction_id === $user->agent->direction_id;
+        $isAssistantDG = $user->hasRole('Assistant DG') && $document->author && $user->agent
+            ? $document->author->direction_id === $user->agent->direction_id
+            : false;
 
         // Retourner la permission finale
         return $isAuthor || $isFollower || $isSameDirectionAndResponsable || $isDG || $isAssistantDG;

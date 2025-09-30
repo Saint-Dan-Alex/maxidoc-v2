@@ -117,7 +117,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title d-flex align-items-center" id="exampleModalLabel">
-                        <span>Ajouter une assistant</span>
+                        <span>Ajouter un assistant</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>

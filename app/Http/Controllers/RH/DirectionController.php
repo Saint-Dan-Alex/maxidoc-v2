@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class DirectionController extends Controller
@@ -185,9 +186,16 @@ class DirectionController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            // Debug: Afficher les données reçues
+            \Log::info('Données reçues :', $request->all());
+            
             $direction = Direction::findOrFail($id);
-
-            $validated = $request->validate([
+            
+            // Debug: Afficher la direction actuelle
+            \Log::info('Direction actuelle :', $direction->toArray());
+            
+            // Valider manuellement pour afficher les erreurs
+            $validator = \Validator::make($request->all(), [
                 'code' => 'nullable|string|max:50',
                 'libelle' => 'required|string|max:255',
                 'responsable_id' => 'nullable|exists:agents,id',
@@ -196,38 +204,60 @@ class DirectionController extends Controller
                 'description' => 'nullable|string',
             ]);
 
+            // Vérifier si la validation échoue
+            if ($validator->fails()) {
+                \Log::error('Erreurs de validation :', $validator->errors()->toArray());
+                
+                // Retourner une réponse JSON avec les erreurs pour le débogage
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Erreur de validation',
+                        'errors' => $validator->errors()
+                    ], 422);
+                }
+                
+                // Pour les requêtes normales, rediriger avec les erreurs
+                return back()
+                    ->withErrors($validator)
+                    ->withInput()
+                    ->with('error', 'Erreur de validation : ' . $validator->errors()->first());
+            }
+            
+            // Récupération des données validées
+            $validatedData = $validator->validated();
             $direction->update([
-                'code' => $validated['code'] ?? null,
-                'titre' => $validated['libelle'],
-                'responsable_id' => $validated['responsable_id'] ?? null,
-                'adjoint_id' => $validated['adjoint_id'] ?? null,
-                'lieu_id' => $validated['lieu_id'],
-                'description' => $validated['description'] ?? null,
+                'code' => $validatedData['code'] ?? null,
+                'titre' => $validatedData['libelle'],
+                'responsable_id' => $validatedData['responsable_id'] ?? null,
+                'adjoint_id' => $validatedData['adjoint_id'] ?? null,
+                'lieu_id' => $validatedData['lieu_id'],
+                'description' => $validatedData['description'] ?? null,
             ]);
 
             // Mise à jour de la division principale
             $division = $direction->divisions()->first();
             if ($division) {
                 $division->update([
-                    'libelle' => $validated['libelle'],
-                    'description' => $validated['description'] ?? null,
-                    'responsable_id' => $validated['responsable_id'] ?? null,
+                    'libelle' => $validatedData['libelle'],
+                    'description' => $validatedData['description'] ?? null,
+                    'responsable_id' => $validatedData['responsable_id'] ?? null,
                 ]);
             } else {
                 // Si aucune division n'existe, on en crée une nouvelle
                 $direction->divisions()->create([
-                    'libelle' => $validated['libelle'],
-                    'description' => $validated['description'] ?? null,
-                    'responsable_id' => $validated['responsable_id'] ?? null,
+                    'libelle' => $validatedData['libelle'],
+                    'description' => $validatedData['description'] ?? null,
+                    'responsable_id' => $validatedData['responsable_id'] ?? null,
                     'statut_id' => 1, // Statut actif par défaut
                 ]);
             }
 
-            $direction->code = $validated['code'] ?? null;
-            $direction->save();
-            // dd($direction->responsable_id != $request->responsable_id);
+            // La mise à jour est déjà faite plus haut, pas besoin de la refaire ici
+            // $direction->code = $validatedData['code'] ?? null;
+            // $direction->save();
 
-            if ($direction->responsable_id != ($validated['responsable_id'] ?? null)) {
+            if ($direction->responsable_id != ($validatedData['responsable_id'] ?? null)) {
                 # code...
                 $ancienAgent = Agent::find($direction->responsable_id);
                 if ($ancienAgent) {
@@ -236,12 +266,12 @@ class DirectionController extends Controller
                     ]);
                 }
                 $fonction = Fonction::firstOrCreate([
-                    'titre' => 'Responsable ' . $validated['libelle'],
+                    'titre' => 'Responsable ' . $validatedData['libelle'],
                 ], [
                     "direction_id" => $id,
                 ]);
 
-                $agent = Agent::find($validated['responsable_id'] ?? null);
+                $agent = Agent::find($validatedData['responsable_id'] ?? null);
                 if ($agent) {
                     $agent->update([
                         'fonction_id' => $fonction->id,
@@ -249,7 +279,13 @@ class DirectionController extends Controller
                     ]);
                 }
             }
-            if ($direction->adjoint_id != ($validated['adjoint_id'] ?? null)) {
+            // Log pour déboguer les valeurs
+            \Log::info('Vérification du responsable adjoint', [
+                'ancien_adjoint_id' => $direction->adjoint_id,
+                'nouvel_adjoint_id' => $validatedData['adjoint_id'] ?? null
+            ]);
+            
+            if ($direction->adjoint_id != ($validatedData['adjoint_id'] ?? null)) {
                 # code...
                 $ancienAgentAdjoint = Agent::find($direction->adjoint_id);
                 if ($ancienAgentAdjoint) {
@@ -258,12 +294,12 @@ class DirectionController extends Controller
                     ]);
                 }
                 $fonction = Fonction::firstOrCreate([
-                    'titre' => 'Adjoint Responsable ' . $validated['libelle'],
+                    'titre' => 'Adjoint Responsable ' . $validatedData['libelle'],
                 ], [
                     "direction_id" => $id,
                 ]);
 
-                $agentAjoint = Agent::find($validated['adjoint_id'] ?? null);
+                $agentAjoint = Agent::find($validatedData['adjoint_id'] ?? null);
                 if ($agentAjoint) {
                     $agentAjoint->update([
                         'fonction_id' => $fonction->id,

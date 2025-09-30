@@ -29,7 +29,8 @@
                         <label class="col-5 col-form-label">Type de document</label>
                         <div class="col-7">
                             <select class="form-select form-control select autreSelect2"
-                                aria-label="Default select example" name="type" id="type_id" required>
+                                aria-label="Default select example" name="type" id="type_id" 
+                                wire:model.live="type" required>
                                 <option value="" selected disabled>Selectionnez</option>
                                 @foreach ($types as $type)
                                     @if ($type->id != 2)
@@ -126,7 +127,8 @@
                         <label class="col-5 col-form-label">Type de document</label>
                         <div class="col-7">
                             <select class="form-select form-control select autreSelect2"
-                                aria-label="Default select example" name="type" id="type_id" required>
+                                aria-label="Default select example" name="type" id="type_id" 
+                                wire:model.live="type" required>
                                 <option value="" selected disabled>Selectionnez</option>
                                 @foreach ($types as $type)
                                     @if ($type->id != 2)
@@ -850,22 +852,109 @@
                 }
             }
 
+            // Fonction d'initialisation du sélecteur de catégories
+            function initCategorySelect() {
+                $('select[name="categorie"]').select2({
+                    placeholder: 'Sélectionnez une catégorie',
+                    language: 'fr',
+                    width: '100%',
+                    allowClear: true,
+                    ajax: {
+                        url: '{{ route('api.categories.by-type') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                type_id: $('select[name="type"]').val(),
+                                search: params.term
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data
+                            };
+                        },
+                        cache: true
+                    },
+                    minimumInputLength: 0
+                });
+            }
+
+            // Initialisation des sélecteurs Select2
             $('.selectCopie').select2({
                 tags: $(this).data('tags') ? $(this).data('tags') : false,
                 placeholder: $(this).data('placeholder'),
                 language: "fr",
-                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') :
-                    null,
                 width: "100%"
             });
 
-            $('.autreSelect2').select2({
+            // Initialisation des autres sélecteurs Select2
+            $('.autreSelect2').not('select[name="categorie"]').select2({
                 tags: $(this).data('tags') ? $(this).data('tags') : false,
                 placeholder: $(this).data('placeholder'),
                 language: "fr",
-                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') :
-                    null,
+                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') : false,
                 width: "100%"
+            });
+
+            // Fonction pour initialiser le sélecteur de natures
+            function initNatureSelect() {
+                $('select[name="nature"]').select2({
+                    placeholder: 'Sélectionnez une nature',
+                    language: 'fr',
+                    width: '100%',
+                    allowClear: true,
+                    ajax: {
+                        url: '{{ route('api.natures.by-category') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                category_id: $('select[name="categorie"]').val(),
+                                search: params.term
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data
+                            };
+                        },
+                        cache: true
+                    },
+                    minimumInputLength: 0
+                });
+            }
+
+            // Initialisation du sélecteur de catégories
+            initCategorySelect();
+            
+            // Initialisation du sélecteur de natures
+            initNatureSelect();
+            
+            // Gestionnaire de changement pour le type de document
+            $('select[name="type"]').on('change', function() {
+                // Réinitialiser les sélecteurs dépendants
+                $('select[name="categorie"]').val(null).trigger('change');
+                $('select[name="nature"]').val(null).trigger('change');
+                
+                // Détruire et réinitialiser les sélecteurs
+                $('select[name="categorie"]').select2('destroy');
+                $('select[name="nature"]').select2('destroy');
+                
+                initCategorySelect();
+                initNatureSelect();
+            });
+            
+            // Gestionnaire de changement pour la catégorie
+            $('select[name="categorie"]').on('change', function() {
+                // Réinitialiser le sélecteur de natures
+                $('select[name="nature"]').val(null).trigger('change');
+                
+                // Si une catégorie est sélectionnée, on réinitialise le sélecteur de natures
+                if ($(this).val()) {
+                    $('select[name="nature"]').select2('destroy');
+                    initNatureSelect();
+                }
             });
 
             // $('#file-upload').on('change', function(e) {

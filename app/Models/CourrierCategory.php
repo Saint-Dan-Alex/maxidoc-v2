@@ -15,4 +15,12 @@ class CourrierCategory extends Model
         return $this->belongsTo(CourrierType::class, 'type_id');
     }
 
+    /**
+     * Get the natures for the category.
+     */
+    public function natures()
+    {
+        return $this->hasMany(CourrierNature::class, 'category_id');
+    }
+
 }

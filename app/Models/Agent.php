@@ -2,7 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Contrat;
 use App\Models\Direction;
+use App\Models\Fonction;
+use App\Models\Planning;
+use App\Models\Pointage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -41,6 +45,16 @@ class Agent extends Model
         }
         $direction = Direction::where('titre', 'Direction générale')->orWhere('id', 1)->first();
         return $this->id === $direction->responsable?->id;
+    }
+
+    /**
+     * Les fonctions associées à l'agent
+     */
+    public function fonctions()
+    {
+        return $this->belongsToMany(Fonction::class, 'pivot_agent_fonctions', 'agent_id', 'fonction_id')
+            ->withPivot('statut_id')
+            ->withTimestamps();
     }
 
     public function isDelegue()

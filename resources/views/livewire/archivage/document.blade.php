@@ -1,9 +1,53 @@
 <div class="col-lg-12">
     <div class="mb-3 d-flex justify-content-between align-items-center">
         <p class="bg-white p-2 rounded">
-            Archives/<span style="color: darkgray;">{{ Auth::user()->agent?->direction?->titre }}</span>/
-            {{ $dossier->classeur->created_at->format('Y') . '/' . $dossier->classeur->titre . '/' }}
-            <span class="text-primary text-capitalize"> {{ $dossier->titre }} </span>
+            @php
+                // Charger les relations nécessaires
+                $dossier->load([
+                    'classeur',
+                    'author.direction',
+                    'author.service',
+                    'documents.category',
+                    'documents.nature'
+                ]);
+
+                $breadcrumbs = [];
+                
+                // 1. Année de création du classeur
+                $breadcrumbs[] = $dossier->classeur->created_at->format('Y');
+                
+                // 2. Nom du classeur
+                $breadcrumbs[] = $dossier->classeur->titre;
+                
+                // 3. Direction de l'agent qui a créé le dossier
+                if ($dossier->author && $dossier->author->direction) {
+                    $breadcrumbs[] = $dossier->author->direction->titre;
+                }
+                
+                // 4. Service de l'agent qui a créé le dossier
+                if ($dossier->author && $dossier->author->service) {
+                    $breadcrumbs[] = $dossier->author->service->titre;
+                }
+                
+                // 5. Catégorie du premier document du dossier
+                if ($dossier->documents->isNotEmpty() && $dossier->documents->first()->category) {
+                    $breadcrumbs[] = $dossier->documents->first()->category->title;
+                }
+                
+                // 6. Nature du premier document du dossier
+                if ($dossier->documents->isNotEmpty() && $nature = $dossier->documents->first()->nature) {
+                    $breadcrumbs[] = $nature->titre;
+                }
+            @endphp
+            
+            @foreach($breadcrumbs as $index => $item)
+                @if($loop->last)
+                    <span class="text-primary text-capitalize">{{ $item }}</span>
+                @else
+                    {{ $item }}
+                    @if(!$loop->last) / @endif
+                @endif
+            @endforeach
         </p>
         
         {{-- <a href="@if (count($documents)) {{ route('regidoc.archive-classeurs.archive-dossiers.show', [$documents[0]->dossier->classeur, $documents[0]->dossier]) }} @else {{ back() }} @endif"

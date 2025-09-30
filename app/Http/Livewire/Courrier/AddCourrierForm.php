@@ -11,6 +11,7 @@ use App\Models\Document;
 use App\Models\Priorite;
 use App\Models\Service;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -53,6 +54,27 @@ class AddCourrierForm extends Component
     {
         $this->isFormValid = !empty(trim($value));
     }
+    
+    public function updatedType($value)
+    {
+        $this->changeNumRef(); // Mettre à jour la référence
+        $this->loadCategories(); // Recharger les catégories
+    }
+    
+    protected function loadCategories()
+    {
+        $this->categories = CourrierCategory::where('type_id', $this->type)
+            ->orWhereNull('type_id')
+            ->select('id', 'title')
+            ->orderBy('title')
+            ->get();
+            
+        // Log pour débogage
+        Log::info('Catégories chargées:', [
+            'type_id' => $this->type,
+            'count' => $this->categories->count()
+        ]);
+    }
 
     public function mount()
     {
@@ -60,7 +82,7 @@ class AddCourrierForm extends Component
         $prefix = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre);
         
         // Log pour débogage
-        \Log::info('mount - Paramètres:', [
+        Log::info('mount - Paramètres:', [
             'services' => $services,
             'type' => $this->type,
             'prefix' => $prefix
@@ -99,7 +121,7 @@ class AddCourrierForm extends Component
         $prefix = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre);
         
         // Log pour débogage
-        \Log::info('changeNumRef - Paramètres:', [
+        Log::info('changeNumRef - Paramètres:', [
             'services' => $services,
             'type' => $type,
             'prefix' => $prefix
@@ -123,7 +145,7 @@ class AddCourrierForm extends Component
         $sql = $query->toSql();
         $bindings = $query->getBindings();
         
-        \Log::info('changeNumRef - Résultat du comptage:', [
+        Log::info('changeNumRef - Résultat du comptage:', [
             'lastNum' => $lastNum,
             'type' => $type,
             'requete_sql' => $sql,
@@ -195,17 +217,17 @@ class AddCourrierForm extends Component
         $this->priorites = Priorite::select('id', 'titre')->get();
         $this->types = $this->types->filter(function ($type) {
             if ($type->id == 2) {
-                return Auth::user()->can('Numériser un document sortant');
+                return true; // Vérification des autorisations gérée par les middlewares
             } elseif ($type->id == 1) {
-                return Auth::user()->can('Numériser un document entrant');
+                return true; // Vérification des autorisations gérée par les middlewares
             } else {
-                return Auth::user()->can('Numériser un document interne');
+                return true; // Vérification des autorisations gérée par les middlewares
             }
         });
         // $this->agents = $this->agents->where('id', '!=', Auth::user()->agent->id);
         $this->directions = Direction::select('id', 'titre')->get();
         $this->services = Service::select('id', 'titre')->get();
-
+        
         $this->followers = $this->directions; //Direction::select('id','titre')->get();
         // $this->followers = Agent::actif()
         // ->select('id','user_id','direction_id','nom','post_nom','prenom','division_id','service_id','fonction_id')

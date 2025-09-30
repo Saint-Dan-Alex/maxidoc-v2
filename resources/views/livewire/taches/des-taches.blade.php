@@ -46,7 +46,7 @@
                                     data-bs-toggle="tab" data-bs-target="#terminees" type="button" role="tab"
                                     aria-controls="terminees" aria-selected="{{ $tab == 4 }}"
                                     wire:click='changeTab({{ 4 }})'>
-                                    Tâches Terminées
+                                    Tâches achevées
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">

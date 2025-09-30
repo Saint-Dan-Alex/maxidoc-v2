@@ -290,16 +290,18 @@ class Fiche extends Component
             'email' => 'required|email',
         ]);
 
-        $password = Str::random(9);
+        // Générer un mot de passe aléatoire de 8 chiffres
+        $password = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
 
         $user = $this->agent->user;
         $user->password = Hash::make($password);
         $user->first_use = 1;
         $user->save();
 
+        // Envoyer l'email avec le nouveau mot de passe
         SendEmail::dispatch($user->email, new AgentsPasswordMail($password));
 
-        $this->emit('alert', 'success', "Mot de passe de l'agent " . $this->agent->prenom . " " . $this->agent->nom . " a été regénéré avec succès");
+        $this->emit('alert', 'success', "Un nouveau mot de passe a été généré et envoyé à l'agent " . $this->agent->prenom . " " . $this->agent->nom );
     }
 
     public function archiveAgent($id)
@@ -690,7 +692,7 @@ class Fiche extends Component
 
     public function render()
     {
-        $queryAgents = Agent::query();
+        $queryAgents = Agent::where('id', '!=', 1); // Exclut l'agent avec l'ID 1 (admin)
 
         // Initialisation des variables avec des requêtes Eloquent vides
         $actifAgents = $queryAgents;

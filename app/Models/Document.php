@@ -72,6 +72,9 @@ class Document extends Model
         'is_classified',
         'password',
         'user_id',
+        'lieu_id',
+        'service_id',
+        'is_piece_jointe'
     ];
 
     /**
@@ -80,6 +83,14 @@ class Document extends Model
     public function redacteur()
     {
         return $this->belongsTo(Redacteur::class, 'redacteur_id');
+    }
+
+    /**
+     * Get the category that owns the document.
+     */
+    public function category()
+    {
+        return $this->belongsTo(CourrierCategory::class, 'category_id');
     }
 
     /**
