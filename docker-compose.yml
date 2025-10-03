@@ -1,0 +1,58 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: maxidoc-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    networks:
+      - maxidoc-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: maxidoc-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - app
+    networks:
+      - maxidoc-network
+
+  db:
+    image: mysql:8.0
+    container_name: maxidoc-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: maxidoc
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_USER: maxidocuser
+      MYSQL_PASSWORD: secret
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - maxidoc-network
+
+  redis:
+    image: redis:alpine
+    container_name: maxidoc-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - maxidoc-network
+
+volumes:
+  dbdata:
+
+networks:
+  maxidoc-network:
+    driver: bridge
