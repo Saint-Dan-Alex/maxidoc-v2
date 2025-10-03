@@ -19,7 +19,7 @@ return new class extends Migration
 
             // 🔹 Informations générales
             $table->foreignId('dossier_id')->nullable()->constrained('dossiers')->nullOnDelete();
-            $table->foreignId('category_id')->nullable()->constrained('courrier_categories')->nullOnDelete();
+            $table->unsignedBigInteger('category_id')->nullable();
             $table->string('reference', 255)->nullable();
             $table->string('reference_courrier', 200)->nullable();
             $table->string('reference_interne', 200)->nullable();
@@ -28,7 +28,7 @@ return new class extends Migration
             // $table->text('emetteur')->nullable();
             // $table->text('destination')->nullable();
             // $table->text('redacteur')->nullable();
-            $table->foreignId('type')->nullable()->constrained('document_types')->nullOnDelete();
+            $table->unsignedBigInteger('type')->nullable();
             $table->text('description')->nullable();
             $table->text('objet')->nullable();
             $table->text('observations')->nullable();
@@ -53,25 +53,22 @@ return new class extends Migration
             $table->foreignId('desarchive_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('statut_id')->default(1)->constrained('document_statuts');
             $table->foreignId('priorite_id')->nullable()->constrained('priorites')->nullOnDelete();
-            $table->foreignId('nature_id')->nullable()->constrained('courrier_natures')->nullOnDelete();
-            $table->foreignId('traitement_id')->nullable()->constrained('courrier_traitements')->nullOnDelete();
-            $table->foreignId('courrier_id')
-                  ->nullable()
-                ->constrained('courriers')
-                  ->nullOnDelete();
+            $table->unsignedBigInteger('nature_id')->nullable();
+            $table->unsignedBigInteger('traitement_id')->nullable();
+            $table->unsignedBigInteger('courrier_id')->nullable();
 
             // 🔹 Expéditeur
             // $table->text('expediteur_externe')->nullable(); // Ex: entreprise, particulier
             $table->foreignId('expediteur_interne_id')->nullable()->constrained('agents')->nullOnDelete();
-            $table->foreignId('expediteur_externe')->nullable()->constrained('courrier_expediteurs')->nullOnDelete();
+            $table->unsignedBigInteger('expediteur_externe')->nullable();
             $table->foreignId('emetteur')->nullable()->nullOnDelete();
-            $table->foreignId('destination_id')->nullable()->constrained('destinations')->nullOnDelete();
-            $table->foreignId('redacteur_id')->nullable()->constrained('redacteurs')->nullOnDelete();
+            $table->unsignedBigInteger('destination_id')->nullable();
+            $table->unsignedBigInteger('redacteur_id')->nullable();
             $table->foreignId('lieu_id')->nullable()->constrained('lieu_affectations')->nullOnDelete();
             $table->foreignId('service_id')->nullable()->constrained('services')->nullOnDelete();
 
             // 🔹 Destinataire
-            $table->foreignId('destinataire_externe_id')->nullable()->constrained('courrier_destinateur_externes')->nullOnDelete();
+            $table->unsignedBigInteger('destinataire_externe_id')->nullable();
             $table->foreignId('destinataire_interne_id')->nullable()->constrained('agents')->nullOnDelete();
 
             // 🔹 Hiérarchie et liens

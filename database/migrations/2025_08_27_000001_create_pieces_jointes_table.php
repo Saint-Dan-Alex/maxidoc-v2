@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('courrier_id')->nullable()->constrained('courriers')->onDelete('cascade');
             $table->foreignId('document_id')->nullable()->constrained('documents')->onDelete('cascade');
 
-            $table->foreignId('uploaded_by')->constrained('users')->onDelete('set null');
+            $table->foreignId('uploaded_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

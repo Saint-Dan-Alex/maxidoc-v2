@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('revisionable_type')->index();
             $table->unsignedBigInteger('revisionable_id')->index();
 
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete()->index();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
 
             $table->text('old_value')->nullable();
             $table->text('new_value')->nullable();

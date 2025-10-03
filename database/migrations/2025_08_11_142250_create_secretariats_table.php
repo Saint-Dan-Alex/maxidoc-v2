@@ -23,16 +23,10 @@ return new class extends Migration
             $table->boolean('for_dga')->default(false);
             $table->timestamps();
             $table->softDeletes();
+            
+            $table->index('direction_id');
+            $table->index('responsable_id');
         });
-        DB::table('secretariats')->insert([
-            [
-                'titre' => 'Service Accueil',
-                'direction_id' => 1,
-                'responsable_id' => null,
-                'for_dg' => true,
-                'for_dga' => false,
-            ],
-        ]);
     }
 
     /**
