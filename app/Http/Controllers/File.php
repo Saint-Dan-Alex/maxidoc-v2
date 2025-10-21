@@ -47,7 +47,7 @@ class File
             $path = $this->generatePath();
             
             // Créer le répertoire s'il n'existe pas (avec permissions 0755 pour Hostinger)
-            $fullPath = storage_path('app/public/' . $path);
+            $fullPath = config('filesystems.disks.public.root') . '/' . $path;
             if (!file_exists($fullPath)) {
                 try {
                     // Utiliser 0755 au lieu de 0777 pour la sécurité et compatibilité Hostinger
@@ -117,7 +117,7 @@ class File
                     }
                     
                     // Vérifier que le fichier a bien été créé
-                    $absolutePath = storage_path('app/public/' . $storedPath);
+                    $absolutePath = config('filesystems.disks.public.root') . '/' . $storedPath;
                     if (!file_exists($absolutePath)) {
                         Log::error('Le fichier a été stocké mais n\'existe pas sur le disque', [
                             'stored_path' => $storedPath,
