@@ -28,7 +28,12 @@ class AssistanatController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            $content = [
+                'name' => 'Systèmes',
+                'statut' => 'error',
+                'message' => 'Veuillez vérifier les champs du formulaire.',
+            ];
+            return back()->withErrors($validator)->withInput()->with('session', json_encode($content));
         }
 
         // Vérification des doublons
@@ -37,7 +42,12 @@ class AssistanatController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Un assistant avec ce nom ou ce responsable existe déjà.');
+            $content = [
+                'name' => 'Systèmes',
+                'statut' => 'error',
+                'message' => 'Un assistant avec ce nom ou ce responsable existe déjà.',
+            ];
+            return back()->with('session', json_encode($content));
         }
 
         DB::beginTransaction();
@@ -76,9 +86,6 @@ class AssistanatController extends Controller
             
             return back()->with('session', json_encode($content));
         }
-
-        session()->flash('session', $content);
-        return back();
     }
 
     public function update(Request $request, $id)
@@ -92,7 +99,12 @@ class AssistanatController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            $content = [
+                'name' => 'Systèmes',
+                'statut' => 'error',
+                'message' => 'Veuillez vérifier les champs du formulaire.',
+            ];
+            return back()->withErrors($validator)->withInput()->with('session', json_encode($content));
         }
 
         // Vérification des doublons (sauf l'enregistrement actuel)
@@ -104,7 +116,12 @@ class AssistanatController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Un assistant avec ce nom ou ce responsable existe déjà.');
+            $content = [
+                'name' => 'Systèmes',
+                'statut' => 'error',
+                'message' => 'Un assistant avec ce nom ou ce responsable existe déjà.',
+            ];
+            return back()->with('session', json_encode($content));
         }
 
         DB::beginTransaction();
@@ -146,9 +163,6 @@ class AssistanatController extends Controller
             
             return back()->with('session', json_encode($content));
         }
-
-        session()->flash('session', $content);
-        return back();
     }
 
     public function destroy($id)
