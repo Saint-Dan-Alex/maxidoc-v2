@@ -142,8 +142,9 @@
                             </div>
                             <div class="col-lg-12">
                                 <label for="">Responsable</label>
-                                <select name="responsable_id" class="form-control" required>
-                                    <option value="">Sélectionner un responsable</option>
+                                <select name="responsable_id" class="form-control select2Bis" required
+                                    data-placeholder="Sélectionner un responsable">
+                                    <option value=""></option>
                                     @foreach($agents as $agent)
                                         <option value="{{ $agent->id }}">
                                             {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom ?? '' }}
@@ -213,8 +214,9 @@
                                 </div>
                                 <div class="col-lg-12">
                                     <label for="">Responsable</label>
-                                    <select name="responsable_id" class="form-control" required>
-                                        <option value="">Sélectionner un responsable</option>
+                                    <select name="responsable_id" class="form-control select2Bis" required
+                                        data-placeholder="Sélectionner un responsable">
+                                        <option value=""></option>
                                         @foreach($agents as $agent)
                                             <option value="{{ $agent->id }}" {{ $assistant->responsable_id == $agent->id ? 'selected' : '' }}>
                                                 {{ $agent->prenom }} {{ $agent->nom }} {{ $agent->post_nom ?? '' }}
@@ -250,105 +252,146 @@
     @endforeach
 </div>
 
-@section('scripts')
+@push('scripts')
     <script>
-        $('select.select2').each(function() {
-            $(this).select2({
-                tags: $(this).data('tags') ? $(this).data('tags') : false,
-                placeholder: $(this).data('placeholder'),
-                language: "fr",
-                createTag: function(params) {
-                    var term = $.trim(params.term);
+        console.log('=== ASSISTANAT SCRIPT LOADED ===');
+        console.log('jQuery disponible:', typeof jQuery !== 'undefined');
+        console.log('jQuery version:', jQuery ? jQuery.fn.jquery : 'N/A');
+        console.log('Select2 disponible:', typeof $.fn.select2 !== 'undefined');
+        
+        // Vérifier si Livewire interfère
+        console.log('Livewire disponible:', typeof Livewire !== 'undefined');
+        
+        $(document).ready(function() {
+            console.log('Document ready - Assistanat');
+            console.log('Nombre de select.select2:', $('select.select2').length);
+            console.log('Nombre de select.select2Bis:', $('.select2Bis').length);
+            
+            $('select.select2').each(function(index) {
+                console.log('Initialisation select2 #' + index, this);
+                try {
+                    $(this).select2({
+                        tags: $(this).data('tags') ? $(this).data('tags') : false,
+                        placeholder: $(this).data('placeholder'),
+                        language: "fr",
+                        createTag: function(params) {
+                            var term = $.trim(params.term);
 
-                    if (term === '') {
-                        return null;
-                    }
+                            if (term === '') {
+                                return null;
+                            }
 
-                    return {
-                        id: term,
-                        text: term,
-                        newTag: true
-                    }
-                },
-                ajax: {
-                    url: $(this).data('get-items-route'),
-                    data: function(params) {
-                        var query = {
-                            search: params.term,
-                            type: $(this).data('get-items-field'),
-                            method: $(this).data('method'),
-                            id: $(this).data('id'),
-                            page: params.page || 1,
-                            model: $(this).data('related-model'),
-                            label: $(this).data('label'),
-                        }
-                        return query;
-                    }
-                },
-                width: '100%',
-                maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') :
-                    null,
-                dropdownParent: $(this).parent()
-            });
-
-            $(this).on('select2:select', function(e) {
-                var data = e.params.data;
-
-                if (data.id == '') {
-                    // "None" was selected. Clear all selected options
-                    $(this).val([]).trigger('change');
-                } else {
-                    $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected', 'selected');
+                            return {
+                                id: term,
+                                text: term,
+                                newTag: true
+                            }
+                        },
+                        ajax: {
+                            url: $(this).data('get-items-route'),
+                            data: function(params) {
+                                var query = {
+                                    search: params.term,
+                                    type: $(this).data('get-items-field'),
+                                    method: $(this).data('method'),
+                                    id: $(this).data('id'),
+                                    page: params.page || 1,
+                                    model: $(this).data('related-model'),
+                                    label: $(this).data('label'),
+                                }
+                                return query;
+                            }
+                        },
+                        width: '100%',
+                        maximumSelectionLength: $(this).data('max-selection') ? $(this).data('max-selection') : null,
+                        dropdownParent: $(this).parent()
+                    });
+                    console.log('Select2 #' + index + ' initialisé avec succès');
+                } catch(error) {
+                    console.error('Erreur lors de l\'initialisation de select2 #' + index, error);
                 }
-            });
 
-            $(this).on('select2:unselect', function(e) {
-                var data = e.params.data;
-                $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected',
-                    false);
-            });
+                $(this).on('select2:select', function(e) {
+                    var data = e.params.data;
 
-            $(this).on('select2:selecting', function(e) {
-
-                if (!$(this).data('tags')) {
-                    return;
-                }
-                var $el = $(this);
-                var route = $el.data('route');
-                var label = $el.data('label');
-                var relativeId = $el.data('relative-id');
-                var errorMessage = $el.data('error-message');
-                var newTag = e.params.args.data.newTag;
-
-                if (!newTag) return;
-
-                $el.select2('close');
-
-                $.post(route, {
-                    [label]: e.params.args.data.text,
-                    relative_id: relativeId,
-                    _tagging: true,
-                }).done(function(data) {
-                    console.log(data);
-                    var newOption = new Option(e.params.args.data.text, data.results.id,
-                        false, true);
-                    $el.append(newOption).trigger('change');
-                }).fail(function(error) {
-                    // toastr.error(errorMessage);
-                    console.log(errorMessage);
+                    if (data.id == '') {
+                        // "None" was selected. Clear all selected options
+                        $(this).val([]).trigger('change');
+                    } else {
+                        $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected', 'selected');
+                    }
                 });
 
-                return false;
-            });
-        });
+                $(this).on('select2:unselect', function(e) {
+                    var data = e.params.data;
+                    $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected',
+                        false);
+                });
 
-        $('.select2Bis').each(function() {
-            $(this).select2({
-                placeholder: $(this).data('placeholder'),
-                language: "fr",
-                width: '100%',
-                dropdownParent: $(this).parent()
+                $(this).on('select2:selecting', function(e) {
+
+                    if (!$(this).data('tags')) {
+                        return;
+                    }
+                    var $el = $(this);
+                    var route = $el.data('route');
+                    var label = $el.data('label');
+                    var relativeId = $el.data('relative-id');
+                    var errorMessage = $el.data('error-message');
+                    var newTag = e.params.args.data.newTag;
+
+                    if (!newTag) return;
+
+                    $el.select2('close');
+
+                    $.post(route, {
+                        [label]: e.params.args.data.text,
+                        relative_id: relativeId,
+                        _tagging: true,
+                    }).done(function(data) {
+                        console.log(data);
+                        var newOption = new Option(e.params.args.data.text, data.results.id,
+                            false, true);
+                        $el.append(newOption).trigger('change');
+                    }).fail(function(error) {
+                        // toastr.error(errorMessage);
+                        console.log(errorMessage);
+                    });
+
+                    return false;
+                });
             });
+
+            $('.select2Bis').each(function(index) {
+                console.log('Initialisation select2Bis #' + index, this);
+                console.log('Placeholder:', $(this).data('placeholder'));
+                console.log('Parent:', $(this).parent());
+                
+                try {
+                    $(this).select2({
+                        placeholder: $(this).data('placeholder'),
+                        language: "fr",
+                        width: '100%',
+                        dropdownParent: $(this).parent()
+                    });
+                    console.log('Select2Bis #' + index + ' initialisé avec succès');
+                } catch(error) {
+                    console.error('Erreur lors de l\'initialisation de select2Bis #' + index, error);
+                }
+            });
+            
+            console.log('=== FIN INITIALISATION ASSISTANAT ===');
+        });
+        
+        // Détecter les erreurs globales
+        window.addEventListener('error', function(e) {
+            console.error('Erreur JavaScript globale:', e.message, e.filename, e.lineno);
+        });
+        
+        // Logger quand un modal s'ouvre
+        $(document).on('shown.bs.modal', '.modal', function() {
+            console.log('Modal ouvert:', this.id);
+            console.log('Selects dans ce modal:', $(this).find('.select2Bis').length);
         });
     </script>
-@endsection
+@endpush

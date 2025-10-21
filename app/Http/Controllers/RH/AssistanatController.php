@@ -5,7 +5,6 @@ namespace App\Http\Controllers\RH;
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\Assistanat;
-use App\Models\Fonction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -53,15 +52,7 @@ class AssistanatController extends Controller
                 "for_dga" => $request->for == 2 ? 1 : 0,
             ]);
 
-            // Création ou récupération de la fonction
-            $fonction = Fonction::firstOrCreate(
-                ['titre' => $request->titre],
-                ["direction_id" => $request->direction_id]
-            );
-
-            // Attribution de la fonction au responsable
-            Agent::where('id', $request->responsable_id)
-                ->update(['fonction_id' => $fonction->id]);
+            // ⚠️ On ne crée plus de fonction automatiquement
 
             DB::commit();
 
@@ -131,21 +122,7 @@ class AssistanatController extends Controller
                 "for_dga" => $request->for == 2 ? 1 : 0,
             ]);
 
-            // Si le responsable a changé, on met à jour l'ancien
-            if ($ancienResponsableId != $request->responsable_id) {
-                Agent::where('id', $ancienResponsableId)
-                    ->update(['fonction_id' => null]);
-            }
-
-            // Création ou récupération de la fonction
-            $fonction = Fonction::firstOrCreate(
-                ['titre' => $request->titre],
-                ["direction_id" => $request->direction_id]
-            );
-
-            // Mise à jour du nouveau responsable
-            Agent::where('id', $request->responsable_id)
-                ->update(['fonction_id' => $fonction->id]);
+            // ⚠️ On ne modifie plus les fonctions des agents
 
             DB::commit();
 
@@ -180,19 +157,11 @@ class AssistanatController extends Controller
         
         try {
             $assistant = Assistanat::findOrFail($id);
-            $responsableId = $assistant->responsable_id;
             
             // Suppression de l'assistant
             $assistant->delete();
             
-            // On vérifie si le responsable n'est plus référencé ailleurs
-            $countReferences = Assistanat::where('responsable_id', $responsableId)->count();
-            
-            if ($countReferences === 0) {
-                // Si le responsable n'est plus référencé, on peut supprimer sa fonction
-                Agent::where('id', $responsableId)
-                    ->update(['fonction_id' => null]);
-            }
+            // ⚠️ On ne touche plus aux fonctions des agents
             
             DB::commit();
             
