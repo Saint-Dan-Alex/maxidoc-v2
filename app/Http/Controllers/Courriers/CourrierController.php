@@ -933,25 +933,25 @@ public function traitement($courrier)
         if ($agent->isAssistant() || $agent->isSecretaire()) {
             \Log::info('✅ Permission validée (Assistant ou Secrétaire)');
 
-            // Mise à jour des infos du courrier
+            // Création du traitement AVANT d'assigner au courrier
+            $traitement = new CourrierTraitement();
+            $traitement->agent_id = $agent->id;
+            $traitement->note = $request->commentaire ?? 'Document traité';
+            $traitement->save();
+            \Log::info('✅ CourrierTraitement créé', ['traitement_id' => $traitement->id]);
+
+            // Maintenant on peut assigner au courrier
             $courrier->priorite_id = $request->priorite_id;
             $courrier->date_fin = $request->date_limite ?? null;
-            $courrier->traitement_id = $request->traitement_id;
+            // Note: traitement_id stocké via la relation many-to-many, pas directement
             
             \Log::info('🔄 Tentative de sauvegarde courrier...', [
                 'priorite_id' => $courrier->priorite_id,
-                'traitement_id' => $courrier->traitement_id,
                 'date_fin' => $courrier->date_fin
             ]);
             
             $courrier->save();
             \Log::info('✅ Courrier sauvegardé');
-
-            // Création du traitement
-            $traitement = new CourrierTraitement();
-            $traitement->agent_id = $agent->id;
-            $traitement->note = $request->commentaire ?? 'Document traité';
-            $traitement->save();
 
             $courrier->traitements()->attach($traitement);
 
