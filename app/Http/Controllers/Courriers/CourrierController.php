@@ -918,19 +918,34 @@ public function traitement($courrier)
     public function saveTraitement(Request $request)
 {
     try {
+        \Log::info('🔵 Début saveTraitement', ['request' => $request->all()]);
+        
         // On récupère le courrier ou erreur 404
         $courrier = Courrier::findOrFail($request->courrier_id);
+        \Log::info('✅ Courrier trouvé', ['courrier_id' => $courrier->id]);
 
         $user = Auth::user();
+        \Log::info('✅ User récupéré', ['user_id' => $user->id]);
+        
         $agent = $user->agent;
+        \Log::info('✅ Agent récupéré', ['agent_id' => $agent->id ?? 'NULL']);
 
         if ($agent->isAssistant() || $agent->isSecretaire()) {
+            \Log::info('✅ Permission validée (Assistant ou Secrétaire)');
 
             // Mise à jour des infos du courrier
             $courrier->priorite_id = $request->priorite_id;
             $courrier->date_fin = $request->date_limite ?? null;
             $courrier->traitement_id = $request->traitement_id;
+            
+            \Log::info('🔄 Tentative de sauvegarde courrier...', [
+                'priorite_id' => $courrier->priorite_id,
+                'traitement_id' => $courrier->traitement_id,
+                'date_fin' => $courrier->date_fin
+            ]);
+            
             $courrier->save();
+            \Log::info('✅ Courrier sauvegardé');
 
             // Création du traitement
             $traitement = new CourrierTraitement();
@@ -1091,12 +1106,25 @@ public function traitement($courrier)
                 ]);
             }
 
+            \Log::info('✅ Traitement terminé avec succès');
             return response()->json(['success' => 1]);
 
         } else {
+            \Log::error('❌ Permission refusée', [
+                'user_id' => $user->id ?? null,
+                'agent_id' => $agent->id ?? null,
+                'isAssistant' => $agent ? $agent->isAssistant() : null,
+                'isSecretaire' => $agent ? $agent->isSecretaire() : null
+            ]);
             return response()->json(['error' => 'Permission refusée'], 403);
         }
     } catch (\Throwable $th) {
+        \Log::error('❌ ERREUR dans saveTraitement', [
+            'message' => $th->getMessage(),
+            'file' => $th->getFile(),
+            'line' => $th->getLine(),
+            'trace' => $th->getTraceAsString()
+        ]);
         return response()->json(['error' => $th->getMessage()], 500);
     }
 }

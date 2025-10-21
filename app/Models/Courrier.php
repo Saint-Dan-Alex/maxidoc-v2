@@ -62,6 +62,17 @@ class Courrier extends Model implements Viewable
     ];
 
     /**
+     * Determine if the model should be searchable.
+     *
+     * @return bool
+     */
+    public function shouldBeSearchable()
+    {
+        // Désactiver Scout si le driver est null
+        return config('scout.driver') !== null;
+    }
+
+    /**
      * The attributes that should be mutated to dates.
      *
      * @var array
