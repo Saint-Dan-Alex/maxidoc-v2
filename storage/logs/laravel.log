@@ -6582,3 +6582,7 @@
 #68 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\wamp64\\\\www\\\\m...')
 #69 {main}
 "} 
+[2025-10-21 13:45:56] local.INFO: Fichier stocké et vérifié {"path":"documents/October2025//kVoW9DwKm97PSAtC8o3v.pdf","size":73108} 
+[2025-10-21 13:45:56] local.INFO: Fichier stocké avec succès {"chemin":"documents/October2025/kVoW9DwKm97PSAtC8o3v.pdf","nom_original":"Cahier des Charges.pdf"} 
+[2025-10-21 13:46:42] local.INFO: Génération URL document {"document_id":12,"document_data":"[{\"download_link\":\"documents\\/October2025\\/kVoW9DwKm97PSAtC8o3v.pdf\",\"original_name\":\"Cahier des Charges.pdf\"}]","url_generée":"http://127.0.0.1:8000/storage/documents/October2025/kVoW9DwKm97PSAtC8o3v.pdf","tache_id":2} 
+[2025-10-21 13:46:42] local.INFO: Documents traités pour la tâche {"tache_id":2,"nb_documents":1,"documents":[{"link":"http://127.0.0.1:8000/storage/documents/October2025/kVoW9DwKm97PSAtC8o3v.pdf","id":12,"tache_id":2,"original_name":"Cahier des Charges.pdf"}]} 

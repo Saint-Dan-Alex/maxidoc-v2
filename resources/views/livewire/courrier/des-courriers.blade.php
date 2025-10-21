@@ -337,10 +337,10 @@
                                style="border:none;" wire:model='search'>
                        </div>
                    </div>
-                   <div class="col-12 col-md-6 col-sm-6 col-lg-6">
-                       <div class="d-flex align-items-center justify-content-end gap-2">
-                           <div class="input-group block-input-filter">
-                               <select wire:model.debounce.500ms="statut" id="statut" style="border-right: none"
+                   <div class="col-12 col-md-6 col-sm-6 col-lg-6 d-flex align-items-center justify-content-lg-end justify-content-md-end justify-content-sm-start">
+                       <div class="d-flex align-items-center w-100">
+                           <div class="input-group block-input-filter flex-nowrap">
+                               <select wire:model.debounce.500ms="statut" id="statut" style="min-width: 70px; flex: 1; border-right: none"
                                    class="form-select form-control">
                                    <option value="null" selected disabled>Etat </option>
                                    <option value="">Tous</option>
@@ -349,7 +349,7 @@
                                    <option value=3>Traité</option>
                                    <option value=4>Archivé</option>
                                </select>
-                               <select id="priority" class="form-select form-control"
+                               <select id="priority" class="form-select form-control" style="min-width: 75px; flex: 1;"
                                    wire:model.debounce.500ms="priority">
                                    <option value="null" selected disabled>Priorité</option>
                                    <option value="">Toutes</option>
@@ -357,7 +357,7 @@
                                    <option value=2>Moyen</option>
                                    <option value=3>Fort</option>
                                </select>
-                               <select name="datep" id="mois" class="form-select form-control"
+                               <select name="datep" id="mois" class="form-select form-control" style="min-width: 70px; flex: 1;"
                                    wire:model.debounce.500ms='selectedMonth'>
                                    <option value="null" selected disabled>Mois</option>
                                    @for ($i = 1; $i <= 12; $i++)
@@ -366,13 +366,13 @@
                                    @endfor
                                </select>
                                <select name="datep" id="annee" class="form-select form-control"
-                                   style="border-right: none" wire:model.debounce.500ms='selectedYear'>
+                                   style="min-width: 70px; max-width: 90px; border-right: none" wire:model.debounce.500ms='selectedYear'>
                                    <option value="null" selected disabled>Année</option>
                                    @for ($i = ((int) now()->year); $i > 1990; $i--)
                                        <option value="{{ $i }}">{{ $i }}</option>
                                    @endfor
                                </select>
-                               <button class="btn btn-add refresh-filter btn-search-sm" type="button"
+                               <button class="btn btn-add refresh-filter btn-search-sm flex-shrink-0" type="button"
                                    id="" wire:click="refreshSelection">
                                    <i class="fi fi-rr-refresh"></i>
                                </button>
@@ -516,10 +516,10 @@
                                     style="border:none;" wire:model='search'>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6 col-sm-6 col-lg-6">
-                            <div class="d-flex align-items-center justify-content-end gap-2">
-                                <div class="input-group block-input-filter">
-                                    <select wire:model.debounce.500ms="statut" id="statut" style="border-right: none"
+                        <div class="col-12 col-md-6 col-sm-6 col-lg-6 d-flex align-items-center justify-content-lg-end justify-content-md-end justify-content-sm-start">
+                            <div class="d-flex align-items-center w-100">
+                                <div class="input-group block-input-filter flex-nowrap">
+                                    <select wire:model.debounce.500ms="statut" id="statut" style="min-width: 70px; flex: 1; border-right: none"
                                         class="form-select form-control">
                                         <option value="null" selected disabled>Etat </option>
                                         <option value="">Tous</option>
@@ -528,7 +528,7 @@
                                         <option value=3>Traité</option>
                                         <option value=4>Archivé</option>
                                     </select>
-                                    <select id="priority" class="form-select form-control"
+                                    <select id="priority" class="form-select form-control" style="min-width: 75px; flex: 1;"
                                         wire:model.debounce.500ms="priority">
                                         <option value="null" selected disabled>Priorité</option>
                                         <option value="">Toutes</option>
@@ -536,7 +536,7 @@
                                         <option value=2>Moyen</option>
                                         <option value=3>Fort</option>
                                     </select>
-                                    <select name="datep" id="mois" class="form-select form-control"
+                                    <select name="datep" id="mois" class="form-select form-control" style="min-width: 70px; flex: 1;"
                                         wire:model.debounce.500ms='selectedMonth'>
                                         <option value="null" selected disabled>Mois</option>
                                         @for ($i = 1; $i <= 12; $i++)
@@ -545,13 +545,13 @@
                                         @endfor
                                     </select>
                                     <select name="datep" id="annee" class="form-select form-control"
-                                        style="border-right: none" wire:model.debounce.500ms='selectedYear'>
+                                        style="min-width: 70px; max-width: 90px; border-right: none" wire:model.debounce.500ms='selectedYear'>
                                         <option value="null" selected disabled>Année</option>
                                         @for ($i = ((int) now()->year); $i > 1990; $i--)
                                             <option value="{{ $i }}">{{ $i }}</option>
                                         @endfor
                                     </select>
-                                    <button class="btn btn-add refresh-filter btn-search-sm" type="button"
+                                    <button class="btn btn-add refresh-filter btn-search-sm flex-shrink-0" type="button"
                                         id="" wire:click="refreshSelection">
                                         <i class="fi fi-rr-refresh"></i>
                                     </button>
@@ -678,10 +678,10 @@
                                     style="border:none;" wire:model='search'>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6 col-sm-6 col-lg-6">
-                            <div class="d-flex align-items-center justify-content-end gap-2">
-                                <div class="input-group block-input-filter">
-                                    <select wire:model.debounce.500ms="statut" id="statut" style="border-right: none"
+                        <div class="col-12 col-md-6 col-sm-6 col-lg-6 d-flex align-items-center justify-content-lg-end justify-content-md-end justify-content-sm-start">
+                            <div class="d-flex align-items-center w-100">
+                                <div class="input-group block-input-filter flex-nowrap">
+                                    <select wire:model.debounce.500ms="statut" id="statut" style="min-width: 70px; flex: 1; border-right: none"
                                         class="form-select form-control">
                                         <option value="null" selected disabled>Etat </option>
                                         <option value="">Tous</option>
@@ -690,7 +690,7 @@
                                         <option value=3>Traité</option>
                                         <option value=4>Archivé</option>
                                     </select>
-                                    <select id="priority" class="form-select form-control"
+                                    <select id="priority" class="form-select form-control" style="min-width: 75px; flex: 1;"
                                         wire:model.debounce.500ms="priority">
                                         <option value="null" selected disabled>Priorité</option>
                                         <option value="">Toutes</option>
@@ -698,7 +698,7 @@
                                         <option value=2>Moyen</option>
                                         <option value=3>Fort</option>
                                     </select>
-                                    <select name="datep" id="mois" class="form-select form-control"
+                                    <select name="datep" id="mois" class="form-select form-control" style="min-width: 70px; flex: 1;"
                                         wire:model.debounce.500ms='selectedMonth'>
                                         <option value="null" selected disabled>Mois</option>
                                         @for ($i = 1; $i <= 12; $i++)
@@ -707,13 +707,13 @@
                                         @endfor
                                     </select>
                                     <select name="datep" id="annee" class="form-select form-control"
-                                        style="border-right: none" wire:model.debounce.500ms='selectedYear'>
+                                        style="min-width: 70px; max-width: 90px; border-right: none" wire:model.debounce.500ms='selectedYear'>
                                         <option value="null" selected disabled>Année</option>
                                         @for ($i = ((int) now()->year); $i > 1990; $i--)
                                             <option value="{{ $i }}">{{ $i }}</option>
                                         @endfor
                                     </select>
-                                    <button class="btn btn-add refresh-filter btn-search-sm" type="button"
+                                    <button class="btn btn-add refresh-filter btn-search-sm flex-shrink-0" type="button"
                                         id="" wire:click="refreshSelection">
                                         <i class="fi fi-rr-refresh"></i>
                                     </button>

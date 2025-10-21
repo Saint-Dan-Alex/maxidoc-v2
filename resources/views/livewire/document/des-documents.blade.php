@@ -324,10 +324,10 @@
                                 </div>
                             </div>
                             <div
-                                class="col-12 col-md-6 col-sm-6 col-lg-6 d-flex align-items-center justify-content-lg-end gap-2">
-                                <div class="d-flex align-items-center justify-content-end gap-2 w-100">
-                                    <div class="input-group block-input-filter">
-                                        <select name="datep" id="jour" class="form-select form-control"
+                                class="col-12 col-md-6 col-sm-6 col-lg-6 d-flex align-items-center justify-content-lg-end justify-content-md-end justify-content-sm-start">
+                                <div class="d-flex align-items-center w-100">
+                                    <div class="input-group block-input-filter flex-nowrap">
+                                        <select name="datep" id="jour" class="form-select form-control" style="min-width: 70px; max-width: 90px;"
                                             wire:model.debounce.500ms='selectedDay'>
                                             <option value="null" selected disabled>Jour</option>
                                             @for ($i = 1; $i <= 30; $i++)
@@ -336,7 +336,7 @@
                                                 </option>
                                             @endfor
                                         </select>
-                                        <select name="datep" id="mois" class="form-select form-control"
+                                        <select name="datep" id="mois" class="form-select form-control" style="min-width: 80px; flex: 1;"
                                             wire:model.debounce.500ms='selectedMonth'>
                                             <option value="null" selected disabled>Mois</option>
                                             @for ($i = 1; $i <= 12; $i++)
@@ -345,8 +345,8 @@
                                                 </option>
                                             @endfor
                                         </select>
-                                        <select name="datep" id="annee" class="form-select form-control"
-                                            style="border-right: none" wire:model.debounce.500ms='selectedYear'>
+                                        <select name="datep" id="annee" class="form-select form-control" style="min-width: 75px; max-width: 95px; border-right: none"
+                                            wire:model.debounce.500ms='selectedYear'>
                                             <option value="null" selected disabled>Année</option>
                                             @for ($i = ((int) now()->year); $i > 1990; $i--)
                                                 <option value="{{ $i }}">
@@ -354,7 +354,7 @@
                                                 </option>
                                             @endfor
                                         </select>
-                                        <button class="btn btn-add refresh-filter btn-search-sm" type="button"
+                                        <button class="btn btn-add refresh-filter btn-search-sm flex-shrink-0" type="button"
                                             id="" wire:click="refreshSelection">
                                             <i class="fi fi-rr-refresh"></i>
                                         </button>
