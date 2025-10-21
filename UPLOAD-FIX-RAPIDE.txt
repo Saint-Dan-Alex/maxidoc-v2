@@ -1,0 +1,97 @@
+═══════════════════════════════════════════════════════════════
+  CORRECTION RAPIDE DES PROBLÈMES D'UPLOAD SUR HOSTINGER
+═══════════════════════════════════════════════════════════════
+
+✅ FICHIERS MODIFIÉS (déjà fait dans votre code local):
+   • app/Http/Controllers/File.php
+   • app/Http/Controllers/UploadController.php
+   
+✅ FICHIERS CRÉÉS :
+   • public/diagnostic-storage.php
+   • GUIDE-RESOLUTION-UPLOAD-HOSTINGER.md
+   • fix-permissions-hostinger.sh
+   • Ce fichier (UPLOAD-FIX-RAPIDE.txt)
+
+═══════════════════════════════════════════════════════════════
+  📝 ACTIONS À FAIRE SUR HOSTINGER (dans l'ordre)
+═══════════════════════════════════════════════════════════════
+
+1️⃣  DÉPLOYER LE CODE MODIFIÉ
+    • Uploadez via Git, FTP ou File Manager les fichiers modifiés
+    • Assurez-vous que les nouveaux fichiers sont bien transférés
+
+2️⃣  DIAGNOSTIC
+    • Accédez à : http://votre-domaine.com/diagnostic-storage.php
+    • Lisez les résultats et identifiez les problèmes en rouge ❌
+
+3️⃣  CORRIGER LES PERMISSIONS (via SSH)
+    
+    Connectez-vous en SSH et exécutez :
+    
+    cd /home/VOTRE_USER/domains/votre-domaine.com/public_html
+    bash fix-permissions-hostinger.sh
+    
+    OU manuellement :
+    
+    chmod 755 storage
+    chmod -R 755 storage/app/public
+    chmod -R 755 storage/logs
+    mkdir -p storage/app/public/{documents,tmp,pieces-jointes}
+    php artisan storage:link
+
+4️⃣  VÉRIFIER LA CONFIGURATION PHP
+    
+    Dans le panneau Hostinger → PHP Configuration :
+    • upload_max_filesize = 20M (ou plus)
+    • post_max_size = 25M (ou plus)
+    • memory_limit = 256M (ou plus)
+
+5️⃣  TESTER
+    • Essayez d'uploader une image
+    • Essayez d'uploader un PDF
+    • Vérifiez les logs : tail -f storage/logs/laravel.log
+
+═══════════════════════════════════════════════════════════════
+  🐛 PROBLÈMES COURANTS
+═══════════════════════════════════════════════════════════════
+
+❌ "Impossible de créer le répertoire"
+   → chmod -R 755 storage/app/public
+
+❌ "Le lien symbolique n'existe pas"
+   → php artisan storage:link
+
+❌ "Permission denied"
+   → Vérifiez que le propriétaire des dossiers est correct
+   → chown -R VOTRE_USER:VOTRE_USER storage/
+
+❌ "413 Request Entity Too Large"
+   → Augmentez upload_max_filesize et post_max_size
+
+═══════════════════════════════════════════════════════════════
+  📞 BESOIN D'AIDE ?
+═══════════════════════════════════════════════════════════════
+
+1. Consultez : GUIDE-RESOLUTION-UPLOAD-HOSTINGER.md (guide complet)
+2. Exécutez : http://votre-domaine.com/diagnostic-storage.php
+3. Regardez les logs : storage/logs/laravel.log
+4. Contactez le support Hostinger avec ces informations
+
+═══════════════════════════════════════════════════════════════
+  🎯 CE QUI A ÉTÉ CORRIGÉ DANS LE CODE
+═══════════════════════════════════════════════════════════════
+
+✅ Permissions changées de 0777 → 0755 (compatible Hostinger)
+✅ Chemins normalisés (/ au lieu de DIRECTORY_SEPARATOR)
+✅ Validation renforcée des fichiers uploadés
+✅ Vérification de l'existence réelle après upload
+✅ Logs détaillés pour identifier les problèmes
+✅ Gestion d'erreurs améliorée avec messages explicites
+✅ Création automatique des dossiers manquants
+✅ Vérification des permissions avant écriture
+
+═══════════════════════════════════════════════════════════════
+
+Date : 2025-01-21
+Application : Maxidoc
+Version : 1.0
