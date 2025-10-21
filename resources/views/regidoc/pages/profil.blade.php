@@ -459,7 +459,14 @@
                                 
                                 <div class="mt-4">
                                     <h6 class="mb-2">Aperçu</h6>
-                                    <div id="no-signature-profile" class="text-muted">Aucune signature enregistrée.</div>
+                                    <div id="no-signature-profile" class="text-muted">
+                                        Aucune signature enregistrée.
+                                        <div class="mt-3">
+                                            <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modal-save-signature-profile">
+                                                Enregistrer ma signature
+                                            </button>
+                                        </div>
+                                    </div>
                                     <div id="signature-preview-profile" class="d-none">
                                         <img id="signature-preview-img-profile" src="" alt="signature" class="img-fluid border rounded" style="max-width: 260px; background: #fff;">
                                         {{-- <div class="mt-2">
