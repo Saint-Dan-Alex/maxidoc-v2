@@ -4,7 +4,7 @@
         
         <div class="col-12 position-relative">
             <x-jet-input id="current_password" class="input-password" type="password" wire:model.defer="state.current_password" autocomplete="current-password"
-                placeholder="{{ __('Current Password') }}"/>
+                placeholder="Mot de passe actuel"/>
             <i class="fi fi-rr-lock-alt position-absolute icon-form"></i>
             <div class="btn-show-password show-password" id="show-password">
                 <div>
@@ -23,7 +23,7 @@
 
         <div class="col-12 position-relative">
             <x-jet-input id="password" class="input-password" type="password" wire:model.defer="state.password" autocomplete="new-password"
-                placeholder="{{ __('New Password') }}"/>
+                placeholder="Nouveau mot de passe"/>
             <i class="fi fi-rr-lock-alt position-absolute icon-form"></i>
             <div class="btn-show-password show-password" id="show-password">
                 <div>
@@ -42,7 +42,7 @@
 
         <div class="col-12 position-relative">
             <x-jet-input id="password_confirmation" class="input-password" type="password" wire:model.defer="state.password_confirmation" autocomplete="new-password"
-                placeholder="{{ __('Confirm Password') }}"/>
+                placeholder="Confirmer le mot de passe"/>
             <i class="fi fi-rr-lock-alt position-absolute icon-form"></i>
             <div class="btn-show-password show-password" id="show-password">
                 <div>
@@ -62,11 +62,11 @@
 
     <div class="mt-2 col-12 d-flex">
         <x-jet-action-message class="mr-3" on="saved">
-            {{ __('Saved.') }}
+            Enregistré.
         </x-jet-action-message>
 
         <x-jet-button class="btn btn-valid disabled">
-            {{ __('Save') }}
+            Enregistrer
         </x-jet-button>
     </div>
 </form>

@@ -25,9 +25,9 @@
                                         <div class="round"></div> --}}
                                         {{-- <img src="{{ asset('assets/regidoc/logo.png') }}" alt="" class="img-fluid"> --}}
                                     </div>
-                                    <h1>{{ __('Update Password') }}</h1>
+                                    <h1>Modifier le mot de passe</h1>
                                     <p class="mb-4">
-                                        {{ __('Ensure your account is using a long, random password to stay secure.') }}
+                                        Assurez-vous que votre compte utilise un mot de passe long et aléatoire pour rester sécurisé.
                                     </p>
                                     @livewire('auth.update-password-form')
                                     {{-- <form method="post" action="{{ route('password.email') }}">
