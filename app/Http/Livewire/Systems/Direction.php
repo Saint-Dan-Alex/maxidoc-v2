@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Systems;
 
 use App\Models\Direction as Model;
 use App\Models\LieuAffectation;
+use App\Models\Agent;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,6 +16,7 @@ class Direction extends Component
     public $filter;
     public $filterText;
     public $lieus;
+    public $agents;
     public $users;
     public $search;
 
@@ -28,6 +30,7 @@ class Direction extends Component
     public function mount()
     {
         $this->lieus = LieuAffectation::select('id', 'titre')->get();
+        $this->agents = Agent::select('id', 'nom', 'prenom')->orderBy('nom')->get();
         $this->users = User::select('name', 'id')->limit(50)->get();
         $this->filterText = "Filtre";
     }
@@ -81,6 +84,7 @@ class Direction extends Component
         return view('livewire.systems.direction', [
             'directions' => $directions,
             'lieus' => $this->lieus,
+            'agents' => $this->agents,
             'users' => $this->users
         ]);
     }

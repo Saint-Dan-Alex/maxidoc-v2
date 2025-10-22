@@ -155,6 +155,108 @@
         </div>
     </div>
 
+    {{-- MODALES MODIFICATION --}}
+    @foreach ($directions as $direction)
+        <div class="modal fade" id="modal-edit-direction-{{ $direction->id }}" tabindex="-1" aria-hidden="true" wire:ignore.self>
+            <div class="modal-dialog modal-dialog-centered">
+                <form action="{{ route('regidoc.directions.update', $direction->id) }}" method="POST" class="modal-content">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modifier une Direction</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group row g-3">
+                            <div class="col-12 mb-3">
+                                <label>Code</label>
+                                <input type="text" name="code" class="form-control" value="{{ $direction->code }}" required >
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="lieu_id">Lieu d'affectation</label>
+                                <select name="lieu_id" class="form-control" required>
+                                    <option value="">Sélectionner un lieu</option>
+                                    @foreach($lieus as $lieu)
+                                        <option value="{{ $lieu->id }}" @if($lieu->id == $direction->lieu_id) selected @endif>
+                                            {{ $lieu->titre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label>Titre</label>
+                                <input type="text" name="libelle" class="form-control" value="{{ $direction->titre }}" required>
+                            </div>
+                            <div class="col-12 position-relative mb-3">
+                                <label>Responsable</label>
+                                <select name="responsable_id" class="form-control select2Bis-{{ $direction->id }}" data-placeholder="Sélectionner le responsable">
+                                <option value=""></option>
+                                @foreach ($agents as $agent)
+                                    <option value="{{ $agent->id }}" @selected($direction->responsable_id == $agent->id)>
+                                        {{ $agent->prenom }} {{ $agent->nom }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            </div>
+                            
+                            <div class="col-12 position-relative mb-3">
+                                <label>Responsable Adjoint</label>
+                                <select name="adjoint_id" class="form-control select2Bis-{{ $direction->id }}" data-placeholder="Sélectionner le responsable adjoint">
+                                <option value=""></option>
+                                @foreach ($agents as $agent)
+                                    <option value="{{ $agent->id }}" @selected($direction->adjoint_id == $agent->id)>
+                                        {{ $agent->prenom }} {{ $agent->nom }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            </div>
+                            
+                            <div class="col-12 text-end">
+                                <button class="btn btn-add">Modifier</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endforeach
 
 </div>
 
+@push('scripts')
+<script>
+    document.addEventListener('livewire:load', function () {
+        initDirectionModals();
+    });
+
+    document.addEventListener('livewire:update', function () {
+        initDirectionModals();
+    });
+
+    function initDirectionModals() {
+        // Détruire toutes les anciennes instances Select2
+        $('[class*="select2Bis-"]').each(function() {
+            if ($(this).hasClass("select2-hidden-accessible")) {
+                $(this).select2('destroy');
+            }
+        });
+
+        // Réinitialiser tous les Select2 des modales
+        $('[class*="select2Bis-"]').each(function() {
+            $(this).select2({
+                dropdownParent: $(this).closest('.modal'),
+                placeholder: $(this).data('placeholder'),
+                language: "fr",
+                width: '100%',
+                theme: 'bootstrap-5'
+            });
+        });
+
+        // Réinitialisation quand une modale est fermée
+        $('[id^="modal-edit-direction-"]').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+            $(this).find('[class*="select2Bis-"]').val(null).trigger('change');
+        });
+    }
+</script>
+@endpush

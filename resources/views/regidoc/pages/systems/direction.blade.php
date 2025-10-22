@@ -98,73 +98,8 @@
         </div>
     </div>
 
-    {{-- MODALES MODIFICATION --}}
-    @foreach ($directions as $direction)
-        <div class="modal fade" id="modal-edit-direction-{{ $direction->id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <form action="{{ route('regidoc.directions.update', $direction->id) }}" method="POST" class="modal-content">
-                    @csrf
-                    @method('PUT')
-                    <div class="modal-header">
-                        <h5 class="modal-title">Modifier une Direction</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group row g-3">
-                            <div class="col-12 mb-3">
-                                <label>Code</label>
-                                <input type="text" name="code" class="form-control" value="{{ $direction->code }}" required >
-                            </div>
-                            <div class="col-12 mb-3">
-                                <label for="lieu_id">Lieu d'affectation</label>
-                                <select name="lieu_id" class="form-control" required>
-                                    <option value="">Sélectionner un lieu</option>
-                                    @foreach($lieus as $lieu)
-                                        <option value="{{ $lieu->id }}" @if($lieu->id == $direction->lieu_id) selected @endif>
-                                            {{ $lieu->titre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-12 mb-3">
-                                <label>Titre</label>
-                                <input type="text" name="libelle" class="form-control" value="{{ $direction->titre }}" required>
-                            </div>
-                            <div class="col-12 position-relative mb-3">
-                                <label>Responsable</label>
-                                <select name="responsable_id" class="form-control select2Bis" data-placeholder="Sélectionner le responsable">
-                                <option value=""></option>
-                                @foreach ($agents as $agent)
-                                    <option value="{{ $agent->id }}" @selected($direction->responsable_id == $agent->id)>
-                                        {{ $agent->prenom }} {{ $agent->nom }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            </div>
-                            
-                            <div class="col-12 position-relative mb-3">
-                                <label>Responsable Adjoint</label>
-                                <select name="adjoint_id" class="form-control select2Bis" data-placeholder="Sélectionner le responsable adjoint">
-                                <option value=""></option>
-                                @foreach ($agents as $agent)
-                                    <option value="{{ $agent->id }}" @selected($direction->adjoint_id == $agent->id)>
-                                        {{ $agent->prenom }} {{ $agent->nom }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            </div>
-                            
-                            
-                            <div class="col-12 text-end">
-                                <button class="btn btn-add">Modifier</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    @endforeach
+    {{-- MODALES MODIFICATION - DÉPLACÉES DANS LE COMPOSANT LIVEWIRE --}}
+    {{-- Les modales sont maintenant gérées dans resources/views/livewire/systems/direction.blade.php --}}
 <style>
     /* Style pour les labels et les sélecteurs dans les modaux */
     .modal .form-group label {
@@ -241,10 +176,7 @@
             $('.select2Bis').val(null).trigger('change'); // Réinitialise les sélecteurs Select2
         });
 
-        // Réinitialisation des champs du modal d'édition quand il est fermé
-        $('[id^="modal-edit-direction-"]').on('hidden.bs.modal', function () {
-            $('.select2Bis').val(null).trigger('change');
-        });
+        // Les modales d'édition sont maintenant gérées dans le composant Livewire
     });
 </script>
 
