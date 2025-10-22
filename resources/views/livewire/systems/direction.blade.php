@@ -111,8 +111,13 @@
                             <td> {{ $direction->agents->count() }} </td>
                             <td>
                                 <div class="d-flex align-items-center btns-action-table">
-                                    <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
-                                        data-bs-target="#modal-edit-direction-{{ $direction->id }}">
+                                    <a href="#" class="btn btn-success me-2 btn-edit-direction" 
+                                        data-direction-id="{{ $direction->id }}"
+                                        data-direction-code="{{ $direction->code }}"
+                                        data-direction-titre="{{ $direction->titre }}"
+                                        data-direction-lieu="{{ $direction->lieu_id }}"
+                                        data-direction-responsable="{{ $direction->responsable_id }}"
+                                        data-direction-adjoint="{{ $direction->adjoint_id }}">
                                         <i class="fi fi-rr-pencil"></i>
                                         <span class="btn-text">Éditer</span>
                                     </a>
@@ -149,126 +154,131 @@
         </div>
     </div>
 
-    {{-- MODALES MODIFICATION --}}
-    @foreach ($directions as $direction)
-        <div class="modal fade" id="modal-edit-direction-{{ $direction->id }}" tabindex="-1" aria-hidden="true" wire:ignore>
-            <div class="modal-dialog modal-dialog-centered">
-                <form action="{{ route('regidoc.directions.update', $direction->id) }}" method="POST" class="modal-content">
-                    @csrf
-                    @method('PUT')
-                    <div class="modal-header">
-                        <h5 class="modal-title">Modifier une Direction</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group row g-3">
-                            <div class="col-12 mb-3">
-                                <label>Code</label>
-                                <input type="text" name="code" class="form-control" value="{{ $direction->code }}" required >
-                            </div>
-                            <div class="col-12 mb-3">
-                                <label for="lieu_id">Lieu d'affectation</label>
-                                <select name="lieu_id" class="form-control" required>
-                                    <option value="">Sélectionner un lieu</option>
-                                    @foreach($lieus as $lieu)
-                                        <option value="{{ $lieu->id }}" @if($lieu->id == $direction->lieu_id) selected @endif>
-                                            {{ $lieu->titre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+    {{-- MODALE UNIQUE DE MODIFICATION --}}
+    <div class="modal fade" id="modal-edit-direction" tabindex="-1" aria-hidden="true" wire:ignore>
+        <div class="modal-dialog modal-dialog-centered">
+            <form id="form-edit-direction" method="POST" class="modal-content">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier une Direction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row g-3">
+                        <div class="col-12 mb-3">
+                            <label>Code</label>
+                            <input type="text" name="code" id="edit-code" class="form-control" required>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="lieu_id">Lieu d'affectation</label>
+                            <select name="lieu_id" id="edit-lieu" class="form-control" required>
+                                <option value="">Sélectionner un lieu</option>
+                                @foreach($lieus as $lieu)
+                                    <option value="{{ $lieu->id }}">{{ $lieu->titre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                            <div class="col-12 mb-3">
-                                <label>Titre</label>
-                                <input type="text" name="libelle" class="form-control" value="{{ $direction->titre }}" required>
-                            </div>
-                            <div class="col-12 position-relative mb-3">
-                                <label>Responsable</label>
-                                <select name="responsable_id" class="form-control select2Bis-{{ $direction->id }}" data-placeholder="Sélectionner le responsable">
+                        <div class="col-12 mb-3">
+                            <label>Titre</label>
+                            <input type="text" name="libelle" id="edit-titre" class="form-control" required>
+                        </div>
+                        <div class="col-12 position-relative mb-3">
+                            <label>Responsable</label>
+                            <select name="responsable_id" id="edit-responsable" class="form-control select2-edit" data-placeholder="Sélectionner le responsable">
                                 <option value=""></option>
                                 @foreach ($agents as $agent)
-                                    <option value="{{ $agent->id }}" @selected($direction->responsable_id == $agent->id)>
-                                        {{ $agent->prenom }} {{ $agent->nom }}
-                                    </option>
+                                    <option value="{{ $agent->id }}">{{ $agent->prenom }} {{ $agent->nom }}</option>
                                 @endforeach
                             </select>
-                            </div>
-                            
-                            <div class="col-12 position-relative mb-3">
-                                <label>Responsable Adjoint</label>
-                                <select name="adjoint_id" class="form-control select2Bis-{{ $direction->id }}" data-placeholder="Sélectionner le responsable adjoint">
+                        </div>
+                        
+                        <div class="col-12 position-relative mb-3">
+                            <label>Responsable Adjoint</label>
+                            <select name="adjoint_id" id="edit-adjoint" class="form-control select2-edit" data-placeholder="Sélectionner le responsable adjoint">
                                 <option value=""></option>
                                 @foreach ($agents as $agent)
-                                    <option value="{{ $agent->id }}" @selected($direction->adjoint_id == $agent->id)>
-                                        {{ $agent->prenom }} {{ $agent->nom }}
-                                    </option>
+                                    <option value="{{ $agent->id }}">{{ $agent->prenom }} {{ $agent->nom }}</option>
                                 @endforeach
                             </select>
-                            </div>
-                            
-                            <div class="col-12 text-end">
-                                <button class="btn btn-add">Modifier</button>
-                            </div>
+                        </div>
+                        
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-add">Modifier</button>
                         </div>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
-    @endforeach
+    </div>
 
 </div>
 
 @push('scripts')
 <script>
     (function() {
-        let initializedModals = new Set();
-
-        // Initialiser les Select2 d'une modale spécifique
-        function initModalSelect2(modalId) {
-            console.log('🔄 Init Select2 pour:', modalId);
-            
-            const $modal = $('#' + modalId);
-            const $selects = $modal.find('[class*="select2Bis-"]');
-            
-            $selects.each(function() {
-                const $select = $(this);
-                
-                // Détruire l'instance existante si présente
-                if ($select.hasClass("select2-hidden-accessible")) {
-                    $select.select2('destroy');
+        console.log('✅ Init gestionnaire Direction');
+        
+        // Initialiser Select2 une seule fois au chargement
+        function initSelect2() {
+            $('.select2-edit').each(function() {
+                if ($(this).hasClass("select2-hidden-accessible")) {
+                    $(this).select2('destroy');
                 }
                 
-                // Initialiser Select2
-                $select.select2({
-                    dropdownParent: $modal,
-                    placeholder: $select.data('placeholder'),
+                $(this).select2({
+                    dropdownParent: $('#modal-edit-direction'),
+                    placeholder: $(this).data('placeholder'),
                     language: "fr",
                     width: '100%',
                     theme: 'bootstrap-5'
                 });
             });
-            
-            initializedModals.add(modalId);
-            console.log('✅ Select2 initialisés pour:', modalId);
+            console.log('✅ Select2 initialisés');
         }
 
-        // Initialiser les Select2 UNIQUEMENT à l'ouverture de la modale
-        $(document).on('show.bs.modal', '[id^="modal-edit-direction-"]', function () {
-            const modalId = $(this).attr('id');
-            console.log('📂 Ouverture modale:', modalId);
+        // Initialiser au chargement
+        $(document).ready(function() {
+            initSelect2();
+        });
+
+        // Clic sur le bouton Éditer
+        $(document).on('click', '.btn-edit-direction', function(e) {
+            e.preventDefault();
             
-            // Toujours réinitialiser à l'ouverture pour avoir les bonnes valeurs
-            initModalSelect2(modalId);
+            const directionId = $(this).data('direction-id');
+            const code = $(this).data('direction-code');
+            const titre = $(this).data('direction-titre');
+            const lieuId = $(this).data('direction-lieu');
+            const responsableId = $(this).data('direction-responsable');
+            const adjointId = $(this).data('direction-adjoint');
+            
+            console.log('📂 Ouverture édition direction:', directionId);
+            
+            // Mettre à jour l'action du formulaire
+            const formAction = "{{ route('regidoc.directions.update', ':id') }}".replace(':id', directionId);
+            $('#form-edit-direction').attr('action', formAction);
+            
+            // Remplir les champs
+            $('#edit-code').val(code);
+            $('#edit-titre').val(titre);
+            $('#edit-lieu').val(lieuId);
+            
+            // Définir les valeurs Select2
+            $('#edit-responsable').val(responsableId).trigger('change');
+            $('#edit-adjoint').val(adjointId).trigger('change');
+            
+            // Ouvrir la modale
+            $('#modal-edit-direction').modal('show');
         });
 
-        // Réinitialiser les valeurs à la fermeture
-        $(document).on('hidden.bs.modal', '[id^="modal-edit-direction-"]', function () {
-            const modalId = $(this).attr('id');
-            console.log('📁 Fermeture modale:', modalId);
-            $(this).find('[class*="select2Bis-"]').val(null).trigger('change');
+        // Réinitialiser à la fermeture
+        $('#modal-edit-direction').on('hidden.bs.modal', function() {
+            console.log('📁 Fermeture modale');
+            $('#form-edit-direction')[0].reset();
+            $('.select2-edit').val(null).trigger('change');
         });
-
-        console.log('✅ Gestionnaire de modales Direction initialisé');
     })();
 </script>
 @endpush
