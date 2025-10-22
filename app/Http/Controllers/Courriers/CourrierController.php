@@ -943,11 +943,12 @@ public function traitement($courrier)
             // Maintenant on peut assigner au courrier
             $courrier->priorite_id = $request->priorite_id;
             $courrier->date_fin = $request->date_limite ?? null;
-            // Note: traitement_id stocké via la relation many-to-many, pas directement
+            $courrier->traitement_id = $request->traitement_id; // Assignation du type de traitement
             
             \Log::info('🔄 Tentative de sauvegarde courrier...', [
                 'priorite_id' => $courrier->priorite_id,
-                'date_fin' => $courrier->date_fin
+                'date_fin' => $courrier->date_fin,
+                'traitement_id' => $courrier->traitement_id
             ]);
             
             $courrier->save();
