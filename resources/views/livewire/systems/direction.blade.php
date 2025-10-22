@@ -110,12 +110,7 @@
                             <td> {{ $direction->adjoint ? $direction->adjoint->prenom . ' ' . $direction->adjoint->nom : 'Non défini' }} </td>
                             <td> {{ $direction->agents->count() }} </td>
                             <td>
-                                <div class="d-flex align-items-center btns-action-table" wire:ignore>
-                                    {{-- <a href="#" class="btn btn-primary" data-bs-toggle="modal"
-                                        data-bs-target="#modal-show-direction-{{ $direction->id }}">
-                                        <i class="fi fi-rr-eye"></i>
-                                        <span class="btn-text">Voir</span>
-                                    </a> --}}
+                                <div class="d-flex align-items-center btns-action-table">
                                     <a href="#" class="btn btn-success me-2" data-bs-toggle="modal"
                                         data-bs-target="#modal-edit-direction-{{ $direction->id }}">
                                         <i class="fi fi-rr-pencil"></i>
@@ -129,7 +124,6 @@
                                             <span class="btn-text">Supprimer</span>
                                         </button>
                                     </form>
-
                                 </div>
                             </td>
                         </tr>
@@ -157,7 +151,7 @@
 
     {{-- MODALES MODIFICATION --}}
     @foreach ($directions as $direction)
-        <div class="modal fade" id="modal-edit-direction-{{ $direction->id }}" tabindex="-1" aria-hidden="true" wire:ignore.self>
+        <div class="modal fade" id="modal-edit-direction-{{ $direction->id }}" tabindex="-1" aria-hidden="true" wire:ignore>
             <div class="modal-dialog modal-dialog-centered">
                 <form action="{{ route('regidoc.directions.update', $direction->id) }}" method="POST" class="modal-content">
                     @csrf
@@ -226,37 +220,55 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('livewire:load', function () {
-        initDirectionModals();
-    });
+    (function() {
+        let initializedModals = new Set();
 
-    document.addEventListener('livewire:update', function () {
-        initDirectionModals();
-    });
-
-    function initDirectionModals() {
-        // Détruire toutes les anciennes instances Select2
-        $('[class*="select2Bis-"]').each(function() {
-            if ($(this).hasClass("select2-hidden-accessible")) {
-                $(this).select2('destroy');
-            }
-        });
-
-        // Réinitialiser tous les Select2 des modales
-        $('[class*="select2Bis-"]').each(function() {
-            $(this).select2({
-                dropdownParent: $(this).closest('.modal'),
-                placeholder: $(this).data('placeholder'),
-                language: "fr",
-                width: '100%',
-                theme: 'bootstrap-5'
+        // Initialiser les Select2 d'une modale spécifique
+        function initModalSelect2(modalId) {
+            console.log('🔄 Init Select2 pour:', modalId);
+            
+            const $modal = $('#' + modalId);
+            const $selects = $modal.find('[class*="select2Bis-"]');
+            
+            $selects.each(function() {
+                const $select = $(this);
+                
+                // Détruire l'instance existante si présente
+                if ($select.hasClass("select2-hidden-accessible")) {
+                    $select.select2('destroy');
+                }
+                
+                // Initialiser Select2
+                $select.select2({
+                    dropdownParent: $modal,
+                    placeholder: $select.data('placeholder'),
+                    language: "fr",
+                    width: '100%',
+                    theme: 'bootstrap-5'
+                });
             });
+            
+            initializedModals.add(modalId);
+            console.log('✅ Select2 initialisés pour:', modalId);
+        }
+
+        // Initialiser les Select2 UNIQUEMENT à l'ouverture de la modale
+        $(document).on('show.bs.modal', '[id^="modal-edit-direction-"]', function () {
+            const modalId = $(this).attr('id');
+            console.log('📂 Ouverture modale:', modalId);
+            
+            // Toujours réinitialiser à l'ouverture pour avoir les bonnes valeurs
+            initModalSelect2(modalId);
         });
 
-        // Réinitialisation quand une modale est fermée
-        $('[id^="modal-edit-direction-"]').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        // Réinitialiser les valeurs à la fermeture
+        $(document).on('hidden.bs.modal', '[id^="modal-edit-direction-"]', function () {
+            const modalId = $(this).attr('id');
+            console.log('📁 Fermeture modale:', modalId);
             $(this).find('[class*="select2Bis-"]').val(null).trigger('change');
         });
-    }
+
+        console.log('✅ Gestionnaire de modales Direction initialisé');
+    })();
 </script>
 @endpush
