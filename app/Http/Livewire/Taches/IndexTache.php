@@ -169,7 +169,6 @@ class IndexTache extends Component
         $horsDelais = collect();
         $taches = collect();
         $newTaches = collect();
-        $newTachesCount = 0;
 
         if (Auth::user()->agent->isDG()) {
             $taches = Tache::where('user_id', Auth::user()->id)
@@ -183,22 +182,30 @@ class IndexTache extends Component
                 ->orderBy('id', 'DESC')
                 ->paginate(10);
                 
-            // Charger les tâches assignées si nécessaire
+            // Charger TOUJOURS les tâches assignées pour avoir le compteur
+            $assignees = Tache::getTachesForCurrentUser();
+            $newTaches = $assignees->where('tache_statut_id', '1')->sortByDesc('id');
+            
+            // Mettre à jour le compteur de nouvelles tâches (toujours calculé)
+            $this->newTachesCount = $newTaches->count();
+            
+            // Charger les autres catégories seulement si nécessaire
             if ($this->tab == 2) {
-                $assignees = Tache::getTachesForCurrentUser();
-                $newTaches = $assignees->where('tache_statut_id', '1')->sortByDesc('id');
                 $tacheEncours = $assignees->where('tache_statut_id', '2')->sortByDesc('id');
                 $endTaches = $assignees->where('tache_statut_id', '3')->sortByDesc('id');
                 $horsDelais = $assignees->where('tache_statut_id', '4')->sortByDesc('id');
-                
-                // Mettre à jour le compteur de nouvelles tâches
-                $newTachesCount = $newTaches->count();
+            } elseif ($this->tab == 3) {
+                $tacheEncours = $assignees->where('tache_statut_id', '2')->sortByDesc('id');
+            } elseif ($this->tab == 4) {
+                $endTaches = $assignees->where('tache_statut_id', '3')->sortByDesc('id');
+            } elseif ($this->tab == 5) {
+                $horsDelais = $assignees->where('tache_statut_id', '4')->sortByDesc('id');
             }
         }
 
         return view('livewire.taches.index-tache', [
             'taches' => $taches,
-            'newTachesCount' => $newTachesCount,
+            'newTachesCount' => $this->newTachesCount,
             'newTaches' => $newTaches,
             'tacheEncours' => $tacheEncours,
             'endTaches' => $endTaches,

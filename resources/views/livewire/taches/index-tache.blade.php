@@ -61,13 +61,12 @@
                         <button @class(['nav-link', 'active' => $tab == 2]) id="profile-tab" data-bs-toggle="tab"
                             data-bs-target="#assignees2" type="button" role="tab" aria-controls="assignees"
                             aria-selected="false" wire:click='changeTab(2)' wire:loading.attr="disabled">
-                            Assignées
-                            <span @class([
-                                'badge bg-danger ms-2 rounded-pill py-1 px-2 fw-normal',
-                                'd-none' => $newTachesCount <= 0,
-                            ]) style="font-size:10px">
-                                {{ $newTachesCount }}
-                            </span>
+                            Tâches assignées
+                            @if($newTachesCount > 0)
+                                <span class="badge bg-danger ms-2 rounded-pill py-1 px-2 fw-normal" style="font-size:10px">
+                                    {{ $newTachesCount }}
+                                </span>
+                            @endif
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
