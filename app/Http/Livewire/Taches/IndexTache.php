@@ -176,11 +176,34 @@ class IndexTache extends Component
                 ->orderBy('id', 'DESC')
                 ->paginate(10);
         } else {
-            // Récupérer les tâches créées par l'utilisateur
-            $taches = Tache::where('user_id', Auth::user()->id)
+            // Récupérer les tâches créées par l'utilisateur ET les tâches assignées
+            $tachesCreees = Tache::where('user_id', Auth::user()->id)
                 ->with(['agents', 'objectifs', 'tache_statut'])
-                ->orderBy('id', 'DESC')
-                ->paginate(10);
+                ->get();
+                
+            $tachesAssignees = Tache::whereHas('agents', function($query) {
+                    $query->where('agent_id', Auth::user()->agent->id)
+                          ->where('type', 'App\\Models\\Agent')
+                          ->where('type_id', Auth::user()->agent->id);
+                })
+                ->with(['agents', 'objectifs', 'tache_statut'])
+                ->get();
+            
+            // Fusionner et supprimer les doublons (si une tâche est à la fois créée et assignée)
+            $toutesMesTaches = $tachesCreees->merge($tachesAssignees)->unique('id')->sortByDesc('id');
+            
+            // Convertir en paginator pour garder la pagination
+            $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
+            $perPage = 10;
+            $currentItems = $toutesMesTaches->slice(($currentPage - 1) * $perPage, $perPage)->values();
+            
+            $taches = new \Illuminate\Pagination\LengthAwarePaginator(
+                $currentItems,
+                $toutesMesTaches->count(),
+                $perPage,
+                $currentPage,
+                ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+            );
                 
             // Charger TOUJOURS les tâches assignées pour avoir le compteur
             $assignees = Tache::getTachesForCurrentUser();
