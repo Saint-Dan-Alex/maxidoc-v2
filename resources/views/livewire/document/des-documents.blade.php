@@ -116,7 +116,7 @@
                                                         {{ $direction->titre }}</option>
                                                 @endforeach
                                             </select>
-                                            <select class="form-select form-control" name="division_query"
+                                            {{-- <select class="form-select form-control" name="division_query"
                                                 wire:model.debounce.500ms="division_query">
                                                 <option value=null selected disabled>Division</option>
                                                 <option value="">Toutes</option>
@@ -124,7 +124,7 @@
                                                     <option value="{{ $division->id }}">
                                                         {{ $division->libelle }}</option>
                                                 @endforeach
-                                            </select>
+                                            </select> --}}
                                             <select class="form-select form-control" name="agent_query"
                                                 wire:model.debounce.500ms="agent_query">
                                                 <option value=null selected disabled>Agent</option>
@@ -170,6 +170,7 @@
                                     </div>
                                 </div>
                             </div>
+                            
                         </div>
                         <hr class="mt-3 mb-0">
                         <div class="table-responsive">
