@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Courriers;
 
 use App\Events\CourrierCreated;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\File;
 use App\Http\Controllers\ScanFile;
@@ -143,18 +144,29 @@ class CourrierController extends Controller
                 $file = $request->file('piece_jointe');
                 $year = now()->format('Y');
                 $month = now()->format('m');
-                $fileName = time() . '_' . Str::random(8) . '_' . $file->getClientOriginalName();
+                // Nettoyer le nom du fichier : remplacer les espaces par des tirets et supprimer les caractères spéciaux
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $extension = $file->getClientOriginalExtension();
+                $cleanName = Str::slug($originalName) . '.' . $extension;
+                
+                // Générer un nom de fichier unique
+                $fileName = time() . '_' . Str::random(8) . '_' . $cleanName;
                 
                 // Créer la structure de dossiers si elle n'existe pas
                 $basePath = "pieces-jointes/{$year}/{$month}/courrier-{$courrier->id}";
                 $destinationPath = storage_path('app/public/' . $basePath);
                 
                 if (!FileFacade::exists($destinationPath)) {
-                    FileFacade::makeDirectory($destinationPath, 0755, true);
+                    FileFacade::makeDirectory($destinationPath, 0755, true, true);
                 }
                 
-                // Déplacer le fichier téléversé
+                // Déplacer le fichier téléversé avec un nom nettoyé
                 $path = $file->storeAs($basePath, $fileName, 'public');
+                
+                // S'assurer que le fichier a été correctement enregistré
+                if (!Storage::disk('public')->exists($path)) {
+                    throw new \Exception("Le fichier n'a pas pu être enregistré correctement.");
+                }
                 
                 // Vérifier si un document est déjà associé au courrier via document_id
                 if ($courrier->document_id) {
