@@ -48,17 +48,17 @@ class TacheDocumentPane extends Component
         $this->validate();
 
         $classer = Classeur::where('direction_id', Auth::user()->agent->direction_id)
-            ->where('titre', 'Classeur Tâches ' . Auth::user()->agent->direction?->titre)
+            ->where('titre', 'Documents partagés')
             ->first();
         if ($classer == null) {
             $classer = Classeur::firstOrCreate(
                 [
                     'direction_id' => Auth::user()->agent->direction_id,
-                    'titre' => 'Tâches ',
+                    'titre' => 'Documents partagés',
                 ],
                 [
-                    'reference' => Auth::user()->agent->direction?->code.'/'.Classeur::count(),
-                    'description' => 'Classeur pour les documents de tâches ' . Auth::user()->agent?->direction->titre,
+                    'reference' => 'CLS-PARTAGES-'.strtoupper(Str::random(8)),
+                    'description' => 'Classeur pour les documents partagés (issus des tâches)',
                     'created_by' => Auth::user()->agent->id,
                     'updated_by' => Auth::user()->agent->id,
                 ]
@@ -105,11 +105,6 @@ class TacheDocumentPane extends Component
         
         // Sauvegarder le document
         $document->save();
-        
-        // Rafraîchir pour s'assurer que tout est à jour
-        $document->refresh();
-        
-        // Log pour débogage
         \Illuminate\Support\Facades\Log::info('Document créé avec succès', [
             'document_id' => $document->id,
             'type' => $document->type,
@@ -117,6 +112,37 @@ class TacheDocumentPane extends Component
         ]);
 
         $tache = Tache::findOrFail($this->tache->id);
+
+        // Lier le document au document principal (affichage groupé) si la tâche est rattachée à un courrier
+        try {
+            $parent = null;
+            if (!empty($tache->courrier_id)) {
+                $courrier = \App\Models\Courrier::find($tache->courrier_id);
+                if ($courrier) {
+                    if (!empty($courrier->document_id)) {
+                        $parent = \App\Models\Document::find($courrier->document_id);
+                    } else {
+                        $parent = $courrier->documents()->whereNull('parent_document_id')->first();
+                    }
+                }
+            }
+
+            if ($parent) {
+                $document->parent_document_id = $parent->id;
+                if (is_null($document->courrier_id)) {
+                    $document->courrier_id = $parent->courrier_id;
+                }
+                $document->statut_id = $parent->statut_id ?? $document->statut_id;
+                if (isset($parent->mark_as_done)) {
+                    $document->mark_as_done = $parent->mark_as_done;
+                }
+                $document->save();
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Lien parent_document_id non appliqué', [
+                'error' => $e->getMessage(),
+            ]);
+        }
         $tache->documents()->attach($document->id);
 
         $this->reset('file');

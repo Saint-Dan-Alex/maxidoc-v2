@@ -21,6 +21,8 @@ class TacheDocumentController extends Controller
     {
         $request->validate([
             'file' => 'required|file',
+            // Optionnel: si on veut rattacher explicitement au document principal
+            'parent_document_id' => 'nullable|integer|exists:documents,id',
         ]);
 
         // Utilisation de la classe File pour gérer le stockage au format JSON
@@ -41,14 +43,14 @@ class TacheDocumentController extends Controller
         $originalName = $fileInfo[0]['original_name'] ?? null;
 
         $classer = Classeur::where('direction_id', Auth::user()->agent->direction_id)
-            ->where('titre', 'Classeur Tâches ' . Auth::user()->agent->direction?->titre)
+            ->where('titre', 'Documents partagés')
             ->first();
 
         if (!$classer) {
             $classer = Classeur::create([
-                'titre' => 'Classeur Tâches ' . Auth::user()->agent->direction?->titre,
-                'reference' => 'CLS-TACHES-' . strtoupper(Str::random(8)),
-                'description' => 'Classeur pour les documents des tâches',
+                'titre' => 'Documents partagés',
+                'reference' => 'CLS-PARTAGES-' . strtoupper(Str::random(8)),
+                'description' => 'Classeur pour les documents partagés (issus des tâches)',
                 'direction_id' => Auth::user()->agent->direction_id,
                 'created_by' => Auth::id(),
             ]);
@@ -88,7 +90,42 @@ class TacheDocumentController extends Controller
         ]);
         $document->save();
 
-    
+        // Rattacher (optionnel) au document principal pour affichage groupé
+        // 1) Si le front fournit explicitement un parent_document_id
+        $parent = null;
+        if ($request->filled('parent_document_id')) {
+            $parent = Document::find($request->input('parent_document_id'));
+        }
+
+        // 2) Si non fourni, tenter d'inférer le document principal via le courrier de la tâche (si disponible)
+        //    Remarque: selon votre modèle, adaptez la manière de retrouver le courrier/document principal
+        if (!$parent && property_exists($tache, 'courrier_id') && $tache->courrier_id) {
+            // Tente de récupérer le document principal lié au courrier
+            $courrier = \App\Models\Courrier::find($tache->courrier_id);
+            if ($courrier) {
+                if ($courrier->document_id) {
+                    $parent = Document::find($courrier->document_id);
+                } else {
+                    // Premier document racine du courrier (sans parent)
+                    $parent = $courrier->documents()->whereNull('parent_document_id')->first();
+                }
+            }
+        }
+
+        // 3) Si un parent est identifié, aligner les métadonnées et lier la hiérarchie
+        if ($parent) {
+            $document->parent_document_id = $parent->id;
+            // Propager des champs utiles pour que les filtres d'affichage l'incluent avec le principal
+            if (is_null($document->courrier_id)) {
+                $document->courrier_id = $parent->courrier_id;
+            }
+            // Aligner le statut et éventuellement le mark_as_done si votre index l'utilise
+            $document->statut_id = $parent->statut_id ?? $document->statut_id;
+            if (isset($parent->mark_as_done)) {
+                $document->mark_as_done = $parent->mark_as_done;
+            }
+            $document->save();
+        }
 
 
         // Associer le document à la tâche dans la table tache_documents
