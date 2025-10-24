@@ -366,24 +366,56 @@
         ];
         
         if ($courrier->traitements->count() && $courrier->traitements->last()->document_url) {
-            $docToShow = str_replace('\\', '/', files($courrier->traitements->last()->document_url)->link);
-            $nameDocToShow = files($courrier->traitements->last()->document_url)->name;
+            $fileObj = files($courrier->traitements->last()->document_url);
+            if ($fileObj && !empty($fileObj->link)) {
+                $docToShow = str_replace('\\', '/', $fileObj->link);
+                $nameDocToShow = $fileObj->name;
+            }
         } elseif ($courrier->document?->document) {
-            $docToShow = str_replace('\\', '/', files($courrier->document->document)->link);
-            $nameDocToShow = files($courrier->document->document)->name;
-            $docToShowId = $courrier->document->id;
+            // Récupérer le chemin brut du document
+            $rawDocPath = $courrier->document->document;
+            
+            // Essayer d'abord avec le helper files()
+            $fileObj = files($rawDocPath);
+            if ($fileObj && !empty($fileObj->link)) {
+                $docToShow = str_replace('\\', '/', $fileObj->link);
+                $nameDocToShow = $fileObj->name;
+                $docToShowId = $courrier->document->id;
+            } else {
+                // Si le helper files() échoue, essayer de construire l'URL manuellement
+                // Décoder le JSON si nécessaire
+                $decoded = json_decode($rawDocPath);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && isset($decoded[0]->download_link)) {
+                    $downloadLink = $decoded[0]->download_link;
+                    $downloadLink = str_replace(['\\/', '\\\\', '\\'], '/', $downloadLink);
+                    $downloadLink = preg_replace('#^[/]+#', '', $downloadLink);
+                    $downloadLink = preg_replace('#^storage[/]#i', '', $downloadLink);
+                    
+                    $docToShow = asset('storage/' . $downloadLink);
+                    $nameDocToShow = $decoded[0]->original_name ?? basename($downloadLink);
+                    $docToShowId = $courrier->document->id;
+                } elseif (is_string($rawDocPath)) {
+                    // Si c'est une chaîne simple, l'utiliser directement
+                    $cleanPath = str_replace(['\\/', '\\\\', '\\'], '/', $rawDocPath);
+                    $cleanPath = preg_replace('#^[/]+#', '', $cleanPath);
+                    $cleanPath = preg_replace('#^storage[/]#i', '', $cleanPath);
+                    
+                    $docToShow = asset('storage/' . $cleanPath);
+                    $nameDocToShow = basename($cleanPath);
+                    $docToShowId = $courrier->document->id;
+                }
+            }
         }
         
         // Debug: Afficher l'URL finale
         $debugInfo['final_doc_url'] = $docToShow;
+        $debugInfo['name_doc'] = $nameDocToShow;
+
+        // Nom à afficher pour le document/courrier
+        $displayName = $nameDocToShow
+            ?: ($courrier->document->libelle ?? ($courrier->title ?? ''));
     @endphp
     
-    {{-- Debug --}}
-    <div class="d-none">
-        <pre>@php print_r($debugInfo) @endphp</pre>
-        <p>URL du document: {{ $docToShow }}</p>
-    </div>
-
     <div class="sidebar">
         <div class="px-3 py-3 logo text-start d-flex align-items-center justify-content-between">
             <h6 class="mb-0" style="color: var(--colorTitre)">Aperçu du document</h6>
@@ -860,6 +892,9 @@
                                 Retour
                             </div>
                         </a>
+                        <div class="text-truncate" style="max-width: 420px; color: white;" title="{{ $displayName }}">
+                            {{ $displayName }}
+                        </div>
                         @livewire('courrier.traitement-doc-select', ['courrier' => $courrier]) 
             <h5 class="offcanvas-title d-flex align-items-center gap-2" id="offcanvasRightLabel"> 
                 <span style="color: white">{!! $courrier->status_badge !!}</span>
@@ -1053,20 +1088,9 @@
                                 </div>
                             </div>
                         @else
+                            {{-- Le conteneur sera rempli par le script showPDF.js --}}
                             <div id="pdf-contents" style="width: 100%; height: 100%; min-height: 80vh;">
-                                @php
-                                    $documentPath = $courrier->document?->document;
-                                    $storagePath = $documentPath ? storage_path('app/' . $documentPath) : null;
-                                    $publicPath = $documentPath ? 'storage/' . $documentPath : null;
-                                    $fileExists = $storagePath && file_exists($storagePath);
-                                @endphp
-
-                                @if($courrier->document && $courrier->document->document && $fileExists)
-                                                              
-                                   
-                                    
-                                    <iframe src="{{ $documentUrl }}" frameborder="0" style="width: 100%; height: 100%; min-height: 80vh;"></iframe>
-                                @endif
+                                {{-- Le script showPDF.js va injecter le contenu ici --}}
                             </div>
                         @endif
                         @include('components.pdf-tools')
@@ -2626,6 +2650,28 @@
         });
     </script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js?v=1"></script>
+    
+    {{-- Debug info dans la console --}}
+    <script>
+        console.group('📄 Debug Info - Courrier #{{ $courrier->id }}');
+        console.log('Document exists:', {{ $courrier->document ? 'true' : 'false' }});
+        console.log('Document path:', '{{ $courrier->document?->document ?? "N/A" }}');
+        console.log('URL to show:', '{{ $docToShow }}');
+        console.log('Document name:', '{{ $nameDocToShow }}');
+        console.log('Document ID:', '{{ $docToShowId }}');
+        
+        @if(empty($docToShow))
+            console.error('⚠️ ATTENTION: L\'URL du document est vide!');
+            console.log('Vérifications:');
+            console.log('- Le courrier a un document?', {{ $courrier->document ? 'true' : 'false' }});
+            @if($courrier->document)
+                console.log('- Chemin du document:', '{{ $courrier->document->document }}');
+                console.log('- Le helper files() a retourné un objet vide');
+            @endif
+        @endif
+        console.groupEnd();
+    </script>
+    
     <script src="{{ asset('assets/js/showPDF.js') }}"></script>
     
     {{-- <script>
@@ -2777,11 +2823,28 @@
         @endif
 
         Livewire.on('documentChanged', function(evt) {
+            console.group('📄 Document Changed Event');
+            console.log('Event data:', evt);
+            console.log('URL:', evt.doc);
+            console.log('Is piece jointe:', evt.is_piece_jointe);
+            console.groupEnd();
+            
             url = evt.doc;
             docId = evt.doc_id;
             is_original = evt.is_original;
             courrier_id = evt.courrier_id;
-            // showPDF(url);
+            docName = evt.name || 'Document';
+            
+            // Mettre à jour le nom du document dans la navbar
+            if (docName) {
+                const displayNameElement = $('.text-truncate[title]');
+                if (displayNameElement.length) {
+                    displayNameElement.text(docName);
+                    displayNameElement.attr('title', docName);
+                }
+            }
+            
+            // Mettre à jour l'affichage du PDF
             changDoc(url, null, docId, null, is_original, courrier_id)
         });
 

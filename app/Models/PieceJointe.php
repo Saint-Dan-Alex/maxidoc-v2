@@ -54,6 +54,12 @@ class PieceJointe extends Model
      */
     public function getUrlAttribute(): string
     {
+        // En production sur Hostinger, utiliser l'URL complète depuis FILESYSTEM_URL
+        if (config('app.env') === 'production' && env('FILESYSTEM_URL')) {
+            return env('FILESYSTEM_URL') . '/' . $this->chemin;
+        }
+        
+        // En local, utiliser asset()
         return asset('storage/' . $this->chemin);
     }
 

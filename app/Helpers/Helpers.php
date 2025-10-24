@@ -158,9 +158,14 @@ if (!function_exists('files')) {
                 continue; // Ignore si le fichier n'existe pas
             }
 
-            // ✅ Construit l'URL publique via asset()
-            // Ex: http://maxidoc.test/storage/documents/August2025/file.pdf
-            $url = asset('storage/' . $storagePath);
+            // ✅ Construit l'URL publique
+            // En production sur Hostinger, utiliser FILESYSTEM_URL si disponible
+            if (config('app.env') === 'production' && env('FILESYSTEM_URL')) {
+                $url = env('FILESYSTEM_URL') . '/' . $storagePath;
+            } else {
+                // En local, utiliser asset()
+                $url = asset('storage/' . $storagePath);
+            }
 
             $fichier = new stdClass;
             $fichier->link = $url;

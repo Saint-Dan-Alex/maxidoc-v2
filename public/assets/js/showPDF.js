@@ -150,11 +150,14 @@ function showPDF(pdf_url) {
         
         // S'assurer que l'URL commence par /storage/
         if (!pdf_url.startsWith('http') && !pdf_url.startsWith('/storage/')) {
-            if (pdf_url.startsWith('documents/')) {
+            if (pdf_url.startsWith('documents/') || pdf_url.startsWith('pieces-jointes/')) {
+                // Pour les documents et pièces jointes, ajouter /storage/ au début
                 pdf_url = '/storage/' + pdf_url;
-            } else if (pdf_url.startsWith('/documents/')) {
-                pdf_url = '/storage' + pdf_url.substring(1);
+            } else if (pdf_url.startsWith('/documents/') || pdf_url.startsWith('/pieces-jointes/')) {
+                // Si le chemin commence déjà par /, ajouter juste storage
+                pdf_url = '/storage' + pdf_url;
             } else {
+                // Par défaut, considérer comme un document
                 pdf_url = '/storage/documents/' + pdf_url;
             }
         }
@@ -166,7 +169,7 @@ function showPDF(pdf_url) {
                 pdf_url = window.location.origin + pdf_url;
             } else {
                 // Sinon, construire l'URL complète à partir de la base
-                const baseUrl = window.location.origin + '/storage/documents/';
+                const baseUrl = window.location.origin + '/storage/';
                 pdf_url = baseUrl + pdf_url;
             }
         }

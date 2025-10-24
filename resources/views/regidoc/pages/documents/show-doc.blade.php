@@ -477,14 +477,14 @@
                                 @foreach($find_document->piecesJointes as $piece)
                                     @php
                                         $filePath = $piece->chemin;
-                                        $fullPath = storage_path('app/public/' . $filePath);
+                                        // Utiliser Storage::disk('public') pour vérifier l'existence
+                                        $exists = Storage::disk('public')->exists($filePath);
                                         $isPdf = Str::endsWith(strtolower($filePath), '.pdf');
-                                        $exists = file_exists($fullPath);
                                     @endphp
                                     <li>
                                         <a class="dropdown-item document-item" 
                                            href="javascript:void(0)"
-                                           data-url="{{ ($isPdf && $exists) ? asset('storage/' . $filePath) : '' }}"
+                                           data-url="{{ ($isPdf && $exists) ? $piece->url : '' }}"
                                            data-error="{{ (!$exists) ? 'Fichier introuvable' : (!$isPdf ? 'Format non supporté' : '') }}">
                                             <i class="fi fi-rr-file me-2"></i>
                                             {{ $piece->nom }}

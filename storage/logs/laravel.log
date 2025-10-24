@@ -6788,3 +6788,11 @@
 #82 C:\\wamp64\\www\\maxidoc-projet-origine\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\wamp64\\\\www\\\\m...')
 #83 {main}
 "} 
+[2025-10-24 15:25:17] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":3,"user_id":2} 
+[2025-10-24 15:31:02] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":3,"user_id":2} 
+[2025-10-24 15:31:26] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":7,"user_id":2} 
+[2025-10-24 15:31:45] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":7,"user_id":2} 
+[2025-10-24 15:34:08] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":7,"user_id":2} 
+[2025-10-24 15:41:15] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":7,"user_id":2} 
+[2025-10-24 15:56:45] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":7,"user_id":2} 
+[2025-10-24 16:08:23] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":7,"user_id":2} 

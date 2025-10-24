@@ -62,7 +62,7 @@
                             <a class="dropdown-item btn-doc btn-doc-list" href="javascript:void(0)"
                                 data-url="{{ asset('storage/' . $pieceJointe->chemin) }}"
                                 data-name="{{ $pieceJointe->nom }}"
-                                wire:click="selectDoc({{ json_encode($pieceJointe) }}, {{ $pieceJointe->id }}, false, true)">
+                                wire:click="selectDoc({{ json_encode(['id' => $pieceJointe->id, 'nom' => $pieceJointe->nom, 'chemin' => $pieceJointe->chemin]) }}, {{ $pieceJointe->id }}, false, true)">
                                 <i class="fi fi-rr-paperclip me-1"></i>
                                 {{ $pieceJointe->nom }}
                             </a>
