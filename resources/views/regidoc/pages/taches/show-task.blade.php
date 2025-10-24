@@ -499,10 +499,42 @@ use Illuminate\Support\Facades\Storage;
         $docToShow = '';
         $nameDocToShow = '';
         $docToShowId = '';
+        
         if ($tache?->documents->first()) {
-            $docToShow = str_replace('\\', '/', files($tache->documents->first()->document)->link);
-            $nameDocToShow = files($tache->documents->first()->document)->name;
-            $docToShowId = $tache->documents->first()->id;
+            $firstDoc = $tache->documents->first();
+            
+            // Essayer d'abord avec le helper files()
+            $fileObj = files($firstDoc->document);
+            if ($fileObj && !empty($fileObj->link)) {
+                $docToShow = str_replace('\\', '/', $fileObj->link);
+                $nameDocToShow = $fileObj->name;
+                $docToShowId = $firstDoc->id;
+            } else {
+                // Si le helper files() échoue, essayer de construire l'URL manuellement
+                $rawDocPath = $firstDoc->document;
+                
+                // Décoder le JSON si nécessaire
+                $decoded = json_decode($rawDocPath);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && isset($decoded[0]->download_link)) {
+                    $downloadLink = $decoded[0]->download_link;
+                    $downloadLink = str_replace(['\\/', '\\\\', '\\'], '/', $downloadLink);
+                    $downloadLink = preg_replace('#^[/]+#', '', $downloadLink);
+                    $downloadLink = preg_replace('#^storage[/]#i', '', $downloadLink);
+                    
+                    $docToShow = asset('storage/' . $downloadLink);
+                    $nameDocToShow = $decoded[0]->original_name ?? basename($downloadLink);
+                    $docToShowId = $firstDoc->id;
+                } elseif (is_string($rawDocPath)) {
+                    // Si c'est une chaîne simple, l'utiliser directement
+                    $cleanPath = str_replace(['\\/', '\\\\', '\\'], '/', $rawDocPath);
+                    $cleanPath = preg_replace('#^[/]+#', '', $cleanPath);
+                    $cleanPath = preg_replace('#^storage[/]#i', '', $cleanPath);
+                    
+                    $docToShow = asset('storage/' . $cleanPath);
+                    $nameDocToShow = basename($cleanPath);
+                    $docToShowId = $firstDoc->id;
+                }
+            }
         }
         // dd(class_exists('imagick'));
     @endphp
@@ -788,9 +820,40 @@ use Illuminate\Support\Facades\Storage;
                                 $isSelected = ($document->id == $firstDocumentId) || 
                                            ($document->id == request('document_id')) || 
                                            ($loop->first && !request('document_id'));
+                                
+                                // Récupérer l'URL du document avec le helper files()
+                                $documentUrl = '';
+                                if ($document->document) {
+                                    // Essayer d'abord avec le helper files()
+                                    $fileObj = files($document->document);
+                                    if ($fileObj && !empty($fileObj->link)) {
+                                        $documentUrl = str_replace('\\', '/', $fileObj->link);
+                                    } else {
+                                        // Si le helper files() échoue, essayer de construire l'URL manuellement
+                                        $rawDocPath = $document->document;
+                                        
+                                        // Décoder le JSON si nécessaire
+                                        $decoded = json_decode($rawDocPath);
+                                        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && isset($decoded[0]->download_link)) {
+                                            $downloadLink = $decoded[0]->download_link;
+                                            $downloadLink = str_replace(['\\/', '\\\\', '\\'], '/', $downloadLink);
+                                            $downloadLink = preg_replace('#^[/]+#', '', $downloadLink);
+                                            $downloadLink = preg_replace('#^storage[/]#i', '', $downloadLink);
+                                            
+                                            $documentUrl = asset('storage/' . $downloadLink);
+                                        } elseif (is_string($rawDocPath)) {
+                                            // Si c'est une chaîne simple, l'utiliser directement
+                                            $cleanPath = str_replace(['\\/', '\\\\', '\\'], '/', $rawDocPath);
+                                            $cleanPath = preg_replace('#^[/]+#', '', $cleanPath);
+                                            $cleanPath = preg_replace('#^storage[/]#i', '', $cleanPath);
+                                            
+                                            $documentUrl = asset('storage/' . $cleanPath);
+                                        }
+                                    }
+                                }
                             @endphp
                             <option value="{{ $document->id }}" 
-                                    data-url="{{ $document->document_url }}" 
+                                    data-url="{{ $documentUrl }}" 
                                     {{ $isSelected ? 'selected' : '' }}>
                                 {{ $docName }}{{ $loop->first ? ' (Original)' : '' }}
                             </option>
@@ -1483,8 +1546,19 @@ use Illuminate\Support\Facades\Storage;
                 }
                 
                 let documentUrl = selectedOption.getAttribute('data-url');
-                if (!documentUrl) {
-                    console.error('URL du document non trouvée pour le document ID:', documentId);
+                
+                console.log('=== DEBUG CHANGEMENT DE DOCUMENT ===');
+                console.log('Document ID:', documentId);
+                console.log('Option sélectionnée:', selectedOption);
+                console.log('data-url attribute:', documentUrl);
+                console.log('Toutes les options:', Array.from(documentSelect.options).map(opt => ({
+                    value: opt.value,
+                    text: opt.text,
+                    url: opt.getAttribute('data-url')
+                })));
+                
+                if (!documentUrl || documentUrl.trim() === '') {
+                    console.error('❌ URL du document vide ou non trouvée pour le document ID:', documentId);
                     alert('Impossible de charger le document : URL non disponible');
                     return;
                 }
