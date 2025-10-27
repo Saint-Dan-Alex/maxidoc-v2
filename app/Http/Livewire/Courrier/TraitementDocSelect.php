@@ -43,38 +43,45 @@ class TraitementDocSelect extends Component
         
         if ($is_piece_jointe) {
             // Si c'est une pièce jointe, $document est un tableau (déjà décodé depuis JSON)
-            $pieceJointe = is_string($document) ? json_decode($document, true) : (array)$document;
+            $pieceJointeData = is_string($document) ? json_decode($document, true) : (array)$document;
             
             // Vérifier que les clés nécessaires existent
-            if (!isset($pieceJointe['nom']) || !isset($pieceJointe['chemin']) || !isset($pieceJointe['id'])) {
-                \Log::error('Pièce jointe invalide', ['data' => $pieceJointe]);
+            if (!isset($pieceJointeData['id'])) {
+                Log::error('Pièce jointe invalide - ID manquant', ['data' => $pieceJointeData]);
                 return;
             }
             
-            $this->selected = $pieceJointe['nom'];
+            // Récupérer l'objet PieceJointe depuis la base de données pour utiliser les accesseurs
+            $pieceJointe = PieceJointe::find($pieceJointeData['id']);
+            
+            if (!$pieceJointe) {
+                Log::error('Pièce jointe non trouvée', ['id' => $pieceJointeData['id']]);
+                return;
+            }
+            
+            $this->selected = $pieceJointe->nom;
             $this->is_original = false;
             
-            // Nettoyer et normaliser le chemin
-            $chemin = $pieceJointe['chemin'];
-            $chemin = str_replace(['\\/', '\\\\', '\\'], '/', $chemin);
-            $chemin = preg_replace('#^[/]+#', '', $chemin);
+            // Utiliser l'accesseur url du modèle qui gère automatiquement le JSON
+            $url = $pieceJointe->url;
             
-            // Construire l'URL complète
-            $url = url('storage/' . $chemin);
-            
-            \Log::info('Pièce jointe sélectionnée', [
-                'nom' => $pieceJointe['nom'],
-                'chemin' => $chemin,
-                'url' => $url
+            Log::info('Pièce jointe sélectionnée', [
+                'id' => $pieceJointe->id,
+                'nom' => $pieceJointe->nom,
+                'chemin_brut' => $pieceJointe->attributes['chemin'],
+                'download_link' => $pieceJointe->download_link,
+                'url_generee' => $url,
+                'env' => config('app.env'),
+                'filesystem_url' => env('FILESYSTEM_URL')
             ]);
             
             $this->emit('documentChanged', [
                 'doc' => $url,
-                'doc_id' => $pieceJointe['id'],
+                'doc_id' => $pieceJointe->id,
                 'is_original' => false,
                 'is_piece_jointe' => true,
                 'courrier_id' => $this->courrier->id,
-                'name' => $pieceJointe['nom']
+                'name' => $pieceJointe->nom
             ]);
         } else {
             $fileObj = files($this->document);

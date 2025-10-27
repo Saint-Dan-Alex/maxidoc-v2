@@ -142,31 +142,146 @@ class CourrierController extends Controller
         try {
             if ($request->hasFile('piece_jointe')) {
                 $file = $request->file('piece_jointe');
+                
+                // Utiliser le dossier pieces-jointes avec la structure année/mois/courrier-id
                 $year = now()->format('Y');
                 $month = now()->format('m');
-                // Nettoyer le nom du fichier : remplacer les espaces par des tirets et supprimer les caractères spéciaux
-                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $extension = $file->getClientOriginalExtension();
-                $cleanName = Str::slug($originalName) . '.' . $extension;
+                $folderPath = "pieces-jointes/{$year}/{$month}/courrier-{$courrier->id}";
+                
+                // Déterminer le chemin de base pour le stockage
+                if (config('app.env') === 'production') {
+                    // Sur Hostinger, DOCUMENT_ROOT pointe vers public_html
+                    // On remplace /public par /public_html si nécessaire
+                    $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+                    
+                    // Si le chemin contient /public, le remplacer par /public_html
+                    if (strpos($documentRoot, '/public') !== false && strpos($documentRoot, '/public_html') === false) {
+                        $documentRoot = str_replace('/public', '/public_html', $documentRoot);
+                    }
+                    
+                    $basePath = $documentRoot . '/storage';
+                    
+                    // Créer le dossier storage s'il n'existe pas
+                    if (!file_exists($basePath)) {
+                        @mkdir($basePath, 0755, true);
+                    }
+                    
+                    $fullPath = $basePath . '/' . $folderPath;
+                } else {
+                    // En local, on garde le comportement actuel
+                    $fullPath = storage_path('app/public/' . $folderPath);
+                }
+                
+                Log::info('Tentative de création du dossier', [
+                    'folder_path' => $folderPath,
+                    'full_path' => $fullPath,
+                    'base_path' => dirname($fullPath, 3),
+                    'exists_before' => file_exists($fullPath),
+                    'parent_exists' => file_exists(dirname($fullPath)),
+                    'parent_writable' => is_writable(dirname($fullPath)),
+                    'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? 'N/A',
+                    'public_path' => public_path('storage'),
+                    'environment' => config('app.env')
+                ]);
+                
+                // Créer le dossier s'il n'existe pas
+                if (!file_exists($fullPath)) {
+                    // Essayer de créer avec error suppression pour capturer l'erreur
+                    set_error_handler(function($errno, $errstr) {
+                        throw new \Exception("Erreur mkdir: $errstr");
+                    });
+                    
+                    try {
+                        $created = mkdir($fullPath, 0755, true);
+                        restore_error_handler();
+                        
+                        Log::info('Résultat création dossier', [
+                            'created' => $created,
+                            'exists_after' => file_exists($fullPath),
+                            'is_writable' => is_writable($fullPath),
+                            'permissions' => file_exists($fullPath) ? substr(sprintf('%o', fileperms($fullPath)), -4) : 'N/A'
+                        ]);
+                        
+                        if (!$created || !file_exists($fullPath)) {
+                            throw new \Exception("Impossible de créer le dossier: " . $fullPath);
+                        }
+                    } catch (\Exception $e) {
+                        restore_error_handler();
+                        Log::error('Erreur création dossier', [
+                            'error' => $e->getMessage(),
+                            'path' => $fullPath
+                        ]);
+                        throw $e;
+                    }
+                }
+                
+                // Récupérer les informations du fichier AVANT de le déplacer
+                $tempPath = $file->getRealPath();
+                $originalName = $file->getClientOriginalName();
+                $mimeType = $file->getMimeType();
+                $fileSize = @filesize($tempPath); // Utiliser filesize() au lieu de getSize()
+                
+                // Nettoyer le nom du fichier : remplacer espaces et caractères spéciaux
+                $cleanOriginalName = preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+                $cleanOriginalName = preg_replace('/_+/', '_', $cleanOriginalName); // Éviter les underscores multiples
                 
                 // Générer un nom de fichier unique
-                $fileName = time() . '_' . Str::random(8) . '_' . $cleanName;
+                $fileName = time() . '_' . Str::random(8) . '_' . $cleanOriginalName;
+                $finalPath = $fullPath . '/' . $fileName;
                 
-                // Créer la structure de dossiers si elle n'existe pas
-                $basePath = "pieces-jointes/{$year}/{$month}/courrier-{$courrier->id}";
-                $destinationPath = storage_path('app/public/' . $basePath);
+                Log::info('Tentative de déplacement du fichier', [
+                    'temp_path' => $tempPath,
+                    'destination' => $finalPath,
+                    'file_size' => $fileSize,
+                    'mime_type' => $mimeType,
+                    'temp_exists' => file_exists($tempPath)
+                ]);
                 
-                if (!FileFacade::exists($destinationPath)) {
-                    FileFacade::makeDirectory($destinationPath, 0755, true, true);
+                // En production, déplacer directement dans public_html/storage
+                if (config('app.env') === 'production') {
+                    $moved = $file->move($fullPath, $fileName);
+                    $path = $folderPath . '/' . $fileName;
+                    
+                    Log::info('Résultat du déplacement', [
+                        'moved' => $moved !== false,
+                        'final_path' => $finalPath,
+                        'file_exists' => file_exists($finalPath)
+                    ]);
+                } else {
+                    // En local, utiliser le système de storage Laravel
+                    $path = $file->storeAs($folderPath, $fileName, 'public');
                 }
                 
-                // Déplacer le fichier téléversé avec un nom nettoyé
-                $path = $file->storeAs($basePath, $fileName, 'public');
+                // Vérifier que le fichier existe
+                $fileExists = file_exists($finalPath);
                 
-                // S'assurer que le fichier a été correctement enregistré
-                if (!Storage::disk('public')->exists($path)) {
-                    throw new \Exception("Le fichier n'a pas pu être enregistré correctement.");
+                if (!$fileExists) {
+                    Log::error('Le fichier n\'a pas été créé', [
+                        'expected_path' => $finalPath,
+                        'directory_exists' => file_exists($fullPath),
+                        'directory_writable' => is_writable($fullPath),
+                        'directory_contents' => scandir($fullPath)
+                    ]);
+                    
+                    throw new \Exception("Le fichier n'a pas pu être enregistré correctement. Chemin: " . $finalPath);
                 }
+                
+                Log::info('Pièce jointe uploadée avec succès', [
+                    'courrier_id' => $courrier->id,
+                    'path' => $path,
+                    'full_path' => $finalPath,
+                    'file_exists' => $fileExists,
+                    'file_size' => filesize($finalPath),
+                    'environment' => config('app.env')
+                ]);
+                
+                // Créer le JSON au format attendu (comme les documents normaux)
+                $documentJson = json_encode([
+                    [
+                        'download_link' => $path,
+                        'original_name' => $originalName
+                    ]
+                ]);
                 
                 // Vérifier si un document est déjà associé au courrier via document_id
                 if ($courrier->document_id) {
@@ -178,7 +293,7 @@ class CourrierController extends Controller
                     // Si aucun document n'existe, en créer un nouveau
                     if (!$document) {
                         $document = Document::create([
-                            'titre' => 'Pièce jointe - ' . $file->getClientOriginalName(),
+                            'titre' => 'Pièce jointe - ' . $originalName,
                             'reference' => 'PJ-' . time(),
                             'type_document_id' => 1, // À adapter selon votre configuration
                             'statut' => 'brouillon',
@@ -195,12 +310,12 @@ class CourrierController extends Controller
                     }
                 }
                 
-                // Enregistrer la pièce jointe dans la base de données
+                // Enregistrer la pièce jointe dans la base de données avec le format JSON
                 $pieceJointe = new PieceJointe([
-                    'nom' => $file->getClientOriginalName(),
-                    'chemin' => $path,
-                    'taille' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
+                    'nom' => $originalName,
+                    'chemin' => $documentJson, // Stocker le JSON au lieu du chemin simple
+                    'taille' => $fileSize ?: filesize($finalPath),
+                    'mime_type' => $mimeType,
                     'courrier_id' => $courrier->id,
                     'document_id' => $document->id,
                     'uploaded_by' => auth()->id(),
