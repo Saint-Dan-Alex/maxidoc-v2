@@ -56,6 +56,10 @@ use App\Http\Livewire\Systems\CourrierNature;
 // Route::post('/authentification/mot-de-passe/code/confirmation', [AuthController::class, 'confirmationpassword'])->name('auth.confirmation.code');
 // Route::post('/authentification/mot-de-passe/code/verification', [AuthController::class, 'verificationcode'])->name('auth.verification.code');
 
+// Routes pour l'authentification à deux facteurs
+Route::post('/authentification/two-factor/verify', [AuthController::class, 'verifyTwoFactor'])->name('auth.two-factor.verify');
+Route::get('/authentification/two-factor/challenge', [AuthController::class, 'showTwoFactorChallenge'])->name('auth.two-factor.challenge');
+Route::get('/authentification/two-factor/resend', [AuthController::class, 'resendTwoFactorCode'])->name('auth.two-factor.resend');
 
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
     Route::get('/authentication/reset-password', function () {

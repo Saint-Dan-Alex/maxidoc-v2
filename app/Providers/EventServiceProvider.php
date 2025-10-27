@@ -16,6 +16,8 @@ use App\Events\TacheConsulted;
 use App\Listeners\SendTacheConsultedNotification;
 use App\Events\CourrierPartage;
 use App\Listeners\SendCourrierPartageNotification;
+use Laravel\Fortify\Events\TwoFactorAuthenticationChallenged;
+use App\Listeners\SendTwoFactorEmailCode;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -47,6 +49,10 @@ class EventServiceProvider extends ServiceProvider
         
         TacheConsulted::class => [
             SendTacheConsultedNotification::class
+        ],
+
+        TwoFactorAuthenticationChallenged::class => [
+            SendTwoFactorEmailCode::class
         ],
     ];
 
