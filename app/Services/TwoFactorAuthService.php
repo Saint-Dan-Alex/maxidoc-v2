@@ -45,7 +45,7 @@ class TwoFactorAuthService
         }
         
         // Vérifier l'expiration
-        if ($user->two_factor_expires_at && $user->two_factor_expires_at->isPast()) {
+        if ($user->two_factor_expires_at && \Carbon\Carbon::parse($user->two_factor_expires_at)->isPast()) {
             return false;
         }
         
