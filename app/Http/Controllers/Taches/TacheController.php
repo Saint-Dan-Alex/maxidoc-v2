@@ -28,10 +28,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Courriers\CourrierController as CourrierController;
 use App\Models\Historique;
-use Illuminate\Support\Facades\Log;
 
 class TacheController extends Controller
 {
@@ -1362,56 +1362,73 @@ class TacheController extends Controller
 
     public function saveSignature(Request $request)
     {
-        // $filesPath = [];
-        // $pdfFile = $request->file('document');
-        // $path = 'documents/' . date('FY') . '/';
-        // $filename = $this->generateFileName($pdfFile, $path);
-        // $filename = $filename . '.' . $pdfFile->getClientOriginalExtension();
+        try {
+            Log::info('=== DEBUT SAVE SIGNATURE TACHE ===');
+            Log::info('Request data:', [
+                'tache_id' => $request->tache_id,
+                'doc_id' => $request->doc_id,
+                'is_original' => $request->is_original,
+                'has_file' => $request->hasFile('document')
+            ]);
 
-        // Storage::putFileAs('public/' . $path, $pdfFile, $filename);
+            $tache = Tache::find($request->tache_id);
+            if (!$tache) {
+                Log::error('Tâche introuvable', ['tache_id' => $request->tache_id]);
+                return response()->json(['error' => 'Tâche introuvable'], 404);
+            }
+            
+            Log::info('Tâche trouvée', ['tache_id' => $tache->id]);
+            $document = null;
 
-        // array_push($filesPath, [
-        //     'download_link' => $path . $filename,
-        //     'original_name' => $pdfFile->getClientOriginalName(),
-        // ]);
+            if ($request->is_original) {
+                Log::info('Création d\'un nouveau document');
+                $document = $this->createDocument($request, $tache->documents?->first());
+                $tache->documents()->attach($document);
+                Log::info('Document créé et attaché', ['document_id' => $document->id]);
+            } else {
+                Log::info('Mise à jour du document existant', ['doc_id' => $request->doc_id]);
+                $document = Document::find($request->doc_id);
+                if (!$document) {
+                    Log::error('Document introuvable', ['doc_id' => $request->doc_id]);
+                    return response()->json(['error' => 'Document introuvable'], 404);
+                }
+                $document->document = (new File)->handle($request, 'document', 'documents');
+                $document->save();
+                Log::info('Document mis à jour');
+            }
 
-        $tache = Tache::find($request->tache_id);
-        $document = null;
+            Historique::create([
+                "key" => "Signature",
+                "historiquecable_id" => $request->tache_id,
+                "historiquecable_type" => Tache::class,
+                "description" => "A signé le document",
+                "user_id" => Auth::user()->id,
+            ]);
+            Log::info('Historique créé');
 
-        if ($request->is_original) {
-            $document = $this->createDocument($request, $tache->documents?->first());
-            $tache->documents()->attach($document);
-        } else {
-            $document = Document::find($request->doc_id);
-            $document->document = (new File)->handle($request, 'document', 'documents');
-            $document->save();
+            $destinateursToNotify = $tache->agents->where('id', '!=', Auth::user()->agent->id);
+            $document->followers()->sync($destinateursToNotify);
+            Log::info('Followers synchronisés', ['count' => $destinateursToNotify->count()]);
+
+            $fileLink = files($document->document)->link;
+            Log::info('=== FIN SAVE SIGNATURE TACHE ===', ['file_link' => $fileLink]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Document signé avec succès !',
+                'file' => $fileLink,
+                'redirect' => route('regidoc.taches.show', $tache->id)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('=== ERREUR SAVE SIGNATURE TACHE ===');
+            Log::error('Message: ' . $e->getMessage());
+            Log::error('File: ' . $e->getFile() . ':' . $e->getLine());
+            Log::error('Trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'error' => 'Erreur lors de l\'enregistrement: ' . $e->getMessage()
+            ], 500);
         }
-
-        Historique::create([
-            "key" => "Signature",
-            "historiquecable_id" => $request->tache_id,
-            "historiquecable_type" => Tache::class,
-            "description" => "A signé le document",
-            "user_id" => Auth::user()->id,
-        ]);
-
-        $destinateursToNotify = $tache->agents->where('id', '!=', Auth::user()->agent->id);
-        $document->followers()->sync($destinateursToNotify);
-
-        // if (count($destinateursToNotify)) {
-        //     event(new CourrierCreated($courrier, $destinateursToNotify, 'A signé le document du courrier'));
-        // }
-
-        // $tache = Tache::find($request->tache_id);
-        // $doc = Document::find($request->doc_id);
-
-        // if ($tache && $doc) {
-        //     $document = $this->createDocument($request, $doc);
-        //     $tache->documents()->attach($document->id);
-        //     event(new TacheCreated($tache, $tache->user_id, 'Un nouveau fichié est attachée à la tâche !'));
-        //     return response()->json(['file' => files($document->document)->link]);
-        // }
-        return response()->json(['file' => files($document->document)->link]);
     }
 
     public function generateFileName($file, $path)

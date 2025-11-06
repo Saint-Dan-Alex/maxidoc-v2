@@ -291,8 +291,13 @@
         }
     @endphp
 
-    <div id="pdf-main-container" class="ps-0" data-doc="{{ $idDocToShow }}" data-url="{{ $docToShow }}"
-        data-name="{{ $nameDocToShow }}" data-courrier="{{ $courrier->id }}">
+    <div id="pdf-main-container" class="ps-0" 
+        data-doc="{{ $idDocToShow }}" 
+        data-docid="{{ $idDocToShow }}"
+        data-url="{{ $docToShow }}"
+        data-name="{{ $nameDocToShow }}" 
+        data-courrier="{{ $courrier->id }}" 
+        data-original="true">
 
         <div id="pdf-meta" class="nav-tools-page">
             <div class="row w-100 ms-0 align-items-center">
@@ -931,12 +936,58 @@
         </div>
     </div>
 
+    <!-- Modal de confirmation pour l'enregistrement -->
+    <div class="modal fade" id="modal-action-save" tabindex="-1" aria-labelledby="modalActionSaveLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="d-none position-absolute d-flex loader-card justify-content-center align-items-center"
+                    style="z-index: 2; top:0;left:0;right:0;bottom:0; background-color:rgba(255,255,255,0.95)">
+                    <div class="text-center">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="sr-only"></span>
+                        </div>
+                        <p class="mt-3">Enregistrer le traitement</p>
+                    </div>
+                </div>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalActionSaveLabel">Enregistrer le document signé</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Voulez-vous enregistrer ce document avec la signature ?</p>
+                    <p class="text-muted small">Le document signé sera créé en tant que pièce jointe au courrier.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="saveCourrier">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'erreur si aucune signature -->
+    <div class="modal fade" id="modal-error" tabindex="-1" aria-labelledby="modalErrorLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalErrorLabel">Signature manquante</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Vous devez d'abord placer une signature sur le document avant de l'enregistrer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Compris</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @include('regidoc.layouts.partials.head.scripts')
     {{-- <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script> --}}
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="{{ asset('vendor/jsPDF/html2canvas.min.js') }}"></script>
-    <script src="{{ asset('assets/js/showPDF.js') }}"></script>
     <script>
         // Métadonnées utilisateur accessibles côté front pour la génération du code de signature
         window.__pageUserMeta = {
@@ -945,6 +996,8 @@
             direction_titre: @json(Auth::user()->agent->direction->titre ?? ''),
         };
     </script>
+    <script src="{{ asset('assets/js/showPDF.js') }}"></script>
+    {{-- Toutes les variables (url, docName, courrier_id, tache_id, doc_id, is_original) sont définies dans showPDF.js --}}
     <script src="{{ asset('assets/js/signature.js') }}"></script>
 
     <script>

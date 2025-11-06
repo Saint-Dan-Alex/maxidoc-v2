@@ -208,12 +208,8 @@ input.addEventListener("change", () => {
 //     __TOTAL_PAGES,
 //     __PAGE_RENDERING_IN_PROGRESS = 0;
 
-// let url = $('#pdf-main-container').data('url');
-// let docName = $('#pdf-main-container').data('name');
-// let courrier_id = $('#pdf-main-container').data('courrier');
-// let tache_id = $('#pdf-main-container').data('tache');
-let doc_id = $("#pdf-main-container").data("doc");
-let is_original = $("#pdf-main-container").data("original");
+// Variables url, docName, courrier_id, tache_id, doc_id, is_original
+// sont maintenant définies dans la page blade avant le chargement de ce script
 
 // showPDF(url);
 
@@ -1148,6 +1144,19 @@ $("body").on("click", ".text-layer", function () {
       top: event.clientY + window.scrollY + "px",
     });
 
+    var $page = $(this).closest('.pdf-page');
+    var pageNum = $page.find('canvas').data('page') || parseInt(($page.attr('id') || '').split('-')[1]);
+    var droppableOffset = $page.offset();
+    var relativeLeft = event.pageX - droppableOffset.left;
+    var relativeTop = event.pageY - droppableOffset.top;
+
+    $(draggableElement).attr('data-page', pageNum);
+    $(draggableElement).attr('data-x', relativeLeft);
+    $(draggableElement).attr('data-y', relativeTop);
+
+    $('.save_pdf').removeClass('disabled');
+    $('.save_pdf').removeAttr('disabled');
+
     $(".signature")
       .find("img")
       .on("dblclick", function () {
@@ -1605,22 +1614,44 @@ $(".save_pdf").on("click", function () {
 
 // Handle button click to insert an image into the PDF
 $("#saveCourrier").on("click", function () {
+  console.log("=== DEBUT SAUVEGARDE ===");
+  console.log("URL:", url);
+  console.log("docName:", docName);
+  console.log("courrier_id:", courrier_id);
+  console.log("doc_id:", doc_id);
+  console.log("is_original:", is_original);
+  
   $(".loader-card").removeClass("d-none");
-  loadPDF(url, "/courriers/save/signature");
+  loadPDF("/courriers/save/signature");
 });
 
 $("#saveTache").on("click", function () {
-  console.log(true);
+  console.log("=== DEBUT SAUVEGARDE TACHE ===");
+  console.log("URL:", url);
+  console.log("docName:", docName);
+  console.log("tache_id:", tache_id);
+  console.log("doc_id:", doc_id);
+  console.log("is_original:", is_original);
+  
   $(".loader-card").removeClass("d-none");
-  loadPDF(url, "/ajax/taches/save/signature");
+  loadPDF("/ajax/taches/save/signature");
 });
 
-async function loadPDF(url, ajaxUrl) {
+async function loadPDF(ajaxUrl) {
+  console.log("=== LOAD PDF START ===");
+  console.log("URL:", url);
+  console.log("AJAX URL:", ajaxUrl);
+  
   let signatureElements = document.querySelectorAll(".signature.dropped-true");
+  console.log("Nombre de signatures:", signatureElements.length);
 
-  // Fetch the PDF file from the server
-  const response = await fetch(url);
-  const pdfBytes = await response.blob();
+  try {
+    // Fetch the PDF file from the server
+    console.log("Fetching PDF...");
+    const response = await fetch(url);
+    console.log("Response status:", response.status);
+    const pdfBytes = await response.blob();
+    console.log("PDF Blob size:", pdfBytes.size);
 
   // Convert the Blob to an ArrayBuffer
   const buffer = await new Response(pdfBytes).arrayBuffer();
@@ -1703,24 +1734,50 @@ async function loadPDF(url, ajaxUrl) {
       processData: false,
       contentType: false,
       success: function (data) {
-        // const backBTN = document.createElement('a');
-        // backBTN.href = "javascript:history.go(-2)";
-
-        // // Trigger the back btn
-        // backBTN.click();
-        window.history.go(-1);
-
+        console.log("=== AJAX SUCCESS ===");
+        console.log("Response:", data);
+        
         $(".loader-card").addClass("d-none");
-
         $(".modal.show").modal("hide");
 
-        $("#pdf-contents").empty();
-        $(signatureElements).remove();
+        // Afficher un message de succès
+        if (data.message) {
+          alert(data.message);
+        } else {
+          alert("Document signé avec succès !");
+        }
 
-        showPDF(data.file);
+        // Rediriger vers la page appropriée
+        if (data.redirect) {
+          window.location.href = data.redirect;
+        } else if (courrier_id) {
+          // Rediriger vers la page du courrier
+          window.location.href = "/courriers/" + courrier_id;
+        } else if (tache_id) {
+          // Rediriger vers la page de la tâche
+          window.location.href = "/taches/" + tache_id;
+        } else {
+          // Par défaut, retourner à la page précédente
+          window.history.go(-1);
+        }
       },
+      error: function(xhr, status, error) {
+        console.error("=== AJAX ERROR ===");
+        console.error("Status:", status);
+        console.error("Error:", error);
+        console.error("Response:", xhr.responseText);
+        
+        $(".loader-card").addClass("d-none");
+        alert("Erreur lors de l'enregistrement: " + error);
+      }
     });
   });
+  } catch (error) {
+    console.error("=== LOAD PDF ERROR ===");
+    console.error("Error:", error);
+    $(".loader-card").addClass("d-none");
+    alert("Erreur lors du traitement du PDF: " + error.message);
+  }
 }
 
 function getImagePosition(page, image, sizeRatio) {

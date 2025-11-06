@@ -544,63 +544,183 @@ class CourrierController extends Controller
  
     public function saveTraitementSignature(Request $request)
     {
-        $courrier = Courrier::find($request->courrier_id);
-        $traitement = null;
+        try {
+            $courrier = Courrier::find($request->courrier_id);
+            $traitement = null;
 
-        if ($courrier->traitements->count() == 0 || $request->is_original) {
-            // I save traitement
-            $traitement = new CourrierTraitement();
-            $traitement->agent_id = Auth::user()->agent->id;
-            $traitement->note = 'Document validé';
+            if ($courrier->traitements->count() == 0 || $request->is_original) {
+                // Créer un nouveau traitement
+                $traitement = new CourrierTraitement();
+                $traitement->agent_id = Auth::user()->agent->id;
+                $traitement->note = 'Document signé';
+                $traitement->save();
+
+                // Mettre à jour le statut du document si il existe
+                if ($courrier->document) {
+                    $courrier->document->statut_id = 6;
+                    $courrier->document->save();
+                }
+
+                $courrier->traitements()->attach($traitement);
+            } else {
+                // Utiliser le dernier traitement existant
+                $traitement = $courrier->traitements->last();
+                if ($traitement && $traitement->document_url != null) {
+                    // Supprimer l'ancien fichier
+                    Storage::delete($traitement->document_url);
+                }
+            } 
+            // I change the stap
+            $courrier->etapes()->attach(4);
+            $courrier->destinateurs()->attach(Auth::user()->agent->direction->responsable);
+
+            // Sauvegarder le PDF signé
+            $pdfFile = $request->file('document');
+            $path = 'courrier-signatures/' . date('Y/m') . '/';
+            
+            // Récupérer le nom original du document et ajouter (copie)
+            $originalDocName = $courrier->document?->libelle ?? 'Document';
+            // Nettoyer le nom pour éviter les caractères spéciaux
+            $cleanDocName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalDocName);
+            $cleanDocName = preg_replace('/_+/', '_', $cleanDocName);
+            
+            $filename = $cleanDocName . '_copie_' . time() . '.pdf';
+            
+            // IMPORTANT: Obtenir la taille AVANT de déplacer le fichier
+            $fileSize = $pdfFile->getSize();
+            
+            // Déterminer le chemin de base pour le stockage
+            if (config('app.env') === 'production') {
+                $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+                if (strpos($documentRoot, '/public') !== false && strpos($documentRoot, '/public_html') === false) {
+                    $documentRoot = str_replace('/public', '/public_html', $documentRoot);
+                }
+                $basePath = $documentRoot . '/storage';
+                if (!file_exists($basePath)) {
+                    @mkdir($basePath, 0755, true);
+                }
+                $fullPath = $basePath . '/' . $path;
+                if (!file_exists($fullPath)) {
+                    @mkdir($fullPath, 0755, true);
+                }
+                $pdfFile->move($fullPath, $filename);
+                $savedPath = $path . $filename;
+            } else {
+                $savedPath = $pdfFile->storeAs($path, $filename, 'public');
+            }
+
+            $traitement->document_url = $savedPath;
             $traitement->save();
 
-            $courrier->document->statut_id = 6;
-            $courrier->document->save();
+            // Créer une pièce jointe avec le document signé
+            $originalName = $originalDocName . ' (copie).pdf';
+            $documentJson = json_encode([
+                [
+                    'download_link' => $savedPath,
+                    'original_name' => $originalName
+                ]
+            ]);
 
-            $courrier->traitements()->attach($traitement);
-        }else{
-            if(!$request->is_original){
-                $traitement = CourrierTraitement::find($request->doc_id);
-                if($traitement->document_url != null){
-                    // delete the old file
-                    Storage::delete($traitement->document_url);
-                }
-            }else{
-                $traitement = $courrier->traitements->last();
-                if($traitement->document_url != null){
-                    // delete the old file
-                    Storage::delete($traitement->document_url);
+            // Vérifier si un document est déjà associé au courrier
+            if ($courrier->document_id) {
+                $document = Document::find($courrier->document_id);
+            } else {
+                $document = $courrier->documents->first();
+                if (!$document) {
+                    $document = Document::create([
+                        'titre' => 'Document signé - ' . $courrier->reference_interne,
+                        'reference' => 'SIG-' . time(),
+                        'type_document_id' => 1,
+                        'statut' => 'valide',
+                        'est_prive' => false,
+                        'courrier_id' => $courrier->id,
+                        'created_by' => auth()->id(),
+                    ]);
+                    $courrier->update(['document_id' => $document->id]);
+                } else {
+                    $courrier->update(['document_id' => $document->id]);
                 }
             }
-        } 
-        // I change the stap
-        $courrier->etapes()->attach(4);
-        $courrier->destinateurs()->attach(Auth::user()->agent->direction->responsable);
 
-        $traitement->document_url = (new File)->handle($request, 'document', 'documents');
-        $traitement->save();
+            // Créer la pièce jointe
+            $pieceJointe = new PieceJointe([
+                'nom' => $originalName,
+                'chemin' => $documentJson,
+                'taille' => $fileSize, // Utiliser la taille récupérée AVANT le déplacement
+                'mime_type' => 'application/pdf',
+                'courrier_id' => $courrier->id,
+                'document_id' => $document->id,
+                'uploaded_by' => auth()->id(),
+            ]);
+            
+            $courrier->piecesJointes()->save($pieceJointe);
 
-        Historique::create([
-            "key" => "Signature",
-            "historiquecable_id" => $request->courrier_id,
-            "historiquecable_type" => Courrier::class,
-            "description" => Auth::user()->name.' a signé ce document.',
-            "user_id" => Auth::user()->id,
-        ]);
+            Historique::create([
+                "key" => "Signature",
+                "historiquecable_id" => $request->courrier_id,
+                "historiquecable_type" => Courrier::class,
+                "description" => Auth::user()->name.' a signé ce document et créé une copie signée.',
+                "user_id" => Auth::user()->id,
+            ]);
 
-        $destinateursToNotify = $courrier->destinateurs->where('id', '!=', Auth::user()->agent->id);
+            $destinateursToNotify = $courrier->destinateurs->where('id', '!=', Auth::user()->agent->id);
 
-        if (count($destinateursToNotify)) {
-            event(new CourrierCreated($courrier, $destinateursToNotify, 'A signé le document du courrier'));
+            if (count($destinateursToNotify)) {
+                event(new CourrierCreated($courrier, $destinateursToNotify, 'A signé le document du courrier'));
+            }
+
+            Log::info('Document signé créé avec succès', [
+                'courrier_id' => $courrier->id,
+                'traitement_id' => $traitement->id,
+                'piece_jointe_id' => $pieceJointe->id,
+                'path' => $savedPath
+            ]);
+
+            return $traitement;
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la sauvegarde de la signature: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
-
-        return $traitement;
     }
 
     public function saveSignature(Request $request)
     {
-        $traitement = $this->saveTraitementSignature($request);
-        return response()->json(['file' => files($traitement->document_url)->link]);
+        try {
+            Log::info('=== DEBUT SAVE SIGNATURE COURRIER ===', [
+                'courrier_id' => $request->courrier_id,
+                'doc_id' => $request->doc_id,
+                'is_original' => $request->is_original
+            ]);
+            
+            $traitement = $this->saveTraitementSignature($request);
+            
+            // Récupérer le courrier depuis la requête au lieu du traitement
+            $courrier = Courrier::find($request->courrier_id);
+            
+            Log::info('=== FIN SAVE SIGNATURE COURRIER ===', [
+                'traitement_id' => $traitement->id,
+                'courrier_id' => $courrier->id
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Document signé avec succès !',
+                'file' => files($traitement->document_url)->link,
+                'redirect' => route('regidoc.courriers.show', $courrier->id)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('=== ERREUR SAVE SIGNATURE COURRIER ===');
+            Log::error('Message: ' . $e->getMessage());
+            Log::error('File: ' . $e->getFile() . ':' . $e->getLine());
+            Log::error('Trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors de l\'enregistrement: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 
@@ -761,6 +881,30 @@ public function traitement($courrier)
 
             $newCourrier = $this->saveCourrierSortant(new Courrier($oldata));
             Log::info('📨 Courrier sortant créé', ['new_courrier_id' => $newCourrier->id]);
+
+            // Copier les pièces jointes du courrier entrant vers le courrier sortant
+            if ($courrier->piecesJointes && $courrier->piecesJointes->count() > 0) {
+                Log::info('📎 Copie des pièces jointes', ['count' => $courrier->piecesJointes->count()]);
+                
+                foreach ($courrier->piecesJointes as $pieceJointe) {
+                    $nouvellePieceJointe = new PieceJointe([
+                        'nom' => $pieceJointe->nom,
+                        'chemin' => $pieceJointe->chemin,
+                        'taille' => $pieceJointe->taille,
+                        'mime_type' => $pieceJointe->mime_type,
+                        'courrier_id' => $newCourrier->id,
+                        'document_id' => $pieceJointe->document_id,
+                        'uploaded_by' => auth()->id(),
+                    ]);
+                    
+                    $newCourrier->piecesJointes()->save($nouvellePieceJointe);
+                    Log::info('✅ Pièce jointe copiée', [
+                        'original_id' => $pieceJointe->id,
+                        'new_id' => $nouvellePieceJointe->id,
+                        'nom' => $pieceJointe->nom
+                    ]);
+                }
+            }
 
             foreach ($courrier->traitements as $t) {
                 $newCourrier->traitements()->attach($t);
@@ -2329,6 +2473,23 @@ public function update(Request $request, $id)
             $oldata['dest_externe_id'] = $extern_destinataire->id;
 
             $newCourrier = $this->saveCourrierSortant(new Courrier($oldata));
+
+            // Copier les pièces jointes du courrier entrant vers le courrier sortant
+            if ($courrier->piecesJointes && $courrier->piecesJointes->count() > 0) {
+                foreach ($courrier->piecesJointes as $pieceJointe) {
+                    $nouvellePieceJointe = new PieceJointe([
+                        'nom' => $pieceJointe->nom,
+                        'chemin' => $pieceJointe->chemin,
+                        'taille' => $pieceJointe->taille,
+                        'mime_type' => $pieceJointe->mime_type,
+                        'courrier_id' => $newCourrier->id,
+                        'document_id' => $pieceJointe->document_id,
+                        'uploaded_by' => auth()->id(),
+                    ]);
+                    
+                    $newCourrier->piecesJointes()->save($nouvellePieceJointe);
+                }
+            }
 
             foreach ($courrier->traitements as $traitement) {
                 $newCourrier->traitements()->attach($traitement);

@@ -696,9 +696,15 @@
         </a>
     </div> --}}
 
-    <div id="pdf-main-container" class="ps-0" data-original="{{ $is_original }}" data-doc="{{ $idDocToShow }}"
-        data-url="{{ $docToShow }}" data-name="{{ $nameDocToShow }}" data-tache="{{ $tache?->id }}"
-        data-courrier="{{ $courrier?->id }}" data-traitement="{{ $isTraitement }}">
+    <div id="pdf-main-container" class="ps-0" 
+        data-original="{{ $is_original }}" 
+        data-doc="{{ $idDocToShow }}"
+        data-docid="{{ $idDocToShow }}"
+        data-url="{{ $docToShow }}" 
+        data-name="{{ $nameDocToShow }}" 
+        data-tache="{{ $tache?->id }}"
+        data-courrier="{{ $courrier?->id }}" 
+        data-traitement="{{ $isTraitement }}">
 
         <div id="pdf-meta" class="nav-tools-page">
             <div class="row w-100 ms-0 align-items-center">
@@ -1415,42 +1421,45 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal-action-save" tabindex="-1" aria-labelledby="exampleModalLabel">
+    <div class="modal fade" id="modal-action-save" tabindex="-1" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
+                <div class="d-none position-absolute d-flex loader-card justify-content-center align-items-center"
+                    style="z-index: 2; top:0;left:0;right:0;bottom:0; background-color:rgba(255,255,255,0.95)">
+                    <div class="text-center">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="sr-only"></span>
+                        </div>
+                        <p class="mt-3">Enregistrement du traitement</p>
+                    </div>
+                </div>
                 <div class="modal-header ">
                     <h5 class="modal-title d-flex align-items-center" id="exampleModalLabel">
-                        <span>Enregistrement</span>
+                        <span>Enregistrer le document signé</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="d-none position-absolute d-flex loader-card justify-content-center"
-                        style="z-index: 2; top:-35px;left:0;right:0;bottom:20px; background-color:rgba(255,255,255,0.95)">
-                        <div class="m-auto text-center">
-                            <div class="spinner-border text-success" role="status">
-                                <span class="sr-only"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-lg-3 g-2">
-                        <div class="col-12">
-                            @if ($tache)
-                                <button id="saveTache"
-                                    class="flex-row gap-3 btn btn-action-doc d-flex justify-content-center align-items-center w-100">
-                                    <i class="fi fi-rr-disk"></i>
-                                    Enregistrer le traitement
-                                </button>
-                            @else
-                                <button id="saveCourrier"
-                                    class="flex-row gap-3 btn btn-action-doc d-flex justify-content-center align-items-center w-100">
-                                    <i class="fi fi-rr-disk"></i>
-                                    Enregistrer le traitement
-                                </button>
-                            @endif
-                        </div>
-                    </div>
+                    <p>Voulez-vous enregistrer ce document avec la signature ?</p>
+                    @if ($tache)
+                        <p class="text-muted small">Le document signé sera enregistré dans la tâche.</p>
+                    @else
+                        <p class="text-muted small">Le document signé sera créé en tant que pièce jointe au courrier.</p>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    @if ($tache)
+                        <button id="saveTache" class="btn btn-success">
+                            <i class="fi fi-rr-disk"></i>
+                            Enregistrer
+                        </button>
+                    @else
+                        <button id="saveCourrier" class="btn btn-success">
+                            <i class="fi fi-rr-disk"></i>
+                            Enregistrer
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -1619,6 +1628,8 @@
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="{{ asset('vendor/jsPDF/html2canvas.min.js') }}"></script>
     <script src="{{ asset('assets/js/showPDF.js') }}"></script>
+
+    {{-- Toutes les variables (url, docName, courrier_id, tache_id, doc_id, is_original) sont définies dans showPDF.js --}}
     <script src="{{ asset('assets/js/signature.js') }}"></script>
 
     <script>

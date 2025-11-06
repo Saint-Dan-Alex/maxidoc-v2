@@ -9,12 +9,27 @@ let __PDF_DOC,
     __TOTAL_PAGES,
     __PAGE_RENDERING_IN_PROGRESS = 0;
 
-let url = $("#pdf-main-container").data("url");
-let docName = $("#pdf-main-container").data("name");
-let courrier_id = $("#pdf-main-container").data("courrier");
-let tache_id = $("#pdf-main-container").data("tache");
-let docId = $("#pdf-main-container").data("docid");
-let code = $("#pdf-main-container").data("code");
+// Variables globales accessibles par signature.js - Déclarées mais initialisées après le DOM
+var url, docName, courrier_id, tache_id, docId, doc_id, code, is_original;
+
+// Initialisation des variables une fois le DOM chargé
+$(document).ready(function() {
+    url = $("#pdf-main-container").data("url");
+    docName = $("#pdf-main-container").data("name");
+    courrier_id = $("#pdf-main-container").data("courrier");
+    tache_id = $("#pdf-main-container").data("tache");
+    docId = $("#pdf-main-container").data("docid");
+    doc_id = docId; // Alias pour signature.js qui utilise snake_case
+    code = $("#pdf-main-container").data("code");
+    is_original = $("#pdf-main-container").data("original") === true || $("#pdf-main-container").data("original") === "true";
+    
+    console.log("Variables initialisées:", {url, docName, courrier_id, tache_id, doc_id, is_original});
+    
+    // Charger le PDF une fois les variables initialisées
+    if (url) {
+        showPDF(url);
+    }
+});
 
 // Fonctions pour gérer le loader
 function showLoader() {
@@ -53,8 +68,7 @@ function hideLoader() {
     }
 }
 
-// Show the pdf document.
-showPDF(url);
+// L'appel à showPDF(url) a été déplacé dans $(document).ready() pour s'assurer que les variables sont initialisées
 
 // Handle window resize for responsive PDF display
 let resizeTimeout;
