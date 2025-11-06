@@ -104,14 +104,15 @@ return new class extends Migration
 
         // 🔴 Création du dossier mensuel pour les documents
         $yearMonth = now()->format('FY'); // Ex: August2025
-        $destinationPath = storage_path('app/public/documents/' . $yearMonth);
+        $publicRoot = config('filesystems.disks.public.root');
+        $destinationPath = $publicRoot . '/documents/' . $yearMonth;
         if (!File::exists($destinationPath)) {
             File::makeDirectory($destinationPath, 0755, true);
         }
 
         // Fonction de copie des fichiers par défaut
-        $copyFile = function ($sourceFile) use ($yearMonth, $destinationPath) {
-            $sourcePath = storage_path('app/public/documents_defaut/' . $sourceFile);
+        $copyFile = function ($sourceFile) use ($yearMonth, $destinationPath, $publicRoot) {
+            $sourcePath = $publicRoot . '/documents_defaut/' . $sourceFile;
             if (!File::exists($sourcePath)) {
                 throw new \Exception("Fichier manquant : " . $sourcePath);
             }
