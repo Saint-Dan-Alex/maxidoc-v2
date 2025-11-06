@@ -15,6 +15,7 @@ use Livewire\WithFileUploads;
 use Spatie\PdfToImage\Pdf;
 use Intervention\Image\ImageManagerStatic as Image;
 
+
 class TacheDocumentPane extends Component
 {
     use WithFileUploads;
@@ -45,6 +46,15 @@ class TacheDocumentPane extends Component
 
     public function addFichier()
     {
+        // Vérification des permissions du dossier de logs
+        $logPath = storage_path('logs/laravel.log');
+        if (!is_writable(dirname($logPath))) {
+            throw new \Exception("Le dossier de logs n'est pas accessible en écriture: " . dirname($logPath));
+        }
+        
+        // Test d'écriture dans les logs
+        \Log::info('=== DÉBUT addFichier ===');
+        \Log::info('Validation du formulaire...');
         $this->validate();
 
         $classer = Classeur::where('direction_id', Auth::user()->agent->direction_id)
@@ -87,7 +97,56 @@ class TacheDocumentPane extends Component
             throw new \Exception("Le type de document avec l'ID 3 n'existe pas dans la base de données");
         }
         
-        // Créer le document avec les champs de base d'abord
+        // Déterminer le document principal (parent) le cas échéant
+        $parentId = null;
+        $parentCourrierId = null;
+        Log::info('Début de la détermination du parent_document_id', [
+            'tache_id' => $this->tache->id,
+            'courrier_id' => $this->tache->courrier_id ?? 'null',
+            'tache_data' => $this->tache->toArray()
+        ]);
+        try {
+            if (!empty($this->tache->courrier_id)) {
+                $courrier = \App\Models\Courrier::find($this->tache->courrier_id);
+                if ($courrier) {
+                    // Priorité au document principal s'il est défini sur le courrier
+                    if (!empty($courrier->document_id)) {
+                        $parent = \App\Models\Document::find($courrier->document_id);
+                    } else {
+                        // Sinon, prendre un document du courrier qui n'a pas de parent
+                        $parent = $courrier->documents()->whereNull('parent_document_id')->first();
+                    }
+                    if ($parent) {
+                        $parentId = $parent->id;
+                        $parentCourrierId = $parent->courrier_id ?? $courrier->id;
+                        Log::info('Parent document trouvé', [
+                            'parent_id' => $parentId,
+                            'parent_courrier_id' => $parentCourrierId,
+                            'parent_data' => $parent->toArray()
+                        ]);
+                    } else {
+                        // En dernier recours, lier au courrier si disponible
+                        $parentCourrierId = $courrier->id;
+                        Log::warning('Aucun document parent trouvé, utilisation du courrier comme parent', [
+                            'courrier_id' => $courrier->id
+                        ]);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Impossible de déterminer le parent_document_id avant création', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Créer le document avec les champs de base d'abord (en incluant parent_document_id si disponible)
+        Log::info('Création du document avec les paramètres', [
+            'parent_document_id' => $parentId,
+            'courrier_id' => $parentCourrierId,
+            'dossier_id' => $dossier->id,
+            'file' => $this->file->getClientOriginalName()
+        ]);
+
         $document = new \App\Models\Document([
             'dossier_id' => $dossier->id,
             'libelle' => Str::beforeLast($this->file->getClientOriginalName(), '.'),
@@ -98,6 +157,8 @@ class TacheDocumentPane extends Component
             'statut_id' => 1, // Statut par défaut
             'created_by' => Auth::user()->agent->id,
             'is_piece_jointe' => 1,
+            'parent_document_id' => $parentId, // Peut être null si pas de parent
+            'courrier_id' => $parentCourrierId, // Conserver la liaison au courrier si connue
         ]);
         
         // Associer le type de document
@@ -113,10 +174,11 @@ class TacheDocumentPane extends Component
 
         $tache = Tache::findOrFail($this->tache->id);
 
-        // Lier le document au document principal (affichage groupé) si la tâche est rattachée à un courrier
+        // Lier le document au document principal après création (idempotent si déjà défini)
         try {
+            // Si le parent a été déjà déterminé plus haut, ce bloc n'écrasera rien
             $parent = null;
-            if (!empty($tache->courrier_id)) {
+            if (!$document->parent_document_id && !empty($tache->courrier_id)) {
                 $courrier = \App\Models\Courrier::find($tache->courrier_id);
                 if ($courrier) {
                     if (!empty($courrier->document_id)) {
@@ -130,7 +192,7 @@ class TacheDocumentPane extends Component
             if ($parent) {
                 $document->parent_document_id = $parent->id;
                 if (is_null($document->courrier_id)) {
-                    $document->courrier_id = $parent->courrier_id;
+                    $document->courrier_id = $parent->courrier_id ?? $courrier->id ?? $document->courrier_id;
                 }
                 $document->statut_id = $parent->statut_id ?? $document->statut_id;
                 if (isset($parent->mark_as_done)) {
@@ -153,8 +215,8 @@ class TacheDocumentPane extends Component
             // array_push($urls, files($document->document)->link);
             array_push($urls, ['link' => files($document->document)->link, 'id' => $document->id, 'courrier_id' => $tache->courrier?->id ?? '']);
         }
-
         $this->emit('documentAdded', $urls);
+        \Log::info('=== FIN addFichier - Succès ===');
     }
  
      private function generatePdfPreview()

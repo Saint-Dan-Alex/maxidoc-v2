@@ -74,7 +74,12 @@ class Document extends Model
         'user_id',
         'lieu_id',
         'service_id',
-        'is_piece_jointe'
+        'is_piece_jointe',
+        // Champs relationnels et états complémentaires
+        'parent_document_id',
+        'courrier_id',
+        'statut_id',
+        'created_by',
     ];
 
     /**
