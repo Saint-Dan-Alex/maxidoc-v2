@@ -39,7 +39,7 @@
                                 <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
                                     data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
                                     aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
-                                    wire:click='changeTab(2)'>Courriers entrants</button>
+                                    wire:click='changeTab(2)'>Entrants</button>
                             </li>
                         @endcan
                         
@@ -50,7 +50,7 @@
                             <button class="nav-link {{ $active_tab == 3 ? 'active' : '' }}" id="sortant-tab"
                                 data-bs-toggle="tab" data-bs-target="#sortant" type="button" role="tab"
                                 aria-controls="sortant" aria-selected="{{ $active_tab == 3 }}"
-                                wire:click='changeTab(3)'>Courriers traités</button>
+                                wire:click='changeTab(3)'>Traités</button>
                         </li>
                     @endcan
 
@@ -59,7 +59,7 @@
                             <button class="nav-link {{ $active_tab == 4 ? 'active' : '' }}" id="interne-tab"
                                 data-bs-toggle="tab" data-bs-target="#interne" type="button" role="tab"
                                 aria-controls="interne" aria-selected="{{ $active_tab == 4 }}"
-                                wire:click='changeTab(4)'>Courriers internes</button>
+                                wire:click='changeTab(4)'>Internes</button>
                         </li>
                     @endcan
                 </ul>
