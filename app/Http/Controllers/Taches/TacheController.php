@@ -229,6 +229,15 @@ class TacheController extends Controller
             $this->createTacheDoc($request, $tache, $followers);
         }
 
+        // Enregistrer dans l'historique la création de la tâche
+        Historique::create([
+            "key" => "Ajout de tâche",
+            "historiquecable_id" => $tache->id,
+            "historiquecable_type" => Tache::class,
+            "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a créé une tâche.",
+            "user_id" => Auth::user()->id,
+        ]);
+
         return $tache;
     }
 
@@ -717,13 +726,12 @@ class TacheController extends Controller
                 }
             }
 
-            Historique::create([
-                "key" => "Ajout de tâche",
-                "historiquecable_id" => $tache->id,
-                "historiquecable_type" => Tache::class,
-                "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a créé une tâche.",
-                "user_id" => Auth::user()->id,
-            ]);
+            // Notifier le créateur de la tâche
+            event(new TacheCreated(
+                $tache,
+                Auth::user()->agent->id,
+                'Votre tâche a été créée avec succès'
+            ));
 
             $content = json_encode([
                 'name' => 'Gestion de tâches',
