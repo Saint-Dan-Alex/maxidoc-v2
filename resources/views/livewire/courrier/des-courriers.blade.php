@@ -29,7 +29,7 @@
                             <button class="nav-link {{ $active_tab == 1 ? 'active' : '' }}" id="all-tab"
                                 data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab"
                                 aria-controls="all" aria-selected="{{ $active_tab == 1 }}"
-                                wire:click='changeTab(1)'>Tous les courriers</button>
+                                wire:click='changeTab(1)'>Tous </button>
                         </li>
                     @endif
 
