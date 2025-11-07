@@ -7,6 +7,7 @@ use App\Models\Classeur;
 use App\Models\Document;
 use App\Models\Dossier;
 use App\Models\Tache;
+use App\Models\Historique;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -53,8 +54,8 @@ class TacheDocumentPane extends Component
         }
         
         // Test d'écriture dans les logs
-        \Log::info('=== DÉBUT addFichier ===');
-        \Log::info('Validation du formulaire...');
+        Log::info('=== DÉBUT addFichier ===');
+        Log::info('Validation du formulaire...');
         $this->validate();
 
         $classer = Classeur::where('direction_id', Auth::user()->agent->direction_id)
@@ -74,18 +75,20 @@ class TacheDocumentPane extends Component
                 ]
             );
         }
-
-        $dossier = Dossier::where('reference', 'DT/' . Auth::user()->agent?->matricule)->first();
+        // Toujours utiliser/creer le Dossier "Documents partagés" sous ce classeur
+        $dossier = Dossier::where('classeur_id', $classer->id)
+            ->where('titre', 'Documents partagés')
+            ->first();
         if ($dossier == null) {
             $dossier = Dossier::firstOrCreate(
                 [
                     'classeur_id' => $classer->id,
-                    'titre' => 'Taches',
+                    'titre' => 'Documents partagés',
                 ],
                 [
-                    'reference' => 'DT/' . Auth::user()->agent?->matricule,
+                    'reference' => 'DOCS-PARTAGES/' . (Auth::user()->agent?->matricule ?? ''),
                     'confidentiel' => 0,
-                    'description' => 'Dossier pour les documents créés de l\'agent ' . Auth::user()->agent?->nom,
+                    'description' => 'Dossier des documents partagés (issus des tâches) pour l\'agent ' . (Auth::user()->agent?->nom ?? ''),
                     'created_by' => Auth::user()->agent->id,
                     'updated_by' => Auth::user()->agent->id,
                 ]
@@ -205,7 +208,41 @@ class TacheDocumentPane extends Component
                 'error' => $e->getMessage(),
             ]);
         }
+        // Logs pour vérifier le passage avant l'attache du document à la tâche
+        Log::info('Avant attach document->tache', [
+            'tache_id' => $tache->id,
+            'document_id' => $document->id,
+        ]);
         $tache->documents()->attach($document->id);
+        Log::info('Après attach document->tache OK', [
+            'tache_id' => $tache->id,
+            'document_id' => $document->id,
+        ]);
+
+        // Historique: ajout de document via le panneau Livewire (avec logs)
+        try {
+            Log::info('Historique::create avant', [
+                'key' => 'Ajout de document',
+                'tache_id' => $tache->id,
+                'user_id' => Auth::id(),
+                'agent' => Auth::user()->agent->only(['id','nom','prenom']) ?? null,
+            ]);
+            Historique::create([
+                'key' => 'Ajout de document',
+                'historiquecable_id' => $tache->id,
+                'historiquecable_type' => Tache::class,
+                'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a ajouté un document à la tâche.',
+                'user_id' => Auth::user()->id,
+            ]);
+            Log::info('Historique::create OK', [
+                'tache_id' => $tache->id,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Historique::create KO', [
+                'tache_id' => $tache->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         $this->reset('file');
         $this->file = '';
@@ -216,7 +253,7 @@ class TacheDocumentPane extends Component
             array_push($urls, ['link' => files($document->document)->link, 'id' => $document->id, 'courrier_id' => $tache->courrier?->id ?? '']);
         }
         $this->emit('documentAdded', $urls);
-        \Log::info('=== FIN addFichier - Succès ===');
+        Log::info('=== FIN addFichier - Succès ===');
     }
  
      private function generatePdfPreview()

@@ -161,29 +161,29 @@ class TachePane extends Component
                 return;
             }
 
-            // Créer ou récupérer le classeur
+            // Créer ou récupérer le classeur "Documents partagés"
             $classer = Classeur::firstOrCreate(
                 [
                     'direction_id' => Auth::user()->agent?->direction_id,
-                    'titre' => 'Classeur tâches ' . Auth::user()->agent?->direction->titre,
+                    'titre' => 'Documents partagés',
                 ],
                 [
-                    'reference' => 'CLS-TACHES-' . strtoupper(Str::random(8)),
-                    'description' => 'Classeur pour les documents des tâches',
+                    'reference' => 'CLS-PARTAGES-' . strtoupper(Str::random(8)),
+                    'description' => 'Classeur pour les documents partagés (issus des tâches)',
                     'created_by' => Auth::user()->agent->id,
                     'updated_by' => Auth::user()->agent->id,
                 ]
             );
 
-            // Créer ou récupérer le dossier
+            // Créer ou récupérer le dossier "Documents partagés" sous ce classeur
             $dossier = Dossier::firstOrCreate(
                 [
                     'classeur_id' => $classer->id,
-                    'titre' => 'Dossier ' . Auth::user()->agent?->nom . ' ' . Auth::user()->agent?->post_nom,
+                    'titre' => 'Documents partagés',
                 ],
                 [
-                    'reference' => 'DT/' . Auth::user()->agent?->matricule,
-                    'description' => 'Dossier pour les documents tâche ' . Auth::user()->agent?->nom . ' ' . Auth::user()->agent?->post_nom,
+                    'reference' => 'DOCS-PARTAGES/' . (Auth::user()->agent?->matricule ?? ''),
+                    'description' => 'Dossier des documents partagés (issus des tâches) pour l\'agent ' . (Auth::user()->agent?->nom . ' ' . (Auth::user()->agent?->post_nom ?? '')),
                     'confidentiel' => 0,
                     'created_by' => Auth::user()->agent->id,
                     'updated_by' => Auth::user()->agent->id,
@@ -230,8 +230,15 @@ class TachePane extends Component
             // Afficher un message de succès
             $this->emit('alert', 'success', 'Le document a été ajouté avec succès à la tâche');
             
-            // Déclencher l'événement
+            // Déclencher l'événement: propriétaire + agents assignés (hors auteur)
             event(new TacheCreated($tache, $tache->user->agent->id, 'La tâche ' . $tache->titre . ' a un nouveau fichier'));
+            $auteurId = Auth::user()->agent->id;
+            $agentsAssignes = $tache->agents()->get();
+            foreach ($agentsAssignes as $agent) {
+                if ($agent->id != $auteurId) {
+                    event(new TacheCreated($tache, $agent->id, 'La tâche ' . $tache->titre . ' a un nouveau fichier'));
+                }
+            }
             $this->mount($this->tache, 3);
 
             Historique::create([
