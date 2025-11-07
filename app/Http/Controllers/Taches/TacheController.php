@@ -249,6 +249,28 @@ class TacheController extends Controller
                 $tache->documents()->attach($newDoc->id, ['created_by' => Auth::id()]);
                 $newDoc->followers()->attach($followers->pluck('id'));
 
+                // Historique: document rattaché depuis la tâche parente
+                Historique::create([
+                    'key' => 'Ajout de document',
+                    'historiquecable_id' => $tache->id,
+                    'historiquecable_type' => Tache::class,
+                    'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a attaché un document à la tâche.',
+                    'user_id' => Auth::user()->id,
+                ]);
+
+                // Notifications: propriétaire + agents assignés (hors auteur)
+                $auteurId = Auth::user()->agent->id;
+                $msgAttach = 'Un document a été attaché à la tâche "' . $tache->titre . '" par ' . Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . '.';
+                if ($tache->user && $tache->user->agent && $tache->user->agent->id != $auteurId) {
+                    event(new TacheCreated($tache, $tache->user->agent->id, $msgAttach));
+                }
+                $agentsAssignes = $tache->agents()->get();
+                foreach ($agentsAssignes as $agent) {
+                    if ($agent->id != $auteurId) {
+                        event(new TacheCreated($tache, $agent->id, $msgAttach));
+                    }
+                }
+
                 if ($newDoc->confidentiel) {
                     if (is_countable($followers)) {
                         $users = [];
@@ -274,6 +296,27 @@ class TacheController extends Controller
             $tache->documents()->attach($newDoc->id, ['created_by' => Auth::id()]);
 
             $newDoc->followers()->attach($followers->pluck('id'));
+
+            // Historique: document existant attaché
+            Historique::create([
+                'key' => 'Ajout de document',
+                'historiquecable_id' => $tache->id,
+                'historiquecable_type' => Tache::class,
+                'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a attaché un document à la tâche.',
+                'user_id' => Auth::user()->id,
+            ]);
+            // Notifications: propriétaire + agents assignés (hors auteur)
+            $auteurId = Auth::user()->agent->id;
+            $msgAttach = 'Un document a été attaché à la tâche "' . $tache->titre . '" par ' . Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . '.';
+            if ($tache->user && $tache->user->agent && $tache->user->agent->id != $auteurId) {
+                event(new TacheCreated($tache, $tache->user->agent->id, $msgAttach));
+            }
+            $agentsAssignes = $tache->agents()->get();
+            foreach ($agentsAssignes as $agent) {
+                if ($agent->id != $auteurId) {
+                    event(new TacheCreated($tache, $agent->id, $msgAttach));
+                }
+            }
             
             // Notifier les followers du document
             foreach ($followers as $follower) {
@@ -373,6 +416,27 @@ class TacheController extends Controller
 
             $document->followers()->attach($followers);
             
+            // Historique: nouveau document généré et attaché
+            Historique::create([
+                'key' => 'Ajout de document',
+                'historiquecable_id' => $tache->id,
+                'historiquecable_type' => Tache::class,
+                'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a ajouté un document à la tâche.',
+                'user_id' => Auth::user()->id,
+            ]);
+            // Notifications: propriétaire + agents assignés (hors auteur)
+            $auteurId = Auth::user()->agent->id;
+            $msgAttach = 'Un document a été ajouté à la tâche "' . $tache->titre . '" par ' . Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . '.';
+            if ($tache->user && $tache->user->agent && $tache->user->agent->id != $auteurId) {
+                event(new TacheCreated($tache, $tache->user->agent->id, $msgAttach));
+            }
+            $agentsAssignes = $tache->agents()->get();
+            foreach ($agentsAssignes as $agent) {
+                if ($agent->id != $auteurId) {
+                    event(new TacheCreated($tache, $agent->id, $msgAttach));
+                }
+            }
+            
             // Notifier les followers du nouveau document
             foreach ($followers as $follower) {
                 if ($follower && $follower->user) {
@@ -427,6 +491,27 @@ class TacheController extends Controller
                 ]);
 
                 $tache->documents()->attach($document->id, ['created_by' => Auth::id()]);
+                
+                // Historique: document téléversé et attaché
+                Historique::create([
+                    'key' => 'Ajout de document',
+                    'historiquecable_id' => $tache->id,
+                    'historiquecable_type' => Tache::class,
+                    'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a ajouté un document à la tâche.',
+                    'user_id' => Auth::user()->id,
+                ]);
+                // Notifications: propriétaire + agents assignés (hors auteur)
+                $auteurId = Auth::user()->agent->id;
+                $msgAttach = 'Un document a été ajouté à la tâche "' . $tache->titre . '" par ' . Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . '.';
+                if ($tache->user && $tache->user->agent && $tache->user->agent->id != $auteurId) {
+                    event(new TacheCreated($tache, $tache->user->agent->id, $msgAttach));
+                }
+                $agentsAssignes = $tache->agents()->get();
+                foreach ($agentsAssignes as $agent) {
+                    if ($agent->id != $auteurId) {
+                        event(new TacheCreated($tache, $agent->id, $msgAttach));
+                    }
+                }
                 foreach ($followers as $follower) {
                     $document->followers()->attach($follower);
                     // Notifier chaque follower du nouveau document
