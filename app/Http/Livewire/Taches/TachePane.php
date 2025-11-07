@@ -214,11 +214,19 @@ class TachePane extends Component
 
             // Associer le document à la tâche avec les champs supplémentaires
             $tache = Tache::findOrFail($this->tache->id);
+            Log::info('Avant attach document->tache (TachePane)', [
+                'tache_id' => $tache->id,
+                'document_id' => $document->id,
+            ]);
             $tache->documents()->attach($document->id, [
                 'type_relation' => 'piece_jointe',
                 'commentaire' => 'Document joint à la tâche',
                 'version_document' => '1.0',
                 'created_by' => Auth::id()
+            ]);
+            Log::info('Après attach document->tache OK (TachePane)', [
+                'tache_id' => $tache->id,
+                'document_id' => $document->id,
             ]);
             
             // Réinitialiser le champ de fichier
@@ -241,13 +249,28 @@ class TachePane extends Component
             }
             $this->mount($this->tache, 3);
 
-            Historique::create([
-                "key" => "Ajout d'une pièce jointe",
-                "historiquecable_id" => $tache->id,
-                "historiquecable_type" => Tache::class,
-                "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a ajouté une pièce jointe à cette tâche.",
-                "user_id" => Auth::user()->id,
-            ]);
+            try {
+                Log::info('Historique::create avant (TachePane)', [
+                    'key' => "Ajout d'une pièce jointe",
+                    'tache_id' => $tache->id,
+                    'user_id' => Auth::id(),
+                ]);
+                Historique::create([
+                    "key" => "Ajout d'une pièce jointe",
+                    "historiquecable_id" => $tache->id,
+                    "historiquecable_type" => Tache::class,
+                    "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a ajouté une pièce jointe à cette tâche.",
+                    "user_id" => Auth::user()->id,
+                ]);
+                Log::info('Historique::create OK (TachePane)', [
+                    'tache_id' => $tache->id,
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('Historique::create KO (TachePane)', [
+                    'tache_id' => $tache->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
             
         } catch (\Throwable $th) {
             \Log::error('Erreur lors de l\'ajout du fichier : ' . $th->getMessage());
