@@ -1282,8 +1282,9 @@ class TacheController extends Controller
     {
         try {
             $tache = Tache::findOrFail($id);
+            $wasTerminee = ($tache->tache_statut_id == 3);
 
-            if ($tache->tache_statut_id == 3) {
+            if ($wasTerminee) {
                 $tache->update([
                     'tache_statut_id' => '2',
                 ]);
@@ -1293,11 +1294,45 @@ class TacheController extends Controller
                 ]);
             }
 
-            $content = json_encode([
-                'name' => 'Gestion de tâche',
-                'statut' => 'success',
-                'message' => 'La tâche a été marquée comme terminée !',
-            ]);
+            // Notifications lors de la relance (retour à En cours)
+            if ($wasTerminee) {
+                $auteur = Auth::user()->agent;
+                $message = 'La tâche "' . $tache->titre . '" a été relancée par ' . $auteur->nom . ' ' . $auteur->prenom . '.';
+
+                // Notifier le propriétaire si différent de l'auteur
+                if ($tache->user && $tache->user->agent && $tache->user->agent->id != $auteur->id) {
+                    event(new TacheCreated($tache, $tache->user->agent->id, $message));
+                }
+
+                // Notifier les agents assignés
+                $agentsAssignes = $tache->agents()->get();
+                foreach ($agentsAssignes as $agent) {
+                    if ($agent->id != $auteur->id) {
+                        event(new TacheCreated($tache, $agent->id, $message));
+                    }
+                }
+
+                // Historique: relance de la tâche
+                Historique::create([
+                    'key' => 'Relance',
+                    'historiquecable_id' => $tache->id,
+                    'historiquecable_type' => Tache::class,
+                    'description' => $auteur->nom . ' ' . $auteur->prenom . ' a relancé la tâche.',
+                    'user_id' => Auth::user()->id,
+                ]);
+
+                $content = json_encode([
+                    'name' => 'Gestion de tâche',
+                    'statut' => 'success',
+                    'message' => 'La tâche a été relancée avec succès !',
+                ]);
+            } else {
+                $content = json_encode([
+                    'name' => 'Gestion de tâche',
+                    'statut' => 'success',
+                    'message' => 'La tâche a été marquée comme terminée !',
+                ]);
+            }
 
             session()->flash(
                 'session',
