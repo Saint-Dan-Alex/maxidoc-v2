@@ -599,22 +599,62 @@
                                         <td>{{ $sortant->reference_interne }}</td>
                                         <td>{{ $sortant->externDestinateur->nom ?? 'N/D' }}</td>
                                         <td class="text-nowrap">
-                                            <div class="box-avatar d-flex align-items-center">
-                                                @forelse ($sortant->followers->unique() as $follower)
-                                                    @if (!$follower->is(Auth::user()->agent))
+                                            @php
+                                                $followers = $sortant->followers->unique()->reject(function($f){ return $f->is(Auth::user()->agent); });
+                                                $accuses = $sortant->accuseReceptions;
+                                            @endphp
+
+                                            @if ($followers->isEmpty() && $accuses->isEmpty())
+                                                <span class="text-muted">Aucune</span>
+                                            @else
+                                                <div class="box-avatar d-flex align-items-center">
+                                                    @foreach ($followers as $follower)
                                                         <div class="cursor-pointer avatar-team" data-bs-toggle="offcanvas"
-                                                            data-bs-target="#detail-personnel"
-                                                            aria-controls="offcanvasRight">
-                                                            <div class="tooltip-team">{{ $follower->prenom }}
-                                                                {{ $follower->nom }}</div>
-                                                            <img src="{{ imageOrDefault($follower->image) }}"
-                                                                alt="">
+                                                            data-bs-target="#detail-personnel" aria-controls="offcanvasRight">
+                                                            <div class="tooltip-team">{{ $follower->prenom }} {{ $follower->nom }}</div>
+                                                            <img src="{{ imageOrDefault($follower->image) }}" alt="">
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+
+                                                <div class="box-avatar d-flex align-items-center mt-1">
+                                                    @php
+                                                        $shownAccuses = $accuses->take(4);
+                                                        $otherAccuses = $accuses->slice(4);
+                                                    @endphp
+                                                    @foreach($shownAccuses as $accuse)
+                                                        <div class="cursor-pointer avatar-team" data-bs-toggle="tooltip" data-bs-placement="top"
+                                                            title="{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}">
+                                                            <img src="{{ imageOrDefault($accuse->user->agent->image) }}" 
+                                                                alt="{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}" class="avatar-img">
+                                                        </div>
+                                                    @endforeach
+                                                    @if($otherAccuses->count() > 0)
+                                                        <div class="dropdown">
+                                                            <div class="cursor-pointer avatar-team plus d-flex align-items-center justify-content-center"
+                                                                data-bs-toggle="dropdown" aria-expanded="false" style="margin-right: 0">
+                                                                <span>+{{ $otherAccuses->count() }}</span>
+                                                            </div>
+                                                            <div class="dropdown-menu dropdown-menu-end p-2">
+                                                                <div class="list-users">
+                                                                    @foreach($otherAccuses as $accuse)
+                                                                        <div class="content-user d-flex align-items-center mb-2">
+                                                                            <div class="avatar me-2">
+                                                                                <img src="{{ imageOrDefault($accuse->user->agent->image) }}" 
+                                                                                    alt="{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}" class="avatar-img">
+                                                                            </div>
+                                                                            <div class="name">
+                                                                                <div>{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}</div>
+                                                                                <small class="text-muted">{{ $accuse->created_at->format('d/m/Y H:i') }}</small>
+                                                                            </div>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     @endif
-                                                @empty
-                                                    Aucune
-                                                @endforelse
-                                            </div>
+                                                </div>
+                                            @endif
                                         </td>
                                         <td>{{ $sortant->date_du_courrier->format('d/m/Y H:i') ?? 'Non defini' }}</td>
                                         <td>{{ $sortant->created_at->format('d/m/Y H:i' ) ?? 'Non defini'}}</td>
