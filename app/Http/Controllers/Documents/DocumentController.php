@@ -863,10 +863,31 @@ public function desarchiver(Request $request)
             throw new \Exception("Le chemin du fichier n'a pas été trouvé dans la donnée JSON");
         }
 
+        // Récupérer le chemin du fichier et nettoyer les barres obliques
         $ancienChemin = str_replace('\\', '/', $premierDocument['download_link']);
-
-        if (!Storage::disk('public')->exists($ancienChemin)) {
-            throw new \Exception("Fichier original introuvable : $ancienChemin");
+        
+        // Pour Hostinger, le chemin commence directement par /storage/
+        // On extrait le chemin relatif après /storage/
+        if (preg_match('#/storage/(.+)$#', $ancienChemin, $matches)) {
+            $ancienChemin = $matches[1];
+        } else {
+            // Si le format est différent, on essaie de nettoyer le chemin
+            $ancienChemin = preg_replace('#^/?(storage|public)/?#', '', $ancienChemin);
+        }
+        
+        // Chemin de base pour Hostinger
+        $basePath = base_path('public_html/storage');
+        $cheminComplet = $basePath . '/' . ltrim($ancienChemin, '/');
+        
+        // Vérifier si le fichier existe dans le stockage public
+        if (!file_exists($cheminComplet)) {
+            // Essayer avec le chemin de stockage Laravel standard
+            $cheminLaravel = storage_path('app/public/' . ltrim($ancienChemin, '/'));
+            if (file_exists($cheminLaravel)) {
+                $cheminComplet = $cheminLaravel;
+            } else {
+                throw new \Exception("Fichier original introuvable : $cheminComplet");
+            }
         }
 
         $nouveauNomFichier = uniqid() . '_' . basename($ancienChemin);
@@ -878,8 +899,15 @@ public function desarchiver(Request $request)
 
         // --- Modification PDF pour ajouter pied de page avec dates ---
 
-        $source = storage_path("app/public/" . $ancienChemin);
-        $destinationPath = storage_path("app/public/" . $nouveauChemin);
+        // Utiliser le chemin complet pour la source
+        $source = $cheminComplet;
+        
+        // Pour la destination, on utilise le chemin de stockage Laravel
+        $dossierDestination = storage_path('app/public/documents/' . date('FY'));
+        if (!is_dir($dossierDestination)) {
+            mkdir($dossierDestination, 0755, true);
+        }
+        $destinationPath = $dossierDestination . '/' . $nouveauNomFichier;
 
         $pdf = new \setasign\Fpdi\Fpdi();
 
