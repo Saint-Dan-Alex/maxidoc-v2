@@ -3,6 +3,9 @@
 namespace App\View\Components;
 
 use App\Models\MenuItem;
+use App\Models\Courrier;
+use App\Models\Tache;
+use App\Models\Document;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\Component;
@@ -47,7 +50,32 @@ class Sidebar extends Component
                 return Gate::allows($item->policy);
             });
 
-        return view('components.sidebar');
+        $user = Auth::user();
+
+        $inboxCount = Courrier::where('statut_id', 1)
+            ->whereDoesntHave('views', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->get()
+            ->filter(function ($courrier) use ($user) {
+                return $user->can('view', $courrier);
+            })
+            ->count();
+
+        $tasksCount = Tache::getTachesForCurrentUser()
+            ->where('tache_statut_id', '!=', 3)
+            ->count();
+
+        $documentsNewCount = Document::where('statut_id', 1)->count();
+
+        $archivesCount = Document::archive()->count();
+
+        return view('components.sidebar', [
+            'inboxCount' => $inboxCount,
+            'tasksCount' => $tasksCount,
+            'documentsNewCount' => $documentsNewCount,
+            'archivesCount' => $archivesCount,
+        ]);
     }
 
 }

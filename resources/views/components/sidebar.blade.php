@@ -53,6 +53,16 @@
                                 </span>
                                 <span class="title">
                                     {{ $item->title }}
+                                    @php $t = Str::lower($item->title); @endphp
+                                    @if(isset($inboxCount) && $inboxCount > 0 && (Str::contains($t, 'boite') || Str::contains($t, 'boîte'))) 
+                                        <span class="badge bg-danger ms-2">{{ $inboxCount }}</span>
+                                    @elseif(isset($tasksCount) && $tasksCount > 0 && (Str::contains($t, 'tache') || Str::contains($t, 'tâche'))) 
+                                        <span class="badge bg-primary ms-2">{{ $tasksCount }}</span>
+                                    @elseif(isset($documentsNewCount) && $documentsNewCount > 0 && Str::contains($t, 'document')) 
+                                        <span class="badge bg-info ms-2">{{ $documentsNewCount }}</span>
+                                    @elseif(isset($archivesCount) && $archivesCount > 0 && Str::contains($t, 'archive')) 
+                                        <span class="badge bg-secondary ms-2">{{ $archivesCount }}</span>
+                                    @endif
                                 </span>
                                 <div class="tooltip-indicator">
                                     {{ $item->title }}
@@ -71,6 +81,16 @@
                                 </span>
                                 <span class="title">
                                     {{ $item->title }}
+                                    @php $t = Str::lower($item->title); @endphp
+                                    @if(isset($inboxCount) && $inboxCount > 0 && (Str::contains($t, 'boite') || Str::contains($t, 'boîte'))) 
+                                        <span class="badge bg-danger ms-2">{{ $inboxCount }}</span>
+                                    @elseif(isset($tasksCount) && $tasksCount > 0 && (Str::contains($t, 'tache') || Str::contains($t, 'tâche'))) 
+                                        <span class="badge bg-primary ms-2">{{ $tasksCount }}</span>
+                                    @elseif(isset($documentsNewCount) && $documentsNewCount > 0 && Str::contains($t, 'document')) 
+                                        <span class="badge bg-info ms-2">{{ $documentsNewCount }}</span>
+                                    @elseif(isset($archivesCount) && $archivesCount > 0 && Str::contains($t, 'archive')) 
+                                        <span class="badge bg-secondary ms-2">{{ $archivesCount }}</span>
+                                    @endif
                                 </span>
                                 @if ($item->hasChildren() && $item->id != 40)
                                     <i class="fi fi-rr-angle-down arrow"></i>
@@ -91,6 +111,16 @@
                                                 <a href="{{ $child->link() }}"
                                                     class="{{ $child->isActive() ? 'active' : '' }} panelsession">
                                                     {{ $child->title }}
+                                                    @php $ct = Str::lower($child->title); @endphp
+                                                    @if(isset($inboxCount) && $inboxCount > 0 && (Str::contains($ct, 'boite') || Str::contains($ct, 'boîte'))) 
+                                                        <span class="badge bg-danger ms-2">{{ $inboxCount }}</span>
+                                                    @elseif(isset($tasksCount) && $tasksCount > 0 && (Str::contains($ct, 'tache') || Str::contains($ct, 'tâche'))) 
+                                                        <span class="badge bg-primary ms-2">{{ $tasksCount }}</span>
+                                                    @elseif(isset($documentsNewCount) && $documentsNewCount > 0 && Str::contains($ct, 'document')) 
+                                                        <span class="badge bg-info ms-2">{{ $documentsNewCount }}</span>
+                                                    @elseif(isset($archivesCount) && $archivesCount > 0 && Str::contains($ct, 'archive')) 
+                                                        <span class="badge bg-secondary ms-2">{{ $archivesCount }}</span>
+                                                    @endif
                                                 </a>
                                             @endcan
                                         @endforeach
@@ -108,6 +138,16 @@
                                                 <a href="{{ $child->link() }}"
                                                     class="{{ $child->isActive() ? 'active' : '' }} panelsession">
                                                     {{ $child->title }}
+                                                    @php $ct = Str::lower($child->title); @endphp
+                                                    @if(isset($inboxCount) && $inboxCount > 0 && (Str::contains($ct, 'boite') || Str::contains($ct, 'boîte'))) 
+                                                        <span class="badge bg-danger ms-2">{{ $inboxCount }}</span>
+                                                    @elseif(isset($tasksCount) && $tasksCount > 0 && (Str::contains($ct, 'tache') || Str::contains($ct, 'tâche'))) 
+                                                        <span class="badge bg-primary ms-2">{{ $tasksCount }}</span>
+                                                    @elseif(isset($documentsNewCount) && $documentsNewCount > 0 && Str::contains($ct, 'document')) 
+                                                        <span class="badge bg-info ms-2">{{ $documentsNewCount }}</span>
+                                                    @elseif(isset($archivesCount) && $archivesCount > 0 && Str::contains($ct, 'archive')) 
+                                                        <span class="badge bg-secondary ms-2">{{ $archivesCount }}</span>
+                                                    @endif
                                                 </a>
                                             @endcan
                                         </li>
