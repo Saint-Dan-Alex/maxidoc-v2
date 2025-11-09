@@ -409,6 +409,7 @@ class AccuserReception extends Component
     }
 
     $this->emit('alert', 'success', Auth::user()->name.' a accusé de reception de ce document');
+    return redirect()->route('regidoc.courriers.show', $this->courrier->id);
 }
 
     public function validerTraitementDGA()
