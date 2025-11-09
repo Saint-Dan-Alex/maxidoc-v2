@@ -115,23 +115,40 @@
     @include('livewire.taches._modals', ['tache' => $tache])
     
     <style>
-        .modal {
-            z-index: 1060; /* Assure que la modale s'affiche au-dessus des autres éléments */
-        }
+        /* Prioriser les modals Participants au-dessus de tout */
+        .modal-backdrop,
+        .modal-backdrop.show { z-index: 99990 !important; }
+        .modal.modal-participants,
+        .modal.modal-participants.show { z-index: 100000 !important; }
+        .modal.modal-participants .modal-dialog { z-index: 100001 !important; }
     </style>
     
     <script>
+        function attachParticipantModalsToBody() {
+            document.querySelectorAll('.modal-participants').forEach(function(m) {
+                if (m && m.parentNode !== document.body) {
+                    document.body.appendChild(m);
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', attachParticipantModalsToBody);
+        window.addEventListener('livewire:load', attachParticipantModalsToBody);
+
         // Gestion de l'ouverture des modales
         document.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const modal = event.target;
             
+            // S'assurer que les modals participants sont sous body même si injectés tardivement
+            if (modal && modal.classList && modal.classList.contains('modal-participants') && modal.parentNode !== document.body) {
+                document.body.appendChild(modal);
+            }
+
             // Vérifier si c'est une modale d'édition de participant
             if (modal.id && modal.id.startsWith('modal-edit-participants-')) {
-                const objectifId = button.getAttribute('data-objectif-id');
-                
+                const objectifId = button?.getAttribute('data-objectif-id');
                 // Émettre l'événement Livewire pour charger les données
-                if (window.Livewire) {
+                if (objectifId && window.Livewire) {
                     window.Livewire.emit('editParticipant', objectifId);
                 }
             }

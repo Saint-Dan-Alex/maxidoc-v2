@@ -1,5 +1,5 @@
 @if ($tache)
-    <div class="modal modal-sm fade" id="modal-add-participants-{{ $tache->id }}" tabindex="-1"
+    <div class="modal modal-sm fade modal-participants" id="modal-add-participants-{{ $tache->id }}" tabindex="-1"
         aria-labelledby="exampleModalLabel" aria-hidden="true" wire:ignore>
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
