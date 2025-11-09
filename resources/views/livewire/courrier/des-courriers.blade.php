@@ -600,11 +600,20 @@
                                         <td>{{ $sortant->externDestinateur->nom ?? 'N/D' }}</td>
                                         <td class="text-nowrap">
                                             @php
+                                                // Followers: liste d'agents, on retire l'agent courant
                                                 $followers = $sortant->followers->unique()->reject(function($f){ return $f->is(Auth::user()->agent); });
+                                                
+                                                // Accusés de réception: dédupliquer par agent et retirer ceux déjà présents parmi les followers
                                                 $accuses = $sortant->accuseReceptions;
+                                                $followerAgentIds = $followers->pluck('id');
+                                                $uniqueAccusesByAgent = $accuses->unique(function($a){ return optional(optional($a->user)->agent)->id; });
+                                                $filteredAccuses = $uniqueAccusesByAgent->filter(function($a) use ($followerAgentIds){
+                                                    $aid = optional(optional($a->user)->agent)->id;
+                                                    return $aid && !$followerAgentIds->contains($aid);
+                                                })->values();
                                             @endphp
 
-                                            @if ($followers->isEmpty() && $accuses->isEmpty())
+                                            @if ($followers->isEmpty() && $filteredAccuses->isEmpty())
                                                 <span class="text-muted">Aucune</span>
                                             @else
                                                 <div class="box-avatar d-flex align-items-center">
@@ -618,16 +627,16 @@
                                                 </div>
 
                                                 <div class="box-avatar d-flex align-items-center mt-1">
-                                                    @php
-                                                        $shownAccuses = $accuses->take(4);
-                                                        $otherAccuses = $accuses->slice(4);
+                                                @php
+                                                        $shownAccuses = $filteredAccuses->take(4);
+                                                        $otherAccuses = $filteredAccuses->slice(4);
                                                     @endphp
                                                     @foreach($shownAccuses as $accuse)
                                                         <div class="cursor-pointer avatar-team" data-bs-toggle="tooltip" data-bs-placement="top"
-                                                            title="{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}">
-                                                            <img src="{{ imageOrDefault($accuse->user->agent->image) }}" 
-                                                                alt="{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}" class="avatar-img">
-                                                        </div>
+                                                            title="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}">
+                                                            <img src="{{ imageOrDefault(optional($accuse->user->agent)->image) }}" 
+                                                                alt="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}" class="avatar-img">
+                                                    </div>
                                                     @endforeach
                                                     @if($otherAccuses->count() > 0)
                                                         <div class="dropdown">
@@ -640,11 +649,11 @@
                                                                     @foreach($otherAccuses as $accuse)
                                                                         <div class="content-user d-flex align-items-center mb-2">
                                                                             <div class="avatar me-2">
-                                                                                <img src="{{ imageOrDefault($accuse->user->agent->image) }}" 
-                                                                                    alt="{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}" class="avatar-img">
+                                                                                <img src="{{ imageOrDefault(optional($accuse->user->agent)->image) }}" 
+                                                                                    alt="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}" class="avatar-img">
                                                                             </div>
                                                                             <div class="name">
-                                                                                <div>{{ $accuse->user->agent->prenom }} {{ $accuse->user->agent->nom }}</div>
+                                                                                <div>{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}</div>
                                                                                 <small class="text-muted">{{ $accuse->created_at->format('d/m/Y H:i') }}</small>
                                                                             </div>
                                                                         </div>
@@ -668,7 +677,7 @@
                                             'badge-yellow' => $sortant->statut_id == 2,
                                             'badge-green' => $sortant->statut_id == 3,
                                         ])>
-                                           {{ $sortant->statut?->libelle ?? 'Inconnu' }}
+                                           {{ $sortant->statut_id == 3 ? 'Transmis' : ($sortant->statut?->libelle ?? 'Inconnu') }}
                                        </div>
                                         </td>
 
