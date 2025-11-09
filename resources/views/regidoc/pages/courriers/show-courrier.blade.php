@@ -469,7 +469,7 @@
                                         <i class="fi fi-rr-hourglass-end"></i>
                                     </span>
                                     <span class="title">
-                                        Traiter
+                                        Définir le traitement
                                     </span>
                                 </a>
                                    
