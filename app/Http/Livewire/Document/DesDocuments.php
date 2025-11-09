@@ -244,17 +244,26 @@ public function render()
 
     // Pour shareds (documents suivis et pièces jointes partagées)
     $sharedQuery = $documentsQuery->where(function($query) {
+        // Documents explicitement partagés (followers)
         $query->whereHas('followers', function($q) {
             $q->where('agent_id', auth()->user()->agent->id);
-        })->orWhere(function($q) {
-            // Inclure les pièces jointes partagées où l'utilisateur n'est pas l'auteur
+        })
+        // Pièces jointes de courriers partagées via destinataires du courrier
+        ->orWhere(function($q) {
             $q->where('is_piece_jointe', 1)
-            //   ->where('created_by', '!=', auth()->id())
               ->whereHas('courrier', function($q) {
                   $q->whereHas('destinateurs', function($q) {
                       $q->where('agent_id', auth()->user()->agent->id);
                   });
               });
+        })
+        // Documents liés à des tâches assignées à l'agent courant
+        ->orWhere(function($q) {
+            $q->whereHas('taches', function($qt) {
+                $qt->whereHas('agents', function($qa) {
+                    $qa->where('agent_id', auth()->user()->agent->id);
+                });
+            });
         });
     });
 
