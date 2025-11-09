@@ -991,11 +991,46 @@
                             @endphp
                             @if(Auth::user()->agent->isAssistant() && $courrier->type_id == 2 && $courrier->statut_id == 2 && $hasAccusedReception)
                                 <div class="text-end mb-2">
-                                    <a href="{{ route('regidoc.courriers.transmettre', $courrier) }}" 
-                                       class="btn btn-primary"
-                                       onclick="return confirm('Êtes-vous sûr de vouloir transmettre ce courrier ?')">
-                                        <i class="fi fi-rr-paper-plane me-2"></i>Clôturer
+                                    <a href="#"
+                                       class="btn btn-primary rounded-pill px-4 py-2 d-inline-flex align-items-center gap-2 shadow-none"
+                                       data-bs-toggle="modal" data-bs-target="#modal-cloturer-{{ $courrier->id }}">
+                                        {{-- <i class="fi fi-rr-paper-plane" style="width:1em;height:1em"></i> --}}
+                                        <span class="fw-semibold text-white">Clôturer</span>
                                     </a>
+                                    
+                                    <!-- Modal confirmation clôture -->
+                                    <style>
+                                      .modal-backdrop,
+                                      .modal-backdrop.show { z-index: 99990 !important; }
+                                      .modal.modal-cloturer,
+                                      .modal.modal-cloturer.show { z-index: 100000 !important; }
+                                      .modal.modal-cloturer .modal-dialog { z-index: 100001 !important; }
+                                    </style>
+                                    <div class="modal fade modal-cloturer" id="modal-cloturer-{{ $courrier->id }}" tabindex="-1" aria-labelledby="modalCloturerLabel-{{ $courrier->id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header border-0">
+                                                    <h5 class="modal-title" id="modalCloturerLabel-{{ $courrier->id }}">Clôturer le courrier</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Êtes-vous sûr de vouloir clôturer ce courrier ? Cette action transmettra le courrier selon le flux défini.
+                                                </div>
+                                                <div class="modal-footer border-0 d-flex justify-content-end gap-2">
+                                                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                                                    <a href="{{ route('regidoc.courriers.transmettre', $courrier) }}" class="btn btn-primary rounded-pill px-4 fw-semibold">Confirmer</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <script>
+                                      document.addEventListener('DOMContentLoaded', function () {
+                                        var modal = document.getElementById('modal-cloturer-{{ $courrier->id }}');
+                                        if (modal && modal.parentNode !== document.body) {
+                                          document.body.appendChild(modal);
+                                        }
+                                      });
+                                    </script>
                                 </div>
                             @endif
                         </div>
