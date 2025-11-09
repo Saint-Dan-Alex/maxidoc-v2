@@ -12,7 +12,7 @@
                                 data-bs-toggle="tab" data-bs-target="#tasks" type="button" role="tab"
                                 aria-controls="tasks" aria-selected="{{ $tab == 1 }}"
                                 wire:click='changeTab({{ 1 }})'>
-                                Toutes mes tâches
+                                Toutes 
                             </button>
 
                         </li>
@@ -23,7 +23,7 @@
                                         data-bs-toggle="tab" data-bs-target="#assignees" type="button" role="tab"
                                         aria-controls="assignees" aria-selected="{{ $tab == 2 }}"
                                         wire:click='changeTab({{ 2 }})'>
-                                        Tâches assignées
+                                        Assignées
                                         <span @class([
                                             'badge bg-danger ms-2 rounded-pill py-1 px-2 fw-normal',
                                             'd-none' => $newTachesCount <= 0,
@@ -38,7 +38,7 @@
                                     data-bs-toggle="tab" data-bs-target="#en-cours" type="button" role="tab"
                                     aria-controls="en-cours" aria-selected="{{ $tab == 3 }}"
                                     wire:click='changeTab({{ 3 }})'>
-                                    Tâches en cours
+                                    En cours
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
@@ -46,7 +46,7 @@
                                     data-bs-toggle="tab" data-bs-target="#terminees" type="button" role="tab"
                                     aria-controls="terminees" aria-selected="{{ $tab == 4 }}"
                                     wire:click='changeTab({{ 4 }})'>
-                                    Tâches achevées
+                                    Achevées
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
@@ -54,7 +54,7 @@
                                     data-bs-toggle="tab" data-bs-target="#hors-delais" type="button" role="tab"
                                     aria-controls="hors-delais" aria-selected="{{ $tab == 5 }}"
                                     wire:click='changeTab({{ 5 }})'>
-                                    Tâches hors délais
+                                    Hors délais
                                 </button>
                             </li>
                         @endif
