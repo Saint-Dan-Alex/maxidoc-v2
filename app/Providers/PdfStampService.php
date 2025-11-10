@@ -85,17 +85,22 @@ class PdfStampService
 
             // Déterminer la commande Ghostscript selon l'OS
             $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-            $candidates = $isWindows
-                ? ['gswin64c', 'gswin32c']
-                : ['gs'];
+            $whichBins = $isWindows ? ['gswin64c', 'gswin32c'] : ['gs'];
 
             $gsBin = null;
-            foreach ($candidates as $bin) {
+            // 1) via which/where
+            foreach ($whichBins as $bin) {
                 $which = $isWindows ? "where $bin" : "which $bin";
                 $resolved = @shell_exec($which);
                 if ($resolved) {
-                    $gsBin = trim(explode(PHP_EOL, $resolved)[0]);
-                    break;
+                    $candidate = trim(explode(PHP_EOL, $resolved)[0]);
+                    if ($candidate && file_exists($candidate)) { $gsBin = $candidate; break; }
+                }
+            }
+            // 2) chemins connus Unix
+            if (!$gsBin && !$isWindows) {
+                foreach (['/usr/bin/gs','/usr/local/bin/gs','/bin/gs'] as $p) {
+                    if (file_exists($p) && is_executable($p)) { $gsBin = $p; break; }
                 }
             }
 

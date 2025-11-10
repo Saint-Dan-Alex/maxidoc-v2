@@ -890,7 +890,10 @@ public function desarchiver(Request $request)
             }
         }
 
-        $nouveauNomFichier = uniqid() . '_' . basename($ancienChemin);
+        // Conserver le nom d'origine et ajouter seulement le suffixe _DESARCHIVE.pdf
+        $baseOrig = pathinfo(basename($ancienChemin), PATHINFO_FILENAME);
+        $pdfTitle = $baseOrig . '_DESARCHIVE.pdf';
+        $nouveauNomFichier = $pdfTitle;
         $dossierDestination = 'documents/' . date('FY'); // ex July2025
         $nouveauChemin = $dossierDestination . '/' . $nouveauNomFichier;
 
@@ -939,54 +942,197 @@ public function desarchiver(Request $request)
             }
         } catch (\Throwable $__) { $lf('normalize error: '.$__->getMessage()); }
 
-        $pdf = new \setasign\Fpdi\Fpdi();
-        try {
-            $pageCount = $pdf->setSourceFile($normalized);
-        } catch (\Throwable $e) {
-            // Filet de sécurité: si FPDI échoue (PDF 1.5+), copier le fichier et continuer sans stamper
-            $lf('FPDI setSourceFile FAILED: '.$e->getMessage());
+        // Préparer textes communs (utilisés par FPDI et par le fallback raster)
+        $createdAt = $ancienDocument->created_at instanceof \DateTimeInterface
+            ? $ancienDocument->created_at
+            : Carbon::parse($ancienDocument->created_at);
+        $archivedAtDT = $ancienDocument->archived_at
+            ? ($ancienDocument->archived_at instanceof \DateTimeInterface
+                ? $ancienDocument->archived_at
+                : Carbon::parse($ancienDocument->archived_at))
+            : null;
+
+        $dateArchive = $createdAt->format('d/m/Y');
+        $dateDesarchive = now()->format('d/m/Y');
+        $heureDesarchive = now()->format('H:i:s');
+        $heureArchive = $archivedAtDT ? $archivedAtDT->format('H:i:s') : '';
+        $utilisateur = Auth::user()->name;
+        $texte = "Document désarchivé le: {$dateDesarchive} par {$utilisateur}";
+
+        // Si on n'est PAS en local, on bypass FPDI et on passe DIRECTEMENT au raster (prod Hostinger)
+        $isLocal = app()->environment('local');
+        if (!$isLocal) {
+            $lf('env != local -> forcing raster mode');
+            $didRaster = false;
+            try {
+                if (extension_loaded('imagick')) {
+                    $lf('Imagick detected, attempting raster fallback');
+                    $imagick = new \Imagick();
+                    $imagick->setResolution(300, 300);
+                    $imagick->readImage($normalized);
+                    $imagick->setImageFormat('jpeg');
+
+                    // Utiliser FPDF pour recomposer le PDF avec header/footer
+                    if (class_exists('FPDF')) {
+                        $pdfOut = new \FPDF('P', 'mm', 'A4');
+                        foreach ($imagick as $frame) {
+                            // Ajouter un filigrane directement sur l'image (diagonal, semi-transparent)
+                            try {
+                                $draw = new \ImagickDraw();
+                                $draw->setFillColor(new \ImagickPixel('rgba(220,0,0,0.25)'));
+                                $draw->setFontSize( max(24, min( $frame->getImageWidth(), $frame->getImageHeight() ) * 0.06) );
+                                $draw->setFontWeight(700);
+                                $draw->setGravity(\Imagick::GRAVITY_CENTER);
+                                // angle négatif pour diagonale
+                                $frame->annotateImage($draw, 0, 0, -30, $watermark);
+                            } catch (\Throwable $__) { /* ignore */ }
+                            // Sauver frame temporaire
+                            $tmpImg = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'page_' . uniqid() . '.jpg';
+                            $frame->writeImage($tmpImg);
+
+                            // Ajouter page A4 et ajuster image
+                            $pdfOut->AddPage('P', 'A4');
+                            // Marges
+                            $left = 10; $top = 20; $right = 10; $bottom = 20;
+                            $usableW = 210 - $left - $right; // mm
+                            $usableH = 297 - $top - $bottom; // mm
+                            // Placer l'image en largeur
+                            $pdfOut->Image($tmpImg, $left, $top, $usableW, 0);
+
+                            // En-tête (bande grise + texte noir, 12pt gras)
+                            $pdfOut->SetDrawColor(200, 200, 200);
+                            $pdfOut->SetFillColor(240, 240, 240);
+                            $pdfOut->Rect(10, 8, 190, 12, 'F');
+                            $pdfOut->SetFont('Arial', 'B', 12);
+                            $pdfOut->SetTextColor(0, 0, 0);
+                            $pdfOut->SetXY(10, 10);
+                            $pdfOut->Cell(190, 8, $texte, 0, 0, 'C');
+
+                            // Pied de page (bande grise + texte noir, 12pt gras)
+                            $pdfOut->SetDrawColor(200, 200, 200);
+                            $pdfOut->SetFillColor(240, 240, 240);
+                            $pdfOut->Rect(10, 297 - 16, 190, 12, 'F');
+                            $pdfOut->SetFont('Arial', 'B', 12);
+                            $pdfOut->SetTextColor(0, 0, 0);
+                            $pdfOut->SetXY(10, 297 - 14);
+                            $footer = "Archivé le: {$dateArchive} à {$heureArchive} | Désarchivé le: {$dateDesarchive} à {$heureDesarchive} | Par: {$utilisateur}";
+                            $pdfOut->Cell(190, 8, $footer, 0, 0, 'C');
+                        }
+                        // Définir le titre PDF pour que les viewers affichent le nouveau nom
+                        if (method_exists($pdfOut, 'SetTitle')) {
+                            $pdfOut->SetTitle($pdfTitle, true);
+                        }
+                        $pdfOut->Output('F', $destinationPath);
+                        $didRaster = true;
+                        $lf('raster fallback success to '.$destinationPath);
+                    } else {
+                        $lf('FPDF class not found, cannot raster-compose');
+                    }
+                } else {
+                    $lf('Imagick not available');
+                }
+            } catch (\Throwable $re) {
+                $lf('raster fallback failed: '.$re->getMessage());
+            }
+
+            if ($didRaster) {
+                goto SKIP_STAMPING; // PDF reconstruit avec en-tête/pied
+            }
+
+            // Fallback 2: copie simple (pas d'en-tête/pied)
             if (@copy($normalized, $destinationPath) || @copy($source, $destinationPath)) {
                 $lf('fallback COPY success to '.$destinationPath);
-                // Passer directement à l'étape d'enregistrement DB
                 goto SKIP_STAMPING;
             }
             $lf('fallback COPY failed');
             throw $e;
         }
-        $dateArchive = $ancienDocument->created_at->format('d/m/Y');
-        $dateDesarchive = now()->format('d/m/Y');
-        $heureDesarchive = now()->format('H:i:s');
-        $heureArchive = $ancienDocument->archived_at->format('H:i:s');
-        $utilisateur = Auth::user()->name;
-        
         // Texte d'en-tête simplifié
-        $texte = "DOCUMENT DESARCHIVE | Archivé le: {$dateArchive} à {$heureArchive} | Désarchivé le: {$dateDesarchive} à {$heureDesarchive} par {$utilisateur}";
-        $fontSize = 8; // Taille de police réduite
+        $fontSize = 8; // Taille de police réduite (FPDI), mais on utilisera 12pt gras pour banderoles
 
-        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-            $tplIdx = $pdf->importPage($pageNo);
+        try {
+            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+                $tplIdx = $pdf->importPage($pageNo);
 
-            // Taille standard A4
-            $width = 210;  // largeur en mm
-            $height = 297; // hauteur en mm
+                // Respecter la taille/orientation d'origine avec garde-fous
+                $size = $pdf->getTemplateSize($tplIdx);
+                $width = isset($size['width']) ? (float)$size['width'] : 0.0;
+                $height = isset($size['height']) ? (float)$size['height'] : 0.0;
+                if ($width <= 0.0 || $height <= 0.0) {
+                    // Valeurs de repli A4
+                    $width = 210.0;
+                    $height = 297.0;
+                }
+                $orientation = $size['orientation'] ?? ($width > $height ? 'L' : 'P');
+                $pdf->AddPage($orientation, [$width, $height]);
 
-            // Ajouter une nouvelle page
-            $pdf->AddPage('P', [$width, $height]);
-            
-            // Utiliser le template de la page existante
-            $pdf->useTemplate($tplIdx, 10, 20, $width - 20, $height - 30);
-            
-            // Ajouter l'en-tête manuellement
-            $pdf->SetFont('Arial', '', $fontSize);
-            $pdf->SetTextColor(0, 0, 200);
-            $pdf->SetXY(10, 10);
-            $pdf->Cell(0, 10, $texte, 0, 0, 'C');
-            $pdf->Line(10, 20, $width - 10, 20);
+                // Zones utiles
+                $left = 10; $right = 10; $top = 20; $bottom = 20;
+                $usableW = max(1, $width - $left - $right);
+                $usableH = max(1, $height - $top - $bottom);
+
+                // Dessiner la page source à l'intérieur des marges
+                $pdf->useTemplate($tplIdx, $left, $top, $usableW, 0);
+
+                // Largeur des banderoles clampée
+                $bandW = max(10, $width - 20);
+
+                // Banderole d'en-tête
+                $pdf->SetDrawColor(200, 200, 200);
+                $pdf->SetFillColor(240, 240, 240);
+                $pdf->Rect($left, 8, $bandW, 12, 'F');
+                $pdf->SetFont('Arial', 'B', 12);
+                $pdf->SetTextColor(0, 0, 0);
+                $pdf->SetXY($left, 10);
+                $pdf->Cell($bandW, 8, $texte, 0, 0, 'C');
+                
+            }
+        } catch (\Throwable $e) {
+            $lf('FPDI page render failed: '.$e->getMessage());
+            // Bascule raster si possible
+            try {
+                if (extension_loaded('imagick') && class_exists('FPDF')) {
+                    $lf('switching to raster fallback after FPDI render error');
+                    $imagick = new \Imagick();
+                    $imagick->setResolution(300, 300);
+                    $imagick->readImage($normalized);
+                    $imagick->setImageFormat('jpeg');
+                    $pdfOut = new \FPDF('P', 'mm', 'A4');
+                    foreach ($imagick as $frame) {
+                        $tmpImg = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'page_' . uniqid() . '.jpg';
+                        $frame->writeImage($tmpImg);
+                        $pdfOut->AddPage('P', 'A4');
+                        $pdfOut->Image($tmpImg, 10, 20, 190, 0);
+                        // Header band only
+                        $pdfOut->SetDrawColor(200, 200, 200);
+                        $pdfOut->SetFillColor(240, 240, 240);
+                        $pdfOut->Rect(10, 8, 190, 12, 'F');
+                        $pdfOut->SetFont('Arial', 'B', 12);
+                        $pdfOut->SetTextColor(0, 0, 0);
+                        $pdfOut->SetXY(10, 10);
+                        $pdfOut->Cell(190, 8, $texte, 0, 0, 'C');
+                    }
+                    $pdfOut->Output('F', $destinationPath);
+                    $lf('raster fallback (after FPDI render) success to '.$destinationPath);
+                    goto SKIP_STAMPING;
+                }
+            } catch (\Throwable $re) {
+                $lf('secondary raster fallback failed: '.$re->getMessage());
+            }
+            // Dernier recours: copie
+            if (@copy($normalized, $destinationPath) || @copy($source, $destinationPath)) {
+                $lf('secondary fallback COPY success to '.$destinationPath);
+                goto SKIP_STAMPING;
+            }
+            throw $e;
         }
 
 
 
         // Enregistrer le PDF modifié (remplace la copie simple)
+        if (isset($pdf) && method_exists($pdf, 'SetTitle')) {
+            $pdf->SetTitle($pdfTitle, true);
+        }
         $pdf->Output($destinationPath, 'F');
         $lf('stamp success to '.$destinationPath);
 
@@ -998,14 +1144,16 @@ public function desarchiver(Request $request)
         $nouveauDocument->dossier_id = $ancienDocument->dossier_id;
         $nouveauDocument->category_id = $ancienDocument->category_id;
         $nouveauDocument->reference = $ancienDocument->reference . '/R'; // modifiable
-        $nouveauDocument->libelle = $ancienDocument->libelle;
+        // Utiliser le nouveau nom de fichier pour le libellé afin d'éviter tout cache et refléter le désarchivage
+        $nouveauDocument->libelle = basename($nouveauChemin);
         $nouveauDocument->type = $ancienDocument->type;
         $nouveauDocument->description = $ancienDocument->description;
 
         $nouveauDocument->document = json_encode([
             [
                 'download_link' => $nouveauChemin,
-                'original_name' => $premierDocument['original_name'] ?? basename($ancienChemin),
+                // Utiliser le nouveau nom de fichier pour refléter le suffixe _DESARCHIVE et éviter le cache
+                'original_name' => basename($nouveauChemin),
             ]
         ]);
 
