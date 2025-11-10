@@ -1483,7 +1483,7 @@
                         </div>
                     @endif
                     
-                    @if ($courrier->statut_id === 3)
+                    @if (in_array($courrier->statut_id, [3,4]))
                         <div class="col-12">
                             <div class="item">
                                 <div class="row">
@@ -1493,7 +1493,30 @@
                                         </span>
                                     </div>
                                     <div class="col-lg-6">
-                                        <small class="badge-task-lg normal">Validé</small>
+                                        @php
+                                            $affichage = null;
+                                            if (isset($courrier->traitement) && $courrier->traitement) {
+                                                $titres = [
+                                                    'Valider' => 'Validé',
+                                                    'Signer' => 'Signé',
+                                                    'Consulter' => 'Consulté',
+                                                    'Traiter' => 'Traité',
+                                                    'Assigner' => 'Assigné',
+                                                    'Valider par le DG' => 'Validé par le DG',
+                                                    'Valider par le D.A' => 'Validé par le D.A',
+                                                    'Valider par le D.F' => 'Validé par le D.F',
+                                                ];
+                                                $titre = $courrier->traitement->titre ?? '';
+                                                $affichage = $titres[$titre] ?? $titre;
+                                            }
+                                        @endphp
+                                        @if ($courrier->statut_id === 4)
+                                            <small class="badge-task-lg" style="background: #ffebee; color: #f44336;">Rejeté</small>
+                                        @elseif ($courrier->statut_id === 3 && !empty($affichage))
+                                            <small class="badge-task-lg normal">{{ $affichage }}</small>
+                                        @elseif ($courrier->statut_id === 3)
+                                            <small class="badge-task-lg normal">Validé</small>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
