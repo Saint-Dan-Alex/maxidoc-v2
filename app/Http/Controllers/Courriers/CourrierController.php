@@ -33,6 +33,7 @@ use App\Models\CourrierDestinateurExterne;
 use App\Models\PieceJointe;
 use App\Models\AccuseReception;
 use Illuminate\Support\Facades\View; // Import manquant ajouté
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class CourrierController extends Controller
 {
