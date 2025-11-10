@@ -66,7 +66,7 @@ class CreatePersonnelForm extends Component
         'service' => true,
         'section' => true,
         'fonction' => true,
-        'fonction_type' => true,
+        'fonction_type' => false,
     ];
 
 
@@ -117,13 +117,8 @@ class CreatePersonnelForm extends Component
 
     public function updatedServiceId()
     {
-        // Activer le champ de fonction lorsqu'un service est sélectionné
-        if ($this->service_id) {
-            $this->isReadyOnly['fonction_type'] = false;
-        } else {
-            $this->isReadyOnly['fonction_type'] = true;
-            $this->fonction_type = null;
-        }
+        // Découplage: ne pas conditionner la sélection de la fonction au service
+        // Laisser $this->isReadyOnly['fonction_type'] inchangé (désactivé par défaut à false)
     }
 
     public function updatedFonctionType()

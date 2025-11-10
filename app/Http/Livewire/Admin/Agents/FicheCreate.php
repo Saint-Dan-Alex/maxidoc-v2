@@ -145,15 +145,8 @@ class FicheCreate extends Component
         ];
 
         $this->lieus = LieuAffectation::select('id', 'titre')->get();
-        // if ($this->form_stat['direction_id']) {
-        //     $this->fonctions = Fonction::where('direction_id', $this->form_stat['direction_id'])->orderBy('titre')->get();
-        // } elseif ($this->form_stat['division_id']) {
-        //     $this->fonctions = Fonction::where('division_id', $this->form_stat['division_id'])->orderBy('titre')->get();
-        // } elseif ($this->form_stat['service_id']) {
-        //     $this->fonctions = Fonction::where('service_id', $this->form_stat['service_id'])->orderBy('titre')->get();
-        // } elseif ($this->form_stat['section_id']) {
-        //     $this->fonctions = Fonction::where('section_id', $this->form_stat['section_id'])->orderBy('titre')->get();
-        // }
+        // Liste libre des fonctions (indépendante de la hiérarchie)
+        $this->fonctions = Fonction::orderBy('titre')->get();
         $this->directions = Direction::select('id', 'titre')->where('lieu_id', $this->form_stat['lieu_id'])->orderBy('titre')->get();
         $this->divisions = Division::select('id', 'libelle')->where('direction_id', $this->form_stat['direction_id'])->orderBy('libelle')->get();
         $this->services = Service::select('id', 'titre')->where('direction_id', $this->form_stat['division_id'])->get();

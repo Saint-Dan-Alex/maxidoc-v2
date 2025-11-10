@@ -305,10 +305,7 @@
             livewire.emit('changeDivision', e.target.value);
         });
 
-        $('select[name=sevice_id]').on('change', function(e) {
-            // console.log(e);
-            livewire.emit('changeService', e.target.value);
-        });
+        // Découplage service/fonction: suppression du lien côté JS
 
         $('select[name=section_id]').on('change', function(e) {
             livewire.emit('changeSection', e.target.value);

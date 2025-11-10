@@ -398,7 +398,7 @@
                                                 <div class="col-lg-4">
                                                     <label>Fonction</label>
                                                     <select class="form-select" name="fonction_id"
-                                                        aria-label="Default select example" multiple
+                                                        aria-label="Default select example"
                                                         wire:model='form_stat.fonction_id'>
                                                         <option value="">Selectionnez</option>
                                                         <option value="">Aucun</option>
