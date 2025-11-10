@@ -130,7 +130,7 @@
         </p>
 
         <div class="footer">
-            <img src="{{ asset('assets/regidoc/logo5.png') }}" alt="MaxiDoc">
+            <img src="{{ asset('assets/regidoc/logo4.png') }}" alt="MaxiDoc">
             <p>© {{ date('Y') }} MaxiDoc. Tous droits réservés.</p>
             <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
         </div>
