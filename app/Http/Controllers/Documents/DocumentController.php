@@ -35,7 +35,6 @@ use App\Models\Historique;
 use Carbon\Carbon;
 use setasign\Fpdi\Fpdi;
 
-
 class DocumentController extends Controller
 {
 
@@ -1175,7 +1174,13 @@ public function desarchiver(Request $request)
             "key" => "Désarchivage du document",
             "historiquecable_id" => $nouveauDocument->id,
             "historiquecable_type" => Document::class,
-            "description" => "Document désarchivé et recréé à partir du document #{$ancienDocument->id} par l'utilisateur #" . Auth::id(),
+            "description" => (function() use ($ancienDocument, $nouveauDocument) {
+                $ancienNom = $ancienDocument->libelle ?: ($ancienDocument->reference ?: ('#'.$ancienDocument->id));
+                $nouveauNom = $nouveauDocument->libelle ?: ('#'.$nouveauDocument->id);
+                $user = Auth::user();
+                $auteurNom = trim(($user->agent->prenom ?? '').' '.($user->agent->nom ?? '')) ?: ($user->name ?? ('Utilisateur #'.Auth::id()));
+                return "Document \"{$nouveauNom}\" désarchivé et recréé à partir du document \"{$ancienNom}\" par {$auteurNom}";
+            })(),
             "user_id" => Auth::id(),
         ]);
 
@@ -1323,4 +1328,41 @@ public function desarchiver(Request $request)
         return $filename;
     }
 
+    /**
+     * Exporte l'historique d'un document au format PDF.
+     * Agrège l'historique du document et, s'il existe, celui du courrier lié.
+     */
+    public function exportHistoriquePdf($documentId)
+    {
+        $document = Document::with([
+            'statut',
+            'user',
+            'history' => function ($q) { $q->orderBy('created_at', 'desc'); },
+            'history.user.agent',
+            'courrier',
+            'courrier.history' => function ($q) { $q->orderBy('created_at', 'desc'); },
+            'courrier.history.user.agent',
+        ])->findOrFail($documentId);
+
+        $historiques = collect();
+        if ($document->courrier) {
+            $historiques = $historiques->merge($document->courrier->history);
+        }
+        $historiques = $historiques->merge($document->history);
+        $historiques = $historiques->sortByDesc('created_at');
+
+        $pdf = Pdf::loadView('regidoc.pages.documents.pdf.historique', [
+                'document' => $document,
+                'historiques' => $historiques,
+            ])
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'defaultFont' => 'Arial',
+            ]);
+
+        $filename = 'historique-document-' . $document->id . '-' . now()->format('Y-m-d') . '.pdf';
+        return $pdf->download($filename);
+    }
 }

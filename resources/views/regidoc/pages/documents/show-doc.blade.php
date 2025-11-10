@@ -45,6 +45,14 @@
                             </div> 
                         </div>
                     @endif
+                    @can('Suivi des courriers')
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="block-assign mb-0" data-bs-toggle="offcanvas" data-bs-target="#offcanvasHistoDoc" aria-controls="offcanvasHistoDoc">
+                                <i class="fi fi-rr-list"></i>
+                                Historique des activités
+                            </div>
+                        </div>
+                    @endcan
                     {{-- @can('Partager un document') --}}
                         {{-- <li>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#modal-doc-share">
@@ -523,6 +531,100 @@
     </div>
 
     {{-- @livewire('document.modal-document-share', ['document' => $find_document]) --}}
+
+    @can('Suivi des courriers')
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasHistoDoc" aria-labelledby="offcanvasHistoDocLabel">
+            <div class="offcanvas-header align-items-center">
+                <h5 class="offcanvas-title" id="offcanvasHistoDocLabel">Historique des activités</h5>
+                <div class="d-flex align-items-center">
+                    <a href="{{ $find_document->courrier ? route('regidoc.courriers.export-historique', $find_document->courrier->id) : route('regidoc.documents.export-historique', $find_document->id) }}" class="btn btn-sm btn-outline-primary me-2" target="_blank" title="Exporter l'historique en PDF">
+                        <i class="fi fi-rr-print"></i>
+                    </a>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
+                        <i class="fi fi-rr-cross"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="offcanvas-body">
+                <div class="block-activity">
+                    @php
+                        $historiques = collect();
+                        if ($find_document->courrier) {
+                            $historiques = $historiques->merge($find_document->courrier->history);
+                        }
+                        $historiques = $historiques->merge($find_document->history);
+                        $historiques = $historiques->sortByDesc('created_at');
+                        $historiquesGroup = $historiques->groupBy('user_id');
+                        $revision = new \Venturecraft\Revisionable\Revision();
+                    @endphp
+                    @foreach ($historiquesGroup as $user_id => $historiques)
+                        @php
+                            $user = \App\Models\User::find($user_id);
+                        @endphp
+                        <div class="items-activity">
+                            <div class="avatar-activ">
+                                <img src="{{ imageOrDefault($user?->agent->image) }}" alt="">
+                            </div>
+                            <p class="agent">
+                                <span>{{ $user?->agent->prenom . ' ' . $user?->agent->nom }}</span>
+                                - {{ $user?->agent?->poste?->titre }}
+                            </p>
+                            @foreach ($historiques ?? [] as $history)
+                                @if ($history instanceof $revision)
+                                    @if ($history->key == 'created_at' && !$history->old_value)
+                                        <div class="mt-2 block-dot-line">
+                                            @if ($history->revisionable_type == 'App\\Models\\Courrier')
+                                                <div class="dot-line">
+                                                    <p>Création de ce courrier</p>
+                                                    <div class="date">{{ $history->newValue() }}</div>
+                                                </div>
+                                            @elseif ($history->revisionable_type == 'App\\Models\\Document')
+                                                <div class="dot-line">
+                                                    <p>Numérisation des documents du courrier</p>
+                                                    <div class="date">{{ $history->newValue() }}</div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <div class="mt-2 block-dot-line">
+                                            @if ($history->revisionable_type == 'App\\Models\\Courrier')
+                                                <div class="dot-line">
+                                                    <p>
+                                                        Modification sur {{ $history->fieldName() }} du courrier
+                                                    </p>
+                                                    <div class="date">{{ $history->created_at->format('d/m/Y H:i:s') }}</div>
+                                                </div>
+                                            @elseif ($history->revisionable_type == 'App\\Models\\Document')
+                                                <div class="dot-line">
+                                                    <p>
+                                                        Modification sur {{ $history->fieldName() }} du document
+                                                    </p>
+                                                    <div class="date">{{ $history->created_at->format('d/m/Y H:i:s') }}</div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
+                                @else
+                                    <div class="mt-2 block-dot-line">
+                                        <div class="block-dot-line-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 48 48">
+                                                <circle cx="24" cy="24" r="21" fill="currentColor" />
+                                                <path fill="#ffffff" d="M34.6 14.6L21 28.2l-5.6-5.6l-2.8 2.8l8.4 8.4l16.4-16.4z" />
+                                            </svg>
+                                        </div>
+                                        <div class="dot-line">
+                                            <p> <span> {{ $history->description }}</span></p>
+                                            <div class="date">{{ $history->created_at->format('d/m/Y H:i:s') }}</div>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endcan
 
     <div class="modal fade" id="modal-new-archive" tabindex="-1" aria-labelledby="archiveModalLabel">
         <div class="modal-dialog modal-dialog-centered">

@@ -250,6 +250,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
                     // Route::get('finish', [CourrierController::class, 'finish'])->name('courriers.finish');
                 });
+
+            // Documents - export historique PDF
+            Route::prefix('documents')->group(function () {
+                Route::get('{document}/export-historique', [\App\Http\Controllers\Documents\DocumentController::class, 'exportHistoriquePdf'])
+                    ->name('documents.export-historique');
+            });
             });
 
             Route::post('/upload', [UploadController::class, 'store']);
