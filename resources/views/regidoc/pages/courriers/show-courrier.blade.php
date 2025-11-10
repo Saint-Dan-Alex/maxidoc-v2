@@ -898,11 +898,29 @@
                         @livewire('courrier.traitement-doc-select', ['courrier' => $courrier]) 
             <h5 class="offcanvas-title d-flex align-items-center gap-2" id="offcanvasRightLabel"> 
                 <span style="color: white">{!! $courrier->status_badge !!}</span>
-                @if ($courrier->statut_id === 3)
-                    <small class="badge-task-lg normal">Validé</small>
-                @elseif ($courrier->statut_id === 4)
+                @php
+                    $affichage = null;
+                    if (isset($courrier->traitement) && $courrier->traitement) {
+                        $titres = [
+                            'Valider' => 'Validé',
+                            'Signer' => 'Signé',
+                            'Consulter' => 'Consulté',
+                            'Traiter' => 'Traité',
+                            'Assigner' => 'Assigné',
+                            'Valider par le DG' => 'Validé par le DG',
+                            'Valider par le D.A' => 'Validé par le D.A',
+                            'Valider par le D.F' => 'Validé par le D.F',
+                        ];
+                        $titre = $courrier->traitement->titre ?? '';
+                        $affichage = $titres[$titre] ?? $titre;
+                    }
+                @endphp
+                @if ($courrier->statut_id === 4)
                     <small class="badge-task-lg" style="background: #ffebee; color: #f44336;">Rejeté</small>
-                
+                @elseif ($courrier->statut_id === 3 && !empty($affichage))
+                    <small class="badge-task-lg normal">{{ $affichage }}</small>
+                @elseif ($courrier->statut_id === 3)
+                    <small class="badge-task-lg normal">Validé</small>
                 @endif 
             </h5>
 
