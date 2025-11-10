@@ -909,9 +909,50 @@ public function desarchiver(Request $request)
         }
         $destinationPath = $dossierDestination . '/' . $nouveauNomFichier;
 
-        $pdf = new \setasign\Fpdi\Fpdi();
+        // --- Préparation FPDI avec normalisation & logs de secours ---
+        // Logger simple vers storage/logs/custom-pdf.log
+        $lf = function(string $msg) {
+            try { @file_put_contents(storage_path('logs/custom-pdf.log'), '['.date('Y-m-d H:i:s')."] desarchiver: $msg\n", FILE_APPEND); } catch (\Throwable $__) {}
+        };
 
-        $pageCount = $pdf->setSourceFile($source);
+        // Normaliser via Ghostscript si dispo
+        $normalized = $source;
+        try {
+            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+            $candidates = $isWindows ? ['gswin64c', 'gswin32c'] : ['gs'];
+            $gsBin = null;
+            foreach ($candidates as $bin) {
+                $which = $isWindows ? "where $bin" : "which $bin";
+                $resolved = @shell_exec($which);
+                if ($resolved) { $gsBin = trim(explode(PHP_EOL, $resolved)[0]); break; }
+            }
+            if ($gsBin) {
+                $tmp = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'normalized_'.uniqid().'.pdf';
+                $cmd = sprintf('\"%s\" -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/prepress -dNOPAUSE -dBATCH -sOutputFile=%s %s 2>&1',
+                    $gsBin, escapeshellarg($tmp), escapeshellarg($source));
+                $lf('run gs: '.$cmd);
+                $out = @shell_exec($cmd);
+                $lf('gs out: '.(string)$out);
+                if (is_file($tmp) && filesize($tmp) > 0) { $normalized = $tmp; $lf('normalized to '.$normalized); }
+            } else {
+                $lf('gs not found');
+            }
+        } catch (\Throwable $__) { $lf('normalize error: '.$__->getMessage()); }
+
+        $pdf = new \setasign\Fpdi\Fpdi();
+        try {
+            $pageCount = $pdf->setSourceFile($normalized);
+        } catch (\Throwable $e) {
+            // Filet de sécurité: si FPDI échoue (PDF 1.5+), copier le fichier et continuer sans stamper
+            $lf('FPDI setSourceFile FAILED: '.$e->getMessage());
+            if (@copy($normalized, $destinationPath) || @copy($source, $destinationPath)) {
+                $lf('fallback COPY success to '.$destinationPath);
+                // Passer directement à l'étape d'enregistrement DB
+                goto SKIP_STAMPING;
+            }
+            $lf('fallback COPY failed');
+            throw $e;
+        }
         $dateArchive = $ancienDocument->created_at->format('d/m/Y');
         $dateDesarchive = now()->format('d/m/Y');
         $heureDesarchive = now()->format('H:i:s');
@@ -947,6 +988,9 @@ public function desarchiver(Request $request)
 
         // Enregistrer le PDF modifié (remplace la copie simple)
         $pdf->Output($destinationPath, 'F');
+        $lf('stamp success to '.$destinationPath);
+
+        SKIP_STAMPING:
 
         // --- Création du nouveau document en base ---
 
