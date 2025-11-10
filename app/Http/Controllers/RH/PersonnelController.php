@@ -384,6 +384,8 @@ class PersonnelController extends Controller
             $agent->division_id = $request->division_id ?? null;
             $agent->service_id = $request->service_id ?? null;
             $agent->section_id = $request->section_id ?? null;
+            // Lieu d'affectation
+            $agent->lieu_id = $request->lieu_id ?? null;
             
             $agent->created_by = Auth::user()->id;
             $agent->updated_by = Auth::user()->id;
@@ -397,11 +399,22 @@ class PersonnelController extends Controller
             $adresse->agent_id = $agent->id;
             $adresse->save();
 
-            return redirect()->route('regidoc.personnels.index')
-                           ->with('message', 'Agent créé avec succès.');
+            $content = json_encode([
+                'name' => 'Ressources humaines',
+                'statut' => 'success',
+                'message' => 'Agent créé avec succès.',
+            ]);
+            session()->flash('session', $content);
+            return redirect()->route('regidoc.personnels.index');
 
         } catch (\Throwable $th) {
-            return back()->with('error', 'Erreur lors de la création: ' . $th->getMessage());
+            $content = json_encode([
+                'name' => 'Ressources humaines',
+                'statut' => 'error',
+                'message' => 'Erreur lors de la création: ' . $th->getMessage(),
+            ]);
+            session()->flash('session', $content);
+            return back();
         }
     }
 
