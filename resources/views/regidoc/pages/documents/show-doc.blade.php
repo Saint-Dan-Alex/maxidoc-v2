@@ -399,21 +399,62 @@
                     </div>
 
                     <!-- Section des pièces jointes -->
-                    @if($find_document->piecesJointes->count() > 0)
+                    @php
+                        $attachments = [];
+                        foreach ($find_document->piecesJointes as $piece) {
+                            $url = $piece->url;
+                            $pathFromUrl = parse_url($url, PHP_URL_PATH);
+                            $isPdf = \Illuminate\Support\Str::endsWith(strtolower($pathFromUrl ?? ''), '.pdf');
+                            $attachments[] = [
+                                'source' => 'piece_jointe',
+                                'url' => $url,
+                                'name' => $piece->original_name ?? $piece->nom,
+                                'size' => $piece->formatted_size ?? null,
+                                'is_pdf' => $isPdf,
+                            ];
+                        }
+                        if ($find_document->taches) {
+                            foreach ($find_document->taches as $tache) {
+                                if ($tache->documents) {
+                                    foreach ($tache->documents as $doc) {
+                                        try {
+                                            $fileObj = files($doc->document);
+                                            if ($fileObj && !empty($fileObj->link)) {
+                                                $url = str_replace('\\', '/', $fileObj->link);
+                                                $pathFromUrl = parse_url($url, PHP_URL_PATH);
+                                                $attachments[] = [
+                                                    'source' => 'tache_document',
+                                                    'url' => $url,
+                                                    'name' => $fileObj->name ?? basename($url),
+                                                    'size' => null,
+                                                    'is_pdf' => \Illuminate\Support\Str::endsWith(strtolower($pathFromUrl ?? ''), '.pdf'),
+                                                ];
+                                            }
+                                        } catch (\Throwable $e) {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        $attachments = collect($attachments)->filter(function($a){ return !empty($a['url']); })->unique('url')->values()->all();
+                    @endphp
+                    @if(count($attachments) > 0)
                         <div class="col-12 mt-4">
                             <h6 class="mb-3 title-info">Pièces jointes</h6>
                             <div class="list-group">
-                                @foreach($find_document->piecesJointes as $piece)
+                                @foreach($attachments as $att)
                                     <div class="list-group-item">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <i class="bi bi-file-earmark me-2"></i>
-                                                <a href="{{ $piece->url }}" target="_blank" class="text-decoration-none">
-                                                    {{ $piece->nom }}
+                                                <a href="{{ $att['url'] }}" target="_blank" class="text-decoration-none">
+                                                    {{ $att['name'] }}
                                                 </a>
-                                                <small class="d-block text-muted">{{ $piece->formatted_size }}</small>
+                                                @if($att['size'])
+                                                    <small class="d-block text-muted">{{ $att['size'] }}</small>
+                                                @endif
                                             </div>
-                                            <a href="{{ $piece->url }}" download class="btn btn-sm btn-outline-primary">
+                                            <a href="{{ $att['url'] }}" download class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-download"></i>
                                             </a>
                                         </div>
@@ -478,25 +519,17 @@
                                     </a>
                                 </li>
                             @endif
-                            
-                            @if(isset($find_document->piecesJointes) && $find_document->piecesJointes->count() > 0)
+                            @if(isset($attachments) && count($attachments) > 0)
                                 <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-header">Pièces jointes</li>
-                                @foreach($find_document->piecesJointes as $piece)
-                                    @php
-                                        // Utiliser l'URL normalisée fournie par l'accessor $piece->url
-                                        $url = $piece->url;
-                                        // Déterminer le type via le chemin de l'URL (plus fiable que la colonne JSON 'chemin')
-                                        $pathFromUrl = parse_url($url, PHP_URL_PATH);
-                                        $isPdf = Str::endsWith(strtolower($pathFromUrl ?? ''), '.pdf');
-                                    @endphp
+                                @foreach($attachments as $att)
                                     <li>
                                         <a class="dropdown-item document-item" 
                                            href="javascript:void(0)"
-                                           data-url="{{ $isPdf ? $url : '' }}"
-                                           data-error="{{ $isPdf ? '' : 'Format non supporté' }}">
+                                           data-url="{{ $att['is_pdf'] ? $att['url'] : '' }}"
+                                           data-error="{{ $att['is_pdf'] ? '' : 'Format non supporté' }}">
                                             <i class="fi fi-rr-file me-2"></i>
-                                            {{ $piece->nom }}
+                                            {{ $att['name'] }}
                                         </a>
                                     </li>
                                 @endforeach

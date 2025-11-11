@@ -463,6 +463,14 @@ use Illuminate\Support\Facades\Storage;
             opacity: 0.7;
             transition: opacity 0.2s ease;
         }
+
+        /* Ensure confirmation modal sits above offcanvas/overlays */
+        .modal { 
+            z-index: 1200 !important; 
+        }
+        .modal-backdrop { 
+            z-index: 1190 !important; 
+        }
     </style>
     @yield('styles')
     @livewireScripts()

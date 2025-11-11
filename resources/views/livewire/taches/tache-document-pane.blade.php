@@ -28,7 +28,7 @@
 </div>
 
 <!-- Confirmation Modal -->
-<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true" style="z-index: 9999;">
+<div class="modal modal-confirm-pj fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -68,6 +68,17 @@
     </div>
 </div>
 
+<style>
+    .modal-backdrop.confirm-pj-backdrop,
+    .modal-backdrop.confirm-pj-backdrop.show { z-index: 99990 !important; }
+    .modal.modal-confirm-pj,
+    .modal.modal-confirm-pj.show { z-index: 100000 !important; }
+    .modal.modal-confirm-pj .modal-dialog { z-index: 100001 !important; }
+    /* Ensure the preview container content stays on top within the modal */
+    #confirmationModal .modal-content { position: relative; z-index: 100002; }
+    #confirmationModal .modal-backdrop { z-index: 99990 !important; }
+</style>
+
 @push('scripts')
 <script src="{{ asset('assets/js/pdfjs/pdf.js') }}"></script>
 <script>
@@ -89,6 +100,15 @@
             
             // Ensure modal is in the body to prevent z-index issues
             document.body.appendChild(confirmationModalElement);
+
+            confirmationModalElement.addEventListener('shown.bs.modal', function() {
+                const bd = document.querySelector('.modal-backdrop');
+                if (bd) { bd.classList.add('confirm-pj-backdrop'); }
+            });
+            confirmationModalElement.addEventListener('hidden.bs.modal', function() {
+                const bd = document.querySelector('.modal-backdrop.confirm-pj-backdrop');
+                if (bd) { bd.classList.remove('confirm-pj-backdrop'); }
+            });
         }
 
         // Show file input when 'Téléverser un fichier' is selected
