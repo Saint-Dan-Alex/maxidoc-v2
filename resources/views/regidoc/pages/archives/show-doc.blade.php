@@ -299,6 +299,7 @@
                             @php
                                 $docUrl = null;
                                 $docName = 'Sélectionner un document';
+                                $docIsPdf = true;
 
                                 if ($find_document->document) {
                                     $docArr = is_array($find_document->document) ? $find_document->document : json_decode($find_document->document, true);
@@ -311,7 +312,46 @@
                                         $docUrl = $firstElement;
                                         $docName = basename($firstElement);
                                     }
+                                    if ($docUrl) {
+                                        $pathFromUrl = parse_url($docUrl, PHP_URL_PATH) ?: $docUrl;
+                                        $docIsPdf = \Illuminate\Support\Str::endsWith(strtolower($pathFromUrl), '.pdf');
+                                    }
                                 }
+                            @endphp
+                            @php
+                                $attachments = [];
+                                foreach ($find_document->piecesJointes as $piece) {
+                                    $url = $piece->url;
+                                    $pathFromUrl = parse_url($url, PHP_URL_PATH);
+                                    $isPdf = \Illuminate\Support\Str::endsWith(strtolower($pathFromUrl ?? ''), '.pdf');
+                                    $attachments[] = [
+                                        'url' => $url,
+                                        'name' => $piece->original_name ?? $piece->nom,
+                                        'is_pdf' => $isPdf,
+                                    ];
+                                }
+                                if ($find_document->taches) {
+                                    foreach ($find_document->taches as $tache) {
+                                        if ($tache->documents) {
+                                            foreach ($tache->documents as $doc) {
+                                                try {
+                                                    $fileObj = files($doc->document);
+                                                    if ($fileObj && !empty($fileObj->link)) {
+                                                        $url = str_replace('\\', '/', $fileObj->link);
+                                                        $pathFromUrl = parse_url($url, PHP_URL_PATH);
+                                                        $attachments[] = [
+                                                            'url' => $url,
+                                                            'name' => $fileObj->name ?? basename($url),
+                                                            'is_pdf' => \Illuminate\Support\Str::endsWith(strtolower($pathFromUrl ?? ''), '.pdf'),
+                                                        ];
+                                                    }
+                                                } catch (\Throwable $e) {
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                $attachments = collect($attachments)->filter(fn($a) => !empty($a['url']))->unique('url')->values()->all();
                             @endphp
                             {{ $docName }}
                         </button>
@@ -320,30 +360,25 @@
                                 <li>
                                     <a class="dropdown-item document-item active" 
                                        href="javascript:void(0)"
-                                       data-url="{{ asset('storage/' . $docUrl) }}">
+                                       data-url="{{ asset('storage/' . $docUrl) }}"
+                                       data-type="{{ $docIsPdf ? 'pdf' : 'image' }}">
                                         <i class="fi fi-rr-file me-2"></i>
                                         {{ $docName }} (principal)
                                     </a>
                                 </li>
                             @endif
                             
-                            @if(isset($find_document->piecesJointes) && $find_document->piecesJointes->count() > 0)
+                            @if(isset($attachments) && count($attachments) > 0)
                                 <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-header">Pièces jointes</li>
-                                @foreach($find_document->piecesJointes as $piece)
-                                    @php
-                                        $filePath = $piece->chemin;
-                                        $fullPath = storage_path('app/public/' . $filePath);
-                                        $isPdf = Str::endsWith(strtolower($filePath), '.pdf');
-                                        $exists = file_exists($fullPath);
-                                    @endphp
+                                @foreach($attachments as $att)
                                     <li>
                                         <a class="dropdown-item document-item" 
                                            href="javascript:void(0)"
-                                           data-url="{{ ($isPdf && $exists) ? asset('storage/' . $filePath) : '' }}"
-                                           data-error="{{ (!$exists) ? 'Fichier introuvable' : (!$isPdf ? 'Format non supporté' : '') }}">
+                                           data-url="{{ $att['url'] }}"
+                                           data-type="{{ $att['is_pdf'] ? 'pdf' : 'image' }}">
                                             <i class="fi fi-rr-file me-2"></i>
-                                            {{ $piece->nom }}
+                                            {{ $att['name'] }}
                                         </a>
                                     </li>
                                 @endforeach
@@ -355,15 +390,21 @@
                 <div id="document-viewer">
                     <div id="document-error" style="display:none; padding:2rem; color:red; text-align:center;"></div>
                     @php
-                        $iframeUrl = '';
-                        if ($docUrl) {
-                           $iframeUrl = asset('storage/' . $docUrl) . '#toolbar=0&navpanes=0&page=1';
-                        }
+                        $initialUrl = $docUrl ? asset('storage/' . $docUrl) : '';
+                        $initialType = $docIsPdf ? 'pdf' : 'image';
                     @endphp
-                    <iframe src="{{ $iframeUrl }}" 
-                            frameborder="0"
-                            class="w-100"
-                            style="height: calc(100vh - 200px);"></iframe>
+                    @if($initialUrl)
+                        @if($initialType === 'pdf')
+                            <iframe src="{{ $initialUrl }}#toolbar=0&navpanes=0&page=1" 
+                                    frameborder="0"
+                                    class="w-100"
+                                    style="height: calc(100vh - 200px);"></iframe>
+                        @else
+                            <div class="w-100 d-flex justify-content-center" style="height: calc(100vh - 200px); background: #f8f9fa;">
+                                <img src="{{ $initialUrl }}" alt="aperçu image" style="max-height: 100%; max-width: 100%; object-fit: contain;" />
+                            </div>
+                        @endif
+                    @endif
                 </div>
             </div>
         </div>
@@ -496,36 +537,34 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const pdfSuffix = '#toolbar=0&navpanes=0&page=1';
-
-        document.querySelectorAll('.document-item').forEach(item => {
-            item.addEventListener('click', function(e) {
+        const viewer = document.getElementById('document-viewer');
+        const errorBox = document.getElementById('document-error');
+        document.querySelectorAll('.document-item').forEach(function(item){
+            item.addEventListener('click', function(e){
                 e.preventDefault();
-
                 const dropdownButton = document.getElementById('documentDropdown');
-                dropdownButton.textContent = this.textContent.trim();
+                if (dropdownButton) dropdownButton.textContent = this.textContent.trim();
 
-                const iframe = document.querySelector('#document-viewer iframe');
-                const errorDiv = document.getElementById('document-error');
-                let url = this.getAttribute('data-url');
-                let error = this.getAttribute('data-error');
-                if (error) {
-                    errorDiv.textContent = error;
-                    errorDiv.style.display = 'block';
-                    iframe.style.display = 'none';
-                    iframe.src = 'about:blank';
-                } else if (url) {
-                    errorDiv.style.display = 'none';
-                    iframe.style.display = 'block';
-                    if (!url.endsWith(pdfSuffix)) {
-                        url += pdfSuffix;
-                    }
-                    iframe.src = url;
+                const url = this.getAttribute('data-url');
+                const type = this.getAttribute('data-type');
+                if (!url) {
+                    errorBox.style.display = 'block';
+                    errorBox.textContent = 'Format non supporté';
+                    return;
+                }
+                errorBox.style.display = 'none';
+                if (type === 'pdf') {
+                    viewer.innerHTML = `
+                        <div id="document-error" style="display:none; padding:2rem; color:red; text-align:center;"></div>
+                        <iframe src="${url}#toolbar=0&navpanes=0&page=1" frameborder="0" class="w-100" style="height: calc(100vh - 200px);"></iframe>
+                    `;
                 } else {
-                    errorDiv.textContent = 'Aucun fichier à afficher';
-                    errorDiv.style.display = 'block';
-                    iframe.style.display = 'none';
-                    iframe.src = 'about:blank';
+                    viewer.innerHTML = `
+                        <div id="document-error" style="display:none; padding:2rem; color:red; text-align:center;"></div>
+                        <div class="w-100 d-flex justify-content-center" style="height: calc(100vh - 200px); background: #f8f9fa;">
+                            <img src="${url}" alt="aperçu image" style="max-height: 100%; max-width: 100%; object-fit: contain;" />
+                        </div>
+                    `;
                 }
 
                 document.querySelectorAll('.document-item').forEach(i => i.classList.remove('active'));
@@ -533,5 +572,5 @@
             });
         });
     });
-</script>
+    </script>
 @endpush
