@@ -22,6 +22,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('queue:restart')
         ->everyFiveMinutes();
         // $schedule->command('inspire')->hourly();
+
+        // Force daily logout of open sessions at 23:59
+        $schedule->command('auth:force-daily-logout')->dailyAt('23:59');
     }
 
     /**

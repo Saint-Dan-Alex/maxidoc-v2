@@ -18,6 +18,10 @@ use App\Events\CourrierPartage;
 use App\Listeners\SendCourrierPartageNotification;
 use Laravel\Fortify\Events\TwoFactorAuthenticationChallenged;
 use App\Listeners\SendTwoFactorEmailCode;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use App\Listeners\MarkAuthenticationSuccess;
+use App\Listeners\MarkAuthenticationLogout;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -53,6 +57,14 @@ class EventServiceProvider extends ServiceProvider
 
         TwoFactorAuthenticationChallenged::class => [
             SendTwoFactorEmailCode::class
+        ],
+
+        Login::class => [
+            MarkAuthenticationSuccess::class,
+        ],
+
+        Logout::class => [
+            MarkAuthenticationLogout::class,
         ],
     ];
 
