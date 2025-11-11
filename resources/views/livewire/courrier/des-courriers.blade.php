@@ -267,7 +267,7 @@
                                                         @endif
                                                     </div>
                                                 @else
-                                                    <span class="badge bg-secondary">Aucun accusé</span>
+                                                    <span class="">Aucun accusé</span>
                                                 @endif
                                             </td>
                                                 
@@ -422,20 +422,65 @@
                                    <td>{{ $entrant->reference_courrier }}</td>
                                    <td>{{ $entrant->externExpediteur->nom ?? 'N/D' }}</td>
                                    <td class="text-nowrap">
-                                       <div class="box-avatar d-flex align-items-center">
-                                           @foreach ($entrant->followers->unique() as $follower)
-                                               @if (!$follower->is(Auth::user()->agent))
+                                       @php
+                                           // Followers: liste d'agents, on retire l'agent courant
+                                           $followers = $entrant->followers->unique()->reject(function($f){ return $f->is(Auth::user()->agent); });
+                                           
+                                           // Accusés de réception: dédupliquer par agent et retirer ceux déjà présents parmi les followers
+                                           $accuses = $entrant->accuseReceptions;
+                                           $followerAgentIds = $followers->pluck('id');
+                                           $uniqueAccusesByAgent = $accuses->unique(function($a){ return optional(optional($a->user)->agent)->id; });
+                                           $filteredAccuses = $uniqueAccusesByAgent->filter(function($a) use ($followerAgentIds){
+                                               $aid = optional(optional($a->user)->agent)->id;
+                                               return $aid && !$followerAgentIds->contains($aid);
+                                           })->values();
+                                       @endphp
+
+                                       @if ($followers->isEmpty() && $filteredAccuses->isEmpty())
+                                           <span class="text-muted">Aucune</span>
+                                       @else
+                                           <div class="box-avatar d-flex align-items-center">
+                                               @foreach ($followers as $follower)
                                                    <div class="cursor-pointer avatar-team" data-bs-toggle="offcanvas"
-                                                       data-bs-target="#detail-personnel"
-                                                       aria-controls="offcanvasRight">
-                                                       <div class="tooltip-team">{{ $follower->prenom }}
-                                                           {{ $follower->nom }}</div>
-                                                       <img src="{{ imageOrDefault($follower->image) }}"
-                                                           alt="">
+                                                       data-bs-target="#detail-personnel" aria-controls="offcanvasRight">
+                                                       <div class="tooltip-team">{{ $follower->prenom }} {{ $follower->nom }}</div>
+                                                       <img src="{{ imageOrDefault($follower->image) }}" alt="">
+                                                   </div>
+                                               @endforeach
+                                           </div>
+
+                                           <div class="box-avatar d-flex align-items-center mt-1">
+                                               @php
+                                                   $shownAccuses = $filteredAccuses->take(4);
+                                                   $otherAccuses = $filteredAccuses->slice(4);
+                                               @endphp
+                                               @foreach($shownAccuses as $accuse)
+                                                   <div class="cursor-pointer avatar-team" data-bs-toggle="tooltip" data-bs-placement="top"
+                                                       title="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}">
+                                                       <img src="{{ imageOrDefault(optional($accuse->user->agent)->image) }}"
+                                                           alt="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}" class="avatar-img">
+                                               </div>
+                                               @endforeach
+                                               @if($otherAccuses->count() > 0)
+                                                   <div class="dropdown">
+                                                       <div class="cursor-pointer avatar-team plus d-flex align-items-center justify-content-center"
+                                                           data-bs-toggle="dropdown" aria-expanded="false" style="margin-right: 0">
+                                                           <span>+{{ $otherAccuses->count() }}</span>
+                                                       </div>
+                                                       <div class="dropdown-menu dropdown-menu-end p-2">
+                                                           <div class="list-users">
+                                                               @foreach($otherAccuses as $accuse)
+                                                                   <div class="content-user d-flex align-items-center mb-2">
+                                                                       <img class="rounded-circle me-2" src="{{ imageOrDefault(optional($accuse->user->agent)->image) }}" width="24" height="24" alt="">
+                                                                       <span>{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}</span>
+                                                                   </div>
+                                                               @endforeach
+                                                           </div>
+                                                       </div>
                                                    </div>
                                                @endif
-                                           @endforeach
-                                       </div>
+                                           </div>
+                                       @endif
                                    </td>
                                    @can('Definir le traitement')
                                        <td>
