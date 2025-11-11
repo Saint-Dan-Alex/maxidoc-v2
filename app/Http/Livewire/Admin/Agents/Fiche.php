@@ -172,6 +172,9 @@ class Fiche extends Component
             $this->lieus = LieuAffectation::select('id', 'titre')->get();
             $this->directions = Direction::select('id', 'titre')->where('lieu_id', $this->form_stat['lieu_id'])->orderBy('titre')->get();
             $this->services = Service::select('id', 'titre')->where('direction_id', $this->form_stat['direction_id'])->get();
+            // Liste libre des fonctions dès l'ouverture (pas de filtre)
+            $this->fonctions = Fonction::orderBy('titre')->get();
+            $this->emit('select2');
             $this->grades = Grade::select('id', 'titre')->get();
             
             // Initialiser les modules de permissions
@@ -201,12 +204,14 @@ class Fiche extends Component
         }
         // Récupérer toutes les fonctions sans filtre de direction
         $this->fonctions = Fonction::orderBy('titre')->get();
+        $this->emit('select2');
     }
 
     public function changeService($id)
     {
         $this->form_stat['service_id'] = $id;
         $this->fonctions = Fonction::orderBy('titre')->get();
+        $this->emit('select2');
     }
 
     public function changeGrade($id)
@@ -263,7 +268,9 @@ class Fiche extends Component
     {
         if ($this->direction_id != null && $this->direction_id != '') {
             $this->isReadyOnly['service'] = false;
-            $this->fonctions = Direction::findOrFail($this->direction_id)->fonctions ?? collect();
+            // Fonctions restent libres (pas de filtrage par direction)
+            $this->fonctions = Fonction::orderBy('titre')->get();
+            $this->emit('select2');
         }
     }
 

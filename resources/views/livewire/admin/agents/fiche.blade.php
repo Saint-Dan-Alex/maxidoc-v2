@@ -397,7 +397,7 @@
 
                                                 <div class="col-lg-4">
                                                     <label>Fonction</label>
-                                                    <select class="form-select" name="fonction_id"
+                                                    <select class="form-select select2" name="fonction_id"
                                                         aria-label="Default select example"
                                                         wire:model='form_stat.fonction_id'>
                                                         <option value="">Selectionnez</option>
@@ -1054,7 +1054,7 @@
                 });
             });
 
-            $('select[name=fonction_id]').select2({
+            $('select[name=grade_id]').select2({
                 tags: true,
                 placeholder: 'Selectionnez',
                 language: "fr",
@@ -1075,7 +1075,7 @@
                 maximumSelectionLength: 1,
             })
 
-            $('select[name=fonction_id]').on('select2:select', function(e) {
+            $('select[name=grade_id]').on('select2:select', function(e) {
                 var data = e.params.data;
 
                 if (data.id == '') {
@@ -1085,12 +1085,12 @@
                 }
             });
 
-            $('select[name=fonction_id]').on('select2:unselect', function(e) {
+            $('select[name=grade_id]').on('select2:unselect', function(e) {
                 var data = e.params.data;
                 $(e.currentTarget).find("option[value='" + data.id + "']").attr('selected', false);
             });
 
-            $('select[name=fonction_id]').on('select2:selecting', function(e) {
+            $('select[name=grade_id]').on('select2:selecting', function(e) {
                 var $el = $(this);
                 var newTag = e.params.args.data.newTag;
 

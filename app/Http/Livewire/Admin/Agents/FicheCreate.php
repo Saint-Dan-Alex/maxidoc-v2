@@ -168,7 +168,7 @@ class FicheCreate extends Component
         if ($id != 0) {
             $this->divisions = Division::select('id', 'libelle')->where('direction_id', $this->form_stat['direction_id'])->orderBy('libelle')->get();
             $this->services = Service::select('id', 'titre')->where('direction_id', $this->form_stat['direction_id'])->get();
-            // $this->fonctions = Fonction::where('direction_id', $this->form_stat['direction_id'])->orderBy('titre')->get();
+            // Fonctions restent libres (pas de filtrage par direction)
         }
     }
 
@@ -178,10 +178,10 @@ class FicheCreate extends Component
         $this->form_stat['division_id'] = $id;
         if ($id != 0) {
             $this->services = Service::select('id', 'titre')->where('division_id', $this->form_stat['division_id'])->get();
-            $this->fonctions = Fonction::where('division_id', $this->form_stat['division_id'])->orderBy('titre')->get();
+            // Fonctions restent libres (pas de filtrage par division)
         }else {
             $this->services = Service::select('id', 'titre')->where('direction_id', $this->form_stat['direction_id'])->get();
-            $this->fonctions = Fonction::where('direction_id', $this->form_stat['direction_id'])->orderBy('titre')->get();
+            // Fonctions restent libres (pas de filtrage par direction)
         }
     }
 
@@ -191,7 +191,7 @@ class FicheCreate extends Component
         $this->form_stat['service_id'] = $id;
         if ($id != 0) {
             $this->sections = Section::select('id', 'titre')->where('service_id', $this->form_stat['service_id'])->get();
-            $this->fonctions = Fonction::where('service_id', $this->form_stat['service_id'])->orderBy('titre')->get();
+            // Fonctions restent libres (pas de filtrage par service)
         }else {
             $this->sections = Section::select('id', 'titre')->where('service_id', $this->form_stat['service_id'])->get();
         }
@@ -200,9 +200,7 @@ class FicheCreate extends Component
     public function changeSection($id)
     {
         $this->form_stat['section_id'] = $id;
-        if ($id != 0) {
-            $this->fonctions = Fonction::where('section_id', $this->form_stat['section_id'])->orderBy('titre')->get();
-        }
+        // Fonctions restent libres (pas de filtrage par section)
     }
 
     public function changeGrade($id)
@@ -285,7 +283,7 @@ class FicheCreate extends Component
             # code...
             $this->isReadyOnly['division'] = false;
             $this->divisions = Direction::findOrFail($this->direction_id)->divisions ?? collect();
-            $this->fonctions = Direction::findOrFail($this->direction_id)->fonctions ?? collect();
+            // Ne pas filtrer les fonctions ici
         }
     }
 
