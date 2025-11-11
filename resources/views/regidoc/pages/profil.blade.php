@@ -548,9 +548,9 @@
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-between">
-                    <div>
+                    {{-- <div>
                         <button type="button" class="btn btn-default" id="btn-clear-signature-profile">Effacer</button>
-                    </div>
+                    </div> --}}
                     <div>
                         <button type="button" class="btn" data-bs-dismiss="modal" style="color: var(--colorTitre)">Annuler</button>
                         <button type="button" class="btn btn-add" id="btn-save-signature-profile">Enregistrer</button>
