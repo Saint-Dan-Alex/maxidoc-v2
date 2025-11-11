@@ -53,6 +53,38 @@
                             </div>
                         </div>
                     @endcan
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const viewer = document.getElementById('document-viewer');
+            const errorBox = document.getElementById('document-error');
+            document.querySelectorAll('.document-item').forEach(function(item){
+                item.addEventListener('click', function(){
+                    const url = this.getAttribute('data-url');
+                    const type = this.getAttribute('data-type');
+                    if (!url) {
+                        errorBox.style.display = 'block';
+                        errorBox.textContent = 'Format non supporté';
+                        return;
+                    }
+                    errorBox.style.display = 'none';
+                    if (type === 'pdf') {
+                        viewer.innerHTML = `
+                            <div id="document-error" style="display:none; padding:2rem; color:red; text-align:center;"></div>
+                            <iframe src="${url}#toolbar=0&navpanes=0&page=1" frameborder="0" class="w-100" style="height: calc(100vh - 200px);"></iframe>
+                        `;
+                    } else {
+                        viewer.innerHTML = `
+                            <div id="document-error" style="display:none; padding:2rem; color:red; text-align:center;"></div>
+                            <div class="w-100 d-flex justify-content-center" style="height: calc(100vh - 200px); background: #f8f9fa;">
+                                <img src="${url}" alt="aperçu image" style="max-height: 100%; max-width: 100%; object-fit: contain;" />
+                            </div>
+                        `;
+                    }
+                });
+            });
+        });
+    </script>
                     {{-- @can('Partager un document') --}}
                         {{-- <li>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#modal-doc-share">
@@ -490,19 +522,23 @@
                                 $docInfo = null;
                                 $docUrl = null;
                                 $docName = 'Sélectionner un document';
+                                $docIsPdf = true;
 
                                 if ($find_document->document) {
                                     $docArr = is_array($find_document->document) ? $find_document->document : json_decode($find_document->document, true);
                                     $firstElement = $docArr[0] ?? null;
 
                                     if (is_array($firstElement)) {
-                                        // Cas où l'élément est un tableau associatif (format JSON)
                                         $docUrl = $firstElement['download_link'] ?? null;
                                         $docName = $firstElement['original_name'] ?? 'Document';
                                     } elseif (is_string($firstElement)) {
-                                        // Cas où l'élément est une simple chaîne (chemin du fichier)
                                         $docUrl = $firstElement;
                                         $docName = basename($firstElement);
+                                    }
+
+                                    if ($docUrl) {
+                                        $pathFromUrl = parse_url($docUrl, PHP_URL_PATH) ?: $docUrl;
+                                        $docIsPdf = \Illuminate\Support\Str::endsWith(strtolower($pathFromUrl), '.pdf');
                                     }
                                 }
                             @endphp
@@ -513,7 +549,8 @@
                                 <li>
                                     <a class="dropdown-item document-item active" 
                                        href="javascript:void(0)"
-                                       data-url="{{ asset('storage/' . $docUrl) }}">
+                                       data-url="{{ asset('storage/' . $docUrl) }}"
+                                       data-type="{{ $docIsPdf ? 'pdf' : 'image' }}">
                                         <i class="fi fi-rr-file me-2"></i>
                                         {{ $docName }} (principal)
                                     </a>
@@ -526,8 +563,8 @@
                                     <li>
                                         <a class="dropdown-item document-item" 
                                            href="javascript:void(0)"
-                                           data-url="{{ $att['is_pdf'] ? $att['url'] : '' }}"
-                                           data-error="{{ $att['is_pdf'] ? '' : 'Format non supporté' }}">
+                                           data-url="{{ $att['url'] }}"
+                                           data-type="{{ $att['is_pdf'] ? 'pdf' : 'image' }}">
                                             <i class="fi fi-rr-file me-2"></i>
                                             {{ $att['name'] }}
                                         </a>
@@ -541,15 +578,21 @@
                 <div id="document-viewer">
                     <div id="document-error" style="display:none; padding:2rem; color:red; text-align:center;"></div>
                     @php
-                        $iframeUrl = '';
-                        if ($docUrl) {
-                           $iframeUrl = asset('storage/' . $docUrl) . '#toolbar=0&navpanes=0&page=1';
-                        }
+                        $initialUrl = $docUrl ? asset('storage/' . $docUrl) : '';
+                        $initialType = $docIsPdf ? 'pdf' : 'image';
                     @endphp
-                    <iframe src="{{ $iframeUrl }}" 
-                            frameborder="0"
-                            class="w-100"
-                            style="height: calc(100vh - 200px);"></iframe>
+                    @if($initialUrl)
+                        @if($initialType === 'pdf')
+                            <iframe src="{{ $initialUrl }}#toolbar=0&navpanes=0&page=1" 
+                                    frameborder="0"
+                                    class="w-100"
+                                    style="height: calc(100vh - 200px);"></iframe>
+                        @else
+                            <div class="w-100 d-flex justify-content-center" style="height: calc(100vh - 200px); background: #f8f9fa;">
+                                <img src="{{ $initialUrl }}" alt="aperçu image" style="max-height: 100%; max-width: 100%; object-fit: contain;" />
+                            </div>
+                        @endif
+                    @endif
                 </div>
                 {{-- @if($find_document->libelle)
                     <div class="document-title-bar mt-3 p-3 bg-light rounded">
