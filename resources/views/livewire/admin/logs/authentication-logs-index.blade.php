@@ -67,7 +67,7 @@
     </div>
 
     <div class="d-flex justify-content-end">
-        {{ $logs->links() }}
+        {{ $logs->onEachSide(1)->links('pagination::bootstrap-5') }}
     </div>
 
     <!-- Modal détail log -->
