@@ -62,10 +62,13 @@
                             {{-- Lien Logs d’activités juste après Paramètres --}}
                             <a href="{{ route('regidoc.logs.auth.index') }}" class="{{ request()->routeIs('regidoc.logs.auth.*') ? 'active' : '' }} panelsession">
                                 <span>
-                                    <i class="fi fi-rr-activity"></i>
-                                    <i class="fi fi-sr-activity"></i>
+                                    <i class="fi fi-rr-clipboard-list"></i>
+                                    <i class="fi fi-sr-clipboard-list"></i>
                                 </span>
-                                <span class="title">Logs d’activités</span>
+                                <span class="title">
+                                    Logs d’activités
+                                    @livewire('sidebar.badge', ['label' => 'Logs d’activités'])
+                                </span>
                                 <div class="tooltip-indicator">Logs d’activités</div>
                             </a>
                         @else
