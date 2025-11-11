@@ -59,6 +59,15 @@
                                     {{ $item->title }}
                                 </div>
                             </a>
+                            {{-- Lien Logs d’activités juste après Paramètres --}}
+                            <a href="{{ route('regidoc.logs.auth.index') }}" class="{{ request()->routeIs('regidoc.logs.auth.*') ? 'active' : '' }} panelsession">
+                                <span>
+                                    <i class="fi fi-rr-activity"></i>
+                                    <i class="fi fi-sr-activity"></i>
+                                </span>
+                                <span class="title">Logs d’activités</span>
+                                <div class="tooltip-indicator">Logs d’activités</div>
+                            </a>
                         @else
                             <a href="{{ $item->link() }}" class="{{ $item->isActive() ? 'active' : '' }} panelsession"
                                 @if ($item->hasChildren() && $item->id != 40)

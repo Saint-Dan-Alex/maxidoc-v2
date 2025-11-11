@@ -72,6 +72,14 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
             // Paramètres
             Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+
+            // Logs d'activités (authentification)
+            Route::get('/logs/auth', function () {
+                return view('regidoc.pages.logs.auth-index');
+            })->name('logs.auth.index');
+            Route::get('/logs/auth/{id}', function ($id) {
+                return view('regidoc.pages.logs.auth-show', ['id' => (int) $id]);
+            })->name('logs.auth.show');
             
             // Gestion des catégories, expéditeurs et natures de courrier via Livewire
             Route::get('/settings/categories', function () {
