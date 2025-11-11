@@ -233,7 +233,12 @@
                                     <button class="nav-link" id="authentication-tab" data-bs-toggle="tab"
                                         data-bs-target="#authentication" type="button" role="tab"
                                         aria-controls="authentication" wire:ignore
-                                        aria-selected="false">Authentification</button>
+                                        aria-selected="false">Roles et Permissions</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="auth-logs-tab" data-bs-toggle="tab"
+                                        data-bs-target="#auth-logs" type="button" role="tab" wire:ignore
+                                        aria-controls="auth-logs" aria-selected="false">Authentification</button>
                                 </li>
                                 
                             </ul>
@@ -448,6 +453,16 @@
                                                 </div>
                                             </div>
                                         </form>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="auth-logs" role="tabpanel" aria-labelledby="auth-logs-tab" wire:ignore.self>
+                                    <div class="info-lg">
+                                        <h2>Logs d'authentification</h2>
+                                        @if($agent && $agent->user_id)
+                                            @livewire('admin.agents.auth-logs', ['userId' => $agent->user_id], key('auth-logs-' . $agent->user_id))
+                                        @else
+                                            <div class="text-muted">Aucun utilisateur lié à cet agent.</div>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="tab-pane fade show active" id="fiche-agent" wire:ignore.self
