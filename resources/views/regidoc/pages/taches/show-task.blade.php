@@ -755,7 +755,7 @@ use Illuminate\Support\Facades\Storage;
                                     Relancer la tâche
                                 </a>
                             @else
-                                <a href="javascript:void(0)" data-bs-target="#modal-endtask" data-bs-toggle="modal"
+                                <a href="javascript:void(0)" data-bs-target="#closeTaskModal" data-bs-toggle="modal"
                                     class="btn btn-conf-on">
                                     Cloturer la tâche
                                 </a>
@@ -1345,70 +1345,6 @@ use Illuminate\Support\Facades\Storage;
         </div>
     </div>
 
-    <div class="modal fade modal-sm" id="modal-endtask" tabindex="-1" aria-labelledby="exampleModalLabel">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group row g-2">
-                        <div class="col-12">
-                            <div class="text-center">
-                                <h6>Vous êtes sur le point de mettre fin à cette tâche. Souhaitez-vous le confirmer ?
-                                </h6>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-3 from-group row">
-                        <div class="mb-3 col-lg-12">
-                            <div class="d-flex justify-content-between gap-2">
-                                <button class="btn btn-sm btn-light w-50" data-bs-dismiss="modal"
-                                    aria-label="Close">Annuler</button>
-                                <a href="{{ route('regidoc.taches.finish', $tache->id) }}"
-                                    class="mt-0 btn btn-add w-50">Valider</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modal-validation" tabindex="-1" aria-labelledby="exampleModalLabel">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title d-flex align-items-center" id="exampleModalLabel">
-                        <span>Confirmation</span>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="d-none position-absolute d-flex loader-card justify-content-center"
-                        style="z-index: 2; height:80%; width:90%; background-color:rgba(255,255,255,0.95)"
-                        wire:loading="" wire:target="filter" wire:loading.class.remove="d-none">
-                        <div class="m-auto text-center">
-                            <div class="spinner-border text-success" role="status">
-                                <span class="sr-only"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group row g-2">
-                        <div class="col-12">
-                            <div class="text-center">
-                                <p>Vous êtes sur le point de valider ce traitement. Souhaitez-vous le confirmer ?</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-sm btn-light" data-bs-dismiss="modal" aria-label="Close">Annuler</button>
-                    <a href="{{ route('regidoc.taches.finish', $tache->id) }}" class="btn btn-add mt-0">Valider</a>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="modal fade" id="modal-reject" tabindex="-1" aria-labelledby="exampleModalLabel">
         <div class="modal-dialog modal-dialog-centered">

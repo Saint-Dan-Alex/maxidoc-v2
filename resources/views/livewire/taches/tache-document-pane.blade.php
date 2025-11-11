@@ -68,15 +68,47 @@
     </div>
 </div>
 
+<!-- Clôture Tâche Modal -->
+<div class="modal modal-confirm-close fade" id="closeTaskModal" tabindex="-1" aria-labelledby="closeTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center" id="closeTaskModalLabel">
+                    <span>Confirmation</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group row g-2">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <p>Vous êtes sur le point de valider ce traitement. Souhaitez-vous le confirmer ?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-light" data-bs-dismiss="modal" aria-label="Close">Annuler</button>
+                <a href="{{ route('regidoc.taches.finish', $tache->id) }}" class="btn btn-add mt-0">Valider</a>
+            </div>
+        </div>
+    </div>
+    </div>
+
 <style>
     .modal-backdrop.confirm-pj-backdrop,
     .modal-backdrop.confirm-pj-backdrop.show { z-index: 99990 !important; }
     .modal.modal-confirm-pj,
-    .modal.modal-confirm-pj.show { z-index: 100000 !important; }
-    .modal.modal-confirm-pj .modal-dialog { z-index: 100001 !important; }
+    .modal.modal-confirm-pj.show,
+    .modal.modal-confirm-close,
+    .modal.modal-confirm-close.show { z-index: 100000 !important; }
+    .modal.modal-confirm-pj .modal-dialog,
+    .modal.modal-confirm-close .modal-dialog { z-index: 100001 !important; }
     /* Ensure the preview container content stays on top within the modal */
     #confirmationModal .modal-content { position: relative; z-index: 100002; }
     #confirmationModal .modal-backdrop { z-index: 99990 !important; }
+    #closeTaskModal .modal-content { position: relative; z-index: 100002; }
+    #closeTaskModal .modal-backdrop { z-index: 99990 !important; }
 </style>
 
 @push('scripts')
@@ -106,6 +138,25 @@
                 if (bd) { bd.classList.add('confirm-pj-backdrop'); }
             });
             confirmationModalElement.addEventListener('hidden.bs.modal', function() {
+                const bd = document.querySelector('.modal-backdrop.confirm-pj-backdrop');
+                if (bd) { bd.classList.remove('confirm-pj-backdrop'); }
+            });
+        }
+
+        const closeTaskModalElement = document.getElementById('closeTaskModal');
+        if (closeTaskModalElement && typeof bootstrap !== 'undefined') {
+            const closeTaskModal = new bootstrap.Modal(closeTaskModalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            if (closeTaskModalElement.parentNode !== document.body) {
+                document.body.appendChild(closeTaskModalElement);
+            }
+            closeTaskModalElement.addEventListener('shown.bs.modal', function() {
+                const bd = document.querySelector('.modal-backdrop');
+                if (bd) { bd.classList.add('confirm-pj-backdrop'); }
+            });
+            closeTaskModalElement.addEventListener('hidden.bs.modal', function() {
                 const bd = document.querySelector('.modal-backdrop.confirm-pj-backdrop');
                 if (bd) { bd.classList.remove('confirm-pj-backdrop'); }
             });
