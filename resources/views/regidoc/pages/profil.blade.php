@@ -124,8 +124,7 @@
                         </li>
                         <li class="nav-item me-1" role="presentation">
                             <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#activite"
-                                type="button" role="tab" aria-controls="activite" aria-selected="false">Activité de
-                                l'agent</button>
+                                type="button" role="tab" aria-controls="activite" aria-selected="false">Votre activité</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#edit-profil"
