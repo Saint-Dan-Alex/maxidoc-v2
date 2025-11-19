@@ -2349,8 +2349,15 @@
     @yield('scripts')
     @stack('livewireScripts')
     
-    <!-- Modal pour ajouter une pièce jointe -->
-    <div class="modal fade" id="modal-new-piece" tabindex="-1" aria-labelledby="modalNewPieceLabel" aria-hidden="true">
+    <style>
+      .modal-backdrop,
+      .modal-backdrop.show { z-index: 99990 !important; }
+      .modal.modal-piece,
+      .modal.modal-piece.show { z-index: 100000 !important; }
+      .modal.modal-piece .modal-dialog { z-index: 100001 !important; }
+    </style>
+
+    <div class="modal fade modal-piece" id="modal-new-piece" tabindex="-1" aria-labelledby="modalNewPieceLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -2358,7 +2365,6 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Formulaire pour téléverser une pièce jointe -->
                     <form action="{{ route('courriers.upload-piece', $courrier) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
@@ -2374,6 +2380,15 @@
             </div>
         </div>
     </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var modalPiece = document.getElementById('modal-new-piece');
+        if (modalPiece && modalPiece.parentNode !== document.body) {
+          document.body.appendChild(modalPiece);
+        }
+      });
+    </script>
 
     @if (session()->get('session') && json_decode(session()->get('session'))->name != '')
         @if (json_decode(session()->get('session'))->statut == 'success')
