@@ -290,12 +290,12 @@ class PersonnelController extends Controller
             // Validation des données requises
             $request->validate([
                 'nom' => 'required',
-                'post_nom' => 'required',
+                'post_nom' => 'nullable|string',
                 'prenom' => 'required',
                 'matricule' => 'required|unique:agents',
                 'newMail' => 'required|email|unique:users,email',
                 'direction_id' => 'required|exists:directions,id',
-                'fonction_id' => 'required|exists:fonctions,id',
+                'fonction_id' => 'nullable|exists:fonctions,id',
                 'sexe' => 'required',
             ]);
 
@@ -496,11 +496,11 @@ class PersonnelController extends Controller
             // Validation des données
             $request->validate([
                 'nom' => 'required',
-                'post_nom' => 'required',
+                'post_nom' => 'nullable|string',
                 'prenom' => 'required',
                 'matricule' => 'required|unique:agents,matricule,' . $id,
                 'direction_id' => 'required|exists:directions,id',
-                'fonction_id' => 'required|exists:fonctions,id',
+                'fonction_id' => 'nullable|exists:fonctions,id',
                 'sexe' => 'required',
                 'role_id' => 'nullable|exists:roles,id',
             ]);

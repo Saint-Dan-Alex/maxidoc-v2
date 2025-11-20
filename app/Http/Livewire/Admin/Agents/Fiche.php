@@ -478,15 +478,15 @@ class Fiche extends Component
                 ],
                 [
                     'nom' => 'required|string|max:255',
-                    'post_nom' => 'string|max:255',
+                    'post_nom' => 'nullable|string|max:255',
                     'prenom' => 'string|max:255',
                     'sexe' => 'required|string|max:1',
                     'matricule' => 'required|string|unique:agents,matricule,' . $this->agent->id . '|max:25',
                     'lieu_id' => 'required|exists:lieu_affectations,id',
                     'direction_id' => 'required|exists:directions,id',
-                    'service_id' => 'required',
+                    'service_id' => 'nullable',
                     'fonction_id' => 'nullable|exists:fonctions,id',
-                    'grade_id' => 'required',
+                    'grade_id' => 'nullable',
                     'photo' => 'image|max:1024|mimes:jpeg,jpg,png|nullable',
                 ],
                 [
