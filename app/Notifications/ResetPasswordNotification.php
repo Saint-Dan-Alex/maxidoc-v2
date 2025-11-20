@@ -26,10 +26,9 @@ class ResetPasswordNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Votre nouveau mot de passe')
-            ->line('Vous recevez cet email car nous avons reçu une demande de réinitialisation de mot de passe pour votre compte.')
-            ->line('Votre nouveau mot de passe est : ' . $this->password)
-            ->line('Pour des raisons de sécurité, nous vous recommandons de changer ce mot de passe après votre première connexion.')
-            ->action('Se connecter', url('/login'));
+            ->subject('Votre nouveau mot de passe MaxiDoc')
+            ->view('emails.reset-password', [
+                'password' => $this->password,
+            ]);
     }
 }
