@@ -2260,7 +2260,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal-a-traiter" tabindex="-1" aria-labelledby="exampleModalLabel">
+    <div class="modal fade modal-a-traiter" id="modal-a-traiter" tabindex="-1" aria-labelledby="exampleModalLabel">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header ">
@@ -2355,12 +2355,16 @@
       .modal.modal-piece,
       .modal.modal-piece.show,
       .modal.modal-traitement,
-      .modal.modal-traitement.show { z-index: 100000 !important; }
+      .modal.modal-traitement.show,
+      .modal.modal-a-traiter,
+      .modal.modal-a-traiter.show { z-index: 100000 !important; }
       .modal.modal-piece .modal-dialog,
-      .modal.modal-traitement .modal-dialog { z-index: 100001 !important; }
+      .modal.modal-traitement .modal-dialog,
+      .modal.modal-a-traiter .modal-dialog { z-index: 100001 !important; }
 
       .modal.modal-piece .select2-container--open,
-      .modal.modal-traitement .select2-container--open {
+      .modal.modal-traitement .select2-container--open,
+      .modal.modal-a-traiter .select2-container--open {
         z-index: 100002 !important;
       }
     </style>
@@ -2399,6 +2403,11 @@
         var modalTraitement = document.getElementById('traitement-modal');
         if (modalTraitement && modalTraitement.parentNode !== document.body) {
           document.body.appendChild(modalTraitement);
+        }
+
+        var modalATraiter = document.getElementById('modal-a-traiter');
+        if (modalATraiter && modalATraiter.parentNode !== document.body) {
+          document.body.appendChild(modalATraiter);
         }
       });
     </script>
