@@ -2111,7 +2111,7 @@
 
 
     {{-- @livewire('courrier.traitement-modal', ['courrier' => $courrier]) --}}
-    <div class="modal fade" id="traitement-modal" aria-labelledby="exampleModalLabel" aria-modal="true"
+    <div class="modal fade modal-traitement" id="traitement-modal" aria-labelledby="exampleModalLabel" aria-modal="true"
         role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content">
@@ -2353,8 +2353,16 @@
       .modal-backdrop,
       .modal-backdrop.show { z-index: 99990 !important; }
       .modal.modal-piece,
-      .modal.modal-piece.show { z-index: 100000 !important; }
-      .modal.modal-piece .modal-dialog { z-index: 100001 !important; }
+      .modal.modal-piece.show,
+      .modal.modal-traitement,
+      .modal.modal-traitement.show { z-index: 100000 !important; }
+      .modal.modal-piece .modal-dialog,
+      .modal.modal-traitement .modal-dialog { z-index: 100001 !important; }
+
+      .modal.modal-piece .select2-container--open,
+      .modal.modal-traitement .select2-container--open {
+        z-index: 100002 !important;
+      }
     </style>
 
     <div class="modal fade modal-piece" id="modal-new-piece" tabindex="-1" aria-labelledby="modalNewPieceLabel" aria-hidden="true">
@@ -2386,6 +2394,11 @@
         var modalPiece = document.getElementById('modal-new-piece');
         if (modalPiece && modalPiece.parentNode !== document.body) {
           document.body.appendChild(modalPiece);
+        }
+
+        var modalTraitement = document.getElementById('traitement-modal');
+        if (modalTraitement && modalTraitement.parentNode !== document.body) {
+          document.body.appendChild(modalTraitement);
         }
       });
     </script>
