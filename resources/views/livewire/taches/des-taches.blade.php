@@ -301,43 +301,24 @@
                                                                 </div> --}}
                                                         </div>
                                                     </div>
-                                                    @if (Auth::user()->agent->isSecretaire() && $tache->isForDirection())
-                                                        @if ($tache->pourcentage == 0)
-                                                            <button class="btn btn-sm btn-add btn-add-hover"
-                                                                wire:click="updateStatut({{ $tache->id }},1)"
-                                                                wire:loading.attr='disabled'>
-                                                                Accuser reception
-                                                                <span class="spinner-border text-success d-none ms-1"
-                                                                    role="status" wire:target="updateStatut"
-                                                                    wire:loading.class.remove="d-none"
-                                                                    style="font-size: 2px !important; width:10px;height:10px">
-                                                                    <span class="sr-only"></span>
-                                                                </span>
-                                                            </button>
-                                                        @else
-                                                            <button class="btn btn-sm btn-add btn-add-hover" disabled>
-                                                                Vous avez déjà accusé réception
-                                                            </button>
-                                                        @endif
+                                                    @if ($tache->isForDirection() && $tache->pourcentage == 0 &&
+                                                        ! (Auth::user()->agent->isSecretaire() || Auth::user()->agent->isResponsable()))
+                                                        <button class="btn btn-sl btn-add" disabled>
+                                                            En attente d'un accusé de réception
+                                                        </button>
                                                     @else
-                                                        @if ($tache->isForDirection() && $tache->pourcentage == 0)
-                                                            <button class="btn btn-sl btn-add" disabled>
-                                                                En attente d'un accusé de réception
-                                                            </button>
-                                                        @else
-                                                            <button class="btn btn-sm btn-add btn-add-hover"
-                                                                wire:click="updateStatut({{ $tache->id }})"
-                                                                wire:loading.attr='disabled'>
-                                                                Traiter
-                                                                <span class="spinner-border text-success d-none ms-1"
-                                                                    role="status"
-                                                                    wire:target="updateStatut({{ $tache->id }})"
-                                                                    wire:loading.class.remove="d-none"
-                                                                    style="font-size: 2px !important; width:10px;height:10px">
-                                                                    <span class="sr-only"></span>
-                                                                </span>
-                                                            </button>
-                                                        @endif
+                                                        <button class="btn btn-sm btn-add btn-add-hover"
+                                                            wire:click="updateStatut({{ $tache->id }})"
+                                                            wire:loading.attr='disabled'>
+                                                            Traiter
+                                                            <span class="spinner-border text-success d-none ms-1"
+                                                                role="status"
+                                                                wire:target="updateStatut({{ $tache->id }})"
+                                                                wire:loading.class.remove="d-none"
+                                                                style="font-size: 2px !important; width:10px;height:10px">
+                                                                <span class="sr-only"></span>
+                                                            </span>
+                                                        </button>
                                                     @endif
                                                 </div>
                                             </div>

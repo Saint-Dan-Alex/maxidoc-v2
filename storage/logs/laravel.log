@@ -7324,3 +7324,7 @@
 [2025-11-21 11:02:55] local.INFO: Données reçues : {"_token":"gC93yDYbbG3Q0XXDatprZMiZ4GAjKk232gx6tVwX","_method":"PUT","code":"DEPART","lieu_id":"1","libelle":"Departement Appro","responsable_id":"4","adjoint_id":"9"} 
 [2025-11-21 11:02:55] local.INFO: Direction actuelle : {"id":2,"titre":"Departement Appro","code":"DEPART","description":null,"lieu_id":1,"responsable_id":6,"slug":"departement-appro","adjoint_id":9,"created_at":"2025-09-29T13:13:11.000000Z","updated_at":"2025-10-22T10:41:15.000000Z","deleted_at":null} 
 [2025-11-21 11:02:55] local.INFO: Vérification du responsable adjoint {"ancien_adjoint_id":"9","nouvel_adjoint_id":"9"} 
+[2025-11-21 11:16:18] local.INFO: Code 2FA envoyé {"user_id":5,"email":"dankabuya@newtech-rdc.net"} 
+[2025-11-21 11:16:45] local.INFO: Connexion 2FA réussie {"user_id":5,"email":"dankabuya@newtech-rdc.net"} 
+[2025-11-21 13:01:38] local.INFO: Documents traités pour la tâche {"tache_id":7,"nb_documents":0,"documents":[]} 
+[2025-11-21 13:13:06] local.INFO: Documents traités pour la tâche {"tache_id":8,"nb_documents":0,"documents":[]} 

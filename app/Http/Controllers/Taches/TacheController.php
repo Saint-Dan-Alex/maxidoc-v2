@@ -552,10 +552,16 @@ class TacheController extends Controller
                     $tache->save();
 
                     if ($responsable) {
-                        // dd($responsable);
+                        // Attache pour la direction (historique / reporting)
                         $tache->agents()->attach($responsable, [
                             'type' => Direction::class,
                             'type_id' => $direction->id,
+                        ]);
+
+                        // Attache explicite au directeur en tant qu'agent pour l'affichage dans "tâches assignées"
+                        $tache->agents()->attach($responsable, [
+                            'type' => Agent::class,
+                            'type_id' => $responsable->id,
                         ]);
 
 
@@ -570,6 +576,13 @@ class TacheController extends Controller
                                  'type_id' => $direction->id,
                              ]);
 
+                             foreach ($secretaires as $secretaire) {
+                                 $tache->agents()->attach($secretaire, [
+                                     'type' => Agent::class,
+                                     'type_id' => $secretaire->id,
+                                 ]);
+                             }
+
                         // if (!empty($secretaires)) {
                         //     foreach ($secretaires as $secretaire) {
                         //         if ($secretaire && isset($secretaire->id)) {
@@ -580,7 +593,6 @@ class TacheController extends Controller
                         //         }
                         //     }
                         
-
                             foreach ($secretaires as $secretaire) {
                                 event(new TacheCreated($tache, $secretaire->id, 'Une nouvelle tâche a été assignée à votre Directeur'));
                             }

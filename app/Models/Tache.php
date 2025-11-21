@@ -74,7 +74,7 @@ class Tache extends Model
     }
 
     public function isForDirection() {
-        return $this->agents()->first()->pivot->type == Direction::class;
+        return $this->agents()->where('type', Direction::class)->exists();
     }
 
     public static function getTachesForCurrentUser()
