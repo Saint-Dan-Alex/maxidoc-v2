@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Collection;
 use App\Events\DocumentCreated;
-
+use Carbon\Carbon;
 
 class ArchiveController extends Controller
 {
@@ -173,7 +173,7 @@ class ArchiveController extends Controller
                 $document->type = $request->get('type');
                 $document->nature_id = $request->get('nature');
                 $document->priorite_id = $request->get('priorite');
-                $document->date_doc = $request->get('date-doc');
+                $document->date_du_courrier = $request->get('date-doc');
                 $document->date_arrive = $request->get('date-arriv');
                 $document->description = $request->get('objet');
 
@@ -293,6 +293,20 @@ class ArchiveController extends Controller
             if (!$document) {
                  throw new \Exception('La création du document a échoué.');
             }
+
+            // Génération de la référence interne basée sur la date du document (date_du_courrier)
+            $docDate = $document->date_du_courrier ?? $request->input('date-doc') ?? $document->date_arrive ?? now();
+            $year = Carbon::parse($docDate)->year;
+            $prefix = sprintf('Arc-%d-', $year);
+            $lastRef = Document::where('reference_interne', 'like', $prefix . '%')
+                ->orderBy('reference_interne', 'desc')
+                ->value('reference_interne');
+            $next = 1;
+            if ($lastRef) {
+                $lastSeq = (int) substr($lastRef, -8);
+                $next = $lastSeq + 1;
+            }
+            $document->reference_interne = $prefix . str_pad((string) $next, 8, '0', STR_PAD_LEFT);
 
             // 2. Mettre à jour le document avec les informations d'archivage
             $document->archived_at = $request->input('date-arriv', now());

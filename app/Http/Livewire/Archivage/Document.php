@@ -35,13 +35,14 @@ class Document extends Component
     public $selectedMonth;
     public $selectedYear;
     public $selectedDay;
+    public $annee;
     
     public $lieu_query;
     public $direction_query;
     public $division_query;
     public $agent_query;
 
-    public function mount(Dossier $dossier)
+    public function mount(Dossier $dossier, $annee = null)
     {
         // Charger le dossier avec toutes les relations nécessaires
         $this->dossier = $dossier->load([
@@ -51,6 +52,10 @@ class Document extends Component
             'author.direction',
             'author.service'
         ]);
+        $this->annee = $annee;
+        if ($annee && empty($this->selectedYear)) {
+            $this->selectedYear = (int) $annee;
+        }
         
         // Debug: Vérifier les données chargées
         // dd($this->dossier->documents->first());
@@ -121,17 +126,22 @@ class Document extends Component
             $query->where('author_id', $this->agent_query);
         }
         
+        // Contrainte d'année globale si fournie dans le contexte
+        if (!empty($this->annee)) {
+            $query->whereYear('date_du_courrier', $this->annee);
+        }
+
         // Filtres par date
         if (!empty($this->selectedYear)) {
-            $query->whereYear('archived_at', $this->selectedYear);
+            $query->whereYear('date_du_courrier', $this->selectedYear);
         }
         
         if (!empty($this->selectedMonth)) {
-            $query->whereMonth('archived_at', $this->selectedMonth);
+            $query->whereMonth('date_du_courrier', $this->selectedMonth);
         }
         
         if (!empty($this->selectedDay)) {
-            $query->whereDay('archived_at', $this->selectedDay);
+            $query->whereDay('date_du_courrier', $this->selectedDay);
         }
         
         return $query;

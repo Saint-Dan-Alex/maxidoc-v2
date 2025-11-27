@@ -9,8 +9,9 @@
         <hr class="mb-4">
         <div class="row g-3">
             @php
-                $groupeFiles = $groupeFiles->groupBy(function ($query) {
-                    return $query->created_at->format('Y');
+                $groupeFiles = $groupeFiles->groupBy(function ($doc) {
+                    $date = $doc->date_du_courrier ?? $doc->archived_at ?? $doc->created_at;
+                    return \Carbon\Carbon::parse($date)->format('Y');
                 });
             @endphp
             @forelse ($groupeFiles as $annee => $groupeFile)

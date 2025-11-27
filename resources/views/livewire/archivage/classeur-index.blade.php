@@ -45,7 +45,7 @@
             @forelse ($classeurs as $classeur)
                 <div class="col-lg-3">
                     <div class="col-folder">
-                        <a href="{{ route('regidoc.archive-classeurs.show', $classeur) }}">
+                        <a href="{{ route('regidoc.archive-classeurs.show', $classeur) }}?annee={{ $annee }}">
                             <div class="d-flex align-items-center">
                                 <img src="{{ asset('assets/images/icons/Fichier 27.png') }}" alt=""
                                     class="me-2">

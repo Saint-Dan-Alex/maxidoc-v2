@@ -10,7 +10,7 @@
         </a>
         <p class="bg-white p-2 rounded">
             Archives/<span style="color:darkgray;">{{ Auth::user()->agent?->direction?->titre }}/</span>
-            {{ $classeur->created_at->format('Y') . '/' }}
+            {{ (request('annee') ?? $classeur->created_at->format('Y')) . '/' }}
             <span class="text-primary text-capitalize"> {{ $classeur->titre }} </span>
         </p>
         @can('Archiver')
@@ -24,7 +24,7 @@
     </div>
     @endcan
         <div class="row g-lg-3">
-            @livewire('archivage.dossiers', ['classeur' => $classeur])
+            @livewire('archivage.dossiers', ['classeur' => $classeur, 'annee' => request('annee')])
         </div>
     </div>
 

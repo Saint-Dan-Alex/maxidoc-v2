@@ -27,11 +27,17 @@ class ClasseurIndex extends Component
         $agent = auth()->user()->agent;
         
         // Construction de la requête de base
+        // Filtrer les classeurs qui contiennent des documents archivés (statut_id=6)
+        // et dont l'année du document correspond à $this->annee
         $query = Classeur::query()
             ->whereHas('documents', function ($query) {
                 $query->where('statut_id', 6);
             })
-            ->whereYear('created_at', $this->annee);
+            ->whereHas('documents', function ($q) {
+                $q->where(function ($qq) {
+                    $qq->whereYear('date_du_courrier', $this->annee);
+                });
+            });
         
         // Si l'agent n'est pas DG, on filtre par son lieu d'affectation
         if (!$agent->isDG()) {

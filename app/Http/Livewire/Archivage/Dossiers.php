@@ -16,11 +16,13 @@ class Dossiers extends Component
     public $filter;
     public $search;
     public $filterText = 'Filtre';
+    public $annee;
 
-    public function mount(Classeur $classeur)
+    public function mount(Classeur $classeur, $annee = null)
     {
         $this->classeur = $classeur;
         $this->filter = "Tous";
+        $this->annee = $annee;
     }
 
     private function getNestedDossiers($parentId = null, $level = 0)
@@ -31,6 +33,9 @@ class Dossiers extends Component
             ->where('parent_id', $parentId)
             ->whereHas('documents', function ($query) use ($agent) {
                 $query->where('statut_id', 6);
+                if ($this->annee) {
+                    $query->whereYear('date_du_courrier', $this->annee);
+                }
                 
                 // Si l'agent n'est pas DG, on filtre par son service
                 if (!$agent->isDG()) {

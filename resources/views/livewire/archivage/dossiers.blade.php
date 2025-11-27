@@ -43,7 +43,7 @@
                         @if($dossier->level > 0)
                             <div class="folder-connector" style="position: absolute; left: -15px; top: 15px; width: 15px; height: 1px; background-color: #ddd;"></div>
                         @endif
-                        <a href="{{ route('regidoc.archive-classeurs.archive-dossiers.show', [$dossier->classeur, $dossier]) }}">
+                        <a href="{{ route('regidoc.archive-classeurs.archive-dossiers.show', [$dossier->classeur, $dossier]) }}@if($annee)?annee={{ $annee }}@endif">
                             <div class="d-flex align-items-center">
                                 <img src="{{ asset('assets/images/icons/Fichier 22.png') }}" alt="" class="me-2">
                                 <div class="text-star">

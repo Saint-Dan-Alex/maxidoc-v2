@@ -90,7 +90,12 @@ class ArchivageDashboard extends Component
         // })->get();
 
         // dd($lieux);
-        $this->groupeFiles = Document::archive()->select('created_at')->orderBy('created_at', 'desc')->get();
+        // Récupérer les documents archivés et les dates utiles pour le regroupement par année
+        $this->groupeFiles = Document::archive()
+            ->select('id', 'date_du_courrier', 'archived_at', 'created_at')
+            ->orderBy('archived_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
 
         return view('livewire.archivage.archivage-dashboard');
