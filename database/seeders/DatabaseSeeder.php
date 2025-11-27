@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,
             FonctionSeeder::class,
             AgentSeeder::class,
+            ReceptionAgentSeeder::class,
             AssistanatSeeder::class,
             SecretariatSeeder::class,
         ]);
