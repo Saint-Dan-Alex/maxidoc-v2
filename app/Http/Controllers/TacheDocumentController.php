@@ -56,15 +56,47 @@ class TacheDocumentController extends Controller
             ]);
         }
 
+        // Déterminer le libellé du document principal de la tâche (pour nommer le dossier)
+        $mainLabel = null;
+        // 1) Si un parent_document_id est fourni explicitement
+        if ($request->filled('parent_document_id')) {
+            $parentDoc = Document::find($request->input('parent_document_id'));
+            if ($parentDoc) {
+                $mainLabel = $parentDoc->libelle ?? null;
+            }
+        }
+        // 2) Sinon, tenter de l'inférer via le courrier lié à la tâche
+        if (!$mainLabel && property_exists($tache, 'courrier_id') && $tache->courrier_id) {
+            $courrier = \App\Models\Courrier::find($tache->courrier_id);
+            if ($courrier) {
+                if ($courrier->document_id) {
+                    $parentDoc = Document::find($courrier->document_id);
+                } else {
+                    $parentDoc = $courrier->documents()->whereNull('parent_document_id')->first();
+                }
+                if ($parentDoc) {
+                    $mainLabel = $parentDoc->libelle ?? null;
+                }
+            }
+        }
+        // 3) En dernier recours, utiliser le nom du fichier attaché (sans extension)
+        if (!$mainLabel && $originalName) {
+            $mainLabel = pathinfo($originalName, PATHINFO_FILENAME);
+        }
+
+        // Construire le titre du dossier
+        $dossierTitle = 'Documents partagés' . ($mainLabel ? ' : ' . $mainLabel : '');
+
+        // Utiliser/créer le dossier ciblé sous le classeur "Documents partagés"
         $dossier = Dossier::where('classeur_id', $classer->id)
-            ->where('titre', 'Tâche ' . $tache->id)
+            ->where('titre', $dossierTitle)
             ->first();
 
         if (!$dossier) {
             $dossier = Dossier::create([
-                'titre' => 'Tâche ' . $tache->id,
-                'reference' => 'DOS-TACHE-' . $tache->id,
-                'description' => 'Dossier pour la tâche ' . $tache->id,
+                'titre' => $dossierTitle,
+                'reference' => 'DOCS-PARTAGES/' . (Auth::user()->agent?->matricule ?? ''),
+                'description' => 'Dossier des documents partagés (issus des tâches)',
                 'classeur_id' => $classer->id,
                 'created_by' => Auth::id(),
             ]);
