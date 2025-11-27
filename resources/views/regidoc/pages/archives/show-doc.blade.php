@@ -222,7 +222,8 @@
                             <div class="item">
                                 <div class="row">
                                     <div class="col-5">
-                                        <span>Service initiateur</span>
+                                        <label for="inputPassword" class="col-5 col-form-label">Service initiateur</label>
+                                   
                                     </div>
                                     <div class="col-7">
                                         <p class="items mb-0">{{ $find_document->service->titre ?? '' }}</p>
@@ -240,6 +241,18 @@
                                     <p class="items">
 
                                         {{ \Carbon\Carbon::parse($find_document->date_arrive)->isoFormat('LL') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        @if ($find_document->date_du_courrier)
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <label for="inputPassword" class="col-5 col-form-label">Date du document</label>
+                                <div class="col-7">
+                                    <p class="items">
+                                        {{ \Carbon\Carbon::parse($find_document->date_du_courrier)->isoFormat('LL') }}
                                     </p>
                                 </div>
                             </div>
