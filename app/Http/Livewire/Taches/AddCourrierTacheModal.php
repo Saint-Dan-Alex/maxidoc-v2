@@ -54,6 +54,11 @@ class AddCourrierTacheModal extends Component
             $agent = null;
 
             if ($this->stat['to'] == 1) {
+                if (empty($this->stat['direction_id'])) {
+                    $this->emit('alert', 'error', 'Veuillez sélectionner une direction');
+                    $this->emit('finishPartage');
+                    return;
+                }
                 $direction = Direction::find($this->stat['direction_id']);
                 $secretaires = $direction->secretaires->map(function ($secretaire)
                 {
@@ -98,25 +103,38 @@ class AddCourrierTacheModal extends Component
                 ]);
 
             } else {
-                $agent = $this->stat['agent_id'];
+                // Partage à un agent de ma direction: l'utilisateur choisit l'agent
+                if (empty($this->stat['agent_id'])) {
+                    $this->emit('alert', 'error', 'Veuillez sélectionner un agent');
+                    $this->emit('finishPartage');
+                    return;
+                }
+
+                $agentId = (int) $this->stat['agent_id'];
+                if ($agentId <= 0) {
+                    $this->emit('alert', 'error', "ID de l'agent invalide");
+                    $this->emit('finishPartage');
+                    return;
+                }
+
                 $partage = CourriersPartage::create([
                     'courrier_id' => $this->courrier->id,
-                    'agent_id' => $agent,
+                    'agent_id' => $agentId,
                     'traitement_id' => $this->stat['traitement_id'] ?? null,
                     'note' => $this->stat['note'],
                     'send_by' => Auth::user()->id
                 ]);
+
                 event(new CourrierPartage($partage, 'Un courrier vous a été partagé par ' . Auth::user()->agent->prenom . ' ' . Auth::user()->agent->nom));
-        
-            Historique::create([
-                "key" => "Accusé de reception",
-                "historiquecable_id" => $this->courrier->id,
-                "historiquecable_type" => Courrier::class,
-                "description"  => Auth::user()->agent->prenom." ". Auth::user()->agent->nom ." a partagé ce courrier avec la direction ". Auth::user()->agent->direction->titre,
-                "user_id" => Auth::user()->id,
-            ]);
-            
-        }
+
+                Historique::create([
+                    "key" => "Accusé de reception",
+                    "historiquecable_id" => $this->courrier->id,
+                    "historiquecable_type" => Courrier::class,
+                    "description"  => Auth::user()->agent->prenom." ". Auth::user()->agent->nom ." a partagé ce courrier avec un agent de sa direction",
+                    "user_id" => Auth::user()->id,
+                ]);
+            }
 
        
 
