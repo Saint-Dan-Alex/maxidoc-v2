@@ -50,7 +50,7 @@ class CourrierController extends Controller
         try {
             $request->validate([
                 'courrier_id' => 'required|exists:courriers,id',
-                'traitement_id' => 'required|exists:courriers_types_traitements,id',
+                'traitement_id' => 'required|exists:courrier_types_traitements,id',
                 'priorite_id' => 'nullable|exists:priorites,id',
                 'date_limite' => 'nullable|date',
                 'commentaire' => 'nullable|string|max:1000'

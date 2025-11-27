@@ -2188,7 +2188,7 @@
     </div>
 
 
-    <div class="modal fade" id="modal-a-asigner" tabindex="-1" aria-labelledby="exampleModalLabel">
+    <div class="modal fade modal-a-traiter" id="modal-a-asigner" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header ">
