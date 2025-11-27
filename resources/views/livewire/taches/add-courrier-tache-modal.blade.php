@@ -1,6 +1,6 @@
 <div>
-    <div class="modal fade" id="modal-new-task-ass" aria-labelledby="exampleModalLabel" aria-modal="true" role="dialog"
-        wire:ignore.self>
+    <div class="modal fade modal-a-traiter modal-piece" id="modal-new-task-ass" tabindex="-1" aria-labelledby="exampleModalLabel" aria-modal="true" role="dialog"
+        wire:ignore style="z-index: 100005;">
         <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content">
                 <div class="modal-header">
@@ -9,7 +9,7 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" wire:poll>
+                <div class="modal-body">
                     <div class="d-none position-absolute d-flex loader-card justify-content-center"
                         style="z-index: 2; height:80%; width:90%; background-color:rgba(255,255,255,0.95)"
                         wire:loading="" wire:target="stat.to" wire:loading.class.remove="d-none">
@@ -106,12 +106,10 @@
 
                         </div>
                         <div class="from-group row mt-3">
-
-                            <div class="d-flex col-lg-12  mb-3 g-3 gap-3" wire:ignore>
-                                <button type="reset" class="btn btn-cansel flex-grow-1"
-                                    data-bs-dismiss="modal">Annuler</button>
+                            <div class="col-lg-12 text-end mb-3" wire:ignore>
+                                <button type="reset" class="btn btn-cansel" data-bs-dismiss="modal">Annuler</button>
                                 {{-- @disabled(($stat['to'] == '' || $stat['to'] == 0) && ($stat['traitement_id']) == '') --}}
-                                <button type="submit" class="btn btn-add flex-grow-1 mt-0" wire:loading.attr="disabled"
+                                <button type="submit" class="btn btn-add mt-0" wire:loading.attr="disabled"
                                     wire:target="savePartager">
                                     Partager
                                     <span
@@ -227,10 +225,33 @@
         // bootstrap.Modal.Default.keyboard = false;
         $(document).ready(function() {
             // bootstrap.Modal.Constructor.prototype.enforceFocus = true;
+            // Déplacer le modal au niveau de <body> pour éviter les contextes d'empilement créés par des parents transformés
+            var $modalAss = $('#modal-new-task-ass');
+            if ($modalAss.length) {
+                $modalAss.appendTo('body');
+            }
+            $('#modal-new-task-ass').on('show.bs.modal', function() {
+                $(this).css('z-index', 100005);
+                setTimeout(function() {
+                    $('.modal-backdrop').last().css('z-index', 100004);
+                }, 0);
+            });
+
+            $('#modal-new-task-ass').on('hidden.bs.modal', function() {
+                $('.modal-backdrop').css('z-index', '');
+            });
+
             $('.select2').select2({
-                dropdownParent: $('#modal-new-task'),
+                dropdownParent: $('#modal-new-task-ass'),
                 width: '100%',
                 placeholder: $(this).data('placeholder')
+            });
+
+            // S'assure que le dropdown Select2 est au-dessus du modal
+            $(document).on('select2:open', function() {
+                setTimeout(function() {
+                    $('.select2-container--open').css('z-index', 2100);
+                }, 0);
             });
 
             $('.tag').select2({
