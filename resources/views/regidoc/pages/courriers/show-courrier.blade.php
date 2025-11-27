@@ -1932,7 +1932,7 @@
     </div>
 
     @can('Valider un document')
-        <div class="modal fade" id="modal-validation" tabindex="-1" aria-labelledby="exampleModalLabel">
+        <div class="modal fade modal-piece" id="modal-validation" tabindex="-1" aria-labelledby="exampleModalLabel">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1969,6 +1969,25 @@
                 </div>
             </div>
         </div>
+        <script>
+            $(document).ready(function() {
+                var $modalValidation = $('#modal-validation');
+                if ($modalValidation.length) {
+                    $modalValidation.appendTo('body');
+                }
+
+                $('#modal-validation').on('show.bs.modal', function() {
+                    $(this).css('z-index', 100005);
+                    setTimeout(function() {
+                        $('.modal-backdrop').last().css('z-index', 100004);
+                    }, 0);
+                });
+
+                $('#modal-validation').on('hidden.bs.modal', function() {
+                    $('.modal-backdrop').css('z-index', '');
+                });
+            });
+        </script>
     @endcan
 
     {{-- @can('Rejeter un document')
@@ -2022,7 +2041,7 @@
     @endcan--}}
     @can('Rejeter un document')
     <!-- Modal Rejet -->
-    <div class="modal fade" id="modal-reject" tabindex="-1" aria-labelledby="modalRejectLabel">
+    <div class="modal fade modal-piece" id="modal-reject" tabindex="-1" aria-labelledby="modalRejectLabel">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -2069,6 +2088,25 @@
             </div>
         </div>
     </div>
+    <script>
+        $(document).ready(function() {
+            var $modalReject = $('#modal-reject');
+            if ($modalReject.length) {
+                $modalReject.appendTo('body');
+            }
+
+            $('#modal-reject').on('show.bs.modal', function() {
+                $(this).css('z-index', 100005);
+                setTimeout(function() {
+                    $('.modal-backdrop').last().css('z-index', 100004);
+                }, 0);
+            });
+
+            $('#modal-reject').on('hidden.bs.modal', function() {
+                $('.modal-backdrop').css('z-index', '');
+            });
+        });
+    </script>
 @endcan
 
     @can('Partager un document')
