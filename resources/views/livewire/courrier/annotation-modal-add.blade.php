@@ -46,5 +46,23 @@
             var modal = new bootstrap.Modal(document.getElementById('modal-add-annotation'));
             modal.show();
         });
+
+        $(document).ready(function() {
+            var $modalAnnot = $('#modal-add-annotation');
+            if ($modalAnnot.length) {
+                $modalAnnot.appendTo('body');
+            }
+
+            $('#modal-add-annotation').on('show.bs.modal', function() {
+                $(this).css('z-index', 100005);
+                setTimeout(function() {
+                    $('.modal-backdrop').last().css('z-index', 100004);
+                }, 0);
+            });
+
+            $('#modal-add-annotation').on('hidden.bs.modal', function() {
+                $('.modal-backdrop').css('z-index', '');
+            });
+        });
     </script>
 @endpush
