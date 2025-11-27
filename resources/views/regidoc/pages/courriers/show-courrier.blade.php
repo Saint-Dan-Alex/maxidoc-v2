@@ -1060,10 +1060,15 @@
             <div class="container-fluid">
                 <div class="row justify-content-end">
                     <div class="mx-auto text-center col-lg-9">
+                        @php
+                            // Masquer tout le bloc si une tâche est déjà liée à ce courrier
+                            $hasLinkedTask = \App\Models\Tache::where('courrier_id', $courrier->id)->exists();
+                        @endphp
 
-                        @if (($courrier->type_id == 3 && $courrier->dest_interne_id == (Auth::user()->agent)->id) ||                      
+                        @if ((($courrier->type_id == 3 && $courrier->dest_interne_id == (Auth::user()->agent)->id) ||                      
                             ($courrier->traitement && (Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()) &&
                             $courrier->traitements->where('agent_id', Auth::user()->agent->id)->count() <= 0))
+                            && !$hasLinkedTask)
                             <div class="d-flex  align-items-center block-action-doc mt-2" style="max-width: 100%">
                                 @php
                                     $titres = [
@@ -1116,8 +1121,10 @@
                                                     break;
                                             }
                                         }
+                                        // Masquer le bouton si une tâche est liée à ce courrier
+                                        $hasLinkedTask = \App\Models\Tache::where('courrier_id', $courrier->id)->exists();
                                     @endphp
-                                    @if (!$aTraite)
+                                    @if (!$aTraite && !$hasLinkedTask)
                                         <a href="{{ $url != 'javascript:void(0)' ? url($url) : $url }}"
                                             class="btn btn-light" {!! $attributs !!}>
                                             {{ $text }}
