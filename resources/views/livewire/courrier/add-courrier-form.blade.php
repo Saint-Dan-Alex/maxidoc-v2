@@ -713,6 +713,7 @@
                     "format": "pdf",
                     "upload_target": {
                         "url": uploadUrl,
+                        "cookies": "true", // IMPORTANT : Envoyer les cookies de session
                         "post_fields": {
                             "_token": "{{ csrf_token() }}"
                         }
