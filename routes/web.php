@@ -268,7 +268,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
             Route::post('/upload', [UploadController::class, 'store']);
             Route::post('/courriers/upload-scan', [App\Http\Controllers\Courriers\CourrierController::class, 'handleScanUpload'])
-    ->name('courriers.uploadScan');
+                ->name('courriers.uploadScan');
+            Route::post('courriers/scan', [CourrierController::class, 'scan'])->name('courriers.scan');
 
 
             Route::prefix('systemes')->group(function () {
@@ -340,7 +341,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         });
     });
 });
-Route::post('courriers/scan', [CourrierController::class, 'scan'])->name('courriers.scan');
 
 // Route pour le téléversement des pièces jointes
 Route::post('courriers/{courrier}/upload-piece', [\App\Http\Controllers\Courriers\CourrierController::class, 'uploadPieceJointe'])
@@ -389,6 +389,29 @@ Route::get('/parametres/organigramme', function () {
 });
 Route::get('/new-file', function () {
     return view('regidoc.pages.courriers.new-file');
+});
+Route::get('/test-scan', function () {
+    return view('test-scan-upload');
+});
+
+// ⚠️ ROUTE TEMPORAIRE - À SUPPRIMER APRÈS UTILISATION
+// Route pour vider le cache en production sans SSH
+Route::get('/clear-all-cache-temp-2024', function () {
+    \Artisan::call('optimize:clear');
+    \Artisan::call('config:clear');
+    \Artisan::call('route:clear');
+    \Artisan::call('view:clear');
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Cache vidé avec succès!',
+        'cleared' => [
+            'config' => 'OK',
+            'routes' => 'OK',
+            'views' => 'OK',
+            'optimize' => 'OK'
+        ]
+    ]);
 });
 Route::get('/test', function () {
     return view('regidoc.pages.test');

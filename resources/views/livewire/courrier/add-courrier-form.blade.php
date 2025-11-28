@@ -695,32 +695,92 @@
     <script src="{{ asset('vendor/scannerjs/scanner.js') }}"></script>
 
     <script>
+        // ⚠️ TEST DE DEPLOIEMENT - Version 2024-11-28-16h15
+        console.log('✅ FICHIER BLADE CHARGE - Version 2024-11-28-16h15');
+        
         //https://github.com/Asprise/scannerjs.javascript-scanner-access-in-browsers-chrome-ie.scanner.js/blob/master/demo-04-scan-pdf-upload-directly.htm
         function scanToPdf() {
+            var uploadUrl = "{{ route('regidoc.courriers.scan') }}";
+            console.log('🔍 Initialisation du scan');
+            console.log('📍 URL d\'upload:', uploadUrl);
+            console.log('🔑 CSRF Token:', "{{ csrf_token() }}");
+            
             scanner.scan(displayServerResponse, {
                 "can_app_enabled": false,
                 "java_applet_enabled": true,
                 "output_settings": [{
-                    "type": "save",
+                    "type": "upload",
                     "format": "pdf",
-                    "save_path": "{{ str_replace('\\', '/', storage_path() . '\\app\\public\\tmp_scanne\\file.pdf') }}"
+                    "upload_target": {
+                        "url": uploadUrl,
+                        "post_fields": {
+                            "_token": "{{ csrf_token() }}"
+                        }
+                    }
                 }]
             });
         }
 
         /** Processes the scan result */
         function displayServerResponse(successful, mesg, response) {
-            var myInput = document.getElementById('file-upload');
-            var file = "{{ asset('storage') . '/tmp_scanne/file.pdf' }}"
-            console.log(file);
-            const iframe = document.querySelector('.content-scanner iframe');
-            $(iframe).attr('src', "{{ asset('storage') . '/tmp_scanne/file.pdf' }}");
-            console.log('Test :' + iframe.src);
-            $('block-no-file').addClass('d-none');
-            $(iframe).removeClass('d-none')
-            $(iframe).addClass('show')
-            $(iframe).addClass('fade')
-            document.getElementById('server_response').value = 'true';
+            console.log('📥 displayServerResponse appelée');
+            console.log('✅ Successful:', successful);
+            console.log('📝 Message:', mesg);
+            console.log('📦 Response type:', typeof response);
+            console.log('📦 Response value:', response);
+            console.log('📦 Response length:', response ? response.length : 'N/A');
+            
+            if(!successful) {
+                console.error('❌ Scan Failed: ' + mesg);
+                alert('Echec du scan: ' + mesg);
+                return;
+            }
+
+            var data = response;
+            var isJson = false;
+            if (typeof response === 'string' && response.trim().length > 0) {
+                try {
+                    data = JSON.parse(response);
+                    isJson = true;
+                } catch(e) {
+                    console.error('Invalid JSON response', e);
+                    isJson = false;
+                }
+            } else if (typeof response === 'object') {
+                isJson = true;
+            }
+
+            if (data && data.success) {
+                var fileName = data.file_name + '.pdf';
+                var fileUrl = "{{ asset('storage/tmp_scanne') }}" + '/' + fileName;
+                
+                console.log('Scanned file URL:', fileUrl);
+                
+                const iframe = document.querySelector('.content-scanner iframe');
+                $(iframe).attr('src', fileUrl);
+                
+                $('.block-no-file').addClass('d-none');
+                $(iframe).removeClass('d-none');
+                $(iframe).addClass('show');
+                $(iframe).addClass('fade');
+                document.getElementById('server_response').value = 'true';
+            } else {
+                console.error('Upload failed:', data);
+                var errorMsg = 'Erreur inconnue';
+                
+                if (isJson && data && data.message) {
+                    errorMsg = data.message;
+                } else if (!isJson && typeof response === 'string' && response.length > 0) {
+                    errorMsg = "Erreur serveur (HTML/Text): " + response.substring(0, 100);
+                } else if (mesg) {
+                    errorMsg = mesg;
+                } else {
+                    errorMsg = "Réponse vide ou nulle. Type: " + typeof response;
+                    if (response === null) errorMsg += " (null)";
+                }
+                
+                alert('Erreur lors du scan: ' + errorMsg);
+            }
         }
     </script>
     <script>
