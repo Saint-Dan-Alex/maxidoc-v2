@@ -1783,6 +1783,7 @@
                             // $historiques = $historiques->merge($courrier->document->revisionHistory);
                             $historiques = $historiques->merge($courrier->document->history);
                         }
+
                         // $historiques = $historiques->merge($courrier->revisionHistory);
                         $historiques = $historiques->merge($courrier->history);
                         $historiques = $historiques->sortByDesc('created_at');

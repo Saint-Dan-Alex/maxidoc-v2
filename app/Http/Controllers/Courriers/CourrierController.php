@@ -912,6 +912,23 @@ public function traitement($courrier)
                 $newCourrier->traitements()->attach($t);
             }
 
+            // Copier l'historique du courrier entrant vers le courrier sortant
+            if ($courrier->history && $courrier->history->count() > 0) {
+                Log::info('📜 Copie de l\'historique', ['count' => $courrier->history->count()]);
+                
+                foreach ($courrier->history as $history) {
+                    Historique::create([
+                        'key' => $history->key,
+                        'historiquecable_id' => $newCourrier->id,
+                        'historiquecable_type' => Courrier::class,
+                        'description' => $history->description,
+                        'user_id' => $history->user_id,
+                        'created_at' => $history->created_at,
+                        'updated_at' => $history->updated_at,
+                    ]);
+                }
+            }
+
             $dgResponsables = Auth::user()->agent->direction->dgAssistanats->pluck('responsable_id');
             if ($dgResponsables->count()) {
                 $newCourrier->destinateurs()->attach($dgResponsables);
