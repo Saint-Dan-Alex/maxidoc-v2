@@ -1665,6 +1665,94 @@
                         </div>
                     @endif
 
+                    <!-- Section des pièces jointes -->
+                    @php
+                        $attachments = [];
+                        // 1. Pièces jointes directes du courrier
+                        foreach ($courrier->piecesJointes as $piece) {
+                            $url = $piece->url;
+                            $pathFromUrl = parse_url($url, PHP_URL_PATH);
+                            $isPdf = \Illuminate\Support\Str::endsWith(strtolower($pathFromUrl ?? ''), '.pdf');
+                            $attachments[] = [
+                                'source' => 'piece_jointe_courrier',
+                                'url' => $url,
+                                'name' => $piece->original_name ?? $piece->nom,
+                                'size' => $piece->formatted_size ?? null,
+                                'is_pdf' => $isPdf,
+                            ];
+                        }
+
+                        // 2. Pièces jointes du document lié (si existant)
+                        if ($courrier->document) {
+                            foreach ($courrier->document->piecesJointes as $piece) {
+                                $url = $piece->url;
+                                $pathFromUrl = parse_url($url, PHP_URL_PATH);
+                                $isPdf = \Illuminate\Support\Str::endsWith(strtolower($pathFromUrl ?? ''), '.pdf');
+                                $attachments[] = [
+                                    'source' => 'piece_jointe_document',
+                                    'url' => $url,
+                                    'name' => $piece->original_name ?? $piece->nom,
+                                    'size' => $piece->formatted_size ?? null,
+                                    'is_pdf' => $isPdf,
+                                ];
+                            }
+                        
+                            // 3. Documents des tâches liées au document du courrier
+                            if ($courrier->document->taches) {
+                                foreach ($courrier->document->taches as $tache) {
+                                    if ($tache->documents) {
+                                        foreach ($tache->documents as $doc) {
+                                            try {
+                                                $fileObj = files($doc->document);
+                                                if ($fileObj && !empty($fileObj->link)) {
+                                                    $url = str_replace('\\', '/', $fileObj->link);
+                                                    $pathFromUrl = parse_url($url, PHP_URL_PATH);
+                                                    $attachments[] = [
+                                                        'source' => 'tache_document',
+                                                        'url' => $url,
+                                                        'name' => $fileObj->name ?? basename($url),
+                                                        'size' => null,
+                                                        'is_pdf' => \Illuminate\Support\Str::endsWith(strtolower($pathFromUrl ?? ''), '.pdf'),
+                                                    ];
+                                                }
+                                            } catch (\Throwable $e) {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        $attachments = collect($attachments)->filter(function($a){ return !empty($a['url']); })->unique('url')->values()->all();
+                    @endphp
+
+                    @if(count($attachments) > 0)
+                        <div class="col-12 mt-4">
+                            <h6 class="mb-3 title-info">Pièces jointes</h6>
+                            <div class="list-group">
+                                @foreach($attachments as $att)
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="fi fi-rr-file me-2"></i>
+                                                <a href="{{ $att['url'] }}" target="_blank" class="text-decoration-none" style="color: var(--colorTitre)">
+                                                    {{ $att['name'] }}
+                                                </a>
+                                                @if($att['size'])
+                                                    <small class="d-block text-muted">{{ $att['size'] }}</small>
+                                                @endif
+                                            </div>
+                                            <a href="{{ $att['url'] }}" download class="btn btn-sm btn-outline-primary">
+                                                <i class="fi fi-rr-download"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                    <!-- Fin section des pièces jointes -->
+
                 </div>
             </div>
         </div>
