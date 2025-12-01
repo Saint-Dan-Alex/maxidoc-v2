@@ -16,7 +16,7 @@ class ScanFile
     /**
      * @return string
      */
-    public function handle($table_slug, $options = null)
+    public function handle($table_slug, $options = null, $specificFileName = null)
     {
         try {
             $this->slug = $table_slug;
@@ -25,29 +25,75 @@ class ScanFile
             $filesPath = [];
             $path = $this->generatePath();
             
-            // Vérifier si le dossier de scan existe
-            $scanDir = 'public/tmp_scanne';
-            if (!Storage::exists($scanDir)) {
-                throw new \Exception("Le dossier de scan temporaire n'existe pas");
+            // Utiliser le disque public explicitement pour correspondre à l'upload
+            $disk = Storage::disk('public');
+            $scanDir = 'tmp_scanne';
+            
+            if (!$disk->exists($scanDir)) {
+                \Log::warning("Le dossier de scan temporaire n'existe pas sur le disque public ($scanDir).");
+                // On ne lance pas d'exception tout de suite, on laisse files() retourner vide si c'est le cas
             }
             
-            // Vérifier s'il y a des fichiers scannés
-            $scannedFiles = Storage::files($scanDir);
-            if (empty($scannedFiles)) {
-                throw new \Exception("Aucun fichier scanné trouvé dans le dossier temporaire");
+            $file = null;
+
+            if ($specificFileName) {
+                $specificFileName = basename($specificFileName);
+                
+                \Log::info('DEBUG SCAN: Recherche spécifique (disk public)', [
+                    'search' => $specificFileName,
+                    'dir' => $scanDir
+                ]);
+                
+                // Essayer de trouver le fichier avec ou sans extension .pdf
+                if ($disk->exists($scanDir . '/' . $specificFileName)) {
+                    $file = $scanDir . '/' . $specificFileName;
+                    \Log::info('DEBUG SCAN: Trouvé (exact match)', ['file' => $file]);
+                } elseif ($disk->exists($scanDir . '/' . $specificFileName . '.pdf')) {
+                    $file = $scanDir . '/' . $specificFileName . '.pdf';
+                    \Log::info('DEBUG SCAN: Trouvé (avec .pdf)', ['file' => $file]);
+                }
+                
+                if (!$file) {
+                    // Fallback: chercher un fichier qui commence par ce nom
+                    $files = $disk->files($scanDir);
+                    
+                    \Log::info('DEBUG SCAN: Fallback search', [
+                        'files_in_dir' => $files
+                    ]);
+
+                    foreach ($files as $f) {
+                        if (strpos(basename($f), $specificFileName) === 0) {
+                            $file = $f;
+                            \Log::info('DEBUG SCAN: Trouvé via fallback', ['file' => $file]);
+                            break;
+                        }
+                    }
+                }
+                
+                if (!$file) {
+                    throw new \Exception("Le fichier scanné spécifique '{$specificFileName}' est introuvable dans le dossier temporaire (disk public).");
+                }
+            } else {
+                // Comportement par défaut
+                $scannedFiles = $disk->files($scanDir);
+                if (empty($scannedFiles)) {
+                    throw new \Exception("Aucun fichier scanné trouvé dans le dossier temporaire");
+                }
+                
+                $file = $scannedFiles[0];
             }
             
-            // Prendre le premier fichier scanné
-            $file = $scannedFiles[0];
             $filename = $this->generateFileName($file, $path);
             $extension = Str::afterLast($file, '.');
-            $destinationPath = 'public/' . $path . $filename . '.' . $extension;
+            
+            // Chemin relatif au disque public (sans 'public/' au début)
+            $destinationPath = $path . $filename . '.' . $extension;
 
-            // Créer le répertoire de destination s'il n'existe pas
-            Storage::makeDirectory(dirname($destinationPath), 0755, true, true);
+            // Créer le répertoire de destination
+            $disk->makeDirectory(dirname($destinationPath));
             
             // Déplacer le fichier
-            if (!Storage::move($file, $destinationPath)) {
+            if (!$disk->move($file, $destinationPath)) {
                 throw new \Exception("Impossible de déplacer le fichier scanné");
             }
 

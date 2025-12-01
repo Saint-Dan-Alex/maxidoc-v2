@@ -54,6 +54,7 @@
                     </div>
                 </div>
                 <input type="hidden" name="is_scan" id="server_response" wire:ignore />
+                <input type="hidden" name="scanned_file_name" id="scanned_file_name" wire:ignore />
                 <div class="col-12" wire:ignore>
                     <div class="block-file ">
                         <input type="file" id="file-upload" name="document" accept=".pdf" required>
@@ -815,6 +816,17 @@
                 $(iframe).addClass('show');
                 $(iframe).addClass('fade');
                 document.getElementById('server_response').value = 'true';
+                
+                // Stocker le nom du fichier scanné
+                if (data.file_name) {
+                    var scannedFileField = document.getElementById('scanned_file_name');
+                    if (scannedFileField) {
+                        scannedFileField.value = data.file_name;
+                        console.log('✅ Nom du fichier scanné enregistré:', data.file_name);
+                    } else {
+                        console.error('❌ Champ scanned_file_name introuvable');
+                    }
+                }
                 
                 // IMPORTANT : On retire l'attribut required du champ fichier car on a déjà scanné
                 var fileInput = document.getElementById('file-upload');

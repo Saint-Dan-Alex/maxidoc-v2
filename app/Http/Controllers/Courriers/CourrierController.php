@@ -1496,7 +1496,10 @@ public function createDocument($request, $destinateur, $doc = null)
 
                 if ($isScan) {
                     try {
-                        $scanResult = (new ScanFile())->handle('documents');
+                        // Récupérer le nom du fichier scanné s'il existe
+                        $scannedFileName = $request->get('scanned_file_name');
+                        
+                        $scanResult = (new ScanFile())->handle('documents', null, $scannedFileName);
                         if (empty($scanResult)) {
                             throw new \Exception('Le scan n\'a pas retourné de fichier valide');
                         }
