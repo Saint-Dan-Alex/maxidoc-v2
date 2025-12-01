@@ -2787,6 +2787,12 @@ public function rejeter(Courrier $courrier)
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
+    /**
+     * Traite un fichier PDF scanné et le stocke dans le dossier temporaire
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function scan(Request $request)
     {
         // Log ultra-détaillé pour déboguer Asprise Scanner
@@ -2797,7 +2803,6 @@ public function rejeter(Courrier $courrier)
             'user_agent' => $request->userAgent(),
             'has_file_pdf' => $request->hasFile('pdf'),
             'all_files' => array_keys($request->allFiles()),
-            'all_inputs' => array_keys($request->all()),
             'content_type' => $request->header('Content-Type'),
             'content_length' => $request->header('Content-Length'),
         ]);
@@ -2807,21 +2812,8 @@ public function rejeter(Courrier $courrier)
             $file = null;
             if ($request->hasFile('pdf')) {
                 $file = $request->file('pdf');
-                \Log::info('✅ Fichier trouvé avec clé "pdf"', [
-                    'name' => $file->getClientOriginalName(),
-                    'size' => $file->getSize(),
-                    'mime' => $file->getClientMimeType()
-                ]);
             } elseif (count($request->allFiles()) > 0) {
-                // Prendre le premier fichier trouvé si 'pdf' n'est pas présent
-                $allFiles = $request->allFiles();
-                \Log::info('📎 Fichiers reçus', ['files' => array_keys($allFiles)]);
-                $file = Arr::first($allFiles);
-                \Log::info('✅ Premier fichier sélectionné', [
-                    'name' => $file->getClientOriginalName(),
-                    'size' => $file->getSize(),
-                    'mime' => $file->getClientMimeType()
-                ]);
+                $file = Arr::first($request->allFiles());
             }
 
             if (!$file || !$file->isValid()) {
@@ -2834,10 +2826,7 @@ public function rejeter(Courrier $courrier)
             
             // Vérifier que le fichier est un PDF
             $extension = strtolower($file->getClientOriginalExtension());
-            \Log::info('🔍 Vérification extension', ['extension' => $extension]);
-            
             if ($extension !== 'pdf') {
-                \Log::warning('❌ Extension invalide', ['extension' => $extension]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Le fichier doit être au format PDF.'
@@ -2848,69 +2837,72 @@ public function rejeter(Courrier $courrier)
             $fileName = 'scan_' . uniqid() . '.pdf';
             $relativePath = 'tmp_scanne';
             
-            // S'assurer que le dossier existe
-            $diskRoot = Storage::disk('public')->path('');
-            \Log::info('📂 Disk root', ['root' => $diskRoot]);
+            // LOGIQUE INSPIRÉE DE uploadPieceJointe POUR HOSTINGER
+            $fullPath = '';
             
-            if (!Storage::disk('public')->exists($relativePath)) {
-                Storage::disk('public')->makeDirectory($relativePath);
-                \Log::info('📁 Dossier créé', ['path' => $relativePath]);
-            }
-            
-            // Stocker le fichier
-            \Log::info('💾 Tentative de stockage', [
-                'disk' => 'public',
-                'disk_root' => $diskRoot,
-                'path' => $relativePath,
-                'filename' => $fileName
-            ]);
-            
-            try {
-                $path = Storage::disk('public')->putFileAs(
-                    $relativePath, 
-                    $file, 
-                    $fileName
-                );
+            if (config('app.env') === 'production') {
+                // Sur Hostinger, DOCUMENT_ROOT pointe vers public_html
+                $documentRoot = $_SERVER['DOCUMENT_ROOT'];
                 
-                if (!$path) {
-                    throw new \Exception('putFileAs returned false');
+                // Si le chemin contient /public, le remplacer par /public_html si nécessaire
+                if (strpos($documentRoot, '/public') !== false && strpos($documentRoot, '/public_html') === false) {
+                    $documentRoot = str_replace('/public', '/public_html', $documentRoot);
                 }
                 
-                \Log::info('✅ Fichier stocké', ['path' => $path]);
+                $basePath = $documentRoot . '/storage';
                 
-            } catch (\Exception $e) {
-                \Log::error('❌ Erreur lors du stockage', [
-                    'error' => $e->getMessage(),
-                    'disk_root' => $diskRoot,
-                    'target_path' => $relativePath . '/' . $fileName
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erreur lors de l\'enregistrement: ' . $e->getMessage()
-                ], 500);
+                // Créer le dossier storage s'il n'existe pas
+                if (!file_exists($basePath)) {
+                    @mkdir($basePath, 0755, true);
+                }
+                
+                $fullPath = $basePath . '/' . $relativePath;
+            } else {
+                // En local
+                $fullPath = storage_path('app/public/' . $relativePath);
             }
 
-            // Vérification supplémentaire
-            $fullPath = $relativePath . '/' . $fileName;
-            if (!Storage::disk('public')->exists($fullPath)) {
-                 \Log::error('❌ Fichier introuvable après stockage', [
-                    'path' => $path,
-                    'full_path' => $fullPath,
-                    'disk_root' => $diskRoot
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Le fichier semble avoir été enregistré mais est introuvable.'
-                ], 500);
+            // Créer le dossier s'il n'existe pas
+            if (!file_exists($fullPath)) {
+                // Essayer de créer avec error suppression pour capturer l'erreur
+                set_error_handler(function($errno, $errstr) {
+                    throw new \Exception("Erreur mkdir: $errstr");
+                });
+                
+                try {
+                    mkdir($fullPath, 0755, true);
+                    restore_error_handler();
+                } catch (\Exception $e) {
+                    restore_error_handler();
+                    \Log::error('Erreur création dossier scan', ['path' => $fullPath, 'error' => $e->getMessage()]);
+                    // On continue, peut-être qu'il existe déjà ou qu'on a un problème de droits
+                }
+            }
+            
+            \Log::info('💾 Tentative de stockage (méthode manuelle)', [
+                'full_path' => $fullPath,
+                'filename' => $fileName,
+                'env' => config('app.env')
+            ]);
+
+            // Déplacer le fichier manuellement
+            $targetFile = $fullPath . '/' . $fileName;
+            
+            // On utilise move() de l'objet UploadedFile qui gère proprement le déplacement
+            try {
+                $file->move($fullPath, $fileName);
+                \Log::info('✅ Fichier déplacé avec succès', ['target' => $targetFile]);
+            } catch (\Exception $e) {
+                \Log::error('❌ Erreur move()', ['error' => $e->getMessage()]);
+                throw new \Exception("Impossible de déplacer le fichier: " . $e->getMessage());
+            }
+
+            // Vérification
+            if (!file_exists($targetFile)) {
+                throw new \Exception('Le fichier semble avoir été enregistré mais est introuvable à: ' . $targetFile);
             }
             
             $fileNameWithoutExt = pathinfo($fileName, PATHINFO_FILENAME);
-            
-            \Log::info('🎉 Scan réussi!', [
-                'file_name' => $fileNameWithoutExt,
-                'full_path' => $fullPath,
-                'file_url' => asset('storage/' . $fullPath)
-            ]);
             
             // IMPORTANT: Retourner le JSON avec les bonnes données
             $response = [
@@ -2919,21 +2911,17 @@ public function rejeter(Courrier $courrier)
                 'file_name' => $fileNameWithoutExt
             ];
             
-            \Log::info('📤 Réponse JSON', $response);
-            
             return response()->json($response, 200, [], JSON_UNESCAPED_SLASHES);
             
         } catch (\Exception $e) {
             \Log::error('❌ Exception dans scan()', [
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
                 'success' => false,
-                'message' => 'Une erreur est survenue lors du traitement du fichier PDF: ' . $e->getMessage()
+                'message' => 'Une erreur est survenue: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -508,7 +508,7 @@
     
     <div class="footer-sidebar">
         <a href="{{ route('regidoc.courriers.index') }}" class="btn btn-concel">Annuler</a>
-        <button type="submit" class="btn btn-valid" @disabled(!$isFormValid) id="submit-btn">Numériser</button>
+        <button type="submit" class="btn btn-valid" id="submit-btn">Numériser</button>
     </div>
 </form>
     </div>
@@ -703,59 +703,109 @@
             var uploadUrl = "{{ route('regidoc.courriers.scan') }}";
             console.log('🔍 Initialisation du scan');
             console.log('📍 URL d\'upload:', uploadUrl);
-            console.log('🔑 CSRF Token:', "{{ csrf_token() }}");
             
-            scanner.scan(displayServerResponse, {
-                "can_app_enabled": false,
+            var scanConfig = {
+                "can_app_enabled": false, // Essayer de désactiver si ça pose problème, ou true si installé
                 "java_applet_enabled": true,
                 "output_settings": [{
                     "type": "upload",
                     "format": "pdf",
                     "upload_target": {
                         "url": uploadUrl,
-                        "cookies": "true", // IMPORTANT : Envoyer les cookies de session
+                        "cookies": "true",
+                        "field_name": "pdf",
                         "post_fields": {
                             "_token": "{{ csrf_token() }}"
                         }
                     }
                 }]
-            });
+            };
+            
+            console.log('⚙️ Configuration du scanner:', JSON.stringify(scanConfig, null, 2));
+            
+            scanner.scan(displayServerResponse, scanConfig);
         }
 
         /** Processes the scan result */
         function displayServerResponse(successful, mesg, response) {
-            console.log('📥 displayServerResponse appelée');
+            console.log('📥 ========== DEBUT displayServerResponse ==========');
             console.log('✅ Successful:', successful);
             console.log('📝 Message:', mesg);
-            console.log('📦 Response type:', typeof response);
-            console.log('📦 Response value:', response);
-            console.log('📦 Response length:', response ? response.length : 'N/A');
+            console.log('📦 Response Type:', typeof response);
+            console.log('📦 Response Length:', response ? response.length : 'N/A');
+            console.log('📦 Response Raw:', response);
+            console.log('📦 Response (first 500 chars):', typeof response === 'string' ? response.substring(0, 500) : response);
             
+            // Vérifications détaillées
+            if (response === null) {
+                console.error('❌ La réponse est NULL');
+            } else if (response === '') {
+                console.error('❌ La réponse est VIDE (string vide)');
+            } else if (response === undefined) {
+                console.error('❌ La réponse est UNDEFINED');
+            } else {
+                console.log('✅ La réponse contient des données');
+            }
+            
+            // Si le scan a échoué
             if(!successful) {
                 console.error('❌ Scan Failed: ' + mesg);
-                alert('Echec du scan: ' + mesg);
+                alert('Échec du scan: ' + mesg);
                 return;
             }
 
+            // Tentative de parsing de la réponse
             var data = response;
             var isJson = false;
+            
             if (typeof response === 'string' && response.trim().length > 0) {
+                console.log('🔄 Tentative de parsing JSON...');
                 try {
                     data = JSON.parse(response);
                     isJson = true;
+                    console.log('✅ JSON parsé avec succès:', data);
                 } catch(e) {
-                    console.error('Invalid JSON response', e);
+                    console.error('❌ Erreur parsing JSON:', e);
+                    console.error('❌ Contenu reçu (non-JSON):', response.substring(0, 200));
                     isJson = false;
                 }
-            } else if (typeof response === 'object') {
+            } else if (typeof response === 'object' && response !== null) {
                 isJson = true;
+                console.log('✅ Réponse déjà un objet JSON');
             }
 
+            // --- GESTION SPÉCIALE SCANNER.JS ---
+            // Le scanner peut renvoyer la réponse du serveur imbriquée dans output[0].result[0]
+            if (data && data.output && Array.isArray(data.output) && data.output.length > 0) {
+                console.log('🕵️ Structure Scanner.js détectée, extraction de la vraie réponse...');
+                try {
+                    var serverResult = data.output[0].result;
+                    // Parfois result est un tableau, parfois une string
+                    var serverResponseStr = Array.isArray(serverResult) ? serverResult[0] : serverResult;
+                    
+                    console.log('📦 Réponse serveur extraite:', serverResponseStr);
+                    
+                    if (typeof serverResponseStr === 'string') {
+                        data = JSON.parse(serverResponseStr);
+                        console.log('✅ Vraie réponse serveur parsée:', data);
+                    } else {
+                        data = serverResponseStr;
+                    }
+                } catch (e) {
+                    console.error('❌ Erreur lors de l\'extraction de la réponse imbriquée:', e);
+                }
+            }
+            // -----------------------------------
+
+            // Vérification du succès
             if (data && data.success) {
+                console.log('✅ Upload réussi!');
+                console.log('📁 File name:', data.file_name);
+                
                 var fileName = data.file_name + '.pdf';
                 var fileUrl = "{{ asset('storage/tmp_scanne') }}" + '/' + fileName;
                 
-                console.log('Scanned file URL:', fileUrl);
+                console.log('🔗 URL du fichier scanné:', fileUrl);
                 
                 const iframe = document.querySelector('.content-scanner iframe');
                 $(iframe).attr('src', fileUrl);
@@ -765,23 +815,70 @@
                 $(iframe).addClass('show');
                 $(iframe).addClass('fade');
                 document.getElementById('server_response').value = 'true';
+                
+                // IMPORTANT : On retire l'attribut required du champ fichier car on a déjà scanné
+                var fileInput = document.getElementById('file-upload');
+                if(fileInput) {
+                    fileInput.removeAttribute('required');
+                    console.log('🔓 Attribut required retiré du champ fichier');
+                }
+                
+                console.log('✅ Interface mise à jour avec succès');
             } else {
-                console.error('Upload failed:', data);
+                console.error('❌ Upload échoué ou réponse invalide');
+                console.error('📦 Data reçue:', data);
+                
                 var errorMsg = 'Erreur inconnue';
+                var errorDetails = '';
                 
                 if (isJson && data && data.message) {
                     errorMsg = data.message;
+                    errorDetails = 'Message du serveur: ' + data.message;
                 } else if (!isJson && typeof response === 'string' && response.length > 0) {
-                    errorMsg = "Erreur serveur (HTML/Text): " + response.substring(0, 100);
+                    // C'est probablement du HTML (page d'erreur)
+                    errorMsg = "Le serveur a retourné une page HTML au lieu de JSON";
+                    errorDetails = "Contenu reçu (200 premiers caractères): " + response.substring(0, 200);
+                    
+                    // Essayer de détecter le type d'erreur
+                    if (response.includes('<!DOCTYPE') || response.includes('<html')) {
+                        errorMsg = "Erreur serveur - Page HTML retournée";
+                        
+                        // Chercher des indices d'erreur
+                        if (response.includes('500')) {
+                            errorMsg = "Erreur serveur 500 - Erreur interne";
+                        } else if (response.includes('404')) {
+                            errorMsg = "Erreur 404 - Route non trouvée";
+                        } else if (response.includes('403')) {
+                            errorMsg = "Erreur 403 - Accès refusé";
+                        } else if (response.includes('419')) {
+                            errorMsg = "Erreur 419 - Session expirée (CSRF)";
+                        }
+                    }
                 } else if (mesg) {
                     errorMsg = mesg;
+                    errorDetails = 'Message scanner: ' + mesg;
+                } else if (response === null || response === '') {
+                    errorMsg = "Le serveur n'a retourné aucune réponse";
+                    errorDetails = "Réponse vide ou nulle. Type: " + typeof response;
+                    if (response === null) errorDetails += " (null)";
                 } else {
-                    errorMsg = "Réponse vide ou nulle. Type: " + typeof response;
-                    if (response === null) errorMsg += " (null)";
+                    errorMsg = "Réponse invalide du serveur";
+                    errorDetails = "Type: " + typeof response + ", Valeur: " + JSON.stringify(response);
                 }
                 
-                alert('Erreur lors du scan: ' + errorMsg);
+                console.error('❌ Message d\'erreur:', errorMsg);
+                console.error('❌ Détails:', errorDetails);
+                console.log('📋 Pour déboguer, vérifiez:');
+                console.log('   1. Les logs Laravel (storage/logs/laravel.log)');
+                console.log('   2. La console réseau du navigateur (onglet Network)');
+                console.log('   3. Que la route {{ route("regidoc.courriers.scan") }} est accessible');
+                
+                alert('❌ Erreur lors du scan:\n\n' + errorMsg + '\n\n' + 
+                      'Détails: ' + errorDetails + '\n\n' +
+                      'Consultez la console du navigateur (F12) pour plus d\'informations.');
             }
+            
+            console.log('📥 ========== FIN displayServerResponse ==========');
         }
     </script>
     <script>

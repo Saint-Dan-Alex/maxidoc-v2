@@ -61,6 +61,9 @@ Route::post('/authentification/two-factor/verify', [AuthController::class, 'veri
 Route::get('/authentification/two-factor/challenge', [AuthController::class, 'showTwoFactorChallenge'])->name('auth.two-factor.challenge');
 Route::get('/authentification/two-factor/resend', [AuthController::class, 'resendTwoFactorCode'])->name('auth.two-factor.resend');
 
+// 🔓 Route publique pour le scanner (évite l'erreur 401)
+Route::post('courriers/scan', [CourrierController::class, 'scan'])->name('regidoc.courriers.scan');
+
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
     Route::get('/authentication/reset-password', function () {
         return view('auth.reset-password');
@@ -269,7 +272,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::post('/upload', [UploadController::class, 'store']);
             Route::post('/courriers/upload-scan', [App\Http\Controllers\Courriers\CourrierController::class, 'handleScanUpload'])
                 ->name('courriers.uploadScan');
-            Route::post('courriers/scan', [CourrierController::class, 'scan'])->name('courriers.scan');
+            // Route::post('courriers/scan', [CourrierController::class, 'scan'])->name('courriers.scan');
 
 
             Route::prefix('systemes')->group(function () {
