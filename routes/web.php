@@ -63,6 +63,7 @@ Route::get('/authentification/two-factor/resend', [AuthController::class, 'resen
 
 // 🔓 Route publique pour le scanner (évite l'erreur 401)
 Route::post('courriers/scan', [CourrierController::class, 'scan'])->name('regidoc.courriers.scan');
+Route::post('archivages/scan', [ArchiveController::class, 'scan'])->name('regidoc.archivages.scan');
 
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
     Route::get('/authentication/reset-password', function () {

@@ -13,6 +13,7 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         "/courriers/scan",
+        "/archivages/scan",
         "/documents/save-pdf",
         "/documents/save/brouillon",
         "/documents/save-as-doc",
