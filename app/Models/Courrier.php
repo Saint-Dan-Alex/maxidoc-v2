@@ -403,6 +403,16 @@ class Courrier extends Model implements Viewable
     }
 
     /**
+     * Get the taches (tasks) associated with the courrier.
+     *
+     * @return \\Illuminate\\Database\\Eloquent\\Relations\\HasMany
+     */
+    public function taches()
+    {
+        return $this->hasMany(Tache::class, 'courrier_id');
+    }
+
+    /**
      * Get the indexable data array for the model.
      *
      * @return array

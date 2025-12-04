@@ -69,6 +69,24 @@
                         </li>
                     @endforeach
                 @endif
+
+                @if($tacheDocuments->count() > 0)
+                    <li class="dropdown-divider"></li>
+                    <li class="dropdown-header">Pièces jointes</li>
+                    @foreach ($tacheDocuments as $tacheDoc)
+                        @if($tacheDoc->document)
+                            <li>
+                                <a class="dropdown-item btn-doc btn-doc-list" href="javascript:void(0)"
+                                    data-url="{{ files($tacheDoc->document)->link }}"
+                                    data-name="{{ files($tacheDoc->document)->name }}"
+                                    wire:click="selectDoc({{ $tacheDoc->document }}, {{ $tacheDoc->id }}, false)">
+                                    <i class="fi fi-rr-document me-1"></i>
+                                    {{ files($tacheDoc->document)->name }}
+                                </a>
+                            </li>
+                        @endif
+                    @endforeach
+                @endif
             </ul>
     </div>
 </div>

@@ -33,8 +33,27 @@ class TraitementDocSelect extends Component
     public function render()
     {
         $piecesJointes = $this->courrier->piecesJointes()->get();
+        
+        // Récupérer les documents des tâches clôturées
+        $tacheDocuments = collect();
+        $documentPrincipalId = $this->courrier->document?->id; // ID du document principal à exclure
+        
+        if ($this->courrier->taches) {
+            foreach ($this->courrier->taches()->where('tache_statut_id', 3)->get() as $tache) {
+                if ($tache->documents && $tache->documents->count() > 0) {
+                    foreach ($tache->documents as $document) {
+                        // Exclure le document principal du courrier
+                        if ($document->id !== $documentPrincipalId) {
+                            $tacheDocuments->push($document);
+                        }
+                    }
+                }
+            }
+        }
+        
         return view('livewire.courrier.traitement-doc-select', [
-            'piecesJointes' => $piecesJointes
+            'piecesJointes' => $piecesJointes,
+            'tacheDocuments' => $tacheDocuments
         ]);
     }
 

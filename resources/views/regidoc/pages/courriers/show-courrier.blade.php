@@ -365,13 +365,37 @@
             'document_path' => $courrier->document?->document ?? 'N/A'
         ];
         
-        if ($courrier->traitements->count() && $courrier->traitements->last()->document_url) {
+        // Priorité 1: Vérifier s'il y a des tâches clôturées avec des pièces jointes
+        $latestTaskDocument = null;
+        if ($courrier->taches) {
+            // Récupérer les tâches clôturées avec des documents
+            foreach ($courrier->taches()->where('tache_statut_id', 3)->latest()->get() as $tache) {
+                if ($tache->documents && $tache->documents->count() > 0) {
+                    $latestTaskDocument = $tache->documents->sortByDesc('pivot.created_at')->first();
+                    break;
+                }
+            }
+        }
+        
+        if ($latestTaskDocument && $latestTaskDocument->document) {
+            // Afficher le document de la tâche clôturée
+            $fileObj = files($latestTaskDocument->document);
+            if ($fileObj && !empty($fileObj->link)) {
+                $docToShow = str_replace('\\', '/', $fileObj->link);
+                $nameDocToShow = $fileObj->name;
+                $docToShowId = $latestTaskDocument->id;
+            }
+        }
+        // Priorité 2: Vérifier les traitements si aucun document de tâche n'a été trouvé
+        elseif ($courrier->traitements->count() && $courrier->traitements->last()->document_url) {
             $fileObj = files($courrier->traitements->last()->document_url);
             if ($fileObj && !empty($fileObj->link)) {
                 $docToShow = str_replace('\\', '/', $fileObj->link);
                 $nameDocToShow = $fileObj->name;
             }
-        } elseif ($courrier->document?->document) {
+        } 
+        // Priorité 3: Document original du courrier
+        elseif ($courrier->document?->document) {
             // Récupérer le chemin brut du document
             $rawDocPath = $courrier->document->document;
             
