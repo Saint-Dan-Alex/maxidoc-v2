@@ -1870,8 +1870,21 @@ $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user(
             $copie = $request->get('copie', []);
 
             if ($request->get('type') == 1) { // Logique pour Courrier Entrant
+                // Récupérer la Direction Générale (DG)
+                $directionGenerale = Direction::find(1);
+                
+                if (!$directionGenerale) {
+                    $content = json_encode([
+                        'name' => 'Courrier',
+                        'statut' => 'error',
+                        'message' => 'Impossible d\'envoyer le courrier, Direction Générale introuvable.',
+                    ]);
+                    session()->flash('session', $content);
+                    return redirect()->route('regidoc.courriers.index');
+                }
+                
                 // Récupérer les assistants du DG via la relation assistanats()
-                $assistantsDG = Direction::find(1)->assistanats->pluck('responsable_id');
+                $assistantsDG = $directionGenerale->assistanats->pluck('responsable_id');
 
                 if ($assistantsDG->isEmpty()) {
                     $content = json_encode([
@@ -1905,13 +1918,24 @@ $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user(
                 $courrier->statut_id = 1; // Statut initial
                 $courrier->save();
 
-                // Attacher les assistants DG comme destinataires
-                $courrier->destinateurs()->attach($assistantsDG);
+                // Créer une collection pour tous les destinataires (assistants + DG)
+                $destinataires = $assistantsDG->toBase();
+                
+                // Ajouter le DG (responsable de la Direction Générale) s'il existe
+                if ($directionGenerale->responsable_id) {
+                    $destinataires->push($directionGenerale->responsable_id);
+                }
+                
+                // Supprimer les doublons au cas où le DG serait aussi dans les assistants
+                $destinataires = $destinataires->unique();
+                
+                // Attacher tous les destinataires (assistants DG + DG)
+                $courrier->destinateurs()->attach($destinataires);
 
                 // Attacher l'étape (exemple : étape 2)
                 $courrier->etapes()->attach(2);
 
-                // Notification aux assistants DG sauf le créateur
+                // Notification aux assistants DG et au DG sauf le créateur
                 $notifyAgents = $courrier->destinateurs->where('id', '!=', Auth::user()->agent->id);
                 if ($notifyAgents->count()) {
                     event(new CourrierCreated($courrier, $notifyAgents, 'A créé un nouveau courrier !'));

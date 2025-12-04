@@ -245,10 +245,17 @@
                                         ($courrier->isIntern() && in_array(Auth::user()->agent->id, $courrier->destinateurs->pluck('id')->toArray())) ||
                                             in_array(Auth::user()->agent->id, $courrier->followers->pluck('id')->toArray()) ||
                                             $courrier->created_by == Auth::user()->agent->id)
-                                        <a href="{{ route('regidoc.courriers.show', $courrier) }}" class="btn">
-                                            <i class="fi fi-rr-eye"></i>
-                                            <div class="tooltip-btn">Voir détails</div>
-                                        </a>
+                                        @php
+                                            // Vérifier si l'utilisateur est DG et si le statut n'est pas "En attente"
+                                            $isDG = Auth::user()->agent && Auth::user()->agent->isDG();
+                                            $canViewButton = !$isDG || ($isDG && $courrier->statut_id != 1);
+                                        @endphp
+                                        @if ($canViewButton)
+                                            <a href="{{ route('regidoc.courriers.show', $courrier) }}" class="btn">
+                                                <i class="fi fi-rr-eye"></i>
+                                                <div class="tooltip-btn">Voir détails</div>
+                                            </a>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
