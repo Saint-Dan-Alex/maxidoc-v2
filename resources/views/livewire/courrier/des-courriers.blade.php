@@ -1,4 +1,4 @@
-{{-- <div class="mt-3 row g-lg-3">
+﻿{{-- <div class="mt-3 row g-lg-3">
 
     <div class="row pe-0">
         <div class="col-12 pe-0">
@@ -522,15 +522,22 @@
                                        <div class="d-flex align-items-center">
                                            
                                                @if (
-                                                   ($entrant->isIntern() && in_array(Auth::user()->agent->id, $entrant->destinateurs->pluck('id')->toArray())) ||
-                                                       in_array(Auth::user()->agent->id, $entrant->followers->pluck('id')->toArray()) ||
-                                                       $entrant->created_by == Auth::user()->agent->id)
-                                                   <a href="{{ route('regidoc.courriers.show', $entrant) }}"
-                                                       class="btn">
-                                                       <i class="fi fi-rr-eye"></i>
-                                                       <div class="tooltip-btn">Voir détails</div>
-                                                   </a>
-                                               @endif
+    ($entrant->isIntern() && in_array(Auth::user()->agent->id, $entrant->destinateurs->pluck('id')->toArray())) ||
+        in_array(Auth::user()->agent->id, $entrant->followers->pluck('id')->toArray()) ||
+        $entrant->created_by == Auth::user()->agent->id)
+    @php
+        // Vérifier si l'utilisateur est DG et si le statut n'est pas "En attente"
+        $isDG = Auth::user()->agent && Auth::user()->agent->isDG();
+        $canViewButton = !$isDG || ($isDG && $entrant->statut_id != 1);
+    @endphp
+    @if ($canViewButton)
+        <a href="{{ route('regidoc.courriers.show', $entrant) }}"
+            class="btn">
+            <i class="fi fi-rr-eye"></i>
+            <div class="tooltip-btn">Voir détails</div>
+        </a>
+    @endif
+@endif
                                    @endif
                                        </div>
                                    </td>
