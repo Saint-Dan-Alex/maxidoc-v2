@@ -892,9 +892,9 @@
                                 Retour
                             </div>
                         </a>
-                        <div class="text-truncate" style="max-width: 420px; color: white;" title="{{ $displayName }}">
+                        <!-- <div class="text-truncate" style="max-width: 420px; color: white;" title="{{ $displayName }}">
                             {{ $displayName }}
-                        </div>
+                        </div> -->
                         @livewire('courrier.traitement-doc-select', ['courrier' => $courrier]) 
             <h5 class="offcanvas-title d-flex align-items-center gap-2" id="offcanvasRightLabel"> 
                 <span style="color: white">{!! $courrier->status_badge !!}</span>
