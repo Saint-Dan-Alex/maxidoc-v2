@@ -1,6 +1,9 @@
+<style>
+    [x-cloak] { display: none !important; }
+</style>
 <div>
     <div class="modal fade modal-a-traiter modal-piece" id="modal-new-task-ass" tabindex="-1" aria-labelledby="exampleModalLabel" aria-modal="true" role="dialog"
-        wire:ignore style="z-index: 100005;">
+        style="z-index: 100005;" x-data="{ toValue: @entangle('stat.to') }">
         <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content">
                 <div class="modal-header">
@@ -35,7 +38,7 @@
                                         class="block-radios d-flex align-item-center flex-wrap gap-1 justify-content-between">
                                         <div class="item-radio d-flex align-items-center justify-content-between">
                                             <input type="radio" name="to" id="direction" value="1"
-                                                wire:model='stat.to'>
+                                                x-model="toValue">
                                             <label for="direction">À une autre direction</label>
                                             <div class="bubble-ratio"></div>
                                             <div class="block-dashed-sm"></div>
@@ -43,7 +46,7 @@
 
                                         <div class="item-radio d-flex align-items-center justify-content-between">
                                             <input type="radio" name="to" id="agent" value="2"
-                                                wire:model='stat.to'>
+                                                x-model="toValue">
                                             <label for="agent">À un agent de ma direction</label>
                                             <div class="bubble-ratio"></div>
                                             <div class="block-dashed-sm"></div>
@@ -56,33 +59,31 @@
                                 $concernedAgents = Auth::user()->agent->direction->agents;
                             @endphp
 
-                            @if ($stat['to'] == 1)
-                                <div class="col-12">
-                                    <label for="">Direction</label>
-                                    <select class="form-select select-agent" name="direction_id"
-                                        aria-label="Default select example" required wire:model='stat.direction_id'>
-                                        <option value="" selected disabled>Selectionnez</option>
-                                        @foreach ($directions as $direction)
-                                            <option value="{{ $direction->id }}">
-                                                {{ $direction->titre }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            @elseif($stat['to'] == 2)
-                                <div class="col-12">
-                                    <label for="">Agent</label>
-                                    <select class="form-select select-agent select2" name="agent_id"
-                                        aria-label="Default select example" required wire:model='stat.agent_id'>
-                                        <option value="" selected disabled>Selectionnez</option>
-                                        @foreach ($concernedAgents as $agent)
-                                            <option value="{{ $agent->id }}">
-                                                {{ $agent->nom . ' ' . $agent->prenom }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            @endif
+                            <div class="col-12" x-show="toValue == 1" x-cloak wire:key="direction-select">
+                                <label for="">Direction</label>
+                                <select class="form-select select-agent" name="direction_id"
+                                    aria-label="Default select example" :required="toValue == 1" wire:model='stat.direction_id'>
+                                    <option value="" selected disabled>Selectionnez</option>
+                                    @foreach ($directions as $direction)
+                                        <option value="{{ $direction->id }}">
+                                            {{ $direction->titre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div class="col-12" x-show="toValue == 2" x-cloak wire:key="agent-select">
+                                <label for="">Agent</label>
+                                <select class="form-select select-agent" name="agent_id"
+                                    aria-label="Default select example" :required="toValue == 2" wire:model='stat.agent_id'>
+                                    <option value="" selected disabled>Selectionnez</option>
+                                    @foreach ($concernedAgents as $agent)
+                                        <option value="{{ $agent->id }}">
+                                            {{ $agent->nom . ' ' . $agent->prenom }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
                             @if (!($courrier?->type_id == 2 && ($poste?->id == 57 || $poste?->titre == 'Chef de service courrier')))
                                 <div class="col-12">
@@ -106,7 +107,7 @@
 
                         </div>
                         <div class="from-group row mt-3">
-                            <div class="col-lg-12 text-end mb-3" wire:ignore>
+                            <div class="col-lg-12 text-end mb-3">
                                 <button type="reset" class="btn btn-cansel" data-bs-dismiss="modal">Annuler</button>
                                 {{-- @disabled(($stat['to'] == '' || $stat['to'] == 0) && ($stat['traitement_id']) == '') --}}
                                 <button type="submit" class="btn btn-add mt-0" wire:loading.attr="disabled"
