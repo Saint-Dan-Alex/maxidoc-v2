@@ -20,26 +20,49 @@ class TopCards extends Component
     {
         // $this->nbCourriers();
 
-        $nb_courriers = Courrier:://notViewed()
-                         where('statut_id','=',1)->get()->filter(function ($courrier) {
-                            return Auth::user()->can('view', $courrier);
-                        })->count();
+        if (!Auth::user()->agent) {
+             $nb_courriers = 0;
+             $nb_courriers_r = 0;
+             $nb_courriers_t = 0;
+             $nb_courriers_tr = 0;
+        } else {
+            $agentId = Auth::user()->agent->id;
 
-        $nb_courriers_r = Courrier::scheduled()->isLate()->notClassified();
-        $nb_courriers_r = $nb_courriers_r->where('statut_id','<>',3); 
-        $nb_courriers_r = $nb_courriers_r->get()->filter(function ($courrier) {
-                                    return Auth::user()->can('view', $courrier);
-                                })->count();
+            $filterByUserInteraction = function ($query) use ($agentId) {
+                $query->where(function ($q) use ($agentId) {
+                    $q->where('created_by', $agentId)
+                      ->orWhereHas('destinateurs', function ($sq) use ($agentId) {
+                          $sq->where('agent_id', $agentId);
+                      })
+                      ->orWhereHas('followers', function ($sq) use ($agentId) {
+                          $sq->where('agent_id', $agentId);
+                      })
+                      ->orWhereHas('partages', function ($sq) use ($agentId) {
+                          $sq->where('agent_id', $agentId);
+                      });
+                });
+            };
 
-        $nb_courriers_t = Courrier:://whereNotNull('traitement_id')
-                            where('statut_id','=',2)->notClassified()->get()->filter(function ($courrier) {
-                                return Auth::user()->can('view', $courrier);
-                            })->count();
+            // Nouveaux documents (statut 1)
+            $query = Courrier::where('statut_id', '=', 1);
+            $filterByUserInteraction($query);
+            $nb_courriers = $query->count();
 
-        $nb_courriers_tr = Courrier:://whereNotNull('traitement_id')
-                        where('type_id',[1,3])->where('statut_id',3)->get()->filter(function ($courrier) {
-                            return Auth::user()->can('view', $courrier);
-                        })->count();
+            // Traitements en retard
+            $query_r = Courrier::scheduled()->isLate()->notClassified()->where('statut_id', '<>', 3);
+            $filterByUserInteraction($query_r);
+            $nb_courriers_r = $query_r->count();
+
+            // Traitement en cours (statut 2)
+            $query_t = Courrier::where('statut_id', '=', 2)->notClassified();
+            $filterByUserInteraction($query_t);
+            $nb_courriers_t = $query_t->count();
+
+            // Documents traités (statut 3) - Entrants et Internes
+            $query_tr = Courrier::whereIn('type_id', [1, 3])->where('statut_id', 3);
+            $filterByUserInteraction($query_tr);
+            $nb_courriers_tr = $query_tr->count();
+        }
 
         // $nb_taches = Tache::where('user_id', Auth::user()->id)->where('tache_statut_id', '==', 1)->count();
 
