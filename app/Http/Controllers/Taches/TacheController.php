@@ -1342,7 +1342,7 @@ class TacheController extends Controller
                 // dd($tache->tacheParent->documents);
                 foreach ($documents as $document) {
                     if (!in_array($document->id, $tache->tacheParent->documents->pluck('id')->toArray())) {
-                        $tache->tacheParent->documents()->attach($document);
+                        $tache->tacheParent->documents()->attach($document->id, ['created_by' => Auth::id()]);
                     }
                 }
             }

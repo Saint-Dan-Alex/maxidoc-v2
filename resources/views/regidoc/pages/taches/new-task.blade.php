@@ -110,40 +110,17 @@
                                                     use App\Models\Division;
                                                     use App\Models\Service;
                                                     use App\Models\Section;
+                                                    use App\Models\Agent;
 
                                                     $name = '';
                                                     $title = '';
                                                     $objects = [];
 
                                                     if ($isSubTask) {
-                                                        if ($tache->parent != null) {
-                                                            if (
-                                                                $tache->agents->first()->pivot->type == Division::class
-                                                            ) {
-                                                                $name = 'service_id';
-                                                                $title = 'titre';
-                                                                $objects = Service::where(
-                                                                    'division_id',
-                                                                    $tache->agents->first()->pivot->type_id,
-                                                                )->get();
-                                                            } elseif (
-                                                                $tache->agents->first()->pivot->type == Service::class
-                                                            ) {
-                                                                $name = 'section_id';
-                                                                $title = 'titre';
-                                                                $objects = Section::where(
-                                                                    'service_id',
-                                                                    $tache->agents->first()->pivot->type_id,
-                                                                )->get();
-                                                            }
-                                                        } else {
-                                                            $name = 'division_id';
-                                                            $title = 'libelle';
-                                                            $objects = Division::where(
-                                                                'direction_id',
-                                                                $tache->agents->first()->pivot->type_id,
-                                                            )->get();
-                                                        }
+                                                        $name = 'agent_id';
+                                                        $objects = Agent::where('direction_id', Auth::user()->agent->direction_id)
+                                                            ->where('id', '!=', Auth::id())
+                                                            ->get();
                                                     } else {
                                                         if (Auth::user()->agent->isDG()) {
                                                             if ($to == 'direction' || $to == null) {
