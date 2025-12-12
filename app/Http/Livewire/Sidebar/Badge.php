@@ -17,20 +17,39 @@ class Badge extends Component
     {
         $user = Auth::user();
 
-        // Compute counts (same logic as Sidebar component)
-        $inboxCount = Courrier::where('statut_id', 1)
-            ->whereDoesntHave('views', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
-            ->get()
-            ->filter(function ($courrier) use ($user) {
-                return $user->can('view', $courrier);
-            })
-            ->count();
+        if (!$user->agent) {
+             $inboxCount = 0;
+             $tasksCount = 0;
+        } else {
+            $agentId = $user->agent->id;
 
-        $tasksCount = Tache::getTachesForCurrentUser()
-            ->where('tache_statut_id', '!=', 3)
-            ->count();
+            $inboxCount = Courrier::where('statut_id', 1)
+                ->whereDoesntHave('views', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                ->where(function ($q) use ($agentId) {
+                    $q->where('created_by', $agentId)
+                      ->orWhereHas('destinateurs', function ($sq) use ($agentId) {
+                          $sq->where('agent_id', $agentId);
+                      })
+                      ->orWhereHas('followers', function ($sq) use ($agentId) {
+                          $sq->where('agent_id', $agentId);
+                      })
+                      ->orWhereHas('partages', function ($sq) use ($agentId) {
+                          $sq->where('agent_id', $agentId);
+                      });
+                })
+                ->count();
+
+            $tasksCount = Tache::where('tache_statut_id', '!=', 3)
+                ->where(function ($q) use ($user, $agentId) {
+                    $q->where('user_id', $user->id) // Taches created by user
+                      ->orWhereHas('agents', function ($sq) use ($agentId) {
+                          $sq->where('agents.id', $agentId); // Taches assigned to agent
+                      });
+                })
+                ->count();
+        }
 
         // Ne plus afficher de badge pour Documents et Archives
         $t = Str::lower($this->label);
