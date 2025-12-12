@@ -53,28 +53,25 @@ class ServiceSeeder extends Seeder
 
         $data = [];
 
-        // Pour chaque lieu_id 1 à 3
-        foreach (range(1, 3) as $lieuId) {
-            foreach ($services as $service) {
-                // Cherche la direction associée au parent pour ce lieu
-                $direction = DB::table('directions')
-                    ->where('titre', $service['parent'])
-                    ->where('lieu_id', $lieuId)
-                    ->first();
+        // Insertion unique des services (liés aux directions uniques)
+        foreach ($services as $service) {
+            // Cherche la direction associée au parent
+            $direction = DB::table('directions')
+                ->where('titre', $service['parent'])
+                ->first();
 
-                if ($direction) {
-                    $data[] = [
-                        'direction_id' => $direction->id,
-                        'division_id' => null,
-                        'responsable_id' => null,
-                        'titre' => $service['titre'],
-                        'description' => $service['titre'],
-                        'statut_id' => 1,
-                        'parent_id' => null,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
-                }
+            if ($direction) {
+                $data[] = [
+                    'direction_id' => $direction->id,
+                    'division_id' => null,
+                    'responsable_id' => null,
+                    'titre' => $service['titre'],
+                    'description' => $service['titre'],
+                    'statut_id' => 1,
+                    'parent_id' => null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
             }
         }
 

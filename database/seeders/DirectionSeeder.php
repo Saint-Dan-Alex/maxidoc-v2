@@ -46,31 +46,31 @@ class DirectionSeeder extends Seeder
             'updated_at' => $now,
         ];
 
-        // Boucle pour insérer les directions et divisions pour lieu_id 1 à 3
-        foreach (range(1, 3) as $lieuId) {
-            foreach ($entries as $entry) {
-                $directionId = DB::table('directions')->insertGetId([
-                    'titre' => $entry['titre'],
-                    'code' => $entry['code'],
-                    'description' => $entry['description'],
-                    'lieu_id' => $lieuId,
-                    'responsable_id' => null,
-                    'slug' => Str::slug($entry['titre']),
-                    'adjoint_id' => null,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]);
+        // Insertion unique des directions pour Kinshasa (Lieu ID 1)
+        $lieuId = 1;
 
-                $divisionData[] = [
-                    'libelle' => $entry['titre'],
-                    'description' => $entry['description'],
-                    'direction_id' => $directionId,
-                    'responsable_id' => null,
-                    'statut_id' => 1,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-            }
+        foreach ($entries as $entry) {
+            $directionId = DB::table('directions')->insertGetId([
+                'titre' => $entry['titre'],
+                'code' => $entry['code'],
+                'description' => $entry['description'],
+                'lieu_id' => $lieuId,
+                'responsable_id' => null,
+                'slug' => Str::slug($entry['titre']),
+                'adjoint_id' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            $divisionData[] = [
+                'libelle' => $entry['titre'],
+                'description' => $entry['description'],
+                'direction_id' => $directionId,
+                'responsable_id' => null,
+                'statut_id' => 1,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
         }
 
         // Insérer les divisions
