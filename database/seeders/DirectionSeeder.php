@@ -14,14 +14,11 @@ class DirectionSeeder extends Seeder
 
         // Liste des directions et départements
         $entries = [
-            ['titre' => 'Departement Appro', 'code' => 'DEPART', 'description' => 'Département'],
-            ['titre' => 'Departement Business Analyse', 'code' => 'DEPART', 'description' => 'Département'],
-            ['titre' => 'Departement HSSEQ (PFSO)', 'code' => 'DEPART', 'description' => 'Département'],
-            ['titre' => 'Direction Administratif', 'code' => 'DIR', 'description' => 'Direction'],
-            ['titre' => 'Direction Commerciale', 'code' => 'DIR', 'description' => 'Direction'],
-            ['titre' => 'Direction Financier', 'code' => 'DIR', 'description' => 'Direction'],
-            ['titre' => 'Direction Technique', 'code' => 'DIR', 'description' => 'Direction'],
-            ['titre' => 'Direction des Opérations', 'code' => 'DIR', 'description' => 'Direction'],
+            ['titre' => 'Direction Administrative', 'code' => 'DA', 'description' => 'Direction'],
+            ['titre' => 'Direction Commerciale', 'code' => 'DC', 'description' => 'Direction'],
+            ['titre' => 'Direction Financière', 'code' => 'DF', 'description' => 'Direction'],
+            ['titre' => 'Direction Technique', 'code' => 'DT', 'description' => 'Direction'],
+            ['titre' => 'Direction des Opérations', 'code' => 'DO', 'description' => 'Direction'],
         ];
 
         $divisionData = [];
