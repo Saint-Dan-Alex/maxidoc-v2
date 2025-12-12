@@ -24,16 +24,22 @@ class Sortants extends Component
             }
         }
 
-        $courriers = $courriers->orderBy('id', 'desc')->get()->take(5)->filter(function ($courrier) {
-            return Auth::user()->can('view', $courrier);
-            // ($courrier->isIntern() &&
-            //     $courrier->destinateurs->count() &&
-            //     in_array(Auth::user()->agent->id, $courrier->destinateurs->pluck('id')->toArray()) ||
-            //     $courrier->created_by == Auth::user()->agent->id ||
-            //     in_array(Auth::user()->agent->id, $courrier->followers->pluck('id')->toArray()) ||
-            //     in_array(Auth::user()->agent->id, $courrier->partages->pluck('agent_id')->toArray())
-            // );
+        // Filtrer pour ne montrer que les courriers où l'utilisateur est impliqué
+        $courriers = $courriers->where(function ($query) {
+            $agentId = Auth::user()->agent->id;
+            $query->where('created_by', $agentId)
+                ->orWhereHas('destinateurs', function ($q) use ($agentId) {
+                    $q->where('agent_id', $agentId);
+                })
+                ->orWhereHas('followers', function ($q) use ($agentId) {
+                    $q->where('agent_id', $agentId);
+                })
+                ->orWhereHas('partages', function ($q) use ($agentId) {
+                    $q->where('agent_id', $agentId);
+                });
         });
+
+        $courriers = $courriers->orderBy('id', 'desc')->take(5)->get();
 
         $courriers = $this->mapFollowers($courriers);
 
