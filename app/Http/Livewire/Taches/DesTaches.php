@@ -23,7 +23,7 @@ class DesTaches extends Component
 
     public function mount()
     {
-        $this->tab = $this->tab ?? (Auth::user()->agent->isDG() ? 1 : 2);
+        $this->tab = $this->tab ?? 1;
     }
 
     public function refresh()
