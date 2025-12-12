@@ -87,7 +87,7 @@ class TraitementDocSelect extends Component
             Log::info('Pièce jointe sélectionnée', [
                 'id' => $pieceJointe->id,
                 'nom' => $pieceJointe->nom,
-                'chemin_brut' => $pieceJointe->attributes['chemin'],
+                'chemin_brut' => $pieceJointe->chemin,
                 'download_link' => $pieceJointe->download_link,
                 'url_generee' => $url,
                 'env' => config('app.env'),
