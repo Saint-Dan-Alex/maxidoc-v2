@@ -160,42 +160,70 @@ class DesCourriers extends Component
             'externExpediteur',
             'externDestinateur',
             'destinateurs',
-            'accuseReceptions.user.agent'  // Chargement des accusés avec les relations user et agent
+            'accuseReceptions.user.agent'
         ]);
-        // $courriersQuery = $this->applyFilters($courriersQuery);
+
+        $agentId = Auth::user()->agent->id;
+
+        // Fonction pour filtrer les courriers où l'utilisateur est impliqué
+        $filterByUserInteraction = function ($query) use ($agentId) {
+            $query->where(function ($q) use ($agentId) {
+                $q->where('created_by', $agentId)
+                  ->orWhereHas('destinateurs', function ($sq) use ($agentId) {
+                      $sq->where('agent_id', $agentId);
+                  })
+                  ->orWhereHas('followers', function ($sq) use ($agentId) {
+                      $sq->where('agent_id', $agentId);
+                  })
+                  ->orWhereHas('partages', function ($sq) use ($agentId) {
+                      $sq->where('agent_id', $agentId);
+                  });
+            });
+        };
 
         // Gestion des différents onglets
         if ($this->active_tab == 1) {
-            $allcourriers = $courriersQuery->where('statut_id','!=',3);
+            $query = $courriersQuery->where('statut_id', '!=', 3);
             
-            // Si c'est un secrétaire du DG, on ne montre que les courriers entrants (type_id = 1)
             if ($this->isSec) {
-                $allcourriers->where('type_id', 1);
+                $query->where('type_id', 1);
             }
             
-            $allcourriers = $allcourriers->orderBy('id', 'desc');
-            $allcourriers = $this->applyFilters($allcourriers);
-            $allcourriers = $this->applyPermissions($allcourriers);
-            $allcourriers = $this->mapFollowers($allcourriers);
-            $allcourriers = $this->paginateCollection($allcourriers, 10);
+            // Appliquer le filtre utilisateur pour l'onglet "Tous" également
+            $filterByUserInteraction($query);
+            
+            $query = $this->applyFilters($query)->orderBy('id', 'desc');
+            $allcourriers = $query->paginate(10);
+            $allcourriers->getCollection()->transform(function ($courrier) {
+                return $this->mapFollowerSingle($courrier);
+            });
+
         } elseif ($this->active_tab == 2) {
-            $entrants = $courriersQuery->where('type_id', 1)->orderBy('id', 'desc');
-            $entrants = $this->applyFilters($entrants);
-            $entrants = $this->applyPermissions($entrants);
-            $entrants = $this->mapFollowers($entrants);
-            $entrants = $this->paginateCollection($entrants, 10);
+            $query = $courriersQuery->where('type_id', 1);
+            $filterByUserInteraction($query);
+            $query = $this->applyFilters($query)->orderBy('id', 'desc');
+            $entrants = $query->paginate(10);
+            $entrants->getCollection()->transform(function ($courrier) {
+                return $this->mapFollowerSingle($courrier);
+            });
+
         } elseif ($this->active_tab == 3) {
-            $sortants = $courriersQuery->where('type_id', 2)->orderBy('id', 'desc');
-            $sortants = $this->applyFilters($sortants);
-            $sortants = $this->applyPermissions($sortants);
-            $sortants = $this->mapFollowers($sortants);
-            $sortants = $this->paginateCollection($sortants, 10);
+            $query = $courriersQuery->where('type_id', 2);
+            $filterByUserInteraction($query);
+            $query = $this->applyFilters($query)->orderBy('id', 'desc');
+            $sortants = $query->paginate(10);
+            $sortants->getCollection()->transform(function ($courrier) {
+                return $this->mapFollowerSingle($courrier);
+            });
+
         } elseif ($this->active_tab == 4) {
-            $internes = $courriersQuery->where('type_id', 3)->orderBy('id', 'desc');
-            $internes = $this->applyFilters($internes);
-            $internes = $this->applyPermissions($internes);
-            $internes = $this->mapFollowers($internes);
-            $internes = $this->paginateCollection($internes, 10);
+            $query = $courriersQuery->where('type_id', 3);
+            $filterByUserInteraction($query);
+            $query = $this->applyFilters($query)->orderBy('id', 'desc');
+            $internes = $query->paginate(10);
+            $internes->getCollection()->transform(function ($courrier) {
+                return $this->mapFollowerSingle($courrier);
+            });
         }
 
         return view('livewire.courrier.des-courriers', [
@@ -204,6 +232,18 @@ class DesCourriers extends Component
             'sortants' => $this->active_tab == 3 ? $sortants : collect(),
             'internes' => $this->active_tab == 4 ? $internes : collect(),
         ]);
+    }
+
+    public function mapFollowerSingle($courrier)
+    {
+        $followers = collect();
+        foreach ($courrier->etapes as $etape) {
+            if ($etape->pivot->view_by) {
+                $followers->push(User::find($etape->pivot->view_by)->agent);
+            }
+        }
+        $courrier->followers = $followers->unique();
+        return $courrier;
     }
 
      // Méthode pour paginer une collection manuellement
