@@ -83,7 +83,10 @@ class DesTaches extends Component
         $assignees = $query;
 
         if ($this->tab == 1) {
-            $taches = Tache::where('user_id', Auth::user()->id)->orderBy('id', 'DESC')->paginate(10);
+            $createdTasks = Tache::where('user_id', Auth::user()->id)->orderBy('id', 'DESC')->get();
+            $assignedTasks = $assignees;
+            $taches = $createdTasks->merge($assignedTasks)->unique('id')->sortByDesc('id');
+            $taches = $this->customPaginate($taches, 10);
         } elseif ($this->tab == 2) {
             $newTaches = $assignees->where('tache_statut_id', 1)->sortByDesc('id'); //->values(); // `values()` to reindex collection
             $newTaches = $this->customPaginate($newTaches, 10);
