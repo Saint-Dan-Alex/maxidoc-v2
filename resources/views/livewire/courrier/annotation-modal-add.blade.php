@@ -1,6 +1,6 @@
 <div>
-    <div class="modal modal-sm fade" id="modal-add-annotation" aria-labelledby="exampleModalLabel" aria-modal="true"
-        role="dialog" wire:ignore>
+    <div class="modal modal-sm fade modal-piece" id="modal-add-annotation" aria-labelledby="exampleModalLabel" aria-modal="true"
+        role="dialog" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content">
                 <div class="modal-header">
@@ -36,15 +36,11 @@
 @push('livewireScripts')
     <script>
         Livewire.on('annotationSaved', function() {
-            var modal = bootstrap.Modal.getInstance(document.getElementById('modal-add-annotation'));
-            if (modal) {
-                modal.hide();
-            }
+            $('#modal-add-annotation').modal('hide');
         });
 
         Livewire.on('addAnnotation', function() {
-            var modal = new bootstrap.Modal(document.getElementById('modal-add-annotation'));
-            modal.show();
+            $('#modal-add-annotation').modal('show');
         });
 
         $(document).ready(function() {
@@ -52,17 +48,6 @@
             if ($modalAnnot.length) {
                 $modalAnnot.appendTo('body');
             }
-
-            $('#modal-add-annotation').on('show.bs.modal', function() {
-                $(this).css('z-index', 100005);
-                setTimeout(function() {
-                    $('.modal-backdrop').last().css('z-index', 100004);
-                }, 0);
-            });
-
-            $('#modal-add-annotation').on('hidden.bs.modal', function() {
-                $('.modal-backdrop').css('z-index', '');
-            });
         });
     </script>
 @endpush

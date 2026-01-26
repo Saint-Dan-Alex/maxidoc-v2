@@ -1,6 +1,6 @@
 <div>
-    <div class="modal fade" id="modal-new-annotation" aria-labelledby="exampleModalLabel" aria-modal="true"
-        role="dialog" wire:ignore>
+    <div class="modal fade modal-piece" id="modal-new-annotation" aria-labelledby="exampleModalLabel" aria-modal="true"
+        role="dialog" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content">
                 <div class="modal-header">
@@ -33,15 +33,11 @@
     <script>
 
         Livewire.on('editAnnotation', function () {
-            var modal = new bootstrap.Modal(document.getElementById('modal-new-annotation'));
-            modal.show();
+            $('#modal-new-annotation').modal('show');
         });
 
         Livewire.on('annotationSaved', function () {
-            var modal = bootstrap.Modal.getInstance(document.getElementById('modal-new-annotation'));
-            if (modal) {
-                modal.hide();
-            }
+            $('#modal-new-annotation').modal('hide');
         });
 
         
