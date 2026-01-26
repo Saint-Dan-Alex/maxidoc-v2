@@ -292,7 +292,8 @@
                                                         @if (
                                                             ($courrier->isIntern() && in_array(Auth::user()->agent->id, $courrier->destinateurs->pluck('id')->toArray())) ||
                                                                 in_array(Auth::user()->agent->id, $courrier->followers->pluck('id')->toArray()) ||
-                                                                $courrier->created_by == Auth::user()->agent->id)
+                                                                $courrier->created_by == Auth::user()->agent->id ||
+                                                                $courrier->partages->contains('agent_id', Auth::user()->agent->id))
                                                             @php
                                                                 // Vérifier si l'utilisateur est DG et si le statut n'est pas "En attente"
                                                                 $isDG = Auth::user()->agent && Auth::user()->agent->isDG();
@@ -524,7 +525,8 @@
                                                @if (
     ($entrant->isIntern() && in_array(Auth::user()->agent->id, $entrant->destinateurs->pluck('id')->toArray())) ||
         in_array(Auth::user()->agent->id, $entrant->followers->pluck('id')->toArray()) ||
-        $entrant->created_by == Auth::user()->agent->id)
+        $entrant->created_by == Auth::user()->agent->id ||
+        $entrant->partages->contains('agent_id', Auth::user()->agent->id))
     @php
         // Vérifier si l'utilisateur est DG et si le statut n'est pas "En attente"
         $isDG = Auth::user()->agent && Auth::user()->agent->isDG();
@@ -746,7 +748,8 @@
                                                 @if (
                                                     ($sortant->isIntern() && in_array(Auth::user()->agent->id, $sortant->destinateurs->pluck('id')->toArray())) ||
                                                         in_array(Auth::user()->agent->id, $sortant->followers->pluck('id')->toArray()) ||
-                                                        $sortant->created_by == Auth::user()->agent->id)
+                                                        $sortant->created_by == Auth::user()->agent->id ||
+                                                        $sortant->partages->contains('agent_id', Auth::user()->agent->id))
                                                     <a href="{{ route('regidoc.courriers.show', $sortant) }}"
                                                         class="btn">
                                                         <i class="fi fi-rr-eye"></i>
@@ -928,7 +931,8 @@
                                                 @if (
                                                     ($interne->isIntern() && in_array(Auth::user()->agent->id, $interne->destinateurs->pluck('id')->toArray())) ||
                                                         in_array(Auth::user()->agent->id, $interne->followers->pluck('id')->toArray()) ||
-                                                        $interne->created_by == Auth::user()->agent->id)
+                                                        $interne->created_by == Auth::user()->agent->id ||
+                                                        $interne->partages->contains('agent_id', Auth::user()->agent->id))
                                                     <a href="{{ route('regidoc.courriers.show', $interne) }}"
                                                         class="btn">
                                                         <i class="fi fi-rr-eye"></i>

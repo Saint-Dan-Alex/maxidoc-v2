@@ -39,6 +39,13 @@ class AddCourrierTacheModal extends Component
     public $courrier;
     public $to;
 
+    public function mount($courrier = null)
+    {
+        if ($courrier) {
+            $this->courrier = $courrier;
+        }
+    }
+
     public function render()
     {
         $this->priorites = Priorite::all();

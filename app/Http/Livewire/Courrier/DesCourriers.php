@@ -160,7 +160,8 @@ class DesCourriers extends Component
             'externExpediteur',
             'externDestinateur',
             'destinateurs',
-            'accuseReceptions.user.agent'
+            'accuseReceptions.user.agent',
+            'partages'
         ]);
 
         $agentId = Auth::user()->agent->id;
