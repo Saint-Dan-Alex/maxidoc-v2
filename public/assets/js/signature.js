@@ -126,7 +126,7 @@ $('select[name="police"]').on("change", function () {
   const container = $(this).closest('.tab-pane');
   const targetH1 = container.find("h1");
   const inputValue = container.find('input[type="text"]').val();
-  
+
   targetH1.css({
     fontFamily: $(this).val(),
     fontSize: $(this).val() == "Arty Signature" ? "180px" : "80px"
@@ -604,7 +604,7 @@ $(".btn-paraphe").on("click", function (event) {
 
   $.ajax({
     // url: "/ajax/signatures/get/user/image",
-    url: "/ajax/signatures/get/user/paraphe/image",
+    url: "/ajax/signatures/get/user/paraphe/image?request_code=1",
     method: "get",
     success: function (data) {
       $("#waiting-password").modal("hide");
@@ -629,7 +629,7 @@ $(".btn-paraphe").on("click", function (event) {
 $(".btn-signer").on("click", function (event) {
   $("#waiting-password").modal("show");
   $.ajax({
-    url: "/ajax/signatures/get/user/image",
+    url: "/ajax/signatures/get/user/image?request_code=1",
     method: "get",
     success: function (data) {
       $("#waiting-password").modal("hide");
@@ -653,7 +653,7 @@ $(".resend-code").on("click", function (event) {
   $("#modal-password").modal("hide");
   $("#waiting-password").modal("show");
   $.ajax({
-    url: "/ajax/signatures/get/user/image",
+    url: "/ajax/signatures/get/user/image?request_code=1",
     method: "get",
     success: function (data) {
       // Mettre à jour le contexte
@@ -662,7 +662,7 @@ $(".resend-code").on("click", function (event) {
         agent_prenom: data.agent_prenom || "",
         direction_titre: data.direction_titre || "",
       };
-      try { console.debug('[signature] meta reçu', window.__lastSignatureMeta); } catch(e) {}
+      try { console.debug('[signature] meta reçu', window.__lastSignatureMeta); } catch (e) { }
       var img = data.image_url ? data.image_url : data.image;
       $("#modal-password .modal-body").find("#imgData").val(img);
       $("#modal-password .modal-body").find("#pass").val(data.password);
@@ -913,7 +913,7 @@ function generateSignatureCode(meta) {
   const fp = deviceFingerprint();
 
   const code = `${pNom}${pPrenom}${pDir}-${dateStr}-${fp}`;
-  try { console.debug('[signature] parts', {nom, prenom, direction, pNom, pPrenom, pDir, code}); } catch(e) {}
+  try { console.debug('[signature] parts', { nom, prenom, direction, pNom, pPrenom, pDir, code }); } catch (e) { }
   return code;
 }
 
@@ -1620,7 +1620,7 @@ $("#saveCourrier").on("click", function () {
   console.log("courrier_id:", courrier_id);
   console.log("doc_id:", doc_id);
   console.log("is_original:", is_original);
-  
+
   $(".loader-card").removeClass("d-none");
   loadPDF("/courriers/save/signature");
 });
@@ -1632,7 +1632,7 @@ $("#saveTache").on("click", function () {
   console.log("tache_id:", tache_id);
   console.log("doc_id:", doc_id);
   console.log("is_original:", is_original);
-  
+
   $(".loader-card").removeClass("d-none");
   loadPDF("/ajax/taches/save/signature");
 });
@@ -1641,7 +1641,7 @@ async function loadPDF(ajaxUrl) {
   console.log("=== LOAD PDF START ===");
   console.log("URL:", url);
   console.log("AJAX URL:", ajaxUrl);
-  
+
   let signatureElements = document.querySelectorAll(".signature.dropped-true");
   console.log("Nombre de signatures:", signatureElements.length);
 
@@ -1653,125 +1653,125 @@ async function loadPDF(ajaxUrl) {
     const pdfBytes = await response.blob();
     console.log("PDF Blob size:", pdfBytes.size);
 
-  // Convert the Blob to an ArrayBuffer
-  const buffer = await new Response(pdfBytes).arrayBuffer();
+    // Convert the Blob to an ArrayBuffer
+    const buffer = await new Response(pdfBytes).arrayBuffer();
 
-  // Load the PDF using pdf-lib
-  const pdfDoc = await PDFLib.PDFDocument.load(buffer);
+    // Load the PDF using pdf-lib
+    const pdfDoc = await PDFLib.PDFDocument.load(buffer);
 
-  for (var index = 0; index < signatureElements.length; index++) {
-    const signatureElement = signatureElements[index];
+    for (var index = 0; index < signatureElements.length; index++) {
+      const signatureElement = signatureElements[index];
 
-    const pngImageBytes = await fetch(
-      $(signatureElement).find("img").attr("src")
-    ).then((res) => res.arrayBuffer());
+      const pngImageBytes = await fetch(
+        $(signatureElement).find("img").attr("src")
+      ).then((res) => res.arrayBuffer());
 
-    const pngImage = await pdfDoc.embedPng(pngImageBytes);
-    var currentPage = $(signatureElement).data("page");
-    const page = pdfDoc.getPages()[currentPage - 1];
+      const pngImage = await pdfDoc.embedPng(pngImageBytes);
+      var currentPage = $(signatureElement).data("page");
+      const page = pdfDoc.getPages()[currentPage - 1];
 
-    var pageParent = document.getElementById("page-" + currentPage);
+      var pageParent = document.getElementById("page-" + currentPage);
 
-    var pageParentX = $(pageParent).width();
-    var pageParentY = $(pageParent).height();
+      var pageParentX = $(pageParent).width();
+      var pageParentY = $(pageParent).height();
 
-    var facteurX = page.getWidth() / pageParentX;
-    var facteurY = page.getHeight() / pageParentY;
+      var facteurX = page.getWidth() / pageParentX;
+      var facteurY = page.getHeight() / pageParentY;
 
-    var imgWidth = $(signatureElement).find("img").width() * facteurX;
-    var imgHeight = $(signatureElement).find("img").height() * facteurY;
+      var imgWidth = $(signatureElement).find("img").width() * facteurX;
+      var imgHeight = $(signatureElement).find("img").height() * facteurY;
 
-    var oldW = $(signatureElement).find("img").width();
-    var oldH = $(signatureElement).find("img").height();
+      var oldW = $(signatureElement).find("img").width();
+      var oldH = $(signatureElement).find("img").height();
 
-    var y = $(signatureElement).data("y") * facteurY; //- imgHeight;
-    var x = $(signatureElement).data("x") * facteurX; //- imgWidth;
+      var y = $(signatureElement).data("y") * facteurY; //- imgHeight;
+      var x = $(signatureElement).data("x") * facteurX; //- imgWidth;
 
-    const signature = {
-      width: imgWidth,
-      height: imgHeight,
-      x: x,
-      y: y,
-    };
+      const signature = {
+        width: imgWidth,
+        height: imgHeight,
+        x: x,
+        y: y,
+      };
 
-    var outputScale = window.devicePixelRatio || 1;
-    var scale = outputScale > 1 ? 1.5 : 1.2;
+      var outputScale = window.devicePixelRatio || 1;
+      var scale = outputScale > 1 ? 1.5 : 1.2;
 
-    const imageOptions = getImagePosition(page, signature, scale);
+      const imageOptions = getImagePosition(page, signature, scale);
 
-    // Add the image to page
-    page.drawImage(pngImage, imageOptions);
-  }
-
-  await pdfDoc.save().then(async function (modifiedPdfBytes) {
-    // Convert the modified PDF bytes to a Blob
-    const modifiedPdfBlob = await new Blob([modifiedPdfBytes], {
-      type: "application/pdf",
-    });
-
-    var formData = new FormData();
-    formData.append("document", modifiedPdfBlob, docName);
-    if ($("select[name=agent_id]").val()) {
-      formData.append("agent_id", $("select[name=agent_id]").val());
-    }
-    if (courrier_id) {
-      formData.append("courrier_id", courrier_id);
-    }
-    if (tache_id) {
-      formData.append("tache_id", tache_id);
-    }
-    if (doc_id) {
-      formData.append("doc_id", doc_id);
-    }
-    if (is_original) {
-      formData.append("is_original", is_original);
+      // Add the image to page
+      page.drawImage(pngImage, imageOptions);
     }
 
-    $.ajax({
-      url: ajaxUrl,
-      method: "post",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success: function (data) {
-        console.log("=== AJAX SUCCESS ===");
-        console.log("Response:", data);
-        
-        $(".loader-card").addClass("d-none");
-        $(".modal.show").modal("hide");
+    await pdfDoc.save().then(async function (modifiedPdfBytes) {
+      // Convert the modified PDF bytes to a Blob
+      const modifiedPdfBlob = await new Blob([modifiedPdfBytes], {
+        type: "application/pdf",
+      });
 
-        // Afficher un message de succès
-        if (data.message) {
-          alert(data.message);
-        } else {
-          alert("Document signé avec succès !");
-        }
-
-        // Rediriger vers la page appropriée
-        if (data.redirect) {
-          window.location.href = data.redirect;
-        } else if (courrier_id) {
-          // Rediriger vers la page du courrier
-          window.location.href = "/courriers/" + courrier_id;
-        } else if (tache_id) {
-          // Rediriger vers la page de la tâche
-          window.location.href = "/taches/" + tache_id;
-        } else {
-          // Par défaut, retourner à la page précédente
-          window.history.go(-1);
-        }
-      },
-      error: function(xhr, status, error) {
-        console.error("=== AJAX ERROR ===");
-        console.error("Status:", status);
-        console.error("Error:", error);
-        console.error("Response:", xhr.responseText);
-        
-        $(".loader-card").addClass("d-none");
-        alert("Erreur lors de l'enregistrement: " + error);
+      var formData = new FormData();
+      formData.append("document", modifiedPdfBlob, docName);
+      if ($("select[name=agent_id]").val()) {
+        formData.append("agent_id", $("select[name=agent_id]").val());
       }
+      if (courrier_id) {
+        formData.append("courrier_id", courrier_id);
+      }
+      if (tache_id) {
+        formData.append("tache_id", tache_id);
+      }
+      if (doc_id) {
+        formData.append("doc_id", doc_id);
+      }
+      if (is_original) {
+        formData.append("is_original", is_original);
+      }
+
+      $.ajax({
+        url: ajaxUrl,
+        method: "post",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+          console.log("=== AJAX SUCCESS ===");
+          console.log("Response:", data);
+
+          $(".loader-card").addClass("d-none");
+          $(".modal.show").modal("hide");
+
+          // Afficher un message de succès
+          if (data.message) {
+            alert(data.message);
+          } else {
+            alert("Document signé avec succès !");
+          }
+
+          // Rediriger vers la page appropriée
+          if (data.redirect) {
+            window.location.href = data.redirect;
+          } else if (courrier_id) {
+            // Rediriger vers la page du courrier
+            window.location.href = "/courriers/" + courrier_id;
+          } else if (tache_id) {
+            // Rediriger vers la page de la tâche
+            window.location.href = "/taches/" + tache_id;
+          } else {
+            // Par défaut, retourner à la page précédente
+            window.history.go(-1);
+          }
+        },
+        error: function (xhr, status, error) {
+          console.error("=== AJAX ERROR ===");
+          console.error("Status:", status);
+          console.error("Error:", error);
+          console.error("Response:", xhr.responseText);
+
+          $(".loader-card").addClass("d-none");
+          alert("Erreur lors de l'enregistrement: " + error);
+        }
+      });
     });
-  });
   } catch (error) {
     console.error("=== LOAD PDF ERROR ===");
     console.error("Error:", error);

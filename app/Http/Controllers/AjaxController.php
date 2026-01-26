@@ -185,15 +185,19 @@ class AjaxController extends Controller
 
     public function getUserSignature(Request $request)
     {
-        $password = Random::generate(6,'0-9');
-        // Envoyer le code à l'utilisateur connecté
-        try {
-            $recipient = Auth::user()->email;
-            if ($recipient) {
-                Mail::to($recipient)->send(new SignaturesMail($password));
+        $password = null;
+        // Ne générer un mot de passe et envoyer un mail que si explicitement demandé
+        if ($request->has('request_code') || $request->has('signer')) {
+            $password = Random::generate(6,'0-9');
+            // Envoyer le code à l'utilisateur connecté
+            try {
+                $recipient = Auth::user()->email;
+                if ($recipient) {
+                    Mail::to($recipient)->send(new SignaturesMail($password));
+                }
+            } catch (\Throwable $e) {
+                // on ne bloque pas le flux, mais on informe côté client
             }
-        } catch (\Throwable $e) {
-            // on ne bloque pas le flux, mais on informe côté client
         }
         
         $data = [];
@@ -219,7 +223,7 @@ class AjaxController extends Controller
 
         // Mail::to("contact@newtech-rdc.net")->send(new EnvoiMailSigne($password)); 
 
-        if ($image) {
+        if ($image && $password) {
             // $details = ['email' => 'makombo.mwinaminayi@regideso.cd', 'password' => $password];
 
             //SendEmail::dispatch(Auth::user()->email, new SignaturesMail($password)); 
@@ -230,6 +234,8 @@ class AjaxController extends Controller
             }
 
             $data['image'] = image($image->image_url); //$image; 
+        } elseif($image) {
+            $data['image'] = image($image->image_url);
         }
 
         $data['password'] = $password;
@@ -244,16 +250,19 @@ class AjaxController extends Controller
         return response()->json($data);
     }
 
-    public function checkUserSignaturePassWord()
+    public function checkUserSignaturePassWord(Request $request)
     {
-        $password = Random::generate(6,'0-9');
-        try {
-            $recipient = Auth::user()->email;
-            if ($recipient) {
-                Mail::to($recipient)->send(new SignaturesMail($password));
+        $password = null;
+        if ($request->has('request_code') || $request->has('signer')) {
+            $password = Random::generate(6,'0-9');
+            try {
+                $recipient = Auth::user()->email;
+                if ($recipient) {
+                    Mail::to($recipient)->send(new SignaturesMail($password));
+                }
+            } catch (\Throwable $e) {
+                // idem: on ignore mais l'appelant peut gérer l'erreur via un autre canal
             }
-        } catch (\Throwable $e) {
-            // idem: on ignore mais l'appelant peut gérer l'erreur via un autre canal
         }
 
         $data = [];
@@ -262,7 +271,7 @@ class AjaxController extends Controller
         $data['image'] = '';
         // Mail::to("contact@newtech-rdc.net")->send(new SignaturesMail($password)); 
 
-        if ($image) {
+        if ($image && $password) {
             // $details = ['email' => 'makombo.mwinaminayi@regideso.cd', 'password' => $password];
 
             //SendEmail::dispatch(Auth::user()->email, new SignaturesMail($password));
@@ -273,6 +282,8 @@ class AjaxController extends Controller
             $image->save();
 
             $data['image'] = image($image->image_url); //$image; 
+        } elseif ($image) {
+            $data['image'] = image($image->image_url);
         }
 
         $data['password'] = $password;
@@ -281,19 +292,22 @@ class AjaxController extends Controller
         return response()->json($data);
     }
 
-    public function getUserParaphe()
+    public function getUserParaphe(Request $request)
     {
-        $password = Random::generate(6,'0-9');
-        
-        // Envoi de l'email à l'utilisateur connecté
-        try {
-            $recipient = Auth::user()->email;
-            if ($recipient) {
-                Mail::to($recipient)->send(new SignaturesMail($password));
+        $password = null;
+
+        // Envoi de l'email seulement si demandé
+        if ($request->has('request_code') || $request->has('signer')) {
+            $password = Random::generate(6,'0-9');
+            try {
+                $recipient = Auth::user()->email;
+                if ($recipient) {
+                    Mail::to($recipient)->send(new SignaturesMail($password));
+                }
+            } catch (\Throwable $e) {
+                // On ne bloque pas le flux en cas d'erreur d'envoi d'email
+                Log::error("Erreur lors de l'envoi de l'email de signature: " . $e->getMessage());
             }
-        } catch (\Throwable $e) {
-            // On ne bloque pas le flux en cas d'erreur d'envoi d'email
-            Log::error("Erreur lors de l'envoi de l'email de signature: " . $e->getMessage());
         }
 
         $data = [];

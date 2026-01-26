@@ -616,7 +616,15 @@ class PersonnelController extends Controller
     public function updateperso(Request $request)
     {
         try {
-            $agent = Agent::where('id', Auth::user()->agent->id)->update([
+            $user = Auth::user();
+            $agent = $user->agent;
+
+            if (!$agent) {
+                throw new \Exception("Agent non trouvé.");
+            }
+
+            // Mise à jour de l'agent
+            $agent->update([
                 'nom' => $request->nom,
                 'post_nom' => $request->postnom,
                 'prenom' => $request->prenom,
@@ -626,34 +634,35 @@ class PersonnelController extends Controller
                 'lieu_naiss' => $request->lieunaissance,
                 'date_naiss' => $request->datenaissance,
                 'nationalite' => $request->nationalite,
-                'updated_by' => Auth::user()->id,
+                'updated_by' => $user->id,
             ]);
 
-            $adresse = Adresse::firstOrCreate([
-                'agent_id' => Auth::user()->agent->id,
+            // Mise à jour de l'utilisateur (nom et email)
+            $user->update([
+                'name' => $request->prenom . ' ' . $request->nom,
+                'email' => Str::lower($request->email),
+            ]);
+
+            // Mise à jour ou création de l'adresse
+            Adresse::updateOrCreate([
+                'agent_id' => $agent->id,
             ], [
                 'phone' => $request->telephone,
                 'email' => Str::lower($request->email),
                 'residence' => $request->adresse,
             ]);
 
-            // $adresse = Adresse::where('agent_id', Auth::user()->agent->id)->first();
-            // $adresse->phone = $request->telephone;
-            // // $adresse->phone_2 = $request->autre_telephone;
-            // $adresse->email = Str::lower($request->email);
-            // $adresse->residence = $request->adresse;
-            // // $adresse->agent_id = Auth::user()->agent->id;
-            // $adresse->save();
             $content = json_encode([
                 'name' => 'Ressources humaines',
                 'statut' => 'success',
-                'message' => 'La modification de vos informations a réussie avec succès !',
+                'message' => 'La modification de vos informations a été effectuée avec succès !',
             ]);
         } catch (\Throwable $th) {
+            \Log::error("Erreur lors de la modification du profil (user_id: " . Auth::id() . "): " . $th->getMessage());
             $content = json_encode([
                 'name' => 'Ressources humaines',
                 'statut' => 'error',
-                'message' => 'La modification de vos informations a échouée !',
+                'message' => 'La modification de vos informations a échoué ! ' . (config('app.debug') ? $th->getMessage() : ''),
             ]);
         }
 
