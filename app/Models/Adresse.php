@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Adresse extends Model
 {
     use HasFactory;
+    protected $guarded = [];
 
     /**
      * Get the agent that owns the Adresse
