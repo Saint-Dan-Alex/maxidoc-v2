@@ -41,12 +41,12 @@ class Badge extends Component
                 })
                 ->count();
 
-            $tasksCount = Tache::where('tache_statut_id', '!=', 3)
-                ->where(function ($q) use ($user, $agentId) {
-                    $q->where('user_id', $user->id) // Taches created by user
-                      ->orWhereHas('agents', function ($sq) use ($agentId) {
-                          $sq->where('agents.id', $agentId); // Taches assigned to agent
-                      });
+            // Compte uniquement les tâches ASSIGNÉES à l'agent avec statut Initial (1)
+            $tasksCount = Tache::where('tache_statut_id', 1) // Statut Initial seulement
+                ->whereHas('agents', function ($sq) use ($agentId) {
+                    $sq->where('agent_id', $agentId)
+                       ->where('type', 'App\\Models\\Agent')
+                       ->where('type_id', $agentId);
                 })
                 ->count();
         }
