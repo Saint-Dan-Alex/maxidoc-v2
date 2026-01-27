@@ -24,10 +24,12 @@ class DesCourriers extends Component
     public $priority = null;
     public $statut = null; 
     public $isSec = false;
+    public $isDG = false;
 
     public function mount()
     {
         $this->isSec = false;
+        $this->isDG = false;
         $user = Auth::user();
         
         if ($user && $user->agent) {
@@ -38,6 +40,9 @@ class DesCourriers extends Component
                 ->exists();
                 
             $this->isSec = $isSecretaireDG;
+            
+            // Vérifier si l'utilisateur est DG
+            $this->isDG = $agent->isDG();
         }
     }
 
