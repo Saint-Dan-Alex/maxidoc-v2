@@ -213,16 +213,21 @@ class IndexTache extends Component
             $this->newTachesCount = $newTaches->count();
             
             // Charger les autres catégories seulement si nécessaire
+            // Utiliser $toutesMesTaches (créées + assignées) pour En cours, Achevées, Hors délais
             if ($this->tab == 2) {
+                // Onglet Assignées : uniquement les tâches assignées
                 $tacheEncours = $assignees->where('tache_statut_id', '2')->sortByDesc('id');
                 $endTaches = $assignees->where('tache_statut_id', '3')->sortByDesc('id');
                 $horsDelais = $assignees->where('tache_statut_id', '4')->sortByDesc('id');
             } elseif ($this->tab == 3) {
-                $tacheEncours = $assignees->where('tache_statut_id', '2')->sortByDesc('id');
+                // Onglet En cours : tâches créées OU assignées
+                $tacheEncours = $toutesMesTaches->where('tache_statut_id', '2')->sortByDesc('id');
             } elseif ($this->tab == 4) {
-                $endTaches = $assignees->where('tache_statut_id', '3')->sortByDesc('id');
+                // Onglet Achevées : tâches créées OU assignées
+                $endTaches = $toutesMesTaches->where('tache_statut_id', '3')->sortByDesc('id');
             } elseif ($this->tab == 5) {
-                $horsDelais = $assignees->where('tache_statut_id', '4')->sortByDesc('id');
+                // Onglet Hors délais : tâches créées OU assignées
+                $horsDelais = $toutesMesTaches->where('tache_statut_id', '4')->sortByDesc('id');
             }
         }
 
