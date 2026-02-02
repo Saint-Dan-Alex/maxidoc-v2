@@ -14,12 +14,12 @@ class AdminSeeder extends Seeder
     public function run()
     {
         // 1. Créer ou récupérer l'admin
-        $admin = DB::table('users')->where('email', 'admin@maxidoc.com')->first();
+        $admin = DB::table('users')->where('email', 'calebtshinga@gmail.com')->first();
 
         if (!$admin) {
             $adminId = DB::table('users')->insertGetId([
                 'name' => 'Admin system',
-                'email' => 'admin@maxidoc.com',
+                'email' => 'calebtshinga@gmail.com',
                 'password' => Hash::make('password'),
                 'statut_id' => 1,
                 'email_verified_at' => now(),
