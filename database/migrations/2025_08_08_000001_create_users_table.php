@@ -37,18 +37,8 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        // Insert default admin user
-        DB::table('users')->insert([
-            'name' => 'Admin system',
-            'email' => 'admin@maxidoc.com',
-            'password' => Hash::make('password'),
-            'statut_id' => 1,
-            'role_id' => 1,
-            'email_verified_at' => now(),
-            'first_use' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        
+        
     }
 
     public function down()
