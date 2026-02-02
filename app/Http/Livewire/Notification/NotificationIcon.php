@@ -16,6 +16,16 @@ class NotificationIcon extends Component
     public $notifications;
 
     /**
+     * Nombre de notifications non lues (pour le son)
+     */
+    public $unreadCount = 0;
+
+    /**
+     * Détermine si le son doit être joué (après l'initialisation)
+     */
+    public $initialized = false;
+
+    /**
      * Initialisation du composant
      */
     /**
@@ -39,6 +49,11 @@ class NotificationIcon extends Component
                 ->where('for_dg', true)
                 ->exists();
         }
+
+        // Initialiser le compteur pour éviter de jouer le son au chargement
+        $this->fetchNotif(true);
+        $this->unreadCount = $this->notifications->count();
+        $this->initialized = true;
     }
 
     /**
@@ -53,9 +68,12 @@ class NotificationIcon extends Component
     /**
      * Récupère les notifications non lues
      */
-    public function fetchNotif()
+    public function fetchNotif($initial = false)
     {
         $user = Auth::user();
+        if (!$user) return;
+        
+        $prevCount = $this->notifications ? $this->notifications->count() : 0;
         $this->notifications = collect();
         
         // Pour l'utilisateur super admin (id=1)
@@ -66,6 +84,15 @@ class NotificationIcon extends Component
         elseif ($user->agent) {
             $this->notifications = $this->getUserNotifications($user->agent);
         }
+
+        $newCount = $this->notifications->count();
+
+        // Si le nombre a augmenté et qu'on est déjà initialisé, on joue le son
+        if (!$initial && $this->initialized && $newCount > $this->unreadCount) {
+            $this->dispatchBrowserEvent('play-notification-sound');
+        }
+
+        $this->unreadCount = $newCount;
     }
     
     /**

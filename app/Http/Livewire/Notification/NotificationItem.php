@@ -52,9 +52,8 @@ class NotificationItem extends Component
             // Pour les tâches
             $tache = $this->notification->data['data']['tache'] ?? null;
             if ($tache) {
-                $url = 'regidoc.taches.index';
-                // Ajouter un paramètre pour ouvrir directement la tâche
-                $params = ['#tache-' . $tache['id']];
+                $url = 'regidoc.taches.show';
+                $params = $tache['id'];
             } else {
                 $url = 'regidoc.taches.index';
             }
