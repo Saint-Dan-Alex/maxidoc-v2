@@ -85,6 +85,7 @@ class AnnotationModalAdd extends Component
             }
 
         $this->emit('annotationSaved');
+        $this->dispatchBrowserEvent('close-modal');
         $this->reset('stat');
         $this->annotation = null; // Réinitialiser l'annotation après sauvegarde
     }
