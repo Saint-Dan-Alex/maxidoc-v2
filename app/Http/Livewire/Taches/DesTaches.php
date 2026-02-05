@@ -80,31 +80,33 @@ class DesTaches extends Component
             $query = $this->filter($query, Session::get('tacheFilter'));  
         }
 
-        $assignees = $query;
+        $assignedTasks = Tache::getTachesForCurrentUser(); // Tasks where user is an agent
+        $createdTasks = Tache::where('user_id', Auth::user()->id)->get(); // Tasks created by user
+        
+        // All tasks related to the user (created OR assigned)
+        $allRelatedTasks = $createdTasks->merge($assignedTasks)->unique('id');
 
-        if ($this->tab == 1) {
-            $createdTasks = Tache::where('user_id', Auth::user()->id)->orderBy('id', 'DESC')->get();
-            $assignedTasks = $assignees;
-            $taches = $createdTasks->merge($assignedTasks)->unique('id')->sortByDesc('id');
+        if ($this->tab == 1) { // A traiter (status initial)
+            $taches = $allRelatedTasks->where('tache_statut_id', 1)->sortByDesc('id');
             $taches = $this->customPaginate($taches, 10);
-        } elseif ($this->tab == 2) {
-            $newTaches = $assignees->where('tache_statut_id', 1)->sortByDesc('id'); //->values(); // `values()` to reindex collection
+        } elseif ($this->tab == 2) { // Assigner (Strictly assigned to user)
+            $newTaches = $assignedTasks->sortByDesc('id'); 
             $newTaches = $this->customPaginate($newTaches, 10);
-        } elseif ($this->tab == 3) {
-            $tacheEncours = $assignees->where('tache_statut_id', 2)->sortByDesc('id'); //->values();
+        } elseif ($this->tab == 3) { // En cours
+            $tacheEncours = $allRelatedTasks->where('tache_statut_id', 2)->sortByDesc('id');
             $tacheEncours = $this->customPaginate($tacheEncours, 10);
-        } elseif ($this->tab == 4) {
-            $endTaches = $assignees->where('tache_statut_id', 3)->sortByDesc('id'); //->values();
+        } elseif ($this->tab == 4) { // Achevées
+            $endTaches = $allRelatedTasks->where('tache_statut_id', 3)->sortByDesc('id');
             $endTaches = $this->customPaginate($endTaches, 10);
-        } elseif ($this->tab == 5) {
-            $horsDelais = $assignees->where('tache_statut_id', 4)->sortByDesc('id'); //->values();
+        } elseif ($this->tab == 5) { // Hors delai
+            $horsDelais = $allRelatedTasks->where('tache_statut_id', 4)->sortByDesc('id');
             $horsDelais = $this->customPaginate($horsDelais, 10);
         }
 
-        if (Auth::user()->agent->isSecretaire() && $newTaches->where('pourcentage', 0)->count()) {
-            $newTachesCount = $newTaches->where('pourcentage', 0)->count();
-        } elseif (! Auth::user()->agent->isSecretaire() && $newTaches->where('pourcentage', '<', 2)->count()) {
-            $newTachesCount = $newTaches->where('pourcentage', '<', 2)->count();
+        if (Auth::user()->agent->isSecretaire()) {
+            $newTachesCount = $assignedTasks->where('tache_statut_id', 1)->where('pourcentage', 0)->count();
+        } else {
+            $newTachesCount = $assignedTasks->where('tache_statut_id', 1)->where('pourcentage', '<', 2)->count();
         }
 
         return view('livewire.taches.des-taches')->with([

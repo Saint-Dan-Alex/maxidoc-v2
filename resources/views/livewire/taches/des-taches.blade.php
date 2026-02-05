@@ -12,7 +12,7 @@
                                 data-bs-toggle="tab" data-bs-target="#tasks" type="button" role="tab"
                                 aria-controls="tasks" aria-selected="{{ $tab == 1 }}"
                                 wire:click='changeTab({{ 1 }})'>
-                                Toutes 
+                                A traiter 
                             </button>
 
                         </li>
@@ -23,7 +23,7 @@
                                         data-bs-toggle="tab" data-bs-target="#assignees" type="button" role="tab"
                                         aria-controls="assignees" aria-selected="{{ $tab == 2 }}"
                                         wire:click='changeTab({{ 2 }})'>
-                                        Assignées
+                                        Assigner
                                         <span @class([
                                             'badge bg-danger ms-2 rounded-pill py-1 px-2 fw-normal',
                                             'd-none' => $newTachesCount <= 0,
@@ -54,7 +54,7 @@
                                     data-bs-toggle="tab" data-bs-target="#hors-delais" type="button" role="tab"
                                     aria-controls="hors-delais" aria-selected="{{ $tab == 5 }}"
                                     wire:click='changeTab({{ 5 }})'>
-                                    Hors délais
+                                    Hors delai
                                 </button>
                             </li>
                         @endif
