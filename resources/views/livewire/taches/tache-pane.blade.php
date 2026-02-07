@@ -16,6 +16,11 @@
                 aria-selected="false" wire:click='changeTab(3)'>Fichiers
                 partagés</button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {{ $pan == 4 ? 'active' : '' }}" id="histo-tab" data-bs-toggle="tab"
+                data-bs-target="#histo-{{ $tache->id }}" type="button" role="tab" aria-controls="histo"
+                aria-selected="false" wire:click='changeTab(4)'>Historique</button>
+        </li>
     </ul>
     <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade {{ $pan == 1 ? 'show active' : '' }}" id="tache-{{ $tache->id }}" role="tabpanel"
@@ -202,6 +207,58 @@
             </div>
 
 
+        </div>
+
+        <div class="tab-pane fade {{ $pan == 4 ? 'show active' : '' }}" id="histo-{{ $tache->id }}"
+            role="tabpanel" aria-labelledby="histo-tab" wire:ignore.self>
+            <div class="block-scroll-file mt-4">
+                <div class="d-flex justify-content-end mb-3">
+                    <a href="{{ route('regidoc.taches.export-historique', $tache->id) }}" class="btn btn-sm btn-outline-primary" target="_blank" title="Exporter l'historique en PDF">
+                        <i class="fi fi-rr-file-pdf"></i>
+                        Exporter l'historique en PDF
+                    </a>
+                </div>
+                <div class="block-activity">
+                    @forelse ($historiques_list as $user_id => $historiques)
+                        @php
+                            $user = \App\Models\User::find($user_id);
+                        @endphp
+                        <div class="items-activity">
+                            <div class="avatar-activ">
+                                <img src="{{ imageOrDefault($user?->agent?->image) }}" alt="">
+                            </div>
+                            <p class="agent">
+                                <span>{{ $user?->agent ? $user->agent->prenom . ' ' . $user->agent->nom : 'Utilisateur inconnu' }}</span>
+                                @if($user?->agent?->poste)
+                                    - {{ $user->agent->poste->titre }}
+                                @endif
+                            </p>
+                            @foreach ($historiques ?? [] as $history)
+                                <div class="mt-2 block-dot-line">
+                                    <div class="block-dot-line-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
+                                            viewBox="0 0 48 48">
+                                            <circle cx="24" cy="24" r="21" fill="currentColor" />
+                                            <path fill="#ffffff"
+                                                d="M34.6 14.6L21 28.2l-5.6-5.6l-2.8 2.8l8.4 8.4l16.4-16.4z" />
+                                        </svg>
+                                    </div>
+                                    <div class="dot-line">
+                                        <p><span>{{ $history->description }}</span></p>
+                                        <div class="date">
+                                            {{ $history->created_at->format('d/m/Y H:i:s') }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @empty
+                        <div class="text-center py-4">
+                            <p style="color: var(--colorParagraph)">Aucun historique disponible pour cette tâche.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
         </div>
 
     </div>

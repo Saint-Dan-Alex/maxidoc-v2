@@ -86,6 +86,15 @@ class EditTacheParticipantModal extends Component
             // Supprimer l'objectif
             $objectif->delete();
             
+            // Enregistrer dans l'historique
+            \App\Models\Historique::create([
+                "key" => "Suppression de participant",
+                "historiquecable_id" => $tacheId,
+                "historiquecable_type" => \App\Models\Tache::class,
+                "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a supprimé un participant de la tâche.",
+                "user_id" => Auth::user()->id,
+            ]);
+
             // Émettre un événement pour rafraîchir les composants parents
             $this->emit('participantUpdated');
             $this->emit('refreshTacheInfo');

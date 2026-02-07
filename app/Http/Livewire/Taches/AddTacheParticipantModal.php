@@ -58,6 +58,15 @@ class AddTacheParticipantModal extends Component
                 ]);
             }
 
+            // Enregistrer dans l'historique
+            \App\Models\Historique::create([
+                "key" => "Ajout de participant",
+                "historiquecable_id" => $tache->id,
+                "historiquecable_type" => \App\Models\Tache::class,
+                "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a ajouté un participant à la tâche.",
+                "user_id" => Auth::user()->id,
+            ]);
+
             // Rafraîchir les relations
             $tache->load('agents');
 

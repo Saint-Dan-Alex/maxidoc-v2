@@ -168,6 +168,15 @@ class TacheDocumentController extends Controller
             'updated_at' => now()
         ]);
 
+        // Enregistrer dans l'historique
+        \App\Models\Historique::create([
+            "key" => "Pièce jointe",
+            "historiquecable_id" => $tache->id,
+            "historiquecable_type" => \App\Models\Tache::class,
+            "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a ajouté une pièce jointe : " . $document->libelle,
+            "user_id" => Auth::user()->id,
+        ]);
+
         // Préparer la réponse JSON
         $response = [
             'success' => true,

@@ -214,7 +214,7 @@ class Tache extends Model
      */
     public function documents()
     {
-        return $this->belongsToMany(Document::class, TacheDocument::class, 'tache_id', 'document_id')
+        return $this->belongsToMany(Document::class, 'tache_documents', 'tache_id', 'document_id')
             ->withTimestamps();
     }
 
@@ -236,5 +236,25 @@ class Tache extends Model
     public function courrier(): BelongsTo
     {
         return $this->belongsTo(Courrier::class, 'courrier_id');
+    }
+
+    /**
+     * Get all of the historiques for the Tache
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
+    public function historiques()
+    {
+        return $this->morphMany(Historique::class, 'historiquecable');
+    }
+
+    /**
+     * Get all of the history for the Tache (alias for historiques)
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
+    public function history()
+    {
+        return $this->morphMany(Historique::class, 'historiquecable');
     }
 }

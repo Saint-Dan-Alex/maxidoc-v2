@@ -217,6 +217,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::resource('taches', TacheController::class);
             Route::get('/taches/finish/{id}', [TacheController::class, 'finish'])->name('taches.finish');
             Route::get('/taches/remettre/encours/{id}', [TacheController::class, 'remettreEncours'])->name('taches.remettreEncours');
+            Route::get('/taches/{tache}/export-historique', [TacheController::class, 'exportHistoriquePdf'])->name('taches.export-historique');
             Route::post('/taches/fichier/store', [TacheController::class, 'storefichier'])->name('fichier.store');
             Route::post('/taches/{tache}/documents', [TacheDocumentController::class, 'store'])->name('taches.documents.store');
 

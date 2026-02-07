@@ -24,8 +24,6 @@ class TachePane extends Component
 
     public $tache;
     public $pourcentage;
-    public $fichiers;
-    public $commentaires;
     public $file;
     public $message;
     public $activec = true;
@@ -315,10 +313,11 @@ class TachePane extends Component
         if ($this->message) {
             $this->activec = false;
         }
-        $this->tache->load(['documents', 'objectifs.agent']);
-        $this->fichiers = $this->tache->documents->sortByDesc('id');
-        $this->commentaires = $this->tache->commentaires()->orderBy('created_at', 'desc')->get();
+        $this->tache->load(['documents', 'objectifs.agent', 'historiques.user.agent.poste']);
+        $fichiers = $this->tache->documents->sortByDesc('id');
+        $commentaires = $this->tache->commentaires()->orderBy('created_at', 'desc')->get();
+        $historiques_list = $this->tache->historiques()->orderBy('created_at', 'desc')->get()->groupBy('user_id');
 
-        return view('livewire.taches.tache-pane');
+        return view('livewire.taches.tache-pane', compact('historiques_list', 'fichiers', 'commentaires'));
     }
 }

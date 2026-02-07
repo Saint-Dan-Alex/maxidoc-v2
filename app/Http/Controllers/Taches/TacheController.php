@@ -229,14 +229,30 @@ class TacheController extends Controller
             $this->createTacheDoc($request, $tache, $followers);
         }
 
-        // Enregistrer dans l'historique la création de la tâche
+        // Déterminer s'il s'agit d'une tâche ou d'une sous-tâche
+        $isSubTask = !empty($tache->parent_id);
+        $key = $isSubTask ? "Ajout de sous-tâche" : "Ajout de tâche";
+        $description = Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . ($isSubTask ? " a créé une sous-tâche." : " a créé une tâche.");
+
+        // Enregistrer dans l'historique la création de la tâche (sur la tâche elle-même)
         Historique::create([
-            "key" => "Ajout de tâche",
+            "key" => $key,
             "historiquecable_id" => $tache->id,
             "historiquecable_type" => Tache::class,
-            "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a créé une tâche.",
+            "description" => $description,
             "user_id" => Auth::user()->id,
         ]);
+
+        // Si c'est une sous-tâche, enregistrer aussi dans l'historique de la tâche parente
+        if ($isSubTask) {
+            Historique::create([
+                "key" => "Ajout de sous-tâche",
+                "historiquecable_id" => $tache->parent_id,
+                "historiquecable_type" => Tache::class,
+                "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a ajouté une sous-tâche : " . $tache->titre,
+                "user_id" => Auth::user()->id,
+            ]);
+        }
 
         return $tache;
     }
@@ -251,10 +267,10 @@ class TacheController extends Controller
 
                 // Historique: document rattaché depuis la tâche parente
                 Historique::create([
-                    'key' => 'Ajout de document',
+                    'key' => 'Pièce jointe',
                     'historiquecable_id' => $tache->id,
                     'historiquecable_type' => Tache::class,
-                    'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a attaché un document à la tâche.',
+                    'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a attaché un document depuis la tâche parente.',
                     'user_id' => Auth::user()->id,
                 ]);
 
@@ -299,10 +315,10 @@ class TacheController extends Controller
 
             // Historique: document existant attaché
             Historique::create([
-                'key' => 'Ajout de document',
+                'key' => 'Pièce jointe',
                 'historiquecable_id' => $tache->id,
                 'historiquecable_type' => Tache::class,
-                'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a attaché un document à la tâche.',
+                'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a attaché un document existant à la tâche.',
                 'user_id' => Auth::user()->id,
             ]);
             // Notifications: propriétaire + agents assignés (hors auteur)
@@ -418,10 +434,10 @@ class TacheController extends Controller
             
             // Historique: nouveau document généré et attaché
             Historique::create([
-                'key' => 'Ajout de document',
+                'key' => 'Pièce jointe',
                 'historiquecable_id' => $tache->id,
                 'historiquecable_type' => Tache::class,
-                'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a ajouté un document à la tâche.',
+                'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a généré et attaché un nouveau document.',
                 'user_id' => Auth::user()->id,
             ]);
             // Notifications: propriétaire + agents assignés (hors auteur)
@@ -494,10 +510,10 @@ class TacheController extends Controller
                 
                 // Historique: document téléversé et attaché
                 Historique::create([
-                    'key' => 'Ajout de document',
+                    'key' => 'Pièce jointe',
                     'historiquecable_id' => $tache->id,
                     'historiquecable_type' => Tache::class,
-                    'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a ajouté un document à la tâche.',
+                    'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a téléversé une pièce jointe.',
                     'user_id' => Auth::user()->id,
                 ]);
                 // Notifications: propriétaire + agents assignés (hors auteur)
@@ -1297,9 +1313,25 @@ class TacheController extends Controller
                 $tache->update([
                     'tache_statut_id' => '2',
                 ]);
+
+                Historique::create([
+                    "key" => "Relance",
+                    "historiquecable_id" => $tache->id,
+                    "historiquecable_type" => Tache::class,
+                    "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a relancé la tâche.",
+                    "user_id" => Auth::user()->id,
+                ]);
             } else {
                 $tache->update([
                     'tache_statut_id' => '3',
+                ]);
+
+                Historique::create([
+                    "key" => "Tâche terminée",
+                    "historiquecable_id" => $tache->id,
+                    "historiquecable_type" => Tache::class,
+                    "description" => Auth::user()->agent->nom . " " . Auth::user()->agent->prenom . " a marqué la tâche comme terminée.",
+                    "user_id" => Auth::user()->id,
                 ]);
             }
 
@@ -1628,5 +1660,30 @@ class TacheController extends Controller
             Log::error($e->getMessage());
             return redirect()->back()->with('error', 'L\'ajout des fichiers a échoué. Veuillez réessayer.');
         }
+    }
+
+    /**
+     * Exporte l'historique d'une tâche au format PDF
+     *
+     * @param int $id ID de la tâche
+     * @return \Illuminate\Http\Response
+     */
+    public function exportHistoriquePdf($id)
+    {
+        $tache = Tache::with(['tache_statut', 'priorite', 'historiques' => function($query) {
+            $query->orderBy('created_at', 'desc');
+        }, 'historiques.user.agent'])->findOrFail($id);
+
+        $pdf = \PDF::loadView('regidoc.pages.taches.pdf.historique', compact('tache'))
+                 ->setPaper('a4', 'portrait')
+                 ->setOptions([
+                     'isHtml5ParserEnabled' => true,
+                     'isRemoteEnabled' => true,
+                     'defaultFont' => 'Arial'
+                 ]);
+
+        $filename = 'historique-tache-' . $tache->id . '-' . now()->format('Y-m-d') . '.pdf';
+        
+        return $pdf->download($filename);
     }
 }

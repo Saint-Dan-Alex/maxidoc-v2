@@ -109,74 +109,48 @@ use Illuminate\Support\Facades\Storage;
             height: 3rem;
             color: var(--primaryColor);
         }
-        #pdf-main-container {
-            padding-left: 0 !important;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: var(--bgContent, #f8f9fa);
-            width: 100%;
-            position: relative;
+        #upload-button {
+            width: 150px;
+            display: block;
+            margin: 20px auto;
+        }
+
+        #file-to-upload {
+            display: none;
+        }
+
+        #pdf-loader {
+            display: none;
+            text-align: center;
+            color: #999999;
+            font-size: 13px;
+            line-height: 100px;
+            height: 100px;
+            position: absolute;
         }
 
         #pdf-contents {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 0;
-            overflow-y: auto;
+            display: none;
+            position: relative;
+            overflow-x: scroll;
+            text-align: center;
+        }
+
+        #pdf-meta {
+            margin: 0 0 20px 0;
+        }
+
+        #pdf-current-page {
+            display: inline;
+        }
+
+        #pdf-total-pages {
+            display: inline;
         }
 
         .pdf-canvas {
             box-sizing: border-box;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            max-width: 100%;
-            height: auto !important;
-            display: block;
-            margin: 0 auto;
-        }
-
-        .pdf-page {
-            position: relative;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: center;
-            width: fit-content;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .pdf-tools-modified {
-            display: flex !important;
-            width: fit-content !important;
-            min-width: unset !important;
-            margin: 10px auto !important;
-            padding: 5px 20px !important;
-            background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(0,0,0,0.1) !important;
-            position: sticky !important;
-            top: 10px !important;
-            z-index: 1000;
-            justify-content: center !important;
-            gap: 20px !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
-        }
-
-        .pdf-tools-modified #toolbarViewerLeft,
-        .pdf-tools-modified #toolbarViewerMiddle,
-        .pdf-tools-modified #toolbarViewerRight {
-            min-width: unset !important;
-            width: auto !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            gap: 10px !important;
-        }
-
-        .pdf-tools-modified #toolbarViewerLeft::after,
-        .pdf-tools-modified #toolbarViewerMiddle::after {
-            display: none !important;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05), -2px -2px 5px rgba(0, 0, 0, 0.05);
         }
 
         .page-loader {
