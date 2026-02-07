@@ -689,6 +689,11 @@ use Illuminate\Support\Facades\Storage;
                                     <i class="fi fi-rr-comments"></i>
                                     <span>Commentaires</span>
                                 </a>
+
+                                <a href="#offcanvasHisto" class="link-nav" data-bs-toggle="offcanvas" title="Historique">
+                                    <i class="fi fi-rr-list"></i>
+                                    <span>Historique</span>
+                                </a>
                                 @if ($tache->documents->first())
                                     <a href="{{ route('regidoc.documents.sign', ['doc_id' => $tache->documents->last()?->id, 'tache_id' => $tache->id, 'is_original' => $tache->documents->count() <= 1]) }}"
                                         class="link-nav {{ $disabledClass }}" @disabled($tache->tache_statut_id == 3) title="Demander eSignature" {!! $disabledAttr !!}>
@@ -1286,6 +1291,20 @@ use Illuminate\Support\Facades\Storage;
         </div>
         <div class="offcanvas-body pe-0" style="overflow-y: hidden">
             @livewire('taches.tache-commentaire-pane', ['tache_id' => $tache->id])
+        </div>
+    </div>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasHisto" aria-labelledby="offcanvasRightLabel">
+        <div class="offcanvas-header align-items-center">
+            <h5 class="offcanvas-title" id="offcanvasRightLabel">
+                Historique des activités
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
+                <i class="fi fi-rr-cross"></i>
+            </button>
+        </div>
+        <div class="offcanvas-body pe-0" style="overflow-y: hidden">
+            @livewire('taches.tache-historique-pane', ['tache_id' => $tache->id])
         </div>
     </div>
 
