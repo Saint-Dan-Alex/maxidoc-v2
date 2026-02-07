@@ -246,7 +246,7 @@ class TacheController extends Controller
         if ($request->has('parent_id')) {
             $newDoc = $tache->tacheParent?->documents->first();
             if ($newDoc) {
-                $tache->documents()->attach($newDoc->id, ['created_by' => Auth::id()]);
+                $tache->attachDocumentAndPropagate($newDoc->id, ['created_by' => Auth::id()]);
                 $newDoc->followers()->attach($followers->pluck('id'));
 
                 // Historique: document rattaché depuis la tâche parente
@@ -293,7 +293,7 @@ class TacheController extends Controller
 
         if ($request->has('doc_id')) {
             $newDoc = Document::findOrFail($request->doc_id);
-            $tache->documents()->attach($newDoc->id, ['created_by' => Auth::id()]);
+            $tache->attachDocumentAndPropagate($newDoc->id, ['created_by' => Auth::id()]);
 
             $newDoc->followers()->attach($followers->pluck('id'));
 
@@ -412,7 +412,7 @@ class TacheController extends Controller
             //     'key' => 'view_document',
             // ]);
 
-            $tache->documents()->attach($document->id, ['created_by' => Auth::id()]);
+            $tache->attachDocumentAndPropagate($document->id, ['created_by' => Auth::id()]);
 
             $document->followers()->attach($followers);
             
@@ -490,7 +490,7 @@ class TacheController extends Controller
                     'created_by' => Auth::user()->agent->id,
                 ]);
 
-                $tache->documents()->attach($document->id, ['created_by' => Auth::id()]);
+                $tache->attachDocumentAndPropagate($document->id, ['created_by' => Auth::id()]);
                 
                 // Historique: document téléversé et attaché
                 Historique::create([
@@ -855,7 +855,7 @@ class TacheController extends Controller
 
     public function show($id)
     {
-        $tache = Tache::with(['documents', 'objectifs.agent'])->find($id);
+        $tache = Tache::with(['documents', 'objectifs.agent', 'children.user.agent'])->find($id);
         $documents = $tache->documents ?? collect();
         
         // Vérifier si c'est la première consultation de la tâche par l'utilisateur
@@ -1203,7 +1203,7 @@ class TacheController extends Controller
                 ]);
 
                 // Attacher le document à la tâche (relation many-to-many)
-                $tache->documents()->attach($document->id, ['created_by' => Auth::id()]);
+                $tache->attachDocumentAndPropagate($document->id, ['created_by' => Auth::id()]);
             }
         }
 
@@ -1341,9 +1341,7 @@ class TacheController extends Controller
                 // $tache->tacheParent->documents()->attach($documents);
                 // dd($tache->tacheParent->documents);
                 foreach ($documents as $document) {
-                    if (!in_array($document->id, $tache->tacheParent->documents->pluck('id')->toArray())) {
-                        $tache->tacheParent->documents()->attach($document->id, ['created_by' => Auth::id()]);
-                    }
+                    $tache->tacheParent->attachDocumentAndPropagate($document->id, ['created_by' => Auth::id()]);
                 }
             }
 

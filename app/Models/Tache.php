@@ -167,17 +167,42 @@ class Tache extends Model
 
     public function subTasks()
     {
-        return Tache::where('parent_id', $this->id)->get();
+        return $this->children;
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Tache::class, 'parent_id');
     }
 
     /**
-     * Get the priorite that owns the Tache
+     * Get the parent task that owns the Tache
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function tacheParent()
     {
         return $this->belongsTo(Tache::class, 'parent_id');
+    }
+
+    /**
+     * Attach a document to the current task and propagate it to all parent tasks
+     */
+    public function attachDocumentAndPropagate($documentId, $pivotData = [])
+    {
+        // Eviter les doublons dans la table pivot
+        if (!$this->documents()->where('document_id', $documentId)->exists()) {
+            $this->documents()->attach($documentId, $pivotData);
+        }
+
+        // Propager vers le parent
+        if ($this->parent_id) {
+            $parent = $this->tacheParent;
+            if ($parent) {
+                // On garde les mêmes données de pivot (créateur, type_relation, etc.)
+                $parent->attachDocumentAndPropagate($documentId, $pivotData);
+            }
+        }
     }
 
     /**

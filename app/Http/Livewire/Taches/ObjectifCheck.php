@@ -15,8 +15,15 @@ class ObjectifCheck extends Component
 
     public function mount($tache, $pan = null)
     {
-        $this->tache = $tache;
-        $this->pourcentage = $tache->pourcentage;
+        $this->tache = Tache::with('children.user.agent')->findOrFail($tache->id);
+        $this->pourcentage = $this->tache->pourcentage;
+    }
+
+    public function refreshTache()
+    {
+        $this->tache->refresh();
+        $this->tache->load('children.user.agent');
+        $this->pourcentage = $this->tache->pourcentage;
     }
 
     public function objetcifChangeStatut($id)

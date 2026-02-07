@@ -218,7 +218,7 @@ class TachePane extends Component
                 'tache_id' => $tache->id,
                 'document_id' => $document->id,
             ]);
-            $tache->documents()->attach($document->id, [
+            $tache->attachDocumentAndPropagate($document->id, [
                 'type_relation' => 'piece_jointe',
                 'commentaire' => 'Document joint à la tâche',
                 'version_document' => '1.0',

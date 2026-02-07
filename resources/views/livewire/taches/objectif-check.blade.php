@@ -1,4 +1,4 @@
-<div class="block-scroll" id="tache-commentaires" wire:poll>
+<div class="block-scroll" id="tache-commentaires" wire:poll.10s="refreshTache">
     @forelse ($tache->objectifs as $objectif)
         <div class="block-comment commentaires">
             <div class="block-info-comment d-flex">
@@ -73,7 +73,50 @@
         </div>
     @empty
         <h2 style="font-size: 13px; color: var(--colorTitre)" class="text-center text-sm text-secondary">Aucun
-            commentaire sur cette tâche</h2>
+            objectif sur cette tâche</h2>
     @endforelse
 
+    @if($tache->children->count() > 0)
+        <div class="mt-4 mb-2 ps-3">
+            <h6 style="font-size: 0.9rem; color: var(--colorTitre); font-weight: 600;">
+                <i class="fi fi-rr-diagram-sub me-1"></i> Sous-tâches dépendantes
+            </h6>
+        </div>
+        @foreach($tache->children as $subtask)
+             <div class="block-comment commentaires" style="border-left: 3px solid var(--primaryColor) !important;">
+                <div class="block-info-comment d-flex">
+                    <div class="avatar-comment commentaires">
+                        <img src="{{ imageOrDefault($subtask->user?->agent?->image) }}" alt="Photo profil">
+                    </div>
+                    <div class="name-comment commentaires">
+                        <h6 class="mb-0">
+                            {{ $subtask->user?->agent?->prenom . ' ' . $subtask->user?->agent?->nom }}
+                            <span> - {{ $subtask->user?->agent?->direction?->titre }}</span>
+                        </h6>
+                        <p>Sous-tâche créée le {{ $subtask->created_at->format('d/m/Y') }}</p>
+                    </div>
+                </div>
+                <div class="mt-2 px-3 pb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span style="font-size: 0.8rem; font-weight: 500;">
+                            <a href="{{ route('regidoc.taches.show', $subtask->id) }}" class="text-decoration-none" style="color: var(--colorTitre);">
+                                {{ $subtask->titre }}
+                            </a>
+                        </span>
+                        <span class="badge {{ $subtask->pourcentage == 100 ? 'bg-success' : 'bg-primary' }}" style="font-size: 0.65rem; border-radius: 4px;">
+                            {{ round($subtask->pourcentage) }}%
+                        </span>
+                    </div>
+                     <div class="progress" style="height: 5px; background-color: rgba(0,0,0,0.05);">
+                        <div class="progress-bar {{ $subtask->pourcentage == 100 ? 'bg-success' : 'bg-primary' }}" 
+                             role="progressbar" 
+                             style="width: {{ $subtask->pourcentage }}%" 
+                             aria-valuenow="{{ $subtask->pourcentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100"></div>
+                    </div>
+                </div>
+             </div>
+        @endforeach
+    @endif
 </div>

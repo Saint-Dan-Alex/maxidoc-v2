@@ -127,6 +127,7 @@ class TacheInfo extends Component
 
     public function render()
     {
+        $this->tache->load('children.user.agent');
         return view('livewire.taches.tache-info');
     }
 }

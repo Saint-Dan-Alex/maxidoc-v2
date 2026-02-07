@@ -1,4 +1,4 @@
-<div class="row g-2 g-lg-3">
+<div class="row g-2 g-lg-3" wire:poll.15s>
     <!-- Débogage -->
     {{-- <div class="col-12">
         <div class="alert alert-info p-2 mb-2" style="font-size: 0.8rem;">
@@ -94,6 +94,42 @@
             </div>
         </div>
     </div>
+
+    @if($tache->children->count() > 0)
+    <div class="col-lg-12">
+        <div class="items">
+            <p class="mb-2 me-0"><i class="fi fi-rr-diagram-sub me-1"></i> Sous-tâches et Évolution</p>
+            <div class="list-subtasks">
+                @foreach($tache->children as $subtask)
+                    <div class="subtask-item mb-2 p-2 border rounded" style="background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.05) !important;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-truncate" style="max-width: 70%; font-size: 0.8rem; font-weight: 500;">
+                                <a href="{{ route('regidoc.taches.show', $subtask->id) }}" class="text-decoration-none" style="color: var(--colorTitre);">
+                                    {{ $subtask->titre }}
+                                </a>
+                            </span>
+                            <span class="badge {{ $subtask->pourcentage == 100 ? 'bg-success' : 'bg-primary' }}" style="font-size: 0.65rem;">
+                                {{ round($subtask->pourcentage) }}%
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 4px; background-color: rgba(0,0,0,0.05);">
+                            <div class="progress-bar {{ $subtask->pourcentage == 100 ? 'bg-success' : 'bg-primary' }}" 
+                                 role="progressbar" 
+                                 style="width: {{ $subtask->pourcentage }}%" 
+                                 aria-valuenow="{{ $subtask->pourcentage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100"></div>
+                        </div>
+                        <div class="mt-1 d-flex align-items-center" style="font-size: 0.7rem; color: var(--colorParagraph);">
+                            <i class="fi fi-rr-user me-1" style="font-size: 0.65rem;"></i>
+                            {{ $subtask->user?->agent?->prenom }} {{ $subtask->user?->agent?->nom }}
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
     {{-- <div class="col-lg-12">
         <div class="items">
             <p class="mb-3 me-0"><i class="fi fi-rr-calendar-clock me-1"></i> Période </p>
