@@ -1,7 +1,7 @@
-<div class="px-2 py-1 shadow-sm sticky-top pdf-tools rounded-pill  pdf-tools-modified">
+<div class="shadow-sm sticky-top pdf-tools rounded-pill  pdf-tools-modified">
 
     <!-- Toolbar Left -->
-    <div id="toolbarViewerLeft" class="gap-2 d-flex align-items-center">
+    <div id="toolbarViewerLeft" class="gap-1 d-flex align-items-center">
         <div class="d-flex">
             <button class="toolbarButton btn" title="Page précédente" id="previous">
                 <span class="fi fi-rr-angle-up icon-pdf-tools"></span>
@@ -13,7 +13,7 @@
         </div>
 
         <input type="number" id="pageNumber" class="toolbarField form-control text-center" title="Page"
-            value="1" min="1" max="1" tabindex="15" style="width: 60px; height: 32px;"
+            value="1" min="1" max="1" tabindex="15" style="width: 45px; height: 28px;"
             autocomplete="off">
 
         <span id="numPages" class="toolbarLabel text-nowrap"></span>
@@ -31,7 +31,7 @@
             </button>
         </div>
 
-        <select id="scaleSelect" class="form-select form-control" title="Zoom" tabindex="23" style="height: 32px;">
+        <select id="scaleSelect" class="form-select form-control" title="Zoom" tabindex="23" style="height: 28px; width: 95px; padding: 0 4px; font-size: 11px;">
             <option id="pageAutoOption" value="auto" selected>Zoom auto</option>
             <option id="customScaleOption" value="custom" hidden>Personnalisé</option>
             <option value="0.5">50%</option>
@@ -46,13 +46,13 @@
     </div>
 
     <!-- Toolbar Right -->
-    <div id="toolbarViewerRight" class="d-flex gap-2">
+    <div id="toolbarViewerRight" class="d-flex gap-1">
         <button class="toolbarButton btn" title="Rechercher" id="search">
             <span class="fi fi-rr-search icon-pdf-tools"></span>
         </button>
 
         @can('Imprimer un document')
-            <button id="print" class="toolbarButton btn hiddenMediumView" title="Imprimer" tabindex="32">
+            <button id="print" class="toolbarButton btn" title="Imprimer" tabindex="32">
                 <span class="fi fi-rr-print icon-pdf-tools"></span>
             </button>
         @endcan
