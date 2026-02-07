@@ -2,7 +2,25 @@
 
 @section('style')
     <style>
-
+        .signature-tab-pane {
+            padding: 20px;
+        }
+        #canvas_signature_pad_profile_page {
+            cursor: crosshair;
+            background-color: #f8f9fa;
+        }
+        .btn-group .btn-check:checked + .btn-outline-primary {
+            background-color: var(--color-primary, #0d6efd);
+            border-color: var(--color-primary, #0d6efd);
+            color: white;
+        }
+        #image-upload-placeholder {
+            transition: all 0.3s ease;
+        }
+        #image-upload-placeholder:hover {
+            background-color: #e9ecef;
+            border-radius: 8px;
+        }
     </style>
 @endsection
 
@@ -492,68 +510,63 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Dessiner votre signature</h5>
+                    <h5 class="modal-title">Ma signature</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="toggle-signature-type">
-                            <label class="form-check-label" for="toggle-signature-type">Signature tapée</label>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="signature-color" class="form-label">Couleur :</label>
-                            <input type="color" class="form-control form-control-color w-100" id="signature-color" value="#0d6efd" title="Choisir une couleur">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="signature-font" class="form-label">Police :</label>
-                            <select class="form-select" id="signature-font">
-                                <option value="Arial">Arial</option>
-                                <option value="Times New Roman">Times New Roman</option>
-                                <option value="Courier New">Courier New</option>
-                                <option value="Brush Script MT">Brush Script</option>
-                                <option value="Dancing Script">Dancing Script</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="font-size" class="form-label">Taille :</label>
-                            <input type="number" class="form-control" id="font-size" min="12" max="72" value="24">
+                    <div class="mb-4 d-flex justify-content-center">
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="signature_method" id="method-draw" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="method-draw"><i class="fi fi-rr-edit me-2"></i> Dessiner</label>
+                            
+                            <input type="radio" class="btn-check" name="signature_method" id="method-import" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="method-import"><i class="fi fi-rr-upload me-2"></i> Importer une image</label>
                         </div>
                     </div>
 
                     <div id="draw-signature-container">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="signature-color" class="form-label">Couleur du stylo :</label>
+                                <input type="color" class="form-control form-control-color w-100" id="signature-color" value="#000000" title="Choisir une couleur">
+                            </div>
+                        </div>
                         <div class="mb-3">
-                            <label class="form-label">Dessinez votre signature :</label>
-                            <div class="border rounded p-2">
-                                <canvas id="canvas_signature_pad_profile_page" style="width: 100%; height: 180px; touch-action: none;"></canvas>
+                            <label class="form-label">Dessinez votre signature dans le cadre ci-dessous :</label>
+                            <div class="border rounded p-2 bg-white">
+                                <canvas id="canvas_signature_pad_profile_page" style="width: 100%; height: 250px; touch-action: none; cursor: crosshair;"></canvas>
                             </div>
                             <div class="text-end mt-2">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-clear-signature-profile">Effacer</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-clear-signature-profile">
+                                    <i class="fi fi-rr-refresh me-1"></i> Effacer le dessin
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <div id="typed-signature-container" class="d-none">
+                    <div id="import-signature-container" class="d-none">
                         <div class="mb-3">
-                            <label for="typed-signature" class="form-label">Tapez votre signature :</label>
-                            <input type="text" class="form-control mb-2" id="typed-signature" placeholder="Votre nom">
-                            <div class="border rounded p-2 text-center">
-                                <canvas id="typed-signature-canvas" style="width: 100%; height: 100px; background: white;"></canvas>
+                            <label class="form-label">Sélectionnez une image de votre signature (JPG, PNG) :</label>
+                            <div class="border rounded p-4 text-center bg-light">
+                                <input type="file" id="input-signature-image" class="form-control d-none" accept="image/*">
+                                <label for="input-signature-image" style="cursor: pointer;" class="w-100 mb-0">
+                                    <div id="image-upload-placeholder">
+                                        <i class="fi fi-rr-camera-retro" style="font-size: 3rem; color: #ccc;"></i>
+                                        <p class="mt-2 mb-0">Cliquez pour choisir un fichier</p>
+                                        <small class="text-muted">Format recommandé : PNG avec fond transparent</small>
+                                    </div>
+                                    <div id="image-upload-preview" class="d-none">
+                                        <img id="signature-import-preview-img" src="" class="img-fluid border rounded" style="max-height: 200px;">
+                                        <p class="mt-2 mb-0 text-primary">Cliquer pour changer l'image</p>
+                                    </div>
+                                </label>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer d-flex justify-content-between">
-                    {{-- <div>
-                        <button type="button" class="btn btn-default" id="btn-clear-signature-profile">Effacer</button>
-                    </div> --}}
-                    <div>
-                        <button type="button" class="btn" data-bs-dismiss="modal" style="color: var(--colorTitre)">Annuler</button>
-                        <button type="button" class="btn btn-add" id="btn-save-signature-profile">Enregistrer</button>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" data-bs-dismiss="modal" style="color: var(--colorTitre)">Annuler</button>
+                    <button type="button" class="btn btn-add" id="btn-save-signature-profile">Enregistrer la signature</button>
                 </div>
             </div>
         </div>
@@ -745,126 +758,82 @@
             const previewBlock = document.getElementById('signature-preview-profile');
             const noSignatureText = document.getElementById('no-signature-profile');
 
-            let currentColor = '#0d6efd';
-            let currentFont = 'Arial';
-            let currentFontSize = 24;
-            let isTypedSignature = false;
-
-            function updateSignaturePad() {
-                if (!signaturePadProfile) return;
-                
-                if (isTypedSignature) {
-                    // Mise à jour de la police pour la signature tapée
-                    const canvas = signaturePadProfile.canvas;
-                    const ctx = canvas.getContext('2d');
-                    ctx.font = `${currentFontSize}px ${currentFont}`;
-                    ctx.fillStyle = currentColor;
-                    redrawTypedSignature();
-                } else {
-                    // Mise à jour de la couleur pour la signature dessinée
-                    signaturePadProfile.penColor = currentColor;
-                }
-            }
-
-            function redrawTypedSignature() {
-                if (!isTypedSignature) return;
-                
-                const canvas = signaturePadProfile.canvas;
-                const ctx = canvas.getContext('2d');
-                const text = document.getElementById('typed-signature').value || 'Votre signature';
-                
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.font = `24px ${currentFont}`;
-                ctx.fillStyle = currentColor;
-                ctx.fillText(text, 20, 100);
-            }
+            let currentColor = '#000000';
+            let currentMethod = 'draw'; // 'draw' or 'import'
+            let importedImageData = null;
 
             function initSignaturePad() {
                 const canvas = document.getElementById('canvas_signature_pad_profile_page');
                 if (!canvas) return;
+                
+                // Redimensionner le canvas pour sa taille réelle
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
                 canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = 180 * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
                 const ctx = canvas.getContext('2d');
                 ctx.scale(ratio, ratio);
                 
-                // Initialiser le sélecteur de couleur
-                const colorPicker = document.getElementById('signature-color');
-                if (colorPicker) {
-                    colorPicker.value = currentColor;
-                    colorPicker.addEventListener('input', function(e) {
-                        currentColor = e.target.value;
-                        updateSignaturePad();
-                    });
-                }
-                
-                // Initialiser le sélecteur de police
-                const fontSelect = document.getElementById('signature-font');
-                if (fontSelect) {
-                    fontSelect.addEventListener('change', function(e) {
-                        currentFont = e.target.value;
-                        updateSignaturePad();
-                    });
+                if (signaturePadProfile) {
+                    signaturePadProfile.off();
                 }
 
-                // Initialiser le sélecteur de taille de police
-                const fontSizeInput = document.getElementById('font-size');
-                if (fontSizeInput) {
-                    fontSizeInput.addEventListener('input', function(e) {
-                        currentFontSize = parseInt(e.target.value) || 24;
-                        // Limiter la taille entre 12 et 72
-                        if (currentFontSize < 12) currentFontSize = 12;
-                        if (currentFontSize > 72) currentFontSize = 72;
-                        e.target.value = currentFontSize;
-                        updateSignaturePad();
-                    });
-                }
-                
-                // Basculer entre signature dessinée et tapée
-                const toggleSignatureType = document.getElementById('toggle-signature-type');
-                const typedSignatureContainer = document.getElementById('typed-signature-container');
-                const drawSignatureContainer = document.getElementById('draw-signature-container');
-                
-                if (toggleSignatureType) {
-                    toggleSignatureType.addEventListener('change', function(e) {
-                        isTypedSignature = e.target.checked;
-                        if (isTypedSignature) {
-                            typedSignatureContainer.classList.remove('d-none');
-                            drawSignatureContainer.classList.add('d-none');
-                            // Initialiser la signature tapée
-                            const typedInput = document.getElementById('typed-signature');
-                            if (typedInput) {
-                                typedInput.addEventListener('input', redrawTypedSignature);
-                                redrawTypedSignature();
-                            }
-                        } else {
-                            typedSignatureContainer.classList.add('d-none');
-                            drawSignatureContainer.classList.remove('d-none');
-                            // Réinitialiser le canvas de signature
-                            if (signaturePadProfile) {
-                                signaturePadProfile.clear();
-                            } else {
-                                signaturePadProfile = new SignaturePad(canvas, {
-                                    minWidth: 1.6,
-                                    maxWidth: 2.5,
-                                    penColor: currentColor
-                                });
-                            }
-                        }
-                    });
-                }
-                
-                // Initialiser la signature dessinée par défaut
                 signaturePadProfile = new SignaturePad(canvas, {
-                    minWidth: 1.6,
-                    maxWidth: 2.5,
+                    minWidth: 1.5,
+                    maxWidth: 3.5,
                     penColor: currentColor
+                });
+            }
+
+            // Gestionnaires pour le changement de méthode
+            document.querySelectorAll('input[name="signature_method"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    currentMethod = this.id === 'method-draw' ? 'draw' : 'import';
+                    
+                    const drawContainer = document.getElementById('draw-signature-container');
+                    const importContainer = document.getElementById('import-signature-container');
+                    
+                    if (currentMethod === 'draw') {
+                        drawContainer.classList.remove('d-none');
+                        importContainer.classList.add('d-none');
+                        setTimeout(initSignaturePad, 50);
+                    } else {
+                        drawContainer.classList.add('d-none');
+                        importContainer.classList.remove('d-none');
+                    }
+                });
+            });
+
+            // Gestion de l'import d'image
+            const inputImage = document.getElementById('input-signature-image');
+            inputImage.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    importedImageData = event.target.result;
+                    document.getElementById('signature-import-preview-img').src = importedImageData;
+                    document.getElementById('image-upload-placeholder').classList.add('d-none');
+                    document.getElementById('image-upload-preview').classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Couleur du stylo
+            const colorPicker = document.getElementById('signature-color');
+            if (colorPicker) {
+                colorPicker.value = currentColor;
+                colorPicker.addEventListener('input', function(e) {
+                    currentColor = e.target.value;
+                    if (signaturePadProfile) {
+                        signaturePadProfile.penColor = currentColor;
+                    }
                 });
             }
 
             document.addEventListener('shown.bs.modal', function (event) {
                 if (event.target && event.target.id === 'modal-save-signature-profile') {
-                    setTimeout(initSignaturePad, 50);
+                    setTimeout(initSignaturePad, 100);
                 }
             });
 
@@ -896,7 +865,6 @@
 
             window.addEventListener('load', loadSignaturePreview);
 
-            // Charger l'aperçu quand l'onglet Signature est affiché
             document.addEventListener('shown.bs.tab', function (event) {
                 if (event.target && event.target.id === 'signature-tab-btn') {
                     loadSignaturePreview();
@@ -905,7 +873,7 @@
 
             window.addEventListener('resize', function(){
                 const modal = document.getElementById('modal-save-signature-profile');
-                if (modal && modal.classList.contains('show')) {
+                if (modal && modal.classList.contains('show') && currentMethod === 'draw') {
                     initSignaturePad();
                 }
             });
@@ -925,34 +893,24 @@
             const saveBtn = document.getElementById('btn-save-signature-profile');
             if (saveBtn) {
                 saveBtn.addEventListener('click', function(){
-                    let imgData;
+                    let imgData = null;
                     
-                    if (isTypedSignature) {
-                        // Créer un canvas pour la signature tapée
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 600;
-                        canvas.height = 200;
-                        const ctx = canvas.getContext('2d');
-                        
-                        // Fond blanc
-                        ctx.fillStyle = 'white';
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        
-                        // Texte de la signature
-                        const text = document.getElementById('typed-signature').value || 'Signature';
-                        ctx.font = `${currentFontSize}px ${currentFont}`;
-                        ctx.fillStyle = currentColor;
-                        ctx.fillText(text, 20, 100);
-                        
-                        imgData = canvas.toDataURL('image/png');
-                    } else {
-                        // Signature dessinée
+                    if (currentMethod === 'draw') {
                         if (!signaturePadProfile || signaturePadProfile.isEmpty()) {
-                            alert('Veuvez créer votre signature avant de l\'enregistrer.');
+                            alert('Veuillez dessiner votre signature avant de l\'enregistrer.');
                             return;
                         }
                         imgData = signaturePadProfile.toDataURL('image/png');
+                    } else {
+                        if (!importedImageData) {
+                            alert('Veuillez importer une image de votre signature.');
+                            return;
+                        }
+                        imgData = importedImageData;
                     }
+
+                    saveBtn.disabled = true;
+                    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Enregistrement...';
 
                     fetch('/ajax/signatures/save/user/image', {
                         method: 'POST',
@@ -970,14 +928,18 @@
                     .then((data) => {
                         const modalEl = document.getElementById('modal-save-signature-profile');
                         if (modalEl) {
-                            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                            modal.hide();
+                            const modal = bootstrap.Modal.getInstance(modalEl);
+                            if (modal) modal.hide();
                         }
                         loadSignaturePreview();
                     })
                     .catch((err) => {
                         console.error(err);
                         alert("Une erreur est survenue lors de l'enregistrement de la signature.");
+                    })
+                    .finally(() => {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = 'Enregistrer la signature';
                     });
                 });
             }
