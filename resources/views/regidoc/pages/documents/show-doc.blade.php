@@ -852,68 +852,8 @@
                                    disabled>
                         </div>
 
-                        <!-- 2. Émetteur -->
-                        <div class="mb-3">
-                            <label for="emetteur" class="form-label">Émetteur</label>
-                            @if($find_document->type == 1)
-                                <select class="form-select form-control select2" name="expediteur_externe" required
-                                    data-placeholder="Sélectionnez"
-                                    data-get-items-route="{{ route('regidoc.ajax.expediteurcourriers') }}"
-                                    data-route="{{ route('regidoc.ajax.expediteurcourriers.save') }}"
-                                    data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="CourrierExpediteur" data-tags="true">
-                                </select>
-                            @elseif($find_document->type == 3)
-                                <select class="form-select form-control select2" name="expediteur_externe" required
-                                    data-get-items-route="{{ route('regidoc.ajax.getServices.json') }}"
-                                    data-route=""
-                                    data-method="get" data-label="titre"
-                                    data-related-model="Service" data-tags="false">
-                                </select>
-                            @endif
-                        </div>
+                        <!-- Champs supprimés (Émetteur, Rédacteur, Destination) -->
 
-                        <!-- 3. Rédacteur -->
-                        <div class="mb-3">
-                            <label for="redacteur" class="form-label">Rédacteur</label>
-                            @if($find_document->type == 1)
-                                <select class="form-select form-control select2" name="redacteur" required
-                                    data-placeholder="Sélectionnez"
-                                    data-get-items-route="{{ route('regidoc.ajax.redacteurs') }}"
-                                    data-route="{{ route('regidoc.ajax.redacteurs.save') }}"
-                                    data-get-items-field="nom" data-method="get" data-label="nom" data-max-selection="1"
-                                    data-related-model="Redacteur" data-tags="true" multiple>
-                                </select>
-                            @elseif($find_document->type == 3)
-                                <select class="form-select form-control select2" name="redacteur" required
-                                    data-get-items-route="{{ route('regidoc.ajax.getAgents.json') }}"
-                                    data-route=""
-                                    data-method="get" data-label="prenom,nom,post_nom"
-                                    data-related-model="Agent" data-tags="false">
-                                </select>
-                            @endif
-                        </div>
-
-                        <!-- 4. Destination -->
-                        <div class="mb-3">
-                            <label for="destination" class="form-label">Destination</label>
-                            @if($find_document->type == 1)
-                                <select class="form-select form-control select2" name="destination" required
-                                    data-placeholder="Sélectionnez"
-                                    data-get-items-route="{{ route('regidoc.ajax.destinatairearchives') }}"
-                                    data-route="{{ route('regidoc.ajax.destinatairearchives.save') }}"
-                                    data-get-items-field="nom" data-method="get" data-label="nom"
-                                    data-related-model="Destination" data-tags="true" data-max-selection="1" multiple>
-                                </select>
-                            @elseif($find_document->type == 3)
-                                <select class="form-select form-control select2" name="destination" required
-                                    data-get-items-route="{{ route('regidoc.ajax.getAgents.json') }}"
-                                    data-route=""
-                                    data-method="get" data-label="prenom,nom,post_nom"
-                                    data-related-model="CourrierExpediteur" data-tags="true">
-                                </select>
-                            @endif
-                        </div>
 
                         <!-- 5. Observations -->
                         <div class="mb-3">
