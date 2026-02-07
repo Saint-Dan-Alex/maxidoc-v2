@@ -463,6 +463,7 @@
         const nvFichier = document.getElementById('file-upload');
         const filename = document.querySelector('.list-file .name-file')
         const iframe = document.querySelector('.content-scanner iframe');
+        const pdfMainContainer = document.getElementById('pdf-main-container');
 
         if (nvFichier) {
             nvFichier.addEventListener('change', function() {
@@ -470,26 +471,37 @@
                 if (fichier) {
                     let namefile = fichier.name;
                     if (namefile.length >= 12) {
-
                         let splitName = namefile.split('.');
-
                         namefile = splitName[0].substring(0, 12) + "... ." + splitName[1];
-
                     }
                     const analyseur = new FileReader();
-                    $(iframe).addClass('show')
-                    $(iframe).addClass('fade')
+                    
+                    if (pdfMainContainer) {
+                        $(pdfMainContainer).addClass('show');
+                        $(pdfMainContainer).addClass('fade');
+                    } else if (iframe) {
+                        $(iframe).addClass('show');
+                        $(iframe).addClass('fade');
+                    }
+
                     analyseur.readAsDataURL(fichier);
                     analyseur.addEventListener('load', function() {
-                        $(iframe).removeClass('d-none')
-                        $('.block-no-file').addClass('d-none')
-                        $('.block-col').removeClass('d-none')
-                        iframe.setAttribute('src', this.result);
+                        $('.block-no-file').addClass('d-none');
+                        $('.block-col').removeClass('d-none');
                         filename.innerHTML = namefile;
-                    })
+
+                        if (pdfMainContainer && typeof showPDF === 'function') {
+                            $(pdfMainContainer).removeClass('d-none');
+                            showPDF(this.result);
+                        } else if (iframe) {
+                            $(iframe).removeClass('d-none');
+                            iframe.setAttribute('src', this.result);
+                        }
+                    });
                 }
                 setTimeout(() => {
-                    $(iframe).removeClass('fade')
+                    if (pdfMainContainer) $(pdfMainContainer).removeClass('fade');
+                    if (iframe) $(iframe).removeClass('fade');
                 }, 3000);
             })
         }
@@ -501,7 +513,7 @@
             $('.col-img').addClass('d-none')
             $('#label-5').removeClass('active')
             $(nvFichier).val('');
-            $(iframe).attr('src', '')
+            if (iframe) $(iframe).attr('src', '');
         })
 
         // window.livewire.onError(statusCode => {

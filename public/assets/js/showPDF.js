@@ -13,7 +13,7 @@ let __PDF_DOC,
 var url, docName, courrier_id, tache_id, docId, doc_id, code, is_original;
 
 // Initialisation des variables une fois le DOM chargé
-$(document).ready(function() {
+$(document).ready(function () {
     url = $("#pdf-main-container").data("url");
     docName = $("#pdf-main-container").data("name");
     courrier_id = $("#pdf-main-container").data("courrier");
@@ -22,9 +22,9 @@ $(document).ready(function() {
     doc_id = docId; // Alias pour signature.js qui utilise snake_case
     code = $("#pdf-main-container").data("code");
     is_original = $("#pdf-main-container").data("original") === true || $("#pdf-main-container").data("original") === "true";
-    
-    console.log("Variables initialisées:", {url, docName, courrier_id, tache_id, doc_id, is_original});
-    
+
+    console.log("Variables initialisées:", { url, docName, courrier_id, tache_id, doc_id, is_original });
+
     // Charger le PDF une fois les variables initialisées
     if (url) {
         showPDF(url);
@@ -35,19 +35,19 @@ $(document).ready(function() {
 function showLoader() {
     const loader = document.getElementById('document-loader');
     const pdfContents = document.getElementById('pdf-contents');
-    
+
     if (loader && pdfContents) {
         // S'assurer que le conteneur du PDF a une position relative
         if (window.getComputedStyle(pdfContents).position === 'static') {
             pdfContents.style.position = 'relative';
         }
-        
+
         // Positionner le loader dans le conteneur PDF
         loader.style.display = 'flex';
         loader.style.position = 'absolute';
         loader.style.top = '0';
         loader.style.left = '0';
-        
+
         // Ajouter une légère animation d'apparition
         setTimeout(() => {
             loader.style.opacity = '1';
@@ -60,7 +60,7 @@ function hideLoader() {
     if (loader) {
         // Ajouter une animation de disparition
         loader.style.opacity = '0';
-        
+
         // Masquer après l'animation
         setTimeout(() => {
             loader.style.display = 'none';
@@ -72,12 +72,12 @@ function hideLoader() {
 
 // Handle window resize for responsive PDF display
 let resizeTimeout;
-$(window).on('resize', function() {
+$(window).on('resize', function () {
     clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(function() {
+    resizeTimeout = setTimeout(function () {
         if (typeof __CURRENT_PAGE !== 'undefined' && __CURRENT_PAGE > 0) {
             // Get all canvas elements and re-render the current page
-            $('.pdf-page').each(function() {
+            $('.pdf-page').each(function () {
                 const pageNumber = parseInt($(this).attr('id').split('-')[1]);
                 if (pageNumber === __CURRENT_PAGE) {
                     const canvas = $(this).find('canvas')[0];
@@ -89,13 +89,15 @@ $(window).on('resize', function() {
     }, 250); // Debounce resize events for better performance
 });
 
-function showPDF(pdf_url) {
+function showPDF(pdf_url, targetSelector) {
+    const selector = targetSelector || "#pdf-contents";
+    const $target = $(selector);
+
     const file_extension = typeof pdf_url === 'string' ? pdf_url.split('.').pop().toLowerCase() : '';
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'].includes(file_extension);
 
     if (isImage) {
-        const pdfContents = $("#pdf-contents");
-        pdfContents.empty();
+        $target.empty();
         const imgHtml = `
             <div class="d-flex flex-column align-items-center justify-content-center p-4" style="min-height: 500px;">
                 
@@ -109,20 +111,18 @@ function showPDF(pdf_url) {
                 </div>
             </div>
         `;
-        pdfContents.html(imgHtml);
+        $target.html(imgHtml);
         hideLoader(); // Assurez-vous que le loader est masqué
         return; // Arrêter l'exécution pour les images
     }
 
-    console.log('Début du chargement du PDF, URL brute :', pdf_url);
-    
-    const pdfContents = $("#pdf-contents");
-    
+    console.log('Début du chargement du PDF sur ' + selector + ', URL brute :', pdf_url);
+
     // Initialiser le conteneur PDF
-    if (pdfContents.length) {
+    if ($target.length) {
         // Vider le contenu précédent
-        pdfContents.empty();
-        
+        $target.empty();
+
         // Créer un conteneur pour le loader s'il n'existe pas
         if ($('#document-loader').length === 0) {
             const loaderHtml = `
@@ -135,171 +135,171 @@ function showPDF(pdf_url) {
                     </div>
                 </div>
             `;
-            pdfContents.append(loaderHtml);
+            $target.append(loaderHtml);
         }
-        
+
         // Afficher le loader
         showLoader();
     } else {
-        console.error('Conteneur PDF non trouvé');
+        console.error('Conteneur PDF non trouvé :', selector);
         return;
     }
-    
+
     // Vérifier si l'URL est valide
     if (!pdf_url) {
         const errorMsg = 'Aucune URL de document fournie';
         console.error(errorMsg);
-        pdfContents.html('<div class="alert alert-danger m-3"><h5>Erreur de chargement</h5><p>' + errorMsg + '</p></div>');
+        $target.html('<div class="alert alert-danger m-3"><h5>Erreur de chargement</h5><p>' + errorMsg + '</p></div>');
         hideLoader();
         return;
     }
-    
+
     // Nettoyer l'URL
     if (typeof pdf_url === 'string') {
-        // Supprimer les échappements et guillemets
-        pdf_url = pdf_url.replace(/\\/g, '/').replace(/^["\[\]{}]|["\[\]{},]$/g, '');
-        
-        // Corriger les doubles 'documents' dans l'URL
-        pdf_url = pdf_url.replace(/(\/storage\/documents\/?)documents\//, '$1');
-        
-        // S'assurer que l'URL commence par /storage/
-        if (!pdf_url.startsWith('http') && !pdf_url.startsWith('/storage/')) {
-            if (pdf_url.startsWith('documents/') || pdf_url.startsWith('pieces-jointes/')) {
-                // Pour les documents et pièces jointes, ajouter /storage/ au début
-                pdf_url = '/storage/' + pdf_url;
-            } else if (pdf_url.startsWith('/documents/') || pdf_url.startsWith('/pieces-jointes/')) {
-                // Si le chemin commence déjà par /, ajouter juste storage
-                pdf_url = '/storage' + pdf_url;
-            } else {
-                // Par défaut, considérer comme un document
-                pdf_url = '/storage/documents/' + pdf_url;
+        // Supprimer les échappements, guillemets et espaces
+        pdf_url = pdf_url.trim().replace(/\\/g, '/').replace(/^["'\[\]{}]|["'\[\]{},]$/g, '');
+
+        // Ne pas nettoyer davantage les URLs blob ou base64
+        if (pdf_url.startsWith('blob:') || pdf_url.startsWith('data:')) {
+            console.log('URL de type spécial (Blob/Data) détectée, pas de nettoyage supplémentaire nécessaire.');
+        } else {
+            // Corriger les doubles 'documents' dans l'URL
+            pdf_url = pdf_url.replace(/(\/storage\/documents\/?)documents\//, '$1');
+
+            // S'assurer que l'URL commence par /storage/
+            if (!pdf_url.startsWith('http') && !pdf_url.startsWith('/storage/')) {
+                if (pdf_url.startsWith('documents/') || pdf_url.startsWith('pieces-jointes/')) {
+                    // Pour les documents et pièces jointes, ajouter /storage/ au début
+                    pdf_url = '/storage/' + pdf_url;
+                } else if (pdf_url.startsWith('/documents/') || pdf_url.startsWith('/pieces-jointes/')) {
+                    // Si le chemin commence déjà par /, ajouter juste storage
+                    pdf_url = '/storage' + pdf_url;
+                } else {
+                    // Par défaut, considérer comme un document
+                    pdf_url = '/storage/documents/' + pdf_url;
+                }
             }
-        }
-        
-        // Ajouter le protocole et le domaine si nécessaire (pour les URL relatives)
-        if (!pdf_url.startsWith('http') && !pdf_url.startsWith(window.location.origin)) {
-            // Si c'est un chemin absolu, ajouter le domaine
-            if (pdf_url.startsWith('/')) {
-                pdf_url = window.location.origin + pdf_url;
-            } else {
-                // Sinon, construire l'URL complète à partir de la base
-                const baseUrl = window.location.origin + '/storage/';
-                pdf_url = baseUrl + pdf_url;
+
+            // Ajouter le protocole et le domaine si nécessaire (pour les URL relatives)
+            if (!pdf_url.startsWith('http') && !pdf_url.startsWith(window.location.origin)) {
+                // Si c'est un chemin absolu, ajouter le domaine
+                if (pdf_url.startsWith('/')) {
+                    pdf_url = window.location.origin + pdf_url;
+                } else {
+                    // Sinon, construire l'URL complète à partir de la base
+                    const baseUrl = window.location.origin + '/storage/';
+                    pdf_url = baseUrl + pdf_url;
+                }
             }
         }
     }
-    
+
     console.log('URL du PDF après nettoyage :', pdf_url);
-    
+
     // Mettre à jour les attributs de téléchargement
     $(".pdf-tools #download").attr("href", pdf_url);
     $(".pdf-tools #download").attr("download", pdf_url);
 
     PDFJS.getDocument({
         url: pdf_url,
-        // Activer CORS si nécessaire
-        // withCredentials: true,
-        // httpHeaders: { 'X-Requested-With': 'XMLHttpRequest' }
     }).then(function (pdf_doc) {
-            __PDF_DOC = pdf_doc;
-            __TOTAL_PAGES = __PDF_DOC.numPages;
+        __PDF_DOC = pdf_doc;
+        __TOTAL_PAGES = __PDF_DOC.numPages;
 
-            // Hide the pdf loader and show pdf container in HTML
-            // $("#pdf-loader").hide();
-            $("#pdf-contents").show();
-            $("#pageNumber").attr("max", __TOTAL_PAGES);
-            $("#numPages").text(
-                "sur " +
-                    __TOTAL_PAGES +
-                    " " +
-                    (__TOTAL_PAGES > 1 ? "pages" : "page")
-            );
+        $target.show();
+        $("#pageNumber").attr("max", __TOTAL_PAGES);
+        $("#numPages").text(
+            "sur " +
+            __TOTAL_PAGES +
+            " " +
+            (__TOTAL_PAGES > 1 ? "pages" : "page")
+        );
 
-            if ($(".confidentiel-doc").length <= 0) {
-                // $('#pdf-contents').empty();
-                for (var i = 1; i <= __TOTAL_PAGES; i++) {
-                    var pdfPage = document.createElement("div");
-                    pdfPage.classList.add("pdf-page");
-                    pdfPage.setAttribute("id", "page-" + i);
+        if ($(".confidentiel-doc").length <= 0) {
+            // $('#pdf-contents').empty();
+            for (var i = 1; i <= __TOTAL_PAGES; i++) {
+                var pdfPage = document.createElement("div");
+                pdfPage.classList.add("pdf-page");
+                pdfPage.setAttribute("id", "page-" + i);
 
-                    var canvas = document.createElement("canvas");
-                    // canvas.setAttribute('width', '595px');
-                    canvas.setAttribute("data-page", i);
-                    canvas.classList.add("pdf-canvas");
-                    canvas.classList.add("mb-2");
+                var canvas = document.createElement("canvas");
+                // canvas.setAttribute('width', '595px');
+                canvas.setAttribute("data-page", i);
+                canvas.classList.add("pdf-canvas");
+                canvas.classList.add("mb-2");
 
-                    $(pdfPage).append(canvas);
+                $(pdfPage).append(canvas);
 
-                    var textLayer = document.createElement("div");
-                    textLayer.classList.add("text-layer");
-                    $(pdfPage).append(textLayer);
+                var textLayer = document.createElement("div");
+                textLayer.classList.add("text-layer");
+                $(pdfPage).append(textLayer);
 
-                    var annotationLayer = document.createElement("div");
-                    annotationLayer.classList.add("annotationLayer");
-                    $(pdfPage).append(annotationLayer);
+                var annotationLayer = document.createElement("div");
+                annotationLayer.classList.add("annotationLayer");
+                $(pdfPage).append(annotationLayer);
 
-                    // Suppression du loader de page
+                // Suppression du loader de page
 
-                    $("#pdf-contents").append(pdfPage);
+                $target.append(pdfPage);
 
-                    var vignettePage = document.createElement("div");
-                    vignettePage.classList.add("vignette-page");
+                var vignettePage = document.createElement("div");
+                vignettePage.classList.add("vignette-page");
 
-                    var vignetteLink = document.createElement("a");
-                    vignetteLink.setAttribute("href", "#page-" + i);
+                var vignetteLink = document.createElement("a");
+                vignetteLink.setAttribute("href", "#page-" + i);
 
-                    var vignetteCanvas = document.createElement("canvas");
-                    vignetteCanvas.setAttribute("width", "140px");
-                    vignetteCanvas.classList.add("mb-2");
+                var vignetteCanvas = document.createElement("canvas");
+                vignetteCanvas.setAttribute("width", "140px");
+                vignetteCanvas.classList.add("mb-2");
 
-                    $(vignetteLink).append(vignetteCanvas);
-                    $(vignettePage).append(vignetteLink);
+                $(vignetteLink).append(vignetteCanvas);
+                $(vignettePage).append(vignetteLink);
 
-                    $("#vignet-container").append(vignettePage);
+                $("#vignet-container").append(vignettePage);
 
-                    $("#page-" + i).droppable();
+                $("#page-" + i).droppable();
 
-                    $("#page-" + i).on("drop", function (event, ui) {
-                        $(ui.draggable).attr(
-                            "data-page",
-                            $(this).find("canvas").data("page")
-                        );
+                $("#page-" + i).on("drop", function (event, ui) {
+                    $(ui.draggable).attr(
+                        "data-page",
+                        $(this).find("canvas").data("page")
+                    );
 
-                        var droppableOffset = $(this).offset();
-                        var draggablePosition = ui.draggable.position();
+                    var droppableOffset = $(this).offset();
+                    var draggablePosition = ui.draggable.position();
 
-                        // Calculate the position of the draggable relative to the droppable
-                        var relativeLeft =
-                            draggablePosition.left - droppableOffset.left;
-                        var relativeTop =
-                            draggablePosition.top - droppableOffset.top;
+                    // Calculate the position of the draggable relative to the droppable
+                    var relativeLeft =
+                        draggablePosition.left - droppableOffset.left;
+                    var relativeTop =
+                        draggablePosition.top - droppableOffset.top;
 
-                        $(ui.draggable).attr("data-x", relativeLeft);
-                        $(ui.draggable).attr("data-y", relativeTop);
+                    $(ui.draggable).attr("data-x", relativeLeft);
+                    $(ui.draggable).attr("data-y", relativeTop);
 
-                        $(".save_pdf").removeClass("disabled");
-                        $(".save_pdf").removeAttr("disabled");
-                    });
+                    $(".save_pdf").removeClass("disabled");
+                    $(".save_pdf").removeAttr("disabled");
+                });
 
-                    // Show the first page
-                    showPage(canvas, vignetteCanvas, textLayer, i);
-                }
-                
-                // Cacher le loader une fois le chargement terminé
-                hideLoader();
-            } else {
-                showPage(null, null, null, 1);
+                // Show the first page
+                showPage(canvas, vignetteCanvas, textLayer, i);
             }
-        })
+
+            // Cacher le loader une fois le chargement terminé
+            hideLoader();
+        } else {
+            showPage(null, null, null, 1);
+        }
+    })
         .catch(function (error) {
             console.error('Erreur lors du chargement du PDF:', error);
-            
+
             // Message d'erreur plus détaillé
             let errorMessage = 'Ce fichier n\'est pas un pdf  ';
-            
+
             // Cacher le loader en cas d'erreur
             hideLoader();
-            
+
             if (error.name === 'MissingPDFException') {
                 errorMessage += 'Le fichier PDF est introuvable à l\'emplacement spécifié. ';
                 errorMessage += 'Veuillez vérifier que le fichier existe bien à l\'URL : ' + pdf_url;
@@ -311,11 +311,11 @@ function showPDF(pdf_url) {
             } else {
                 errorMessage += 'Erreur : ' + (error.message || 'Erreur inconnue');
             }
-            
+
             // Fonction pour obtenir l'icône et le type de fichier à partir de l'URL
             function getFileInfo(url) {
                 if (!url) return { icon: 'file.png', type: 'fichier', extension: '' };
-                
+
                 const extension = url.split('.').pop().toLowerCase();
                 const fileTypes = {
                     // Images
@@ -338,22 +338,22 @@ function showPDF(pdf_url) {
                     'rar': { icon: 'Fichier-zip.png', type: 'Archive', extension: 'RAR' },
                     '7z': { icon: 'Fichier-zip.png', type: 'Archive', extension: '7Z' }
                 };
-                
+
                 if (fileTypes[extension]) {
                     return fileTypes[extension];
                 } else {
-                    return { 
-                        icon: 'file.png', 
-                        type: 'Fichier', 
-                        extension: extension.toUpperCase() 
+                    return {
+                        icon: 'file.png',
+                        type: 'Fichier',
+                        extension: extension.toUpperCase()
                     };
                 }
             }
-            
+
             // Obtenir les informations sur le fichier
             const fileInfo = getFileInfo(pdf_url);
             const fileName = pdf_url.split('/').pop() || 'document';
-            
+
             // Afficher l'interface de téléversement de fichier en cas d'erreur
             const errorHtml = `
                 <div class="d-flex flex-column align-items-center justify-content-center p-5" style="height: 100%; min-height: 400px;">
@@ -386,7 +386,7 @@ function showPDF(pdf_url) {
                         </div>
                     </div>
                 </div>`;
-                
+
             $("#pdf-contents").html(errorHtml);
         });
 }
@@ -410,14 +410,14 @@ function showPage(canvas, vignetteCanvas, textLayer, page_no) {
         // Get the container width and calculate the scale factor
         var container = $(canvas).closest('#pdf-contents');
         var containerWidth = container.width() - 40; // 20px padding on each side
-        
+
         // Get the viewport at 100% scale to calculate the proper scale factor
         var viewport = page.getViewport(1.0);
         var scale = containerWidth / viewport.width;
-        
+
         // Apply the scale to get a properly sized viewport
         viewport = page.getViewport(scale);
-        
+
         // Support HiDPI-screens
         var outputScale = window.devicePixelRatio || 1;
 
@@ -538,7 +538,7 @@ function showFirstPageImg(url = [], parentContainer) {
         a.style.display = "flex";
         a.style.alignItems = "center";
         a.style.justifyContent = "center";
-        
+
         // Set click handler
         a.setAttribute(
             "onclick",
@@ -558,10 +558,10 @@ function showFirstPageImg(url = [], parentContainer) {
             img.style.objectFit = "contain";
             img.alt = "Aperçu de l'image";
             a.appendChild(img);
-            
+
             // Add image-specific styling
             a.style.padding = "10px";
-            
+
             content.appendChild(a);
             content.appendChild(span);
             parentContainer.append(content);
@@ -571,66 +571,66 @@ function showFirstPageImg(url = [], parentContainer) {
             pdfContainer.style.position = "relative";
             pdfContainer.style.width = "100%";
             pdfContainer.style.height = "100%";
-            
+
             var pdfIcon = document.createElement("i");
             pdfIcon.className = "fi fi-rr-file-pdf";
             pdfIcon.style.fontSize = "3rem";
             pdfIcon.style.color = "#dc3545";
             pdfIcon.style.marginBottom = "10px";
-            
+
             var pdfText = document.createElement("div");
             pdfText.innerText = "Aperçu PDF";
             pdfText.style.fontSize = "0.8rem";
             pdfText.style.color = "#6c757d";
-            
+
             pdfContainer.appendChild(pdfIcon);
             pdfContainer.appendChild(pdfText);
             a.appendChild(pdfContainer);
-            
+
             // Add PDF-specific styling
             a.style.padding = "20px 10px";
             a.style.textAlign = "center";
-            
+
             content.appendChild(a);
             content.appendChild(span);
             parentContainer.append(content);
-            
+
             // Load PDF preview in the background
             PDFJS.getDocument({ url: file_url })
-                .then(function(pdf_doc) {
+                .then(function (pdf_doc) {
                     return pdf_doc.getPage(1);
                 })
-                .then(function(page) {
+                .then(function (page) {
                     var viewport = page.getViewport(1.0);
                     var canvas = document.createElement("canvas");
                     var context = canvas.getContext("2d");
-                    
+
                     // Adjust canvas dimensions
                     var containerWidth = 140; // Width of the container minus padding
                     var scale = containerWidth / viewport.width;
                     var scaledViewport = page.getViewport(scale);
-                    
+
                     canvas.width = scaledViewport.width;
                     canvas.height = scaledViewport.height;
-                    
+
                     // Render PDF page to canvas
                     page.render({
                         canvasContext: context,
                         viewport: scaledViewport
-                    }).promise.then(function() {
+                    }).promise.then(function () {
                         // Replace icon with PDF preview
                         pdfContainer.innerHTML = '';
                         pdfContainer.style.padding = '0';
                         canvas.style.maxWidth = '100%';
                         canvas.style.height = 'auto';
                         pdfContainer.appendChild(canvas);
-                        
+
                         // Adjust container height to fit content
                         a.style.height = 'auto';
                         a.style.minHeight = '150px';
                     });
                 })
-                .catch(function(error) {
+                .catch(function (error) {
                     console.error("Erreur lors du chargement de l'aperçu PDF:", error);
                 });
         } else {
@@ -640,17 +640,17 @@ function showFirstPageImg(url = [], parentContainer) {
             fileIcon.style.fontSize = "3rem";
             fileIcon.style.color = "#6c757d";
             fileIcon.style.marginBottom = "10px";
-            
+
             var fileText = document.createElement("div");
             fileText.innerText = file_extension.toUpperCase();
             fileText.style.fontSize = "0.7rem";
             fileText.style.color = "#6c757d";
-            
+
             a.appendChild(fileIcon);
             a.appendChild(fileText);
             a.style.padding = "20px 10px";
             a.style.textAlign = "center";
-            
+
             content.appendChild(a);
             content.appendChild(span);
             parentContainer.append(content);
@@ -659,7 +659,7 @@ function showFirstPageImg(url = [], parentContainer) {
 }
 
 // Initialiser les vignettes au chargement du document
-$(document).ready(function() {
+$(document).ready(function () {
     const $docVignette = $(".doc-vignette");
     if ($docVignette.length > 0) {
         const urls = $docVignette.data("url");
@@ -679,15 +679,15 @@ function changDoc(
 ) {
     // Vider le conteneur
     $("#pdf-contents").empty();
-    
+
     // Mettre à jour les liens de téléchargement
     $(".pdf-tools #download").attr("href", url);
     $(".pdf-tools #download").attr("download", url);
-    
+
     // Vérifier le type de fichier
     const file_extension = url.split('.').pop().toLowerCase();
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'].includes(file_extension);
-    
+
     // Si c'est une image, l'afficher directement
     if (isImage) {
         const imgHtml = `
@@ -717,7 +717,7 @@ function changDoc(
     if (element) {
         $(element).addClass("active");
     }
-    
+
     // Mettre à jour le bouton de signature si nécessaire
     if (docId) {
         let signatureUrl = "/system/documents/sign/task?doc_id=" + docId + "&is_original=" + is_original;
@@ -751,14 +751,14 @@ if (window.Livewire !== undefined) {
 function gotToPage(numPage) {
     // S'assurer que le numéro de page est un entier
     numPage = parseInt(numPage);
-    
+
     // Mettre à jour l'affichage du numéro de page (commence à 1)
     $("#pageNumber").val(numPage);
-    
+
     // Faire défiler vers le haut de la page
     $('html, body').animate({
         scrollTop: 0
-    }, 100, function() {
+    }, 100, function () {
         // Une fois le défilement terminé, faire défiler vers l'élément
         const pageElement = document.getElementById("page-" + numPage);
         if (pageElement) {
@@ -795,21 +795,21 @@ $("#next").on("click", function () {
 let scrollTimeout;
 $(window).on("scroll", function () {
     clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(function() {
+    scrollTimeout = setTimeout(function () {
         let currentScroll = $(window).scrollTop();
         let closestPage = 1;
         let minDistance = Number.MAX_SAFE_INTEGER;
-        
+
         $("#pdf-contents > div").each((index, element) => {
             const elementTop = $(element).offset().top;
             const distance = Math.abs(elementTop - currentScroll - 100); // 100px de marge pour le header
-            
+
             if (distance < minDistance) {
                 minDistance = distance;
                 closestPage = index + 1; // +1 car les pages commencent à 1
             }
         });
-        
+
         // Mettre à jour uniquement si différent de la valeur actuelle
         if (parseInt($("#pageNumber").val()) !== closestPage) {
             $("#pageNumber").val(closestPage);
@@ -935,15 +935,15 @@ function imprimerTousLesCanvas() {
 
         // Fermer les balises HTML
         printWindow.document.write('</body></html>');
-        
+
         // Fermer le document
         printWindow.document.close();
 
         // Attendre que le contenu soit chargé avant d'imprimer
-        printWindow.onload = function() {
+        printWindow.onload = function () {
             // Donner le focus à la fenêtre d'impression
             printWindow.focus();
-            
+
             // Ne pas lancer l'impression automatiquement pour permettre l'aperçu
             // L'utilisateur peut utiliser le bouton d'impression dans la fenêtre
             // printWindow.print();
@@ -952,12 +952,12 @@ function imprimerTousLesCanvas() {
     } catch (error) {
         console.error("Erreur lors de l'impression :", error);
         alert("Erreur lors de l'impression : " + error.message);
-        
+
         // Fermer la fenêtre d'impression si elle a été ouverte
         if (printWindow) {
             printWindow.close();
         }
-        
+
         throw error; // Propager l'erreur pour une gestion ultérieure
     }
 }

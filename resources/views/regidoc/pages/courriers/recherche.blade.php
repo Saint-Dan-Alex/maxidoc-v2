@@ -1,5 +1,67 @@
 @extends('regidoc.layouts.master')
 @section('content')
+    <script src="{{ asset('assets/js/pdfjs/pdf.js') }}"></script>
+    <script src="{{ asset('assets/js/pdfjs/pdf.worker.js') }}"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+    <style>
+        .pdf-canvas {
+            box-sizing: border-box;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05), -2px -2px 5px rgba(0, 0, 0, 0.05);
+            max-width: 100%;
+        }
+
+        .text-layer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            opacity: 0.2;
+            line-height: 1.0;
+            margin: auto;
+            max-width: 100%;
+        }
+
+        .text-layer > div {
+            color: transparent;
+            position: absolute;
+            white-space: pre;
+            cursor: text;
+            transform-origin: 0% 0%;
+        }
+
+        .pdf-page {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .loader-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        .loader-text {
+            margin-top: 10px;
+            font-weight: 500;
+        }
+    </style>
     <div class="container-fluid px-lg-4">
         <h1 class="mb-3">Recherche avancée</h1>
         <div class="row g-lg-3">
@@ -441,12 +503,20 @@
             </div>
             <div class="col-lg-4">
                 <div class="block-preview-doc-sm h-100">
-                    <object data="{{ asset('assets/pdfs/documents/1.pdf') }}" class="w-100 h-100"
-                        type=""></object>
-                    {{-- <div id="pdfPreviewContainer"></div> --}}
-
-                    {{-- <iframe src="{{ asset('assets/pdfs/documents/1.pdf') }}" frameborder="0" sandbox="allow-same-origin allow-scripts">
-                    </iframe> --}}
+                    <div id="pdf-main-container" 
+                         style="width: 100%; min-height: 80vh;"
+                         data-url="{{ asset('assets/pdfs/documents/1.pdf') }}" 
+                         data-name="Aperçu" 
+                         data-courrier="" 
+                         data-tache="" 
+                         data-docid="" 
+                         data-code="" 
+                         data-original="true">
+                        <div id="pdf-contents" style="width: 100%; height: 100%; min-height: 80vh;">
+                            {{-- Le script showPDF.js va injecter le contenu ici --}}
+                        </div>
+                        @include('components.pdf-tools')
+                    </div>
                 </div>
             </div>
         </div>
@@ -472,40 +542,7 @@
     </div>
 @endsection
 
-@section('scripts')
-    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
-
-    <script>
-        // Récupérez le conteneur du PDF
-        var container = document.getElementById('pdfPreviewContainer');
-
-        // Chemin vers le fichier PDF
-        var pdfUrl = "{{ asset('assets/pdfs/documents/1.pdf') }}";
-
-        // Chargement du fichier PDF
-        PDFJS.getDocument(pdfUrl).then(function(pdf) {
-            // Récupérez la première page du PDF
-            pdf.getPage(1).then(function(page) {
-                // Créez un élément canvas pour afficher l'aperçu
-                var canvas = document.createElement('canvas');
-                var context = canvas.getContext('2d');
-                var viewport = page.getViewport({
-                    scale: 1
-                });
-
-                // Définissez la taille du canvas en fonction de la taille de la page
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-
-                // Dessinez la première page du PDF sur le canvas
-                page.render({
-                    canvasContext: context,
-                    viewport: viewport
-                });
-
-                // Ajoutez le canvas au conteneur
-                container.appendChild(canvas);
-            });
-        });
-    </script>
+@section('javascript')
+    <script src="{{ asset('assets/js/showPDF.js') }}"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js?v=1"></script>
 @endsection

@@ -16,65 +16,74 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.16.0/pdf-lib.min.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <style>
-        #upload-button {
-            width: 150px;
-            display: block;
-            margin: 20px auto;
-        }
-
-        #file-to-upload {
-            display: none;
-        }
-
-        #pdf-loader {
-            display: none;
-            text-align: center;
-            color: #999999;
-            font-size: 13px;
-            line-height: 100px;
-            height: 100px;
-            position: absolute;
+        #pdf-main-container {
+            padding-left: 0 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bgContent, #f8f9fa);
+            width: 100%;
+            position: relative;
         }
 
         #pdf-contents {
-            display: none;
-            position: relative;
-            overflow-x: auto;
-            text-align: center;
-        }
-
-        #pdf-meta {
-            margin: 0 0 20px 0;
-        }
-
-        #pdf-current-page {
-            display: inline;
-        }
-
-        #pdf-total-pages {
-            display: inline;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            overflow-y: auto;
         }
 
         .pdf-canvas {
             box-sizing: border-box;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05), -2px -2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            height: auto !important;
+            display: block;
+            margin: 0 auto;
         }
 
-        .page-loader {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
+        .pdf-page {
+            position: relative;
+            margin-bottom: 25px;
             display: flex;
             justify-content: center;
+            width: fit-content;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .page-loader img {
-            width: 70px;
-            height: 70px;
-            margin: auto;
-            object-fit: contain;
+        .pdf-tools-modified {
+            display: flex !important;
+            width: fit-content !important;
+            min-width: unset !important;
+            margin: 10px auto !important;
+            padding: 5px 20px !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0,0,0,0.1) !important;
+            position: sticky !important;
+            top: 10px !important;
+            z-index: 1000;
+            justify-content: center !important;
+            gap: 20px !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+        }
+
+        .pdf-tools-modified #toolbarViewerLeft,
+        .pdf-tools-modified #toolbarViewerMiddle,
+        .pdf-tools-modified #toolbarViewerRight {
+            min-width: unset !important;
+            width: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            gap: 10px !important;
+        }
+
+        .pdf-tools-modified #toolbarViewerLeft::after,
+        .pdf-tools-modified #toolbarViewerMiddle::after {
+            display: none !important;
         }
 
         .text-layer {
@@ -87,9 +96,11 @@
             opacity: 0.2;
             line-height: 1.0;
             margin: auto;
+            width: 100%;
+            height: 100%;
         }
 
-        .text-layer>div {
+        .text-layer > div {
             color: transparent;
             position: absolute;
             white-space: pre;
@@ -3030,6 +3041,9 @@
             }
         });
     </script> --}}
+    
+    <script src="{{ asset('assets/js/showPDF.js') }}"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     
     <!-- Inclusion du script de transmission pour débogage -->
     <script src="{{ asset('js/courrier-transmission.js') }}"></script>

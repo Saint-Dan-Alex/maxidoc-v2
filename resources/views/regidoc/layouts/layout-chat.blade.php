@@ -159,34 +159,48 @@
             const nvFichier = document.getElementById('file-upload');
             const filename = document.querySelector('.list-file .name-file')
             const iframe = document.querySelector('.content-scanner iframe');
+            const pdfMainContainer = document.getElementById('pdf-main-container');
 
-            nvFichier.addEventListener('change', function() {
-                const fichier = this.files[0];
-                if (fichier) {
-                    let namefile = fichier.name;
-                    if (namefile.length >= 12) {
+            if (nvFichier) {
+                nvFichier.addEventListener('change', function() {
+                    const fichier = this.files[0];
+                    if (fichier) {
+                        let namefile = fichier.name;
+                        if (namefile.length >= 12) {
+                            let splitName = namefile.split('.');
+                            namefile = splitName[0].substring(0, 12) + "... ." + splitName[1];
+                        }
+                        const analyseur = new FileReader();
+                        
+                        if (pdfMainContainer) {
+                            $(pdfMainContainer).addClass('show');
+                            $(pdfMainContainer).addClass('fade');
+                        } else if (iframe) {
+                            $(iframe).addClass('show');
+                            $(iframe).addClass('fade');
+                        }
 
-                        let splitName = namefile.split('.');
+                        analyseur.readAsDataURL(fichier);
+                        analyseur.addEventListener('load', function() {
+                            $('.block-no-file').addClass('d-none');
+                            $('.block-col').removeClass('d-none');
+                            filename.innerHTML = namefile;
 
-                        namefile = splitName[0].substring(0, 12) + "... ." + splitName[1];
-
+                            if (pdfMainContainer && typeof showPDF === 'function') {
+                                $(pdfMainContainer).removeClass('d-none');
+                                showPDF(this.result);
+                            } else if (iframe) {
+                                $(iframe).removeClass('d-none');
+                                iframe.setAttribute('src', this.result);
+                            }
+                        });
                     }
-                    const analyseur = new FileReader();
-                    $(iframe).addClass('show')
-                    $(iframe).addClass('fade')
-                    analyseur.readAsDataURL(fichier);
-                    analyseur.addEventListener('load', function() {
-                        $(iframe).removeClass('d-none')
-                        $('.block-no-file').addClass('d-none')
-                        $('.block-col').removeClass('d-none')
-                        iframe.setAttribute('src', this.result);
-                        filename.innerHTML = namefile;
-                    })
-                }
-                setTimeout(() => {
-                    $(iframe).removeClass('fade')
-                }, 3000);
-            })
+                    setTimeout(() => {
+                        if (pdfMainContainer) $(pdfMainContainer).removeClass('fade');
+                        if (iframe) $(iframe).removeClass('fade');
+                    }, 3000);
+                });
+            }
 
             // if(fichier) {
 
