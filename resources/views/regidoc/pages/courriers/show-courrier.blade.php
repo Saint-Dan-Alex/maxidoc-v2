@@ -1804,13 +1804,46 @@
                     @php
                         $historiques = collect();
                         if ($courrier->document) {
-                            // $historiques = $historiques->merge($courrier->document->revisionHistory);
                             $historiques = $historiques->merge($courrier->document->history);
                         }
 
-                        // $historiques = $historiques->merge($courrier->revisionHistory);
+                        // Historique du courrier
                         $historiques = $historiques->merge($courrier->history);
+                        
+                        // Ajouter l'historique des tâches liées au courrier
+                        if ($courrier->taches) {
+                            foreach ($courrier->taches as $tache) {
+                                // On ajoute le nom de la tâche à la description pour plus de clarté si ce n'est pas déjà fait
+                                $tacheHisto = $tache->history->map(function($h) use ($tache) {
+                                    $prefix = "[Tâche: " . $tache->titre . "] ";
+                                    if (strpos($h->description, $prefix) === false) {
+                                        $h->description = $prefix . $h->description;
+                                    }
+                                    return $h;
+                                });
+                                $historiques = $historiques->merge($tacheHisto);
+                                
+                                // Inclure aussi les sous-tâches
+                                foreach ($tache->children as $subtache) {
+                                    $subHisto = $subtache->history->map(function($h) use ($subtache) {
+                                        $prefix = "[Tâche: " . $subtache->titre . "] ";
+                                        if (strpos($h->description, $prefix) === false) {
+                                            $h->description = $prefix . $h->description;
+                                        }
+                                        return $h;
+                                    });
+                                    $historiques = $historiques->merge($subHisto);
+                                }
+                            }
+                        }
+
                         $historiques = $historiques->sortByDesc('created_at');
+                        
+                        // Déduplication : si des tâches ont été propagées, elles auront la même description, date et utilisateur
+                        $historiques = $historiques->unique(function ($item) {
+                            return $item->user_id . $item->description . ($item->created_at ? $item->created_at->timestamp : '');
+                        });
+
                         $historiquesGroup = $historiques->groupBy('user_id');
                         $revision = new \Venturecraft\Revisionable\Revision();
                     @endphp

@@ -2439,9 +2439,42 @@ public function update(Request $request, $id)
      */
     public function exportHistoriquePdf($id)
     {
-        $courrier = Courrier::with(['document', 'historiques' => function($query) {
-            $query->orderBy('created_at', 'desc');
-        }, 'historiques.user.agent'])->findOrFail($id);
+        $courrier = Courrier::with(['document.history', 'type', 'priorite', 'history.user.agent', 'taches.history.user.agent', 'taches.children.history.user.agent'])->findOrFail($id);
+
+        $mergedHistoriques = collect();
+        if ($courrier->document) {
+            $mergedHistoriques = $mergedHistoriques->merge($courrier->document->history);
+        }
+        $mergedHistoriques = $mergedHistoriques->merge($courrier->history);
+        
+        foreach ($courrier->taches as $tache) {
+            $tacheHisto = $tache->history->map(function($h) use ($tache) {
+                $prefix = "[Tâche: " . $tache->titre . "] ";
+                if (strpos($h->description, $prefix) === false) {
+                    $h->description = $prefix . $h->description;
+                }
+                return $h;
+            });
+            $mergedHistoriques = $mergedHistoriques->merge($tacheHisto);
+            
+            foreach ($tache->children as $subtache) {
+                $subHisto = $subtache->history->map(function($h) use ($subtache) {
+                    $prefix = "[Tâche: " . $subtache->titre . "] ";
+                    if (strpos($h->description, $prefix) === false) {
+                        $h->description = $prefix . $h->description;
+                    }
+                    return $h;
+                });
+                $mergedHistoriques = $mergedHistoriques->merge($subHisto);
+            }
+        }
+
+        $mergedHistoriques = $mergedHistoriques->sortByDesc('created_at')->unique(function ($item) {
+            return $item->user_id . $item->description . ($item->created_at ? $item->created_at->timestamp : '');
+        });
+
+        // On override la relation pour que la vue PDF utilise les données fusionnées
+        $courrier->setRelation('historiques', $mergedHistoriques);
 
         $pdf = PDF::loadView('regidoc.pages.courriers.pdf.historique', compact('courrier'))
                  ->setPaper('a4', 'portrait')
