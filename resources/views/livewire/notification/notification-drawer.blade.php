@@ -11,7 +11,7 @@
             wire:target="clearAllNotifications">
             <span wire:loading.remove wire:target="clearAllNotifications">
                 <i class="fi fi-rr-trash me-1"></i>
-                Vider toutes les notifications
+                Vider
             </span>
             <span wire:loading wire:target="clearAllNotifications">
                 <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
@@ -21,7 +21,7 @@
         {{-- <button class="btn btn-primary btn-notification-delete" title="vider les notification"
             style="color: var(--bgBtnPrimary) ">
         
-            vider toutes les notification
+            vider
         </button> --}}
         <button type="button" class="btn-close btn-close-notification text-reset" data-bs-dismiss="offcanvas"
             aria-label="Close">
