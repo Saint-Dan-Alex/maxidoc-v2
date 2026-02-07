@@ -154,7 +154,7 @@
                             <div class="col-12">
                                 <div class="d-flex gap-3">
                                     <div>
-                                        <label for="dg">Service Accueil</label>
+                                        <label for="dg">Service accueil (pour DG)</label>
                                         <input type="radio" name="for" id="dg" value="1">
                                     </div>
                                     {{-- <div>
@@ -162,7 +162,7 @@
                                         <input type="radio" name="for" id="dga" value="2">
                                     </div> --}}
                                     <div>
-                                        <label for="direction">Secretaire Direction</label>
+                                        <label for="direction">Secretaire Direction (Autres directions)</label>
                                         <input type="radio" name="for" id="direction" value="3">
                                     </div>
                                 </div>
@@ -222,7 +222,7 @@
                                 <div class="col-12">
                                     <div class="d-flex gap-3">
                                         <div>
-                                            <label for="dg">Service Accueil</label>
+                                            <label for="dg">Service accueil (pour DG)</label>
                                             <input type="radio" name="for" id="dg" value="1" @checked($secretariat->for_dg)>
                                         </div>
                                         {{-- <div>
@@ -230,7 +230,7 @@
                                             <input type="radio" name="for" id="dga" value="2" @checked($secretariat->for_dga)>
                                         </div> --}}
                                         <div>
-                                            <label for="direction">Secretaire Direction</label>
+                                            <label for="direction">Secretaire Direction (Autres directions)</label>
                                             <input type="radio" name="for" id="direction" value="3" @checked($secretariat->for_dg != 1 && $secretariat->for_dga != 1)>
                                         </div>
                                     </div>
