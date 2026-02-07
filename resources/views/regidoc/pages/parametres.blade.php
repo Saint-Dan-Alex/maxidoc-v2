@@ -1,10 +1,84 @@
 @extends('regidoc.layouts.master')
+@section('styles')
+    <style>
+        @media (min-width: 992px) {
+            /* Navbar on top of everything */
+            nav.navbar.fixed-top {
+                left: 68px !important;
+                width: calc(100% - 68px) !important;
+                background: #fff !important;
+                z-index: 1080 !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+            }
+
+            /* Ensure navbar logo is visible */
+            .navbar .logo-header {
+                display: block !important;
+                position: relative !important;
+                left: 15px !important;
+            }
+
+            /* Parameters Sidebar reaches top but stays below navbar visually */
+            .col-lg-3 {
+                position: fixed !important;
+                top: 0 !important;
+                left: 68px !important;
+                width: calc(25% - 68px) !important;
+                height: 100vh !important;
+                background: #fff !important;
+                z-index: 1070 !important; 
+                border-right: 1px solid rgba(0, 0, 0, 0.05);
+                padding: 90px 20px 25px !important; /* Push content down to clear navbar */
+                overflow-y: auto;
+            }
+
+            .col-lg-9 {
+                margin-left: 25% !important;
+                padding-top: 100px !important;
+                width: 75% !important;
+            }
+
+            .wrapper .content {
+                padding-top: 0 !important;
+            }
+        }
+
+        .nav-parametres .nav-link {
+            color: var(--colorParagraph);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            background: transparent;
+            text-align: left;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .nav-parametres .nav-link:hover {
+            background: rgba(var(--primaryColorRGB), 0.05);
+            color: var(--primaryColor);
+        }
+
+        .nav-parametres .nav-link.active {
+            background: var(--primaryColor) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(var(--primaryColorRGB), 0.2);
+        }
+
+        .nav-parametres .nav-link i {
+            font-size: 1.1rem;
+            width: 24px;
+        }
+    </style>
+@endsection
 
 @section('content')
     <div class="container-fluid px-lg-3">
         <div class="row g-lg-3">
             <div class="col-lg-3">
-                <h1 class="mb-lg-4 mb-3">Paramètres</h1>
+                <h1 class="mb-lg-4 mb-3" style="font-size: 1.5rem; font-weight: 700; color: var(--colorTitre);">Paramètres</h1>
                 @php
                     $activeTab = $activeTab ?? 'lieux';
                     $tabs = [
@@ -26,60 +100,96 @@
                 
                 <ul class="nav nav-pills mb-3 nav-parametres flex-column" id="pills-tab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link {{ $tabs['lieux'] }}" id="pills-lieux-tab" data-bs-toggle="pill"
+                        <button class="nav-link {{ $tabs['lieux'] }} d-flex align-items-center gap-2" id="pills-lieux-tab" data-bs-toggle="pill"
                             data-bs-target="#pills-lieux" type="button" role="tab" aria-controls="pills-lieux"
-                            aria-selected="{{ $tabs['lieux'] === 'active' ? 'true' : 'false' }}">Lieux d'affectation</button>
+                            aria-selected="{{ $tabs['lieux'] === 'active' ? 'true' : 'false' }}">
+                            <i class="fi fi-rr-marker"></i>
+                            Gestion Lieux d'affectation
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pills-direction-tab" data-bs-toggle="pill"
+                        <button class="nav-link d-flex align-items-center gap-2" id="pills-direction-tab" data-bs-toggle="pill"
                             data-bs-target="#pills-direction" type="button" role="tab" aria-controls="pills-direction"
-                            aria-selected="false">Directions</button>
+                            aria-selected="false">
+                            <i class="fi fi-rr-building"></i>
+                            Gestion Directions
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pills-section-tab" data-bs-toggle="pill"
+                        <button class="nav-link d-flex align-items-center gap-2" id="pills-section-tab" data-bs-toggle="pill"
                             data-bs-target="#pills-section" type="button" role="tab" aria-controls="pills-section"
-                            aria-selected="false">Sections</button>
+                            aria-selected="false">
+                            <i class="fi fi-rr-apps"></i>
+                            Gestion Sections
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pills-secretariat-tab" data-bs-toggle="pill"
+                        <button class="nav-link d-flex align-items-center gap-2" id="pills-secretariat-tab" data-bs-toggle="pill"
                             data-bs-target="#pills-secretariat" type="button" role="tab"
-                            aria-controls="pills-secretariat" aria-selected="false">Secretariat</button>
+                            aria-controls="pills-secretariat" aria-selected="false">
+                            <i class="fi fi-rr-user-gear"></i>
+                            Gestion Secretariats
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pills-division-tab" data-bs-toggle="pill"
+                        <button class="nav-link d-flex align-items-center gap-2" id="pills-division-tab" data-bs-toggle="pill"
                             data-bs-target="#pills-division" type="button" role="tab" aria-controls="pills-division"
-                            aria-selected="false">Divisions</button>
+                            aria-selected="false">
+                            <i class="fi fi-rr-layers"></i>
+                            Gestion Divisions
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pills-assistanat-tab" data-bs-toggle="pill"
+                        <button class="nav-link d-flex align-items-center gap-2" id="pills-assistanat-tab" data-bs-toggle="pill"
                             data-bs-target="#pills-assistanat" type="button" role="tab"
-                            aria-controls="pills-assistanat" aria-selected="false">Assistanat</button>
+                            aria-controls="pills-assistanat" aria-selected="false">
+                            <i class="fi fi-rr-headset"></i>
+                            Gestion Assistanats
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pills-service-tab" data-bs-toggle="pill"
+                        <button class="nav-link d-flex align-items-center gap-2" id="pills-service-tab" data-bs-toggle="pill"
                             data-bs-target="#pills-service" type="button" role="tab" aria-controls="pills-service"
-                            aria-selected="false">Services</button>
+                            aria-selected="false">
+                            <i class="fi fi-rr-briefcase"></i>
+                            Gestion Services
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pills-fonction-tab" data-bs-toggle="pill"
+                        <button class="nav-link d-flex align-items-center gap-2" id="pills-fonction-tab" data-bs-toggle="pill"
                             data-bs-target="#pills-fonction" type="button" role="tab" aria-controls="pills-fonction"
-                            aria-selected="false">Fonctions</button>
+                            aria-selected="false">
+                            <i class="fi fi-rr-id-badge"></i>
+                            Gestion Fonctions
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pills-grade-tab" data-bs-toggle="pill" data-bs-target="#pills-grade"
-                            type="button" role="tab" aria-controls="pills-grade" aria-selected="false">Grades</button>
+                        <button class="nav-link d-flex align-items-center gap-2" id="pills-grade-tab" data-bs-toggle="pill" data-bs-target="#pills-grade"
+                            type="button" role="tab" aria-controls="pills-grade" aria-selected="false">
+                            <i class="fi fi-rr-star"></i>
+                            Gestion Grades
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link {{ $tabs['categorie'] }}" id="pills-categorie-tab" data-bs-toggle="pill" data-bs-target="#pills-categorie"
-                            type="button" role="tab" aria-controls="pills-categorie" aria-selected="{{ $tabs['categorie'] === 'active' ? 'true' : 'false' }}">Catégories</button>
+                        <button class="nav-link {{ $tabs['categorie'] }} d-flex align-items-center gap-2" id="pills-categorie-tab" data-bs-toggle="pill" data-bs-target="#pills-categorie"
+                            type="button" role="tab" aria-controls="pills-categorie" aria-selected="{{ $tabs['categorie'] === 'active' ? 'true' : 'false' }}">
+                            <i class="fi fi-rr-folder"></i>
+                            Gestion Catégories
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link {{ $tabs['expediteur'] }}" id="pills-expediteur-tab" data-bs-toggle="pill" data-bs-target="#pills-expediteur"
-                            type="button" role="tab" aria-controls="pills-expediteur" aria-selected="{{ $tabs['expediteur'] === 'active' ? 'true' : 'false' }}">Expéditeurs</button>
+                        <button class="nav-link {{ $tabs['expediteur'] }} d-flex align-items-center gap-2" id="pills-expediteur-tab" data-bs-toggle="pill" data-bs-target="#pills-expediteur"
+                            type="button" role="tab" aria-controls="pills-expediteur" aria-selected="{{ $tabs['expediteur'] === 'active' ? 'true' : 'false' }}">
+                            <i class="fi fi-rr-envelope"></i>
+                            Gestion Expéditeurs
+                        </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link {{ $tabs['nature'] }}" id="pills-nature-tab" data-bs-toggle="pill" data-bs-target="#pills-nature"
-                            type="button" role="tab" aria-controls="pills-nature" aria-selected="{{ $tabs['nature'] === 'active' ? 'true' : 'false' }}">Natures</button>
+                        <button class="nav-link {{ $tabs['nature'] }} d-flex align-items-center gap-2" id="pills-nature-tab" data-bs-toggle="pill" data-bs-target="#pills-nature"
+                            type="button" role="tab" aria-controls="pills-nature" aria-selected="{{ $tabs['nature'] === 'active' ? 'true' : 'false' }}">
+                            <i class="fi fi-rr-paperclip"></i>
+                            Natures
+                        </button>
                     </li>
                 </ul>
 
