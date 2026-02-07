@@ -9,7 +9,7 @@
                     @if ($paginator->onFirstPage())
                         <li class="page-item disabled" aria-disabled="true">
                             <span class="page-link">
-                                {!! __('pagination.previous') !!}
+                                <i class="fi fi-rr-angle-left"></i>
                             </span>
                         </li>
                     @else
@@ -19,7 +19,7 @@
                                 wire:loading.attr="disabled"
                                 dusk="previousPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.before"
                                 rel="prev">
-                                {!! __('pagination.previous') !!}
+                                <i class="fi fi-rr-angle-left"></i>
                             </a>
                         </li>
                     @endif
@@ -30,13 +30,13 @@
                                 wire:click="nextPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled"
                                 dusk="nextPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.before"
                                 rel="next">
-                                {!! __('pagination.next') !!}
+                                <i class="fi fi-rr-angle-right"></i>
                             </a>
                         </li>
                     @else
                         <li class="page-item disabled" aria-disabled="true">
                             <span class="page-link">
-                                {!! __('pagination.next') !!}
+                                <i class="fi fi-rr-angle-right"></i>
                             </span>
                         </li>
                     @endif
@@ -63,7 +63,7 @@
                             <li class="page-item disabled" aria-disabled="true"
                                 aria-label="{{ __('pagination.previous') }}">
                                 <span class="page-link" aria-hidden="true">
-                                    {!! __('pagination.previous') !!}
+                                    <i class="fi fi-rr-angle-left"></i>
                                 </span>
                             </li>
                         @else
@@ -72,7 +72,7 @@
                                     wire:click="previousPage('{{ $paginator->getPageName() }}')"
                                     dusk="previousPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.after"
                                     rel="prev" aria-label="{{ __('pagination.previous') }}">
-                                    {!! __('pagination.previous') !!}
+                                    <i class="fi fi-rr-angle-left"></i>
                                 </a>
                             </li>
                         @endif
@@ -115,14 +115,14 @@
                                     wire:click="nextPage('{{ $paginator->getPageName() }}')"
                                     dusk="nextPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.after"
                                     rel="next" aria-label="{{ __('pagination.next') }}">
-                                    {!! __('pagination.next') !!}
+                                    <i class="fi fi-rr-angle-right"></i>
                                 </a>
                             </li>
                         @else
                             <li class="page-item disabled" aria-disabled="true"
                                 aria-label="{{ __('pagination.next') }}">
                                 <span class="page-link" aria-hidden="true">
-                                    {!! __('pagination.next') !!}
+                                    <i class="fi fi-rr-angle-right"></i>
                                 </span>
                             </li>
                         @endif

@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'previous' => '<i class="fi fi-rr-angle-left"></i>',
-    'next' => '<i class="fi fi-rr-angle-right"></i>',
+    'previous' => '&laquo; Previous',
+    'next' => 'Next &raquo;',
 
 ];
