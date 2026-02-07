@@ -9,10 +9,10 @@
         <hr class="mb-4">
         <div class="row g-3">
             @php
-                $groupeFiles = $groupeFiles->groupBy(function ($doc) {
+                $groupeFiles = $this->groupeFiles->groupBy(function ($doc) {
                     $date = $doc->date_du_courrier ?? $doc->archived_at ?? $doc->created_at;
                     return \Carbon\Carbon::parse($date)->format('Y');
-                });
+                })->sortKeysDesc();
             @endphp
             @forelse ($groupeFiles as $annee => $groupeFile)
                 <div class="col-lg-2">
