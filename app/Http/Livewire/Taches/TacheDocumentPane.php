@@ -213,7 +213,7 @@ class TacheDocumentPane extends Component
             'tache_id' => $tache->id,
             'document_id' => $document->id,
         ]);
-        $tache->documents()->attach($document->id);
+        $tache->attachDocumentAndPropagate($document->id);
         Log::info('Après attach document->tache OK', [
             'tache_id' => $tache->id,
             'document_id' => $document->id,

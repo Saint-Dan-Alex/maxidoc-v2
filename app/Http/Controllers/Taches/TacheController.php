@@ -1521,7 +1521,7 @@ class TacheController extends Controller
             if ($request->is_original) {
                 Log::info('Création d\'un nouveau document');
                 $document = $this->createDocument($request, $tache->documents?->first());
-                $tache->documents()->attach($document);
+                $tache->attachDocumentAndPropagate($document, ['created_by' => Auth::id()]);
                 Log::info('Document créé et attaché', ['document_id' => $document->id]);
             } else {
                 Log::info('Mise à jour du document existant', ['doc_id' => $request->doc_id]);

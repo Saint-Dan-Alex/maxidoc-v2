@@ -46,15 +46,21 @@ class TachePane extends Component
         $this->pourcentage = $tache->pourcentage;
     }
     
-    public function handleParticipantUpdated()
+    public function refreshTacheData()
     {
         $this->tache->refresh();
+        $this->pourcentage = $this->tache->pourcentage;
+    }
+
+    public function handleParticipantUpdated()
+    {
+        $this->refreshTacheData();
         $this->emit('reloadPane');
     }
     
     public function handleParticipantAdded()
     {
-        $this->tache->refresh();
+        $this->refreshTacheData();
         $this->emit('reloadPane');
     }
 
@@ -309,6 +315,7 @@ class TachePane extends Component
         if ($this->message) {
             $this->activec = false;
         }
+        $this->tache->load(['documents', 'objectifs.agent']);
         $this->fichiers = $this->tache->documents->sortByDesc('id');
         $this->commentaires = $this->tache->commentaires()->orderBy('created_at', 'desc')->get();
 

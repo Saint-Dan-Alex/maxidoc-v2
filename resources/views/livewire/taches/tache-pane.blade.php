@@ -1,4 +1,4 @@
-<div class="mt-3 block-folder">
+<div class="mt-3 block-folder" wire:poll.20s="refreshTacheData">
     <ul class="mb-3 nav nav-tabs" id="myTab" role="tablist" wire:ignore>
         <li class="nav-item" role="presentation">
             <button class="nav-link {{ $pan == 1 ? 'active' : '' }}" id="profile-tab" data-bs-toggle="tab"

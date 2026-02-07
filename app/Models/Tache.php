@@ -188,18 +188,20 @@ class Tache extends Model
     /**
      * Attach a document to the current task and propagate it to all parent tasks
      */
-    public function attachDocumentAndPropagate($documentId, $pivotData = [])
+    public function attachDocumentAndPropagate($document, $pivotData = [])
     {
-        // Eviter les doublons dans la table pivot
+        $documentId = ($document instanceof \Illuminate\Database\Eloquent\Model) ? $document->id : $document;
+
+        // Eviter les doublons dans la table pivot pour ce niveau
         if (!$this->documents()->where('document_id', $documentId)->exists()) {
             $this->documents()->attach($documentId, $pivotData);
         }
 
         // Propager vers le parent
         if ($this->parent_id) {
-            $parent = $this->tacheParent;
+            $parent = Tache::find($this->parent_id);
             if ($parent) {
-                // On garde les mêmes données de pivot (créateur, type_relation, etc.)
+                // On continue la propagation même si déjà attaché à ce niveau
                 $parent->attachDocumentAndPropagate($documentId, $pivotData);
             }
         }
