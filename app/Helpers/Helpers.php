@@ -836,3 +836,37 @@ if (!function_exists('exceptFirstParagraph')) {
         return implode($paragraphs);
     }
 }
+if (!function_exists('parseUA')) {
+    /**
+     * Parse un User Agent brut pour retourner une chaîne lisible : "Système (Navigateur)"
+     */
+    function parseUA($ua)
+    {
+        if (empty($ua)) return "Inconnu";
+        
+        $platform = "Appareil Inconnu";
+        $browser = "Navigateur Inconnu";
+
+        // Détection du Système / Plateforme
+        if (preg_match('/windows|win32/i', $ua)) {
+            $platform = 'Windows';
+            if (preg_match('/NT 10.0/i', $ua)) $platform = 'Windows 10/11';
+            elseif (preg_match('/NT 6.3/i', $ua)) $platform = 'Windows 8.1';
+            elseif (preg_match('/NT 6.2/i', $ua)) $platform = 'Windows 8';
+            elseif (preg_match('/NT 6.1/i', $ua)) $platform = 'Windows 7';
+        }
+        elseif (preg_match('/android/i', $ua)) $platform = 'Android';
+        elseif (preg_match('/iphone|ipad|ipod/i', $ua)) $platform = 'iOS';
+        elseif (preg_match('/macintosh|mac os x/i', $ua)) $platform = 'macOS';
+        elseif (preg_match('/linux/i', $ua)) $platform = 'Linux';
+
+        // Détection du Navigateur
+        if (preg_match('/edg/i', $ua)) $browser = 'Edge';
+        elseif (preg_match('/firefox/i', $ua)) $browser = 'Firefox';
+        elseif (preg_match('/chrome/i', $ua)) $browser = 'Chrome';
+        elseif (preg_match('/safari/i', $ua)) $browser = 'Safari';
+        elseif (preg_match('/msie|trident/i', $ua)) $browser = 'IE';
+
+        return "$platform ($browser)";
+    }
+}

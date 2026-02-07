@@ -14,8 +14,12 @@
                     <div class="col-6">{{ $log['ip_address'] ?? '' }}</div>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-6"><strong>User Agent</strong></div>
-                    <div class="col-6"><span class="text-break">{{ $log['user_agent'] ?? '' }}</span></div>
+                    <div class="col-6"><strong>Appareil / Navigateur</strong></div>
+                    <div class="col-6"><span class="text-primary">{{ parseUA($log['user_agent'] ?? '') }}</span></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-6"><strong>User Agent (complet)</strong></div>
+                    <div class="col-6"><small class="text-muted text-break">{{ $log['user_agent'] ?? '' }}</small></div>
                 </div>
                 <div class="row mb-2">
                     <div class="col-6"><strong>Login</strong></div>

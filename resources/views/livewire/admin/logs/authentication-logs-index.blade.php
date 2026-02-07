@@ -29,7 +29,9 @@
                     <td>{{ $row->login_at ? \Carbon\Carbon::parse($row->login_at)->format('d/m/Y H:i') : '-' }}</td>
                     <td>{{ $row->user_name ?? (class_basename($row->authenticatable_type).' #'.$row->authenticatable_id) }}</td>
                     <td>{{ $row->ip_address ?? '-' }}</td>
-                    <td class="text-truncate" style="max-width:340px;" title="{{ $row->user_agent }}">{{ $row->user_agent }}</td>
+                    <td class="text-truncate" style="max-width:340px;" title="{{ $row->user_agent }}">
+                        {{ parseUA($row->user_agent) }}
+                    </td>
                     <td>
                         @if($row->login_successful)
                             <span class="d-inline-flex align-items-center">
