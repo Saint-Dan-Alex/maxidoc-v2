@@ -10,6 +10,40 @@ class Historique extends Model
 {
     use HasFactory;
 
+    protected static function booted()
+    {
+        static::created(function ($historique) {
+            // Si l'historique est lié à une tâche, on le propage au courrier lié s'il existe
+            if ($historique->historiquecable_type === 'App\Models\Tache' || $historique->historiquecable_type === Tache::class) {
+                $tache = $historique->historiquecable;
+                if (!$tache) return;
+
+                // Recherche du courrier lié (directement ou via le parent)
+                $courrierId = $tache->courrier_id;
+                $currentTache = $tache;
+                
+                // On remonte la hiérarchie pour trouver un courrier lié
+                while (!$courrierId && $currentTache->parent_id) {
+                    $currentTache = $currentTache->tacheParent;
+                    if (!$currentTache) break;
+                    $courrierId = $currentTache->courrier_id;
+                }
+
+                if ($courrierId) {
+                    self::withoutEvents(function () use ($historique, $tache, $courrierId) {
+                        Historique::create([
+                            'key' => "Suivi Tâche: " . $historique->key,
+                            'historiquecable_id' => $courrierId,
+                            'historiquecable_type' => 'App\Models\Courrier',
+                            'description' => "[Tâche: {$tache->titre}] " . $historique->description,
+                            'user_id' => $historique->user_id,
+                        ]);
+                    });
+                }
+            }
+        });
+    }
+
     protected $fillable = [
         "key",
         "historiquecable_id",
