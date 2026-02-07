@@ -28,8 +28,8 @@
                         <td>{{ $log->login_at ? \Carbon\Carbon::parse($log->login_at)->format('d/m/Y H:i') : '-' }}</td>
                         <td>{{ $log->ip_address ?? '-' }}</td>
                         <td style="max-width: 360px;">
-                            <span class="d-inline-block text-truncate" style="max-width: 340px;" title="{{ $log->user_agent }}">
-                                {{ $log->user_agent }}
+                            <span class="d-inline-block text-truncate text-primary" style="max-width: 340px;" title="{{ $log->user_agent }}">
+                                {{ parseUA($log->user_agent) }}
                             </span>
                         </td>
                         <td>
