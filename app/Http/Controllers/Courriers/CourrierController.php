@@ -60,59 +60,74 @@ class CourrierController extends Controller
             $courrier = Courrier::findOrFail($request->courrier_id);
             $user = Auth::user();
             
-            // Vérifier si l'utilisateur a déjà un traitement en cours pour ce courrier
-            $existingTraitement = CourrierTraitement::where('courrier_id', $courrier->id)
+            // Mettre à jour les informations globales du courrier
+            $courrier->traitement_id = $request->traitement_id;
+            if ($request->priorite_id) {
+                $courrier->priorite_id = $request->priorite_id;
+            }
+            if ($request->date_limite) {
+                $courrier->date_fin = $request->date_limite;
+            }
+            
+            // Gérer le détail du traitement pour cet agent
+            // On vérifie via la relation car la table courrier_traitements n'a pas de courrier_id directe
+            $existingTraitement = $courrier->traitements()
                 ->where('agent_id', $user->agent->id)
                 ->first();
                 
             if ($existingTraitement) {
-                // Mettre à jour le traitement existant
+                // Mettre à jour la note existante
                 $existingTraitement->update([
-                    'traitement_id' => $request->traitement_id,
-                    'priorite_id' => $request->priorite_id,
-                    'date_limite' => $request->date_limite,
-                    'commentaire' => $request->commentaire,
-                    'statut' => 'en_cours',
-                    'date_debut' => now(),
-                    'date_fin' => null
+                    'note' => $request->commentaire
                 ]);
-                
                 $traitement = $existingTraitement;
             } else {
                 // Créer un nouveau traitement
                 $traitement = CourrierTraitement::create([
-                    'courrier_id' => $courrier->id,
                     'agent_id' => $user->agent->id,
-                    'traitement_id' => $request->traitement_id,
-                    'priorite_id' => $request->priorite_id,
-                    'date_limite' => $request->date_limite,
-                    'commentaire' => $request->commentaire,
-                    'statut' => 'en_cours',
-                    'date_debut' => now(),
-                    'date_fin' => null
+                    'note' => $request->commentaire
                 ]);
+                
+                // Attacher au courrier (via la table pivot courriers_traitements_agents)
+                $courrier->traitements()->attach($traitement->id);
             }
-            
-            // Mettre à jour la priorité du courrier si une priorité est spécifiée
-            if ($request->priorite_id) {
-                $courrier->priorite_id = $request->priorite_id;
-                $courrier->save();
+
+            // --- NOUVELLE LOGIQUE POUR COURRIER ENTRANT ET ASSISTANT ---
+            if ($courrier->type_id == 1 && $user->agent->isAssistant()) {
+                // Passer à l'étape DG (ID 4)
+                $courrier->etapes()->attach(4, ['view_by' => null]);
+                
+                // Assigner au DG
+                $dgDirection = Direction::where('titre', 'Direction générale')->orWhere('id', 1)->first();
+                if ($dgDirection && $dgDirection->responsable) {
+                    $courrier->destinateurs()->sync([$dgDirection->responsable->id]);
+                    
+                    // Notifier le DG
+                    event(new \App\Events\CourrierCreated($courrier, collect([$dgDirection->responsable]), 'Un nouveau courrier vous a été transmis pour traitement !'));
+                }
+                
+                // Changer l'état local pour indiquer qu'il est transmis
+                $courrier->etape = 'en_attente';
             }
+            // -----------------------------------------------------------
+
+            $courrier->save();
             
             // Enregistrer l'historique
-            $traitementLibelle = $traitement->traitement->titre ?? 'Traitement';
-            $prioriteLibelle = $traitement->priorite->titre ?? 'Non défini';
+            $traitementLibelle = $courrier->traitement->titre ?? 'Traitement';
+            $prioriteLibelle = $courrier->priorite->titre ?? 'Non défini';
             
             Historique::create([
-                'action' => 'Traitement du courrier',
-                'description' => "Traitement: $traitementLibelle, Priorité: $prioriteLibelle",
+                'key' => 'Traitement du courrier',
+                'description' => "Le traitement a été défini: $traitementLibelle, Priorité: $prioriteLibelle",
                 'user_id' => $user->id,
-                'courrier_id' => $courrier->id
+                'historiquecable_id' => $courrier->id,
+                'historiquecable_type' => Courrier::class
             ]);
             
             return response()->json([
                 'success' => true,
-                'message' => 'Traitement enregistré avec succès',
+                'message' => 'Traitement enregistré avec succès et transmis',
                 'data' => $traitement
             ]);
             
@@ -1915,8 +1930,15 @@ $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user(
                 $courrier->objet = $request->get('objet');
                 $courrier->document_id = $document?->id;
                 $courrier->created_by = Auth::user()->agent->id;
-                $courrier->statut_id = 1; // Statut initial
+                $courrier->statut_id = 2; // Statut "En cours" (auto-accusé)
+                $courrier->etape = 'termine'; // Permet d'afficher le bouton de traitement
                 $courrier->save();
+
+                // Accusé de réception automatique
+                AccuseReception::create([
+                    'user_id' => Auth::id(),
+                    'courrier_id' => $courrier->id,
+                ]);
 
                 // Créer une collection pour tous les destinataires (assistants + DG)
                 $destinataires = $assistantsDG->toBase();
@@ -1932,8 +1954,8 @@ $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user(
                 // Attacher tous les destinataires (assistants DG + DG)
                 $courrier->destinateurs()->attach($destinataires);
 
-                // Attacher l'étape (exemple : étape 2)
-                $courrier->etapes()->attach(2);
+                // Attacher l'étape (Étape 3 : Assistant) avec marquage de lecture
+                $courrier->etapes()->attach(3, ['view_by' => Auth::user()->id]);
 
                 // Notification aux assistants DG et au DG sauf le créateur
                 $notifyAgents = $courrier->destinateurs->where('id', '!=', Auth::user()->agent->id);

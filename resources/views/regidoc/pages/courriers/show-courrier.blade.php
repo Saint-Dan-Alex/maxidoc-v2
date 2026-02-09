@@ -482,7 +482,6 @@
                                 !(
                                     $hasSeen &&
                                     (Auth::user()->agent->isAssistant() || Auth::user()->agent->isSecretaire()) &&
-                                    $courrier->author->id != Auth::user()->agent->id &&
                                     !$aTraite
                                 )) d-none @endif">
 
@@ -2978,37 +2977,21 @@
     
     <script src="{{ asset('assets/js/showPDF.js') }}"></script>
     
-    {{-- <script>
-        // Vérifier si c'est un courrier interne et si on vient de la numérisation
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Vérifier si c'est un courrier interne (type_id = 3 pour interne)
-            const isInterne = {{ $courrier->type_id ?? 0 }} === 3;
-            
-            // Vérifier si on vient de la numérisation (via un paramètre dans l'URL)
-            const urlParams = new URLSearchParams(window.location.search);
-            const fromScan = urlParams.get('from_scan') === 'true';
-            
-            // Si c'est un courrier interne et qu'on vient de la numérisation
-            if (isInterne && fromScan) {
-                // Attendre que le DOM soit complètement chargé
-                setTimeout(() => {
-                    // Ouvrir la modale de traitement
-                    const modal = new bootstrap.Modal(document.getElementById('traitement-modal'));
-                    modal.show();
-                    
-                    // Mettre le focus sur le champ de traitement
-                    const traitementSelect = document.getElementById('traitement_id');
-                    if (traitementSelect) {
-                        traitementSelect.focus();
-                    }
-                }, 1000); // Délai pour s'assurer que tout est chargé
-            }
-            
             // Gérer la soumission du formulaire de traitement
             const traitementForm = document.getElementById('traitement-form');
             if (traitementForm) {
                 traitementForm.addEventListener('submit', function(e) {
                     e.preventDefault();
+                    
+                    const submitBtn = document.getElementById('submit-traitement');
+                    const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+                    
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Envoi...';
+                    }
                     
                     // Récupérer les données du formulaire
                     const formData = new FormData(this);
@@ -3026,24 +3009,44 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Afficher un message de succès
-                            toastr.success(data.message || 'Traitement enregistré avec succès');
+                            if (window.toastr) {
+                                toastr.success(data.message || 'Traitement enregistré avec succès');
+                            } else {
+                                alert(data.message || 'Traitement enregistré avec succès');
+                            }
+                            
                             // Fermer la modale
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('traitement-modal'));
-                            modal.hide();
+                            const modalEl = document.getElementById('traitement-modal');
+                            const modal = bootstrap.Modal.getInstance(modalEl);
+                            if (modal) modal.hide();
+                            
                             // Recharger la page pour afficher les mises à jour
                             setTimeout(() => window.location.reload(), 1000);
                         } else {
-                            toastr.error(data.message || 'Une erreur est survenue');
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = originalBtnText;
+                            if (window.toastr) {
+                                toastr.error(data.message || 'Une erreur est survenue');
+                            } else {
+                                alert(data.message || 'Une erreur est survenue');
+                            }
+                            
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = originalBtnText;
+                            }
                         }
                     })
                     .catch(error => {
                         console.error('Erreur lors de la requête:', error);
-                        Livewire.emit('alert', 'error', 'Une erreur est survenue lors de la communication avec le serveur');
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnText;
+                        if (window.toastr) {
+                            toastr.error('Une erreur est survenue lors de la communication avec le serveur');
+                        } else {
+                            alert('Une erreur est survenue lors de la communication avec le serveur');
+                        }
+                        
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalBtnText;
+                        }
                     });
                 });
             }
@@ -3062,7 +3065,7 @@
                 });
             }
         });
-    </script> --}}
+    </script>
     
     <!-- Inclusion du script de transmission pour débogage -->
     <script src="{{ asset('js/courrier-transmission.js') }}"></script>
