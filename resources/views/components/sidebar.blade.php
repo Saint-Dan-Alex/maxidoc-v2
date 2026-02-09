@@ -62,8 +62,8 @@
                             {{-- Lien Logs d’activités juste après Paramètres --}}
                             <a href="{{ route('regidoc.logs.auth.index') }}" class="{{ request()->routeIs('regidoc.logs.auth.*') ? 'active' : '' }} panelsession">
                                 <span>
-                                    <i class="fi fi-rr-clipboard-list"></i>
-                                    <i class="fi fi-sr-clipboard-list"></i>
+                                    <i class="fi fi-rr-time-past fi-rr"></i>
+                                    <i class="fi fi-sr-time-past fi-sr"></i>
                                 </span>
                                 <span class="title">
                                     Logs d’activités
@@ -76,8 +76,8 @@
                             @if(Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Administrateur système'))
                                 <a href="{{ route('regidoc.admin.suggestions.index') }}" class="{{ request()->routeIs('regidoc.admin.suggestions.*') ? 'active' : '' }} panelsession">
                                     <span>
-                                        <i class="fi fi-rr-comment-alt"></i>
-                                        <i class="fi fi-sr-comment-alt"></i>
+                                        <i class="fi fi-rr-envelope-open-text fi-rr"></i>
+                                        <i class="fi fi-sr-envelope-open-text fi-sr"></i>
                                     </span>
                                     <span class="title">
                                         Suggestions reçues
@@ -90,8 +90,8 @@
                             {{-- Lien Nous contacter / Bug (Tous) --}}
                             <a href="#" data-bs-toggle="modal" data-bs-target="#modal-suggestion" class="panelsession">
                                 <span>
-                                    <i class="fi fi-rr-interrogation"></i>
-                                    <i class="fi fi-sr-interrogation"></i>
+                                    <i class="fi fi-rr-comment-question fi-rr"></i>
+                                    <i class="fi fi-sr-comment-question fi-sr"></i>
                                 </span>
                                 <span class="title">
                                     Nous contacter / Bug
