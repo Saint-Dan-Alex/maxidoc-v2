@@ -776,51 +776,16 @@ class DocumentController extends Controller
         $request->validate([
             'document_id' => 'required|exists:documents,id',
             'observations' => 'nullable|string',
-            // Les champs Select2 renvoient des IDs (ou un tableau si multiple). On valide comme entiers.
-            'redacteur' => 'required',
-            'expediteur_externe' => 'required',
-            'destination' => 'required',
         ]);
 
         $document = Document::findOrFail($request->document_id);
 
-        // 2) Normaliser les valeurs provenant de Select2 (peuvent être tableau si multiple)
-        $toId = function ($value) {
-            if (is_array($value)) {
-                // On prend la première valeur s'il y en a plusieurs (max-selection=1 dans le formulaire)
-                return count($value) ? (int) array_values($value)[0] : null;
-            }
-            return is_numeric($value) ? (int) $value : null;
-        };
-
-        $redacteurId = $toId($request->input('redacteur'));
-        $emetteurId = $toId($request->input('expediteur_externe'));
-        $destinationId = $toId($request->input('destination'));
-
-        // 3) Sécuriser les IDs requis
-        if (!$redacteurId || !$emetteurId || !$destinationId) {
-            return back()->with('error', 'Veuillez sélectionner un rédacteur, un émetteur et une destination valides.');
-        }
-
-        // 4) Mise à jour des champs du document
+        // 2) Mise à jour des champs du document
         $document->statut_id = 6; // Archivé
         $document->lieu_id = Auth::user()->agent->lieu_id;
         $document->service_id = Auth::user()->agent->service_id;
 
         $document->archived_at = Carbon::now();
-
-        // Emetteur et destination selon le type
-        // Type 1 (courrier entrant):
-        //  - emetteur = id de CourrierExpediteur
-        //  - destination_id = id de Destination
-        // Type 3 (document interne/sortant):
-        //  - emetteur = id de Service (selon le select)
-        //  - destination_id = id d'Agent (sélection Agents)
-        $document->emetteur = $emetteurId;
-        $document->destination_id = $destinationId;
-
-        // Rédacteur (selon les écrans, peut venir de Redacteur ou Agent) -> stocké dans redacteur_id
-        $document->redacteur_id = $redacteurId;
         $document->observations = $request->input('observations');
 
         $document->save();
