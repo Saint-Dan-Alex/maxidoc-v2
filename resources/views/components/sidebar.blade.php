@@ -88,7 +88,7 @@
                             @endif
 
                             {{-- Lien Nous contacter / Bug (Tous) --}}
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#modal-suggestion" class="panelsession">
+                            <a href="{{ route('regidoc.suggestions.create') }}" class="{{ request()->routeIs('regidoc.suggestions.create') ? 'active' : '' }} panelsession">
                                 <span>
                                     <i class="fi fi-rr-comment-question fi-rr"></i>
                                     <i class="fi fi-sr-comment-question fi-sr"></i>

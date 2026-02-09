@@ -6,6 +6,8 @@ use App\Models\Suggestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SuggestionMail;
 
 class SuggestionController extends Controller
 {
@@ -18,6 +20,11 @@ class SuggestionController extends Controller
 
         $suggestions = Suggestion::with('user')->orderBy('created_at', 'desc')->paginate(20);
         return view('regidoc.pages.suggestions.index', compact('suggestions'));
+    }
+
+    public function create()
+    {
+        return view('regidoc.pages.suggestions.create');
     }
 
     public function store(Request $request)
@@ -34,7 +41,7 @@ class SuggestionController extends Controller
             $imagePath = $request->file('image')->store('suggestions', 'public');
         }
 
-        Suggestion::create([
+        $suggestion = Suggestion::create([
             'user_id' => Auth::id(),
             'objet' => $request->objet,
             'message' => $request->message,
@@ -42,7 +49,15 @@ class SuggestionController extends Controller
             'image_path' => $imagePath,
         ]);
 
-        return back()->with('success', 'Votre message a été envoyé avec succès.');
+        // Envoi de l'email
+        try {
+            Mail::to('maxidoc@newtech-rdc.net')->send(new SuggestionMail($suggestion));
+        } catch (\Exception $e) {
+            // On log l'erreur si besoin, mais on ne bloque pas l'utilisateur
+            \Log::error('Erreur envoi email suggestion: ' . $e->getMessage());
+        }
+
+        return redirect()->route('regidoc.home')->with('success', 'Votre message a été envoyé avec succès.');
     }
 
     public function updateStatus(Request $request, Suggestion $suggestion)

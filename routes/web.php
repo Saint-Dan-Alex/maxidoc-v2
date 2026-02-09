@@ -346,6 +346,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             });
 
             // Suggestions / Bugs
+            Route::get('/suggestions/nouveau', [SuggestionController::class, 'create'])->name('suggestions.create');
             Route::post('/suggestions', [SuggestionController::class, 'store'])->name('suggestions.store');
             Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
                 Route::get('/suggestions', [SuggestionController::class, 'index'])->name('suggestions.index');
