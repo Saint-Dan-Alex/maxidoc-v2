@@ -62,6 +62,13 @@ class Badge extends Component
         } elseif (Str::contains($t, ['tache', 'tâche'])) {
             $count = $tasksCount;
             $bg = 'danger';
+        } elseif (Str::contains($t, ['suggestions reçues'])) {
+            if ($user->hasRole('Super Admin') || $user->hasRole('Administrateur système')) {
+                $count = \App\Models\Suggestion::where('status', 'ouvert')->count();
+                $bg = 'warning';
+            } else {
+                $count = 0;
+            }
         } else {
             // Pour Documents, Archives, et tout autre libellé: pas de badge
             $count = 0;
