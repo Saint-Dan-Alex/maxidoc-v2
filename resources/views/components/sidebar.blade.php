@@ -71,6 +71,33 @@
                                 </span>
                                 <div class="tooltip-indicator">Logs d’activités</div>
                             </a>
+
+                            {{-- Lien Suggestions (Admin) --}}
+                            @if(Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Administrateur système'))
+                                <a href="{{ route('regidoc.admin.suggestions.index') }}" class="{{ request()->routeIs('regidoc.admin.suggestions.*') ? 'active' : '' }} panelsession">
+                                    <span>
+                                        <i class="fi fi-rr-comment-alt"></i>
+                                        <i class="fi fi-sr-comment-alt"></i>
+                                    </span>
+                                    <span class="title">
+                                        Suggestions reçues
+                                        @livewire('sidebar.badge', ['label' => 'Suggestions reçues'])
+                                    </span>
+                                    <div class="tooltip-indicator">Suggestions reçues</div>
+                                </a>
+                            @endif
+
+                            {{-- Lien Nous contacter / Bug (Tous) --}}
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#modal-suggestion" class="panelsession">
+                                <span>
+                                    <i class="fi fi-rr-interrogation"></i>
+                                    <i class="fi fi-sr-interrogation"></i>
+                                </span>
+                                <span class="title">
+                                    Nous contacter / Bug
+                                </span>
+                                <div class="tooltip-indicator">Nous contacter / Bug</div>
+                            </a>
                         @else
                             <a href="{{ $item->link() }}" class="{{ $item->isActive() ? 'active' : '' }} panelsession"
                                 @if ($item->hasChildren() && $item->id != 40)

@@ -13,7 +13,7 @@
 
     <!-- Styles -->
     {{-- @include('meta.styles') --}}
-    @include('layouts.partials.head.styles')
+    @include('regidoc.layouts.partials.head.styles')
     @livewireStyles()
 </head>
 
@@ -25,7 +25,7 @@
         <div class="wrapper">
 
             {{-- @include('components.topnav-home') --}}
-            @include('layouts.partials.header.navbar')
+            @include('regidoc.layouts.partials.header.navbar')
             <div class="content">
 
 
@@ -160,17 +160,33 @@
             </div>
         </div>
     </div>
-    <div class="message-flash success">
+    @if(session('success'))
+    <div class="message-flash success show">
         <div class="content-text d-flex">
             <div class="icon">
                 <i data-feather="check-circle"></i>
             </div>
             <div class="text-star">
-                <h6>Successfuly massage</h6>
-                <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Mollitia, quidem?</p>
+                <h6>Succès</h6>
+                <p>{{ session('success') }}</p>
             </div>
         </div>
     </div>
+    @endif
+
+    @if(session('error') || $errors->any())
+    <div class="message-flash error show">
+        <div class="content-text d-flex">
+            <div class="icon">
+                <i data-feather="x-circle"></i>
+            </div>
+            <div class="text-star">
+                <h6>Erreur</h6>
+                <p>{{ session('error') ?? $errors->first() }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
     <div class="modal fade" id="modal-logout" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
@@ -234,7 +250,7 @@
             </div>
         </main> -->
     {{-- @include('meta.scripts') --}}
-    @include('layouts.partials.head.scripts')
+    @include('regidoc.layouts.partials.head.scripts')
     <script>
         //  feather.replace()
 
@@ -662,6 +678,7 @@
         </div>
     </div>
 
+    @include('regidoc.pages.suggestions.modal')
 </body>
 
 </html>

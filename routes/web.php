@@ -30,6 +30,7 @@ use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Taches\TacheController;
 use App\Http\Controllers\TacheDocumentController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\SuggestionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SignaturesMail;
@@ -342,6 +343,13 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 Route::post('rejets/save', [AjaxController::class, 'rejets'])->name('ajax.rejets.save');
 
                 Route::post('/taches/save/signature', [TacheController::class, 'saveSignature'])->name('taches.saveSignature');
+            });
+
+            // Suggestions / Bugs
+            Route::post('/suggestions', [SuggestionController::class, 'store'])->name('suggestions.store');
+            Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
+                Route::get('/suggestions', [SuggestionController::class, 'index'])->name('suggestions.index');
+                Route::put('/suggestions/{suggestion}/status', [SuggestionController::class, 'updateStatus'])->name('suggestions.updateStatus');
             });
         });
     });
