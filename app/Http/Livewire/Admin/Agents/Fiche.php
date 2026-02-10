@@ -653,8 +653,12 @@ class Fiche extends Component
         $this->resetValidation();
     }
 
-    public function changeRole()
+    public function changeRole($roleName = null)
     {
+        if ($roleName) {
+            $this->role = $roleName;
+        }
+        
         try {
             if (!$this->agent || !$this->agent->user) {
                 $this->emit('alert', 'error', 'Aucun utilisateur sélectionné');

@@ -812,30 +812,20 @@
                                                         @endphp
                                                         
                                                         @if($allRoles->count() > 0)
-                                                            <div class="row g-2">
+                                                            <div class="d-flex flex-wrap gap-2">
                                                                 @foreach($allRoles as $role)
-                                                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                                                                        <div class="form-check p-2 border rounded">
-                                                                            <input class="form-check-input" 
-                                                                                   type="radio" 
-                                                                                   name="user_role" 
-                                                                                   id="role_{{ $role->id }}"
-                                                                                   wire:model.live="role"
-                                                                                   wire:change="changeRole"
-                                                                                   value="{{ $role->name }}"
-                                                                                   {{ $userRoles->contains('id', $role->id) ? 'checked' : '' }}>
-                                                                            <label class="form-check-label w-100 d-block" for="role_{{ $role->id }}">
-                                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                                    <span>{{ $role->name }}</span>
-                                                                                    @if($userRoles->contains('id', $role->id))
-                                                                                        <span class="text-primary">
-                                                                                            <i class="fi fi-rr-check"></i>
-                                                                                        </span>
-                                                                                    @endif
-                                                                                </div>
-                                                                            </label>
-                                                                        </div>
-                                                                    </div>
+                                                                    @php
+                                                                        $isActive = $userRoles->contains('id', $role->id);
+                                                                    @endphp
+                                                                    <button type="button"
+                                                                        wire:click="changeRole('{{ $role->name }}')"
+                                                                        class="btn {{ $isActive ? 'btn-add' : 'btn-role-outline' }}"
+                                                                        style="{{ !$isActive ? 'border: 1.5px solid var(--borderColor, #d1d5db); color: var(--colorTitre, #333); background: transparent; padding: 6px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; transition: all .2s ease;' : 'padding: 6px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;' }}">
+                                                                        @if($isActive)
+                                                                            <i class="fi fi-rr-check me-1" style="font-size: 11px;"></i>
+                                                                        @endif
+                                                                        {{ $role->name }}
+                                                                    </button>
                                                                 @endforeach
                                                             </div>
                                                         @else
@@ -849,19 +839,12 @@
                                                         @endif
                                                     </div>
                                                 </div>
-                                                <div class="mt-4 col-lg-112 text-end">
-                                                    <button class="btn btn-add float-end">
-                                                        Enregistrer
-                                                        <span
-                                                            class="spinner-border spinner-border-white text-success ms-1 d-none btn-loader"
-                                                            role="status"
-                                                            style="font-size: 10px !important; width:14px;height:14px"
-                                                            wire:loading wire:target="changeRole"
-                                                            wire:loading.class.remove="d-none">
-                                                            <span class="sr-only"></span>
-                                                        </span>
-                                                    </button>
-                                                </div>
+                                                {{-- <div class="col-12">
+                                                    <div wire:loading wire:target="changeRole" class="d-flex align-items-center gap-2 mt-2">
+                                                        <span class="spinner-border spinner-border-sm text-primary" role="status" style="width: 14px; height: 14px;"></span>
+                                                        <small class="text-muted">Mise à jour du rôle...</small>
+                                                    </div>
+                                                </div> --}}
                                             </div>
                                         </form>
 
