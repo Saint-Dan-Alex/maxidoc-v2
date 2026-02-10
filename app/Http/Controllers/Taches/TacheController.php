@@ -1384,7 +1384,6 @@ class TacheController extends Controller
             ]);
 
         } catch (\Throwable $th) {
-            dd($th);
             $content = json_encode([
                 'name' => 'Gestion de tâches',
                 'statut' => 'error',
