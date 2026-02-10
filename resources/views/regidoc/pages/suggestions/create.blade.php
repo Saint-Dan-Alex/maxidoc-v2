@@ -1,4 +1,4 @@
-@extends('layouts.home')
+@extends('regidoc.layouts.master')
 
 @section('content')
 <style>

@@ -634,6 +634,7 @@
         })
     </script>
 
+    @include('regidoc.pages.suggestions.modal')
 </body>
 
 </html>
