@@ -78,7 +78,8 @@ class AddCourrierForm extends Component
 
     public function mount()
     {
-        $services = Direction::find(1)->services->pluck('id')->toArray();
+        return $this->changeNumRef();
+        // $services = Direction::find(1)->services->pluck('id')->toArray();
         $prefix = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre);
         
         // Log pour débogage
@@ -117,53 +118,48 @@ class AddCourrierForm extends Component
     {
         // S'assurer que le type est défini, sinon utiliser 1 par défaut (entrant)
         $type = $this->type ?? 1;
-        $services = Direction::find(1)->services->pluck('id')->toArray();
-        $prefix = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre);
+        $agent = Auth::user()->agent;
+        $direction = $agent->direction;
         
-        // Log pour débogage
-        Log::info('changeNumRef - Paramètres:', [
-            'services' => $services,
-            'type' => $type,
-            'prefix' => $prefix
-        ]);
-        
-        // Construire la requête avec des conditions explicites
-        $query = Courrier::where(function($q) use ($services) {
-                $q->whereIn('service_id', $services)
-                  ->orWhereNull('service_id');
-            })
-            ->where('type_id', $type);
-            
-        // Ajouter la condition LIKE uniquement si le préfixe n'est pas vide
-        if (!empty($prefix)) {
-            $query->where('reference_interne', 'LIKE', $prefix . '-%');
+        // Récupérer l'abréviation de la direction (Priorité au code, sinon abréviation du titre)
+        if ($direction && !empty($direction->code)) {
+            $prefix = strtoupper($direction->code);
+        } else {
+            $prefix = $this->abbreviateTitle($direction?->titre ?? $agent->lieu?->titre ?? 'DOC');
         }
-        
-        $lastNum = $query->count();
-            
-        // Log du résultat du comptage avec les paramètres liés
-        $sql = $query->toSql();
-        $bindings = $query->getBindings();
-        
-        Log::info('changeNumRef - Résultat du comptage:', [
-            'lastNum' => $lastNum,
-            'type' => $type,
-            'requete_sql' => $sql,
-            'bindings' => $bindings
-        ]);
-        
-        $this->num = (int) $lastNum;
-        $this->num += 1;
-        $this->num = Str::padLeft($this->num, 4, '0');
-        
+
         // Déterminer le suffixe en fonction du type
         $suffix = match((int)$type) {
             1 => 'ENT',  // Entrant
             2 => 'SOR',  // Sortant
-            default => 'INT'  // Interne
+            3 => 'INT',  // Interne
+            default => 'INT'
         };
+
+        // Récupérer la dernière référence pour ce préfixe et ce suffixe
+        $lastRef = Courrier::where('reference_interne', 'LIKE', $prefix . '-%-' . $suffix)
+            ->orderBy('reference_interne', 'desc')
+            ->value('reference_interne');
+            
+        $nextNum = 1;
         
+        if ($lastRef) {
+            // Extraire le numéro de la dernière référence (ex: DG-0042-ENT -> 0042)
+            if (preg_match('/-([0-9]+)-[A-Z]+$/', $lastRef, $matches)) {
+                $nextNum = (int)$matches[1] + 1;
+            }
+        }
+        
+        $this->num = Str::padLeft($nextNum, 4, '0');
         $this->num = $prefix . '-' . $this->num . '-' . $suffix;
+        
+        // Log pour débogage
+        Log::info('changeNumRef - Nouvelle référence:', [
+            'type' => $type,
+            'prefix' => $prefix,
+            'suffix' => $suffix,
+            'num' => $this->num
+        ]);
     }
 
     public function changeServiceInit($id)

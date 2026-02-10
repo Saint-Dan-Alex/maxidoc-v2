@@ -1710,21 +1710,30 @@ $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user(
             throw new \InvalidArgumentException('Type de courrier invalide. Doit être 1, 2 ou 3.');
         }
         
-        // Récupérer l'abréviation de la direction
-        $abbreviation = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre);
+        $agent = Auth::user()->agent;
+        $direction = $agent->direction;
+        
+        // Récupérer l'abréviation de la direction (Priorité au code, sinon abréviation du titre)
+        if ($direction && !empty($direction->code)) {
+            $abbreviation = strtoupper($direction->code);
+        } else {
+            $abbreviation = $this->abbreviateTitle($direction?->titre ?? $agent->lieu?->titre ?? 'DOC');
+        }
+
         $typeText = Str::limit($type == 1 ? 'ENTRANT' : ($type == 2 ? "SORTANT" : "INTERNE"), 3, '');
         
         // Démarrer une transaction pour éviter les accès concurrentiels
         return \DB::transaction(function () use ($abbreviation, $typeText, $type) {
-            // Récupérer le dernier numéro utilisé pour cette direction et ce type
-            $lastRef = Courrier::where('reference_interne', 'LIKE', $abbreviation . '-%')
-                ->orderBy('id', 'desc')
+            // Récupérer le dernier numéro utilisé pour cette direction, ce type ET ce suffixe précis
+            // On cherche spécifiquement la fin en -ENT, -SOR ou -INT pour séparer les compteurs
+            $lastRef = Courrier::where('reference_interne', 'LIKE', $abbreviation . '-%-' . $typeText)
+                ->orderBy('reference_interne', 'desc')
                 ->value('reference_interne');
             
             $nextNum = 1; // Valeur par défaut si aucun enregistrement trouvé
             
             if ($lastRef) {
-                // Extraire le numéro de la dernière référence
+                // Extraire le numéro de la dernière référence (ex: DG-0042-ENT -> 0042)
                 if (preg_match('/-([0-9]+)-[A-Z]+$/', $lastRef, $matches)) {
                     $nextNum = (int)$matches[1] + 1;
                 }
