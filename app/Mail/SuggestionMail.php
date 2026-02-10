@@ -34,7 +34,7 @@ class SuggestionMail extends Mailable
                     ->view('regidoc.emails.suggestion');
 
         if ($this->suggestion->image_path) {
-            $mail->attachFromStoragePublic($this->suggestion->image_path);
+            $mail->attachFromStorage($this->suggestion->image_path, null, ['disk' => 'public']);
         }
 
         return $mail;
