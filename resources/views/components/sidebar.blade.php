@@ -87,17 +87,6 @@
                                 </a>
                             @endif
 
-                            {{-- Lien Nous contacter / Bug (Tous) --}}
-                            <a href="{{ route('regidoc.suggestions.create') }}" class="{{ request()->routeIs('regidoc.suggestions.create') ? 'active' : '' }} panelsession">
-                                <span>
-                                    <i class="fi fi-rr-comment-question fi-rr"></i>
-                                    <i class="fi fi-sr-comment-question fi-sr"></i>
-                                </span>
-                                <span class="title">
-                                    Nous contacter / Bug
-                                </span>
-                                <div class="tooltip-indicator">Nous contacter / Bug</div>
-                            </a>
                         @else
                             <a href="{{ $item->link() }}" class="{{ $item->isActive() ? 'active' : '' }} panelsession"
                                 @if ($item->hasChildren() && $item->id != 40)
@@ -160,6 +149,21 @@
                         @endif
                     </li>
                 @endforeach
+
+                {{-- Lien Nous contacter / Bug (Toujours visible pour tous) --}}
+                <li class="item">
+                    <a href="{{ route('regidoc.suggestions.create') }}"
+                        class="{{ request()->routeIs('regidoc.suggestions.create') ? 'active' : '' }} panelsession">
+                        <span>
+                            <i class="fi fi-rr-comment-question fi-rr"></i>
+                            <i class="fi fi-sr-comment-question fi-sr"></i>
+                        </span>
+                        <span class="title">
+                            Nous contacter / Bug
+                        </span>
+                        <div class="tooltip-indicator">Nous contacter / Bug</div>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
