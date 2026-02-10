@@ -116,7 +116,21 @@
                             @endforelse
                         </ul>
                     </div>
-                    {!! $actifAgents->links() !!}
+                    @if ($actifAgents->hasPages())
+                        <div class="d-flex justify-content-center align-items-center gap-2 py-2 px-3" style="border-top: 1px solid var(--borderColor, #e9ecef);">
+                            @if ($actifAgents->onFirstPage())
+                                <span class="btn btn-sm btn-outline-secondary disabled" style="font-size: 11px; padding: 2px 8px;">« Précédent</span>
+                            @else
+                                <button wire:click="previousPage" class="btn btn-sm btn-outline-primary" style="font-size: 11px; padding: 2px 8px;">« Précédent</button>
+                            @endif
+
+                            @if ($actifAgents->hasMorePages())
+                                <button wire:click="nextPage" class="btn btn-sm btn-outline-primary" style="font-size: 11px; padding: 2px 8px;">Suivant »</button>
+                            @else
+                                <span class="btn btn-sm btn-outline-secondary disabled" style="font-size: 11px; padding: 2px 8px;">Suivant »</span>
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
                 <div class="tab-pane fade {{ $tab == 2 ? 'show active' : '' }}" id="person-unactive" role="tabpanel"
@@ -158,6 +172,21 @@
                             @endforelse
                         </ul>
                     </div>
+                    @if ($inactifAgents->hasPages())
+                        <div class="d-flex justify-content-center align-items-center gap-2 py-2 px-3" style="border-top: 1px solid var(--borderColor, #e9ecef);">
+                            @if ($inactifAgents->onFirstPage())
+                                <span class="btn btn-sm btn-outline-secondary disabled" style="font-size: 11px; padding: 2px 8px;">« Précédent</span>
+                            @else
+                                <button wire:click="previousPage" class="btn btn-sm btn-outline-primary" style="font-size: 11px; padding: 2px 8px;">« Précédent</button>
+                            @endif
+
+                            @if ($inactifAgents->hasMorePages())
+                                <button wire:click="nextPage" class="btn btn-sm btn-outline-primary" style="font-size: 11px; padding: 2px 8px;">Suivant »</button>
+                            @else
+                                <span class="btn btn-sm btn-outline-secondary disabled" style="font-size: 11px; padding: 2px 8px;">Suivant »</span>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
