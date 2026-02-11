@@ -2110,13 +2110,13 @@ $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user(
                 return response()->json([
                     'success' => true,
                     'message' => $response['message'] ?? 'Opération réussie',
-                    'redirect' => route('regidoc.courriers.index')
+                    'redirect' => route('regidoc.courriers.show', $courrier->id)
                 ]);
             }
 
             // Redirection pour les requêtes normales
             return redirect()
-                ->route('regidoc.courriers.index')
+                ->route('regidoc.courriers.show', $courrier->id)
                 ->with('success', $response['message'] ?? 'Opération réussie');
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Erreur de validation
@@ -2166,17 +2166,15 @@ $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user(
         }
 
         // Si on arrive ici, c'est que tout s'est bien passé
-        if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => $response['message'] ?? 'Opération réussie',
-                'redirect' => route('regidoc.courriers.index')
+                'redirect' => route('regidoc.courriers.show', $courrier->id)
             ]);
-        }
 
         // Redirection pour les requêtes normales
         return redirect()
-            ->route('regidoc.courriers.index')
+            ->route('regidoc.courriers.show', $courrier->id)
             ->with('success', $response['message'] ?? 'Opération réussie');
     }
 
