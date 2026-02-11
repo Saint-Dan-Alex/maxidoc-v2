@@ -6,13 +6,14 @@
     <form id="fileUploadForm" action="{{ route('taches.documents.store', $tache) }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="mb-3">
-            <label for="documentFile" class="form-label">Sélectionner un document</label>
-            <select class="form-select" id="documentFile" required>
-                <option value="" selected disabled>Sélectionnez un fichier...</option>
-                <option value="upload">Téléverser un fichier</option>
-            </select>
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <label for="fileInput" class="form-label mb-0">Sélectionner un document</label>
+                <span id="selectionBadge" class="badge bg-success d-none animate__animated animate__fadeIn">
+                    <i class="fi fi-rr-check-circle me-1"></i> Document sélectionné
+                </span>
+            </div>
             
-            <div id="fileInputContainer" class="mt-3" style="display: none;">
+            <div id="fileInputContainer">
                 <input type="file" name="file" id="fileInput" class="form-control" accept="image/*,.pdf" required>
                 <div class="form-text">Formats acceptés : images et PDF</div>
             </div>
@@ -115,9 +116,8 @@
 <script src="{{ asset('assets/js/pdfjs/pdf.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const documentSelect = document.getElementById('documentFile');
-        const fileInputContainer = document.getElementById('fileInputContainer');
         const fileInput = document.getElementById('fileInput');
+        const selectionBadge = document.getElementById('selectionBadge');
         const submitBtn = document.getElementById('submitBtn');
         const confirmationModalElement = document.getElementById('confirmationModal');
         const form = document.getElementById('fileUploadForm');
@@ -162,26 +162,15 @@
             });
         }
 
-        // Show file input when 'Téléverser un fichier' is selected
-        documentSelect.addEventListener('change', function() {
-            if (this.value === 'upload') {
-                fileInputContainer.style.display = 'block';
-                submitBtn.disabled = true; // Désactiver le bouton jusqu'à ce qu'un fichier soit sélectionné
-                // Réinitialiser l'aperçu
-                document.getElementById('documentPreview').innerHTML = `
-                    <div class="py-4">
-                        <i class="fi fi-rr-file-upload fs-1 text-muted mb-2 d-block"></i>
-                        <span class="text-muted">Aperçu du document</span>
-                    </div>`;
-            } else {
-                fileInputContainer.style.display = 'none';
-                submitBtn.disabled = false;
-            }
-        });
+        // Logic for file input visibility and reset simplified by removing select
 
         // Handle file selection
         fileInput.addEventListener('change', async function(e) {
             if (this.files && this.files[0]) {
+                // Show selection badge
+                if (selectionBadge) {
+                    selectionBadge.classList.remove('d-none');
+                }
                 // Reset preview
                 const previewContainer = document.getElementById('documentPreview');
                 previewContainer.innerHTML = `
@@ -267,6 +256,9 @@
                 }
             } else {
                 submitBtn.disabled = true;
+                if (selectionBadge) {
+                    selectionBadge.classList.add('d-none');
+                }
             }
         });
 
@@ -274,7 +266,7 @@
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            if (documentSelect.value === 'upload' && !fileInput.files.length) {
+            if (!fileInput.files.length) {
                 alert('Veuillez sélectionner un fichier à téléverser.');
                 return false;
             }
@@ -325,9 +317,8 @@
             .then((data) => {
                 // Reset form
                 form.reset();
-                fileInputContainer.style.display = 'none';
                 submitBtn.disabled = true;
-                documentSelect.value = '';
+                if (selectionBadge) selectionBadge.classList.add('d-none');
                 
                 // Hide modal if exists
                 if (confirmationModal) {
@@ -389,10 +380,9 @@
 
         // Reset form
         function resetForm() {
-            if (documentSelect) documentSelect.value = '';
             if (fileInput) fileInput.value = '';
-            if (fileInputContainer) fileInputContainer.style.display = 'none';
             if (submitBtn) submitBtn.disabled = true;
+            if (selectionBadge) selectionBadge.classList.add('d-none');
         }
     });
 </script>
