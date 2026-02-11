@@ -1341,24 +1341,28 @@ class TacheController extends Controller
                 return $document;
             });
 
-            if (Auth::user()->agent->isDG()) {
+            if (Auth::user()->agent?->isDG()) {
                 if ($tache->courrier) {
                     $courrier = $tache->courrier;
                     foreach ($tache->documents as $key => $document) {
                         if ($key > 0) {
-                            $destinateurs = Direction::find(1)->dgSecretaires->pluck('responsable_id');
+                            $dgDirection = Auth::user()->agent->direction;
+                            if ($dgDirection) {
+                                $destinateurs = $dgDirection->dgAssistanats->pluck('responsable_id');
+                                
+                                if ($destinateurs->isNotEmpty() && $destinateurs->first()) {
+                                    $doc = (new CourrierController)->createDocument(null, $destinateurs->first(), $document);
 
-                            $doc = (new CourrierController)->createDocument(null, $destinateurs->first(), $document);
-                            // $document->followers()
+                                    // I save traitement
+                                    $traitement = new CourrierTraitement();
+                                    $traitement->agent_id = Auth::user()->agent->id;
+                                    $traitement->note = '';
+                                    $traitement->document_url = $doc->document;
+                                    $traitement->save();
 
-                            // I save traitement
-                            $traitement = new CourrierTraitement();
-                            $traitement->agent_id = Auth::user()->agent->id;
-                            $traitement->note = '';
-                            $traitement->document_url = $doc->document;
-                            $traitement->save();
-
-                            $courrier->traitements()->attach($traitement);
+                                    $courrier->traitements()->attach($traitement);
+                                }
+                            }
                         }
                     }
                     $courrier->document->statut_id = 6;
