@@ -487,20 +487,16 @@
 
                                 @if ($courrier->etape === "termine")
                                     <a data-bs-toggle="modal" data-bs-target="#traitement-modal" href="javascript:void(0)"
-                                    class="dropdown-item">
-                                    <span class="d-flex align-items-center">
-                                        <i class="fi fi-rr-hourglass-end"></i>
-                                    </span>
-                                    <span class="title">
-                                        Définir le traitement
-                                    </span>
-                                </a>
+                                       class="btn btn-primary rounded-pill px-3 py-1 d-inline-flex align-items-center gap-2 shadow-none mb-2 ms-3">
+                                        <i class="fi fi-rr-hourglass-end text-white"></i>
+                                        <span class="fw-semibold text-white">Définir le traitement</span>
+                                    </a>
                                    
                                 @else
-                                    <a href="{{route('regidoc.courriers.edit',$courrier->id)}}" class="dropdown-item d-flex align-items-center">
+                                    <!-- <a href="{{route('regidoc.courriers.edit',$courrier->id)}}" class="dropdown-item d-flex align-items-center">
                                         <i class="fi fi-rr-edit me-2"></i>
                                         <span class="title">Compléter les infos</span>
-                                    </a>  
+                                    </a>   -->
                                     
                                 @endif
 
