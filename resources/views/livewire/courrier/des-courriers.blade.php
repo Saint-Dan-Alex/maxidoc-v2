@@ -204,6 +204,7 @@
                                     @endif
                                     <th scope="col">Date de réception</th>
                                     <th scope="col">Type</th>
+                                    <th scope="col">Priorité</th>
                                     @if (!$isSec)
                                         <th scope="col">Statut</th>
                                         <th scope="col">Actions</th>
@@ -275,6 +276,7 @@
                                                     Lerexcom Petroleum
                                                 @endif
                                             </td>
+                                            
                                             <td>
                                                 @if ($courrier->type_id == 2)
                                                     {{ $courrier->externDestinateur->nom ?? 'N/D' }}
@@ -343,6 +345,23 @@
                                             <td>{{ $courrier->created_at->format('d/m/Y H:i:s') }}</td>
                                             
                                             <td>{{ $courrier->type ? $courrier->type->titre : 'Inconnu' }}</td>
+                                            <td>
+                                            <div @class([
+                                                'badge-priority',
+                                                'badge-priority-gray' =>
+                                                    $courrier->priorite_id != 1 &&
+                                                    $courrier->priorite_id != 2 &&
+                                                    $courrier->priorite_id != 3 &&
+                                                    $courrier->priorite_id != 4,
+                                                'normal badge-priority-normal' => $courrier->priorite_id == 1,
+                                                'urgent  badge-priority-red' => $courrier->priorite_id == 4,
+                                                'absolute badge-priority-yellow' => $courrier->priorite_id == 3,
+                                                'important badge-priority-green' => $courrier->priorite_id == 2,
+                                            ])>
+                                                {{ $courrier->priorite?->titre ?? 'N/A' }}
+                                            </div>
+                                        </td>
+
                                             @if (!$isSec)
                                                 <td>
                                                     <div @class([
