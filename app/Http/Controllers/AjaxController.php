@@ -196,7 +196,7 @@ class AjaxController extends Controller
                     Mail::to($recipient)->send(new SignaturesMail($password));
                 }
             } catch (\Throwable $e) {
-                // on ne bloque pas le flux, mais on informe côté client
+                Log::error("Erreur lors de l'envoi de l'email de signature (getUserSignature): " . $e->getMessage());
             }
         }
         
@@ -261,7 +261,7 @@ class AjaxController extends Controller
                     Mail::to($recipient)->send(new SignaturesMail($password));
                 }
             } catch (\Throwable $e) {
-                // idem: on ignore mais l'appelant peut gérer l'erreur via un autre canal
+                Log::error("Erreur lors de l'envoi de l'email de signature (checkUserSignaturePassWord): " . $e->getMessage());
             }
         }
 

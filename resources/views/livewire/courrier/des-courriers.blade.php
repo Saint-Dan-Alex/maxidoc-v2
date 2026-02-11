@@ -33,35 +33,61 @@
                         </li>
                     @endif
 
-                    @if (!$isSec)
-                        @can('Numériser un document entrant')
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
-                                    data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
-                                    aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
-                                    wire:click='changeTab(2)'>Entrants</button>
-                            </li>
-                        @endcan
-                        
-                    @endif
-
-                    @can('Numériser un document sortant')
+                    @if($isDG)
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
+                                data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
+                                aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
+                                wire:click='changeTab(2)'>A orienter</button>
+                        </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link {{ $active_tab == 3 ? 'active' : '' }}" id="sortant-tab"
                                 data-bs-toggle="tab" data-bs-target="#sortant" type="button" role="tab"
                                 aria-controls="sortant" aria-selected="{{ $active_tab == 3 }}"
-                                wire:click='changeTab(3)'>Traités</button>
+                                wire:click='changeTab(3)'>En cours</button>
                         </li>
-                    @endcan
-
-                    @can('Numériser un document interne')
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {{ $active_tab == 4 ? 'active' : '' }}" id="interne-tab"
-                                data-bs-toggle="tab" data-bs-target="#interne" type="button" role="tab"
-                                aria-controls="interne" aria-selected="{{ $active_tab == 4 }}"
-                                wire:click='changeTab(4)'>Internes</button>
+                            <button class="nav-link {{ $active_tab == 4 ? 'active' : '' }}" id="finalise-tab"
+                                data-bs-toggle="tab" data-bs-target="#finalise" type="button" role="tab"
+                                aria-controls="finalise" aria-selected="{{ $active_tab == 4 }}"
+                                wire:click='changeTab(4)'>Finalisés</button>
                         </li>
-                    @endcan
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {{ $active_tab == 5 ? 'active' : '' }}" id="priorite-tab"
+                                data-bs-toggle="tab" data-bs-target="#priorite" type="button" role="tab"
+                                aria-controls="priorite" aria-selected="{{ $active_tab == 5 }}"
+                                wire:click='changeTab(5)'>Priorité</button>
+                        </li>
+                    @else
+                        @if (!$isSec)
+                            @can('Numériser un document entrant')
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
+                                        data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
+                                        aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
+                                        wire:click='changeTab(2)'>Entrants</button>
+                                </li>
+                            @endcan
+                        @endif
+
+                        @can('Numériser un document sortant')
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {{ $active_tab == 3 ? 'active' : '' }}" id="sortant-tab"
+                                    data-bs-toggle="tab" data-bs-target="#sortant" type="button" role="tab"
+                                    aria-controls="sortant" aria-selected="{{ $active_tab == 3 }}"
+                                    wire:click='changeTab(3)'>Traités</button>
+                            </li>
+                        @endcan
+
+                        @can('Numériser un document interne')
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {{ $active_tab == 4 ? 'active' : '' }}" id="interne-tab"
+                                    data-bs-toggle="tab" data-bs-target="#interne" type="button" role="tab"
+                                    aria-controls="interne" aria-selected="{{ $active_tab == 4 }}"
+                                    wire:click='changeTab(4)'>Internes</button>
+                            </li>
+                        @endcan
+                    @endif
                 </ul>
             </div>
         </div>
@@ -103,7 +129,7 @@
                 <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px">
                     <div class="row g-3 align-items-center">
                         <div class="col">
-                            <h4 class="no-padding no-margin">Liste des courriers numérisés</h4>
+                            <h4 class="no-padding no-margin">@if($isDG) Tous les courriers @else Liste des courriers numérisés @endif</h4>
                         </div>
                         <div class="col-lg-6 col-xl-5 col-xxl-4 d-flex align-items-center justify-content-end">
                             <input type="text" class="form-control me-2 input-search-card" wire:model='search'
@@ -332,21 +358,25 @@
             </div>
         @endif
 
-       @if (!$isSec)
-       @can('Numériser un document entrant')
-       <!-- Entrants Tab -->
+       @if ($isDG || (!$isSec && Auth::user()->can('Numériser un document entrant')))
+       <!-- Entrants Tab / A orienter (DG) -->
        <div class="tab-pane fade {{ $active_tab == 2 ? 'show active' : '' }}" id="entrant" role="tabpanel"
            aria-labelledby="entrant-tab">
            <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
-               <div class="row g-3 align-items-center">
-                   <div class="col-lg-6 col-md-6">
-                       <div class="col-lg-6">
-                           <input type="text" class="form-control input-search-card" placeholder="Recherche"
-                               style="border:none;" wire:model='search'>
-                       </div>
-                   </div>
-                   <div class="col-12 col-md-6 col-sm-6 col-lg-6 d-flex align-items-center justify-content-lg-end justify-content-md-end justify-content-sm-start">
-                       <div class="d-flex align-items-center w-100">
+                <div class="row g-3 align-items-center mb-3">
+                    <div class="col-lg-6">
+                        <h4 class="no-padding no-margin ps-3">@if($isDG) Courriers à orienter @else Courriers entrants @endif</h4>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="d-flex align-items-center justify-content-lg-end">
+                            <input type="text" class="form-control input-search-card" placeholder="Recherche"
+                                style="border:none;" wire:model='search'>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3 align-items-center">
+                    <div class="col-12 d-flex align-items-center justify-content-lg-end">
+                        <div class="d-flex align-items-center w-100">
                            <div class="input-group block-input-filter flex-nowrap">
                                <select wire:model.debounce.500ms="statut" id="statut" style="min-width: 70px; flex: 1; border-right: none"
                                    class="form-select form-control">
@@ -429,67 +459,56 @@
                                    </td>
                                    <td>{{ $entrant->reference_courrier }}</td>
                                    <td>{{ $entrant->externExpediteur->nom ?? 'N/D' }}</td>
-                                   <td class="text-nowrap">
-                                       @php
-                                           // Followers: liste d'agents, on retire l'agent courant
-                                           $followers = $entrant->followers->unique()->reject(function($f){ return $f->is(Auth::user()->agent); });
-                                           
-                                           // Accusés de réception: dédupliquer par agent et retirer ceux déjà présents parmi les followers
-                                           $accuses = $entrant->accuseReceptions;
-                                           $followerAgentIds = $followers->pluck('id');
-                                           $uniqueAccusesByAgent = $accuses->unique(function($a){ return optional(optional($a->user)->agent)->id; });
-                                           $filteredAccuses = $uniqueAccusesByAgent->filter(function($a) use ($followerAgentIds){
-                                               $aid = optional(optional($a->user)->agent)->id;
-                                               return $aid && !$followerAgentIds->contains($aid);
-                                           })->values();
-                                       @endphp
-
-                                       @if ($followers->isEmpty() && $filteredAccuses->isEmpty())
-                                           <span class="text-muted">Aucune</span>
-                                       @else
-                                           <div class="box-avatar d-flex align-items-center">
-                                               @foreach ($followers as $follower)
-                                                   <div class="cursor-pointer avatar-team" data-bs-toggle="offcanvas"
-                                                       data-bs-target="#detail-personnel" aria-controls="offcanvasRight">
-                                                       <div class="tooltip-team">{{ $follower->prenom }} {{ $follower->nom }}</div>
-                                                       <img src="{{ imageOrDefault($follower->image) }}" alt="">
-                                                   </div>
-                                               @endforeach
-                                           </div>
-
-                                           <div class="box-avatar d-flex align-items-center mt-1">
-                                               @php
-                                                   $shownAccuses = $filteredAccuses->take(4);
-                                                   $otherAccuses = $filteredAccuses->slice(4);
-                                               @endphp
-                                               @foreach($shownAccuses as $accuse)
-                                                   <div class="cursor-pointer avatar-team" data-bs-toggle="tooltip" data-bs-placement="top"
-                                                       title="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}">
-                                                       <img src="{{ imageOrDefault(optional($accuse->user->agent)->image) }}"
-                                                           alt="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}" class="avatar-img">
-                                               </div>
-                                               @endforeach
-                                               @if($otherAccuses->count() > 0)
-                                                   <div class="dropdown">
-                                                       <div class="cursor-pointer avatar-team plus d-flex align-items-center justify-content-center"
-                                                           data-bs-toggle="dropdown" aria-expanded="false" style="margin-right: 0">
-                                                           <span>+{{ $otherAccuses->count() }}</span>
-                                                       </div>
-                                                       <div class="dropdown-menu dropdown-menu-end p-2">
-                                                           <div class="list-users">
-                                                               @foreach($otherAccuses as $accuse)
-                                                                   <div class="content-user d-flex align-items-center mb-2">
-                                                                       <img class="rounded-circle me-2" src="{{ imageOrDefault(optional($accuse->user->agent)->image) }}" width="24" height="24" alt="">
-                                                                       <span>{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}</span>
-                                                                   </div>
-                                                               @endforeach
-                                                           </div>
-                                                       </div>
-                                                   </div>
-                                               @endif
-                                           </div>
-                                       @endif
-                                   </td>
+                                    <td class="text-nowrap">
+                                        @if ($entrant->accuseReceptions->count() > 0)
+                                            <div class="box-avatar d-flex align-items-center">
+                                                @php
+                                                    $shownAccuses = $entrant->accuseReceptions->take(4);
+                                                    $otherAccuses = $entrant->accuseReceptions->slice(4);
+                                                @endphp
+                                                
+                                                @foreach($shownAccuses as $accuse)
+                                                    <div class="cursor-pointer avatar-team"
+                                                        data-bs-toggle="tooltip" 
+                                                        data-bs-placement="top"
+                                                        title="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}">
+                                                        <img src="{{ imageOrDefault(optional($accuse->user->agent)->image) }}" 
+                                                            alt="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}"
+                                                            class="avatar-img">
+                                                    </div>
+                                                @endforeach
+                                                
+                                                @if($otherAccuses->count() > 0)
+                                                    <div class="dropdown">
+                                                        <div class="cursor-pointer avatar-team plus d-flex align-items-center justify-content-center"
+                                                            data-bs-toggle="dropdown" 
+                                                            aria-expanded="false"
+                                                            style="margin-right: 0">
+                                                            <span>+{{ $otherAccuses->count() }}</span>
+                                                        </div>
+                                                        <div class="dropdown-menu dropdown-menu-end p-2">
+                                                            <div class="list-users">
+                                                                @foreach($otherAccuses as $accuse)
+                                                                    <div class="content-user d-flex align-items-center mb-2">
+                                                                        <div class="avatar me-2">
+                                                                            <img src="{{ imageOrDefault(optional($accuse->user->agent)->image) }}" 
+                                                                                alt="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}"
+                                                                                class="avatar-img" width="24" height="24">
+                                                                        </div>
+                                                                        <div class="name">
+                                                                            <div>{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted">Aucun accusé</span>
+                                        @endif
+                                    </td>
                                    @can('Definir le traitement')
                                        <td>
                                            <div @class([
@@ -559,26 +578,30 @@
                @if (count($entrants))
                    {{ $entrants->links() }}
                @endif
-           </div>
-       </div>
-   @endcan
-           
-       @endif
+            </div>
+        </div>
+            
+        @endif
 
-        @can('Numériser un document sortant')
-            <!-- Sortants Tab -->
+        @if ($isDG || Auth::user()->can('Numériser un document sortant'))
+            <!-- Sortants Tab / En cours (DG) -->
             <div class="tab-pane fade {{ $active_tab == 3 ? 'show active' : '' }}" id="sortant" role="tabpanel"
                 aria-labelledby="sortant-tab">
                 <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
-                    <div class="row g-3 align-items-center">
-                        <div class="col-lg-6 col-md-6">
-                            <div class="col-lg-6">
-                                <input type="text" class="form-control input-search-card" placeholder="Recherche"
-                                    style="border:none;" wire:model='search'>
-                            </div>
+                    <div class="row g-3 align-items-center mb-3">
+                    <div class="col-lg-6">
+                        <h4 class="no-padding no-margin ps-3">@if($isDG) Courriers en cours @else Courriers sortants @endif</h4>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="d-flex align-items-center justify-content-lg-end">
+                            <input type="text" class="form-control input-search-card" placeholder="Recherche"
+                                style="border:none;" wire:model='search'>
                         </div>
-                        <div class="col-12 col-md-6 col-sm-6 col-lg-6 d-flex align-items-center justify-content-lg-end justify-content-md-end justify-content-sm-start">
-                            <div class="d-flex align-items-center w-100">
+                    </div>
+                </div>
+                <div class="row g-3 align-items-center">
+                    <div class="col-12 d-flex align-items-center justify-content-lg-end">
+                        <div class="d-flex align-items-center w-100">
                                 <div class="input-group block-input-filter flex-nowrap">
                                     <select wire:model.debounce.500ms="statut" id="statut" style="min-width: 70px; flex: 1; border-right: none"
                                         class="form-select form-control">
@@ -660,49 +683,30 @@
                                         <td>{{ $sortant->reference_interne }}</td>
                                         <td>{{ $sortant->externDestinateur->nom ?? 'N/D' }}</td>
                                         <td class="text-nowrap">
-                                            @php
-                                                // Followers: liste d'agents, on retire l'agent courant
-                                                $followers = $sortant->followers->unique()->reject(function($f){ return $f->is(Auth::user()->agent); });
-                                                
-                                                // Accusés de réception: dédupliquer par agent et retirer ceux déjà présents parmi les followers
-                                                $accuses = $sortant->accuseReceptions;
-                                                $followerAgentIds = $followers->pluck('id');
-                                                $uniqueAccusesByAgent = $accuses->unique(function($a){ return optional(optional($a->user)->agent)->id; });
-                                                $filteredAccuses = $uniqueAccusesByAgent->filter(function($a) use ($followerAgentIds){
-                                                    $aid = optional(optional($a->user)->agent)->id;
-                                                    return $aid && !$followerAgentIds->contains($aid);
-                                                })->values();
-                                            @endphp
-
-                                            @if ($followers->isEmpty() && $filteredAccuses->isEmpty())
-                                                <span class="text-muted">Aucune</span>
-                                            @else
+                                            @if ($sortant->accuseReceptions->count() > 0)
                                                 <div class="box-avatar d-flex align-items-center">
-                                                    @foreach ($followers as $follower)
-                                                        <div class="cursor-pointer avatar-team" data-bs-toggle="offcanvas"
-                                                            data-bs-target="#detail-personnel" aria-controls="offcanvasRight">
-                                                            <div class="tooltip-team">{{ $follower->prenom }} {{ $follower->nom }}</div>
-                                                            <img src="{{ imageOrDefault($follower->image) }}" alt="">
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-
-                                                <div class="box-avatar d-flex align-items-center mt-1">
-                                                @php
-                                                        $shownAccuses = $filteredAccuses->take(4);
-                                                        $otherAccuses = $filteredAccuses->slice(4);
+                                                    @php
+                                                        $shownAccuses = $sortant->accuseReceptions->take(4);
+                                                        $otherAccuses = $sortant->accuseReceptions->slice(4);
                                                     @endphp
+                                                    
                                                     @foreach($shownAccuses as $accuse)
-                                                        <div class="cursor-pointer avatar-team" data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        <div class="cursor-pointer avatar-team"
+                                                            data-bs-toggle="tooltip" 
+                                                            data-bs-placement="top"
                                                             title="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}">
                                                             <img src="{{ imageOrDefault(optional($accuse->user->agent)->image) }}" 
-                                                                alt="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}" class="avatar-img">
-                                                    </div>
+                                                                alt="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}"
+                                                                class="avatar-img">
+                                                        </div>
                                                     @endforeach
+                                                    
                                                     @if($otherAccuses->count() > 0)
                                                         <div class="dropdown">
                                                             <div class="cursor-pointer avatar-team plus d-flex align-items-center justify-content-center"
-                                                                data-bs-toggle="dropdown" aria-expanded="false" style="margin-right: 0">
+                                                                data-bs-toggle="dropdown" 
+                                                                aria-expanded="false"
+                                                                style="margin-right: 0">
                                                                 <span>+{{ $otherAccuses->count() }}</span>
                                                             </div>
                                                             <div class="dropdown-menu dropdown-menu-end p-2">
@@ -711,11 +715,11 @@
                                                                         <div class="content-user d-flex align-items-center mb-2">
                                                                             <div class="avatar me-2">
                                                                                 <img src="{{ imageOrDefault(optional($accuse->user->agent)->image) }}" 
-                                                                                    alt="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}" class="avatar-img">
+                                                                                    alt="{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}"
+                                                                                    class="avatar-img" width="24" height="24">
                                                                             </div>
                                                                             <div class="name">
                                                                                 <div>{{ optional($accuse->user->agent)->prenom }} {{ optional($accuse->user->agent)->nom }}</div>
-                                                                                <small class="text-muted">{{ $accuse->created_at->format('d/m/Y H:i') }}</small>
                                                                             </div>
                                                                         </div>
                                                                     @endforeach
@@ -724,6 +728,8 @@
                                                         </div>
                                                     @endif
                                                 </div>
+                                            @else
+                                                <span class="text-muted">Aucun accusé</span>
                                             @endif
                                         </td>
                                         <td>{{ $sortant->date_du_courrier->format('d/m/Y H:i') ?? 'Non defini' }}</td>
@@ -776,190 +782,254 @@
                     @endif
                 </div>
             </div>
-        @endcan
+        @endif
 
-        @can('Numériser un document interne')
-            <div class="tab-pane fade {{ $active_tab == 4 ? 'show active' : '' }}" id="interne" role="tabpanel"
-                aria-labelledby="interne-tab">
+        @if (!$isDG)
+            @can('Numériser un document interne')
+                <div class="tab-pane fade {{ $active_tab == 4 ? 'show active' : '' }}" id="interne" role="tabpanel"
+                    aria-labelledby="interne-tab">
+                    <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-lg-6 col-md-6">
+                                <h4 class="no-padding no-margin ps-3">Courriers internes</h4>
+                            </div>
+                            <div class="col-lg-6 col-md-6">
+                                <div class="col-lg-6">
+                                    <input type="text" class="form-control input-search-card" placeholder="Recherche"
+                                        style="border:none;" wire:model='search'>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="mb-0">
+                        <div class="table-responsive">
+                            <div class="card card-table w-100" style="height: 250px" wire:loading>
+                                <div class="d-flex justify-content-center h-100 align-items-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="sr-only"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="table table-hover" wire:loading.remove wire:poll.180000ms>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Titre</th>
+                                        <th scope="col">N° de reference</th>
+                                        <th scope="col">Service initiateur</th>
+                                        <th scope="col">Destinataire</th>
+                                        @can('Definir le traitement')
+                                            <th scope="col">Priorité</th>
+                                        @endcan
+                                        <th scope="col">Date du courrier</th>
+                                        <th scope="col">Date de réception</th>
+                                        <th scope="col">Statut</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($internes as $interne)
+                                        <tr @class(['', 'tr-no-read' => !$interne->isViewed()])>
+                                            <td class="text-truncate title-file-box-table-data">
+                                                <span class="mail-internal-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
+                                                        viewBox="0 0 24 24">
+                                                        <path fill="none" stroke="currentColor" stroke-linecap="round"
+                                                            stroke-linejoin="round" stroke-width="2"
+                                                            d="M8 3L4 7l4 4M4 7h16m-4 14l4-4l-4-4m4 4H4" />
+                                                    </svg>
+                                                </span>
+                                                {{ $interne->title }}
+                                            </td>
+                                            <td>{{ $interne->reference_interne ?? 'N/A' }}</td>
+                                            <td>{{ optional($interne->author->service)->titre ?? 'N/D' }}</td>
+                                            <td>{{ optional($interne->destinateurs->first())->prenom }} {{ optional($interne->destinateurs->first())->nom ?? 'N/D' }}</td>
+                                            @can('Definir le traitement')
+                                                <td>
+                                                    <div @class([
+                                                        'badge-priority',
+                                                        'badge-priority-gray' =>
+                                                            $interne->priorite_id != 1 &&
+                                                            $interne->priorite_id != 2 &&
+                                                            $interne->priorite_id != 3,
+                                                        'normal badge-priority-normal' => $interne->priorite_id == 1,
+                                                        'urgent  badge-priority-red' => $interne->priorite_id == 4,
+                                                        'absolute badge-priority-yellow' => $interne->priorite_id == 3,
+                                                        'important badge-priority-green' => $interne->priorite_id == 2,
+                                                    ])>
+                                                        {{ $interne->priorite?->titre ?? 'N/A' }}
+                                                    </div>
+                                                </td>
+                                            @endcan
+                                            <td>{{ $interne->created_at->format('d/m/Y') }}</td>
+                                            <td>
+                                                @if ($interne->accuseReceptions->isNotEmpty())
+                                                    {{ $interne->accuseReceptions->last()->created_at->format('d/m/Y') }}
+                                                @else
+                                                    <span>Aucune</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div @class([
+                                                    'badge',
+                                                    'badge-gray' => $interne->statut_id == 1,
+                                                    'badge-yellow' => $interne->statut_id == 2,
+                                                    'badge-green' => $interne->statut_id == 3,
+                                                ])>
+                                                    {{ $interne->statut->libelle ?? 'Inconnu' }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (
+                                                        ($interne->isIntern() && in_array(Auth::user()->agent->id, $interne->destinateurs->pluck('id')->toArray())) ||
+                                                            in_array(Auth::user()->agent->id, $interne->followers->pluck('id')->toArray()) ||
+                                                            $interne->created_by == Auth::user()->agent->id ||
+                                                            $interne->partages->contains('agent_id', Auth::user()->agent->id))
+                                                        <a href="{{ route('regidoc.courriers.show', $interne) }}"
+                                                            class="btn">
+                                                            <i class="fi fi-rr-eye"></i>
+                                                            <div class="tooltip-btn">Voir détails</div>
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="text-center">
+                                                <img src="{{ asset('assets/images/sad.gif') }}" alt=""
+                                                    width="35px" class=""><br>
+                                                Aucun courrier interne
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (count($internes))
+                            {{ $internes->links() }}
+                        @endif
+                    </div>
+                </div>
+            @endcan
+        @else
+            <!-- Finalisés Tab (DG) -->
+            <div class="tab-pane fade {{ $active_tab == 4 ? 'show active' : '' }}" id="finalise" role="tabpanel"
+                aria-labelledby="finalise-tab">
                 <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
                     <div class="row g-3 align-items-center">
                         <div class="col-lg-6 col-md-6">
-                            <div class="col-lg-6">
-                                <input type="text" class="form-control input-search-card" placeholder="Recherche"
-                                    style="border:none;" wire:model='search'>
-                            </div>
+                            <h4 class="no-padding no-margin ps-3">Courriers finalisés</h4>
                         </div>
-                        <div class="col-12 col-md-6 col-sm-6 col-lg-6 d-flex align-items-center justify-content-lg-end justify-content-md-end justify-content-sm-start">
-                            <div class="d-flex align-items-center w-100">
-                                <div class="input-group block-input-filter flex-nowrap">
-                                    <select wire:model.debounce.500ms="statut" id="statut" style="min-width: 70px; flex: 1; border-right: none"
-                                        class="form-select form-control">
-                                        <option value="null" selected disabled>Etat </option>
-                                        <option value="">Tous</option>
-                                        <option value=1>En attente</option>
-                                        <option value=2>En cours</option>
-                                        <option value=3>Traité</option>
-                                        <option value=4>Archivé</option>
-                                    </select>
-                                    <select id="priority" class="form-select form-control" style="min-width: 75px; flex: 1;"
-                                        wire:model.debounce.500ms="priority">
-                                        <option value="null" selected disabled>Priorité</option>
-                                        <option value="">Toutes</option>
-                                        <option value=1>Faible</option>
-                                        <option value=2>Moyen</option>
-                                        <option value=3>Fort</option>
-                                    </select>
-                                    <select name="datep" id="mois" class="form-select form-control" style="min-width: 70px; flex: 1;"
-                                        wire:model.debounce.500ms='selectedMonth'>
-                                        <option value="null" selected disabled>Mois</option>
-                                        @for ($i = 1; $i <= 12; $i++)
-                                            <option value="{{ $i }}">{{ now()->month($i)->isoFormat('MMMM') }}
-                                            </option>
-                                        @endfor
-                                    </select>
-                                    <select name="datep" id="annee" class="form-select form-control"
-                                        style="min-width: 70px; max-width: 90px; border-right: none" wire:model.debounce.500ms='selectedYear'>
-                                        <option value="null" selected disabled>Année</option>
-                                        @for ($i = ((int) now()->year); $i > 1990; $i--)
-                                            <option value="{{ $i }}">{{ $i }}</option>
-                                        @endfor
-                                    </select>
-                                    <button class="btn btn-add refresh-filter btn-search-sm flex-shrink-0" type="button"
-                                        id="" wire:click="refreshSelection">
-                                        <i class="fi fi-rr-refresh"></i>
-                                    </button>
-                                </div>
-                            </div>
+                        <div class="col-lg-6 col-md-6">
+                            <input type="text" class="form-control input-search-card" placeholder="Recherche"
+                                style="border:none;" wire:model='search'>
                         </div>
                     </div>
                     <hr class="mb-0">
                     <div class="table-responsive">
-                        <div class="card card-table w-100" style="height: 250px" wire:loading>
-                            <div class="d-flex justify-content-center h-100 align-items-center">
-                                <div class="spinner-border" role="status">
-                                    <span class="sr-only"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <table class="table table-hover" wire:loading.remove wire:poll.180000ms>
+                        <table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th scope="col">Titre</th>
-                                    <th scope="col">N° de reference</th>
-                                    <th scope="col">Service initiateur</th>
-                                    <th scope="col">Destinataire</th>
-                                    {{-- <th scope="col">Accusées réceptions</th> --}}
-                                    @can('Definir le traitement')
-                                        <th scope="col">Priorité</th>
-                                    @endcan
-                                    <th scope="col">Date du courrier</th>
+                                    <th scope="col">N° d'enregistrement</th>
+                                    <th scope="col">Expéditeur</th>
                                     <th scope="col">Date de réception</th>
                                     <th scope="col">Statut</th>
                                     <th scope="col">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($internes as $interne)
-                                    <tr @class(['', 'tr-no-read' => !$interne->isViewed()])>
-                                        <td class="text-truncate title-file-box-table-data">
-                                            <span class="mail-internal-icon">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
-                                                    viewBox="0 0 24 24">
-                                                    <path fill="none" stroke="currentColor" stroke-linecap="round"
-                                                        stroke-linejoin="round" stroke-width="2"
-                                                        d="M8 3L4 7l4 4M4 7h16m-4 14l4-4l-4-4m4 4H4" />
-                                                </svg>
-                                            </span>
-                                            {{ $interne->title }}
-                                        </td>
-                                        <td>{{ $interne->reference_interne ?? 'N/A' }}</td>
-                                        <td>{{ optional($interne->author->service)->titre ?? 'N/D' }}</td>
-                                        <td>{{ optional($interne->destinateurs->first())->prenom }} {{ optional($interne->destinateurs->first())->nom ?? 'N/D' }}</td>
-                                        {{-- <td class="text-nowrap">
-                                            <div class="box-avatar d-flex align-items-center">
-                                                @foreach ($interne->followers->unique() as $follower)
-                                                    @if (!$follower->is(Auth::user()->agent))
-                                                        <div class="cursor-pointer avatar-team" data-bs-toggle="offcanvas"
-                                                            data-bs-target="#detail-personnel"
-                                                            aria-controls="offcanvasRight">
-                                                            <div class="tooltip-team">{{ $follower->prenom }}
-                                                                {{ $follower->nom }}</div>
-                                                            <img src="{{ imageOrDefault($follower->image) }}"
-                                                                alt="">
-                                                        </div>
-                                                    @endif
-                                                @endforeach
-                                            </div>
-                                        </td> --}}
-                                        @can('Definir le traitement')
-                                            <td>
-                                                <div @class([
-                                                    'badge-priority',
-                                                    'badge-priority-gray' =>
-                                                        $interne->priorite_id != 1 &&
-                                                        $interne->priorite_id != 2 &&
-                                                        $interne->priorite_id != 3,
-                                                    'normal badge-priority-normal' => $interne->priorite_id == 1,
-                                                    'urgent  badge-priority-red' => $interne->priorite_id == 4,
-                                                    'absolute badge-priority-yellow' => $interne->priorite_id == 3,
-                                                    'important badge-priority-green' => $interne->priorite_id == 2,
-                                                ])>
-                                                    {{ $interne->priorite?->titre ?? 'N/A' }}
-                                                </div>
-                                            </td>
-                                        @endcan
-                                        <td>{{ $interne->created_at->format('d/m/Y') }}</td>
+                                @forelse ($finalises as $finalise)
+                                    <tr>
+                                        <td>{{ $finalise->title }}</td>
+                                        <td>{{ $finalise->reference_interne }}</td>
+                                        <td>{{ $finalise->externExpediteur->nom ?? 'N/D' }}</td>
+                                        <td>{{ $finalise->created_at->format('d/m/Y') }}</td>
+                                        <td><div class="badge badge-green">Finalisé</div></td>
                                         <td>
-                                            @if ($interne->accuseReceptions->isNotEmpty())
-                                                {{ $interne->accuseReceptions->last()->created_at->format('d/m/Y') }}
-                                            @else
-                                                <span>Aucune</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <div @class([
-                                                'badge',
-                                                'badge-gray' => $interne->statut_id == 1,
-                                                'badge-yellow' => $interne->statut_id == 2,
-                                                'badge-green' => $interne->statut_id == 3,
-                                            ])>
-                                                {{ $interne->statut->libelle ?? 'Inconnu' }}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                @if (
-                                                    ($interne->isIntern() && in_array(Auth::user()->agent->id, $interne->destinateurs->pluck('id')->toArray())) ||
-                                                        in_array(Auth::user()->agent->id, $interne->followers->pluck('id')->toArray()) ||
-                                                        $interne->created_by == Auth::user()->agent->id ||
-                                                        $interne->partages->contains('agent_id', Auth::user()->agent->id))
-                                                    <a href="{{ route('regidoc.courriers.show', $interne) }}"
-                                                        class="btn">
-                                                        <i class="fi fi-rr-eye"></i>
-                                                        <div class="tooltip-btn">Voir détails</div>
-                                                    </a>
-                                                @endif
-                                            </div>
+                                            <a href="{{ route('regidoc.courriers.show', $finalise) }}" class="btn">
+                                                <i class="fi fi-rr-eye"></i>
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="7" class="text-center">
-                                            <img src="{{ asset('assets/images/sad.gif') }}" alt=""
-                                                width="35px" class=""><br>
-                                            Aucun courrier interne
-                                        </td>
-                                    </tr>
+                                    <tr><td colspan="6" class="text-center">Aucun courrier finalisé</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
+                        @if ($finalises instanceof \Illuminate\Pagination\LengthAwarePaginator && $finalises->count() > 0)
+                            {{ $finalises->links() }}
+                        @endif
                     </div>
-                    @if (count($internes))
-                        {{ $internes->links() }}
-                    @endif
                 </div>
             </div>
-        @endcan
+
+            <!-- Priorité Tab (DG) -->
+            <div class="tab-pane fade {{ $active_tab == 5 ? 'show active' : '' }}" id="priorite" role="tabpanel"
+                aria-labelledby="priorite-tab">
+                <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-lg-6 col-md-6">
+                            <h4 class="no-padding no-margin ps-3">Filtrage par priorité</h4>
+                        </div>
+                        <div class="col-lg-6 col-md-6 text-end pe-3">
+                            <select wire:model="priority" class="form-select w-50 ms-auto">
+                                <option value="">Toutes les priorités</option>
+                                <option value="1">Faible</option>
+                                <option value="2">Moyen</option>
+                                <option value="3">Fort</option>
+                                <option value="4">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    <hr class="mb-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Titre</th>
+                                    <th scope="col">N° d'enregistrement</th>
+                                    <th scope="col">Priorité</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($priorites as $priorite_item)
+                                    <tr>
+                                        <td>{{ $priorite_item->title }}</td>
+                                        <td>{{ $priorite_item->reference_interne }}</td>
+                                        <td>
+                                            <div @class([
+                                                'badge',
+                                                'badge-priority-gray' => !in_array($priorite_item->priorite_id, [1, 2, 3, 4]),
+                                                'badge-priority-normal' => $priorite_item->priorite_id == 1,
+                                                'badge-priority-green' => $priorite_item->priorite_id == 2,
+                                                'badge-priority-yellow' => $priorite_item->priorite_id == 3,
+                                                'badge-priority-red' => $priorite_item->priorite_id == 4,
+                                            ])>
+                                                {{ $priorite_item->priorite->titre ?? 'N/A' }}
+                                            </div>
+                                        </td>
+                                        <td>{{ $priorite_item->created_at->format('d/m/Y') }}</td>
+                                        <td>
+                                            <a href="{{ route('regidoc.courriers.show', $priorite_item) }}" class="btn">
+                                                <i class="fi fi-rr-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5" class="text-center">Aucun courrier trouvé</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                        @if ($priorites instanceof \Illuminate\Pagination\LengthAwarePaginator && $priorites->count() > 0)
+                            {{ $priorites->links() }}
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 

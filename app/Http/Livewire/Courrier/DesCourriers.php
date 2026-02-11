@@ -187,56 +187,117 @@ class DesCourriers extends Component
             });
         };
 
+        // Initialisation des variables pour la vue
+        $allcourriers = collect();
+        $entrants = collect();
+        $sortants = collect();
+        $internes = collect();
+        $finalises = collect();
+        $priorites = collect();
+
         // Gestion des différents onglets
-        if ($this->active_tab == 1) {
-            $query = $courriersQuery->where('statut_id', '!=', 3);
-            
-            if ($this->isSec) {
-                $query->where('type_id', 1);
+        if ($this->isDG) {
+            // Logique spécifique DG
+            switch ($this->active_tab) {
+                case 1: // Tous
+                    $query = $courriersQuery;
+                    $filterByUserInteraction($query);
+                    $query = $this->applyFilters($query)->orderBy('id', 'desc');
+                    $allcourriers = $query->paginate(10);
+                    $allcourriers->getCollection()->transform(function ($courrier) {
+                        return $this->mapFollowerSingle($courrier);
+                    });
+                    break;
+                case 2: // A orienter (Pas de tâches liées)
+                    $query = $courriersQuery->whereDoesntHave('taches');
+                    $filterByUserInteraction($query);
+                    $query = $this->applyFilters($query)->orderBy('id', 'desc');
+                    $entrants = $query->paginate(10); // On réutilise le nom entrants pour simplifier la vue
+                    $entrants->getCollection()->transform(function ($courrier) {
+                        return $this->mapFollowerSingle($courrier);
+                    });
+                    break;
+                case 3: // En cours (A des tâches liées ET statut 2)
+                    $query = $courriersQuery->whereHas('taches')->where('statut_id', 2);
+                    $filterByUserInteraction($query);
+                    $query = $this->applyFilters($query)->orderBy('id', 'desc');
+                    $sortants = $query->paginate(10); // On réutilise sortants
+                    $sortants->getCollection()->transform(function ($courrier) {
+                        return $this->mapFollowerSingle($courrier);
+                    });
+                    break;
+                case 4: // Finalisés (Type 1 ET statut 3)
+                    $query = $courriersQuery->where('type_id', 1)->where('statut_id', 3);
+                    $filterByUserInteraction($query);
+                    $query = $this->applyFilters($query)->orderBy('id', 'desc');
+                    $finalises = $query->paginate(10);
+                    $finalises->getCollection()->transform(function ($courrier) {
+                        return $this->mapFollowerSingle($courrier);
+                    });
+                    break;
+                case 5: // Priorité
+                    $query = $courriersQuery;
+                    $filterByUserInteraction($query);
+                    $query = $this->applyFilters($query)->orderBy('priorite_id', 'desc')->orderBy('id', 'desc');
+                    $priorites = $query->paginate(10);
+                    $priorites->getCollection()->transform(function ($courrier) {
+                        return $this->mapFollowerSingle($courrier);
+                    });
+                    break;
             }
-            
-            // Appliquer le filtre utilisateur pour l'onglet "Tous" également
-            $filterByUserInteraction($query);
-            
-            $query = $this->applyFilters($query)->orderBy('id', 'desc');
-            $allcourriers = $query->paginate(10);
-            $allcourriers->getCollection()->transform(function ($courrier) {
-                return $this->mapFollowerSingle($courrier);
-            });
+        } else {
+            // Logique standard (Non-DG)
+            if ($this->active_tab == 1) {
+                $query = $courriersQuery->where('statut_id', '!=', 3);
+                
+                if ($this->isSec) {
+                    $query->where('type_id', 1);
+                }
+                
+                $filterByUserInteraction($query);
+                
+                $query = $this->applyFilters($query)->orderBy('id', 'desc');
+                $allcourriers = $query->paginate(10);
+                $allcourriers->getCollection()->transform(function ($courrier) {
+                    return $this->mapFollowerSingle($courrier);
+                });
 
-        } elseif ($this->active_tab == 2) {
-            $query = $courriersQuery->where('type_id', 1);
-            $filterByUserInteraction($query);
-            $query = $this->applyFilters($query)->orderBy('id', 'desc');
-            $entrants = $query->paginate(10);
-            $entrants->getCollection()->transform(function ($courrier) {
-                return $this->mapFollowerSingle($courrier);
-            });
+            } elseif ($this->active_tab == 2) {
+                $query = $courriersQuery->where('type_id', 1);
+                $filterByUserInteraction($query);
+                $query = $this->applyFilters($query)->orderBy('id', 'desc');
+                $entrants = $query->paginate(10);
+                $entrants->getCollection()->transform(function ($courrier) {
+                    return $this->mapFollowerSingle($courrier);
+                });
 
-        } elseif ($this->active_tab == 3) {
-            $query = $courriersQuery->where('type_id', 2);
-            $filterByUserInteraction($query);
-            $query = $this->applyFilters($query)->orderBy('id', 'desc');
-            $sortants = $query->paginate(10);
-            $sortants->getCollection()->transform(function ($courrier) {
-                return $this->mapFollowerSingle($courrier);
-            });
+            } elseif ($this->active_tab == 3) {
+                $query = $courriersQuery->where('type_id', 2);
+                $filterByUserInteraction($query);
+                $query = $this->applyFilters($query)->orderBy('id', 'desc');
+                $sortants = $query->paginate(10);
+                $sortants->getCollection()->transform(function ($courrier) {
+                    return $this->mapFollowerSingle($courrier);
+                });
 
-        } elseif ($this->active_tab == 4) {
-            $query = $courriersQuery->where('type_id', 3);
-            $filterByUserInteraction($query);
-            $query = $this->applyFilters($query)->orderBy('id', 'desc');
-            $internes = $query->paginate(10);
-            $internes->getCollection()->transform(function ($courrier) {
-                return $this->mapFollowerSingle($courrier);
-            });
+            } elseif ($this->active_tab == 4) {
+                $query = $courriersQuery->where('type_id', 3);
+                $filterByUserInteraction($query);
+                $query = $this->applyFilters($query)->orderBy('id', 'desc');
+                $internes = $query->paginate(10);
+                $internes->getCollection()->transform(function ($courrier) {
+                    return $this->mapFollowerSingle($courrier);
+                });
+            }
         }
 
         return view('livewire.courrier.des-courriers', [
-            'allcourriers' => $this->active_tab == 1 ? $allcourriers : collect(),
-            'entrants' => $this->active_tab == 2 ? $entrants : collect(),
-            'sortants' => $this->active_tab == 3 ? $sortants : collect(),
-            'internes' => $this->active_tab == 4 ? $internes : collect(),
+            'allcourriers' => $allcourriers,
+            'entrants' => $entrants,
+            'sortants' => $sortants,
+            'internes' => $internes,
+            'finalises' => $finalises,
+            'priorites' => $priorites,
         ]);
     }
 
