@@ -140,14 +140,13 @@ class TacheController extends Controller
     {
         if (Auth::user()->agent->isDG()) {
             if ($request->to == "direction") {
-                # code...
                 $data = [
                     'directions' => Direction::where('id', '!=', Auth::user()->agent->direction_id)->get(),
                     'priorites' => Priorite::select('id', 'titre')->get(),
                     'to' => 'direction',
                 ];
-            } elseif ($request->to == "agent") {
-                # code...
+            } else {
+                // Par défaut ou si to == agent
                 $data = [
                     'agents' => Agent::select('id', 'nom', 'prenom')
                         ->where('id', '!=', Auth::id())
@@ -155,13 +154,6 @@ class TacheController extends Controller
                     'priorites' => Priorite::select('id', 'titre')->get(),
                     'to' => 'agent',
                 ];
-            } else {
-                $data = [
-                    'directions' => Direction::where('id', '!=', Auth::user()->agent->direction_id)->get(),
-                    'priorites' => Priorite::select('id', 'titre')->get(),
-                    'to' => null,
-                ];
-
             }
         } else {
             $data = [
