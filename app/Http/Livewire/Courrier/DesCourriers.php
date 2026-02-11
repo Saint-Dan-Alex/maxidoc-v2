@@ -226,21 +226,12 @@ class DesCourriers extends Component
                         return $this->mapFollowerSingle($courrier);
                     });
                     break;
-                case 4: // Finalisés (Type 1 ET statut 3)
-                    $query = $courriersQuery->where('type_id', 1)->where('statut_id', 3);
+                case 4: // Finalisés (Statut 3)
+                    $query = $courriersQuery->where('statut_id', 3);
                     $filterByUserInteraction($query);
                     $query = $this->applyFilters($query)->orderBy('id', 'desc');
                     $finalises = $query->paginate(10);
                     $finalises->getCollection()->transform(function ($courrier) {
-                        return $this->mapFollowerSingle($courrier);
-                    });
-                    break;
-                case 5: // Priorité
-                    $query = $courriersQuery;
-                    $filterByUserInteraction($query);
-                    $query = $this->applyFilters($query)->orderBy('priorite_id', 'desc')->orderBy('id', 'desc');
-                    $priorites = $query->paginate(10);
-                    $priorites->getCollection()->transform(function ($courrier) {
                         return $this->mapFollowerSingle($courrier);
                     });
                     break;

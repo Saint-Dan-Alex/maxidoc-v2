@@ -52,12 +52,6 @@
                                 aria-controls="finalise" aria-selected="{{ $active_tab == 4 }}"
                                 wire:click='changeTab(4)'>Finalisés</button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link {{ $active_tab == 5 ? 'active' : '' }}" id="priorite-tab"
-                                data-bs-toggle="tab" data-bs-target="#priorite" type="button" role="tab"
-                                aria-controls="priorite" aria-selected="{{ $active_tab == 5 }}"
-                                wire:click='changeTab(5)'>Priorité</button>
-                        </li>
                     @else
                         @if (!$isSec)
                             @can('Numériser un document entrant')
@@ -127,7 +121,7 @@
             <div class="tab-pane fade {{ $active_tab == 1 ? 'show active' : '' }}" id="all" role="tabpanel"
                 aria-labelledby="all-tab">
                 <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px">
-                    <div class="row g-3 align-items-center">
+                    <div class="row g-3 align-items-center mb-3">
                         <div class="col">
                             <h4 class="no-padding no-margin">@if($isDG) Tous les courriers @else Liste des courriers numérisés @endif</h4>
                         </div>
@@ -136,6 +130,53 @@
                                 placeholder="Recherche" style="border:none;">
                         </div>
                     </div>
+                    @if($isDG)
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 d-flex align-items-center justify-content-lg-end">
+                            <div class="d-flex align-items-center w-100">
+                               <div class="input-group block-input-filter flex-nowrap">
+                                   <select wire:model.debounce.500ms="statut" id="statut" style="min-width: 70px; flex: 1; border-right: none"
+                                       class="form-select form-control">
+                                       <option value="null" selected disabled>Etat </option>
+                                       <option value="">Tous</option>
+                                       <option value=1>En attente</option>
+                                       <option value=2>En cours</option>
+                                       <option value=3>Traité</option>
+                                       <option value=4>Archivé</option>
+                                   </select>
+                                   <select id="priority" class="form-select form-control" style="min-width: 75px; flex: 1;"
+                                       wire:model.debounce.500ms="priority">
+                                       <option value="null" selected disabled>Priorité</option>
+                                       <option value="">Toutes</option>
+                                       <option value=1>Faible</option>
+                                       <option value=2>Moyen</option>
+                                       <option value=3>Fort</option>
+                                       <option value=4>Urgent</option>
+                                   </select>
+                                   <select name="datep" id="mois" class="form-select form-control" style="min-width: 70px; flex: 1;"
+                                       wire:model.debounce.500ms='selectedMonth'>
+                                       <option value="null" selected disabled>Mois</option>
+                                       @for ($i = 1; $i <= 12; $i++)
+                                           <option value="{{ $i }}">{{ now()->month($i)->isoFormat('MMMM') }}
+                                           </option>
+                                       @endfor
+                                   </select>
+                                   <select name="datep" id="annee" class="form-select form-control"
+                                       style="min-width: 70px; max-width: 90px; border-right: none" wire:model.debounce.500ms='selectedYear'>
+                                       <option value="null" selected disabled>Année</option>
+                                       @for ($i = ((int) now()->year); $i > 1990; $i--)
+                                           <option value="{{ $i }}">{{ $i }}</option>
+                                       @endfor
+                                   </select>
+                                   <button class="btn btn-add refresh-filter btn-search-sm flex-shrink-0" type="button"
+                                       id="" wire:click="refreshSelection">
+                                       <i class="fi fi-rr-refresh"></i>
+                                   </button>
+                               </div>
+                           </div>
+                       </div>
+                    </div>
+                    @endif
                     <hr class="mb-0">
                     <div class="table-responsive">
                         <div class="card card-table w-100" style="height: 250px" wire:loading>
@@ -394,6 +435,7 @@
                                    <option value=1>Faible</option>
                                    <option value=2>Moyen</option>
                                    <option value=3>Fort</option>
+                                   <option value=4>Urgent</option>
                                </select>
                                <select name="datep" id="mois" class="form-select form-control" style="min-width: 70px; flex: 1;"
                                    wire:model.debounce.500ms='selectedMonth'>
@@ -434,9 +476,13 @@
                                <th scope="col">N° de reference</th>
                                <th scope="col">Expediteur</th>
                                <th scope="col">Accusées réceptions</th>
-                               @can('Definir le traitement')
+                               @if($isDG)
                                    <th scope="col">Priorité</th>
-                               @endcan
+                               @else
+                                   @can('Definir le traitement')
+                                       <th scope="col">Priorité</th>
+                                   @endcan
+                               @endif
                                <th scope="col">Date de réception</th>
                                @if (!$isSec)
                                    <th scope="col">Statut</th>
@@ -509,24 +555,44 @@
                                             <span class="text-muted">Aucun accusé</span>
                                         @endif
                                     </td>
-                                   @can('Definir le traitement')
-                                       <td>
-                                           <div @class([
-                                               'badge-priority',
-                                               'badge-priority-gray' =>
-                                                   $entrant->priorite_id != 1 &&
-                                                   $entrant->priorite_id != 2 &&
-                                                   $entrant->priorite_id != 3,
-                                               'normal badge-priority-normal' => $entrant->priorite_id == 1,
-                                               'urgent  badge-priority-red' => $entrant->priorite_id == 4,
-                                               'absolute badge-priority-yellow' => $entrant->priorite_id == 3,
-                                               'important badge-priority-green' => $entrant->priorite_id == 2,
-                                           ])>
-                                               {{ $entrant->priorite?->titre ?? 'N/A' }}
-                                           </div>
-                                       </td>
-                                   @endcan
-                                   <td>{{ $entrant->created_at->format('d/m/Y') }}</td>
+                                    @if($isDG)
+                                        <td>
+                                            <div @class([
+                                                'badge-priority',
+                                                'badge-priority-gray' =>
+                                                    $entrant->priorite_id != 1 &&
+                                                    $entrant->priorite_id != 2 &&
+                                                    $entrant->priorite_id != 3 &&
+                                                    $entrant->priorite_id != 4,
+                                                'normal badge-priority-normal' => $entrant->priorite_id == 1,
+                                                'urgent  badge-priority-red' => $entrant->priorite_id == 4,
+                                                'absolute badge-priority-yellow' => $entrant->priorite_id == 3,
+                                                'important badge-priority-green' => $entrant->priorite_id == 2,
+                                            ])>
+                                                {{ $entrant->priorite?->titre ?? 'N/A' }}
+                                            </div>
+                                        </td>
+                                    @else
+                                        @can('Definir le traitement')
+                                            <td>
+                                                <div @class([
+                                                    'badge-priority',
+                                                    'badge-priority-gray' =>
+                                                        $entrant->priorite_id != 1 &&
+                                                        $entrant->priorite_id != 2 &&
+                                                        $entrant->priorite_id != 3 &&
+                                                        $entrant->priorite_id != 4,
+                                                    'normal badge-priority-normal' => $entrant->priorite_id == 1,
+                                                    'urgent  badge-priority-red' => $entrant->priorite_id == 4,
+                                                    'absolute badge-priority-yellow' => $entrant->priorite_id == 3,
+                                                    'important badge-priority-green' => $entrant->priorite_id == 2,
+                                                ])>
+                                                    {{ $entrant->priorite?->titre ?? 'N/A' }}
+                                                </div>
+                                            </td>
+                                        @endcan
+                                    @endif
+                                    <td>{{ $entrant->created_at->format('d/m/Y') }}</td>
                                    @if (!$isSec)
                                        <td>
                                            <div @class([
@@ -619,6 +685,7 @@
                                         <option value=1>Faible</option>
                                         <option value=2>Moyen</option>
                                         <option value=3>Fort</option>
+                                        <option value=4>Urgent</option>
                                     </select>
                                     <select name="datep" id="mois" class="form-select form-control" style="min-width: 70px; flex: 1;"
                                         wire:model.debounce.500ms='selectedMonth'>
@@ -658,6 +725,9 @@
                                     <th scope="col">Titre</th>
                                     <th scope="col">N° d'enregistrement</th>
                                     <th scope="col">Destinataire</th>
+                                    @if($isDG)
+                                        <th scope="col">Priorité</th>
+                                    @endif
                                     <th scope="col">Accusées réceptions</th>
                                     <th scope="col">Date du courrier</th>
                                     <th scope="col">Date de traitement</th>
@@ -682,6 +752,24 @@
                                         </td>
                                         <td>{{ $sortant->reference_interne }}</td>
                                         <td>{{ $sortant->externDestinateur->nom ?? 'N/D' }}</td>
+                                        @if($isDG)
+                                            <td>
+                                                <div @class([
+                                                    'badge-priority',
+                                                    'badge-priority-gray' =>
+                                                        $sortant->priorite_id != 1 &&
+                                                        $sortant->priorite_id != 2 &&
+                                                        $sortant->priorite_id != 3 &&
+                                                        $sortant->priorite_id != 4,
+                                                    'normal badge-priority-normal' => $sortant->priorite_id == 1,
+                                                    'urgent  badge-priority-red' => $sortant->priorite_id == 4,
+                                                    'absolute badge-priority-yellow' => $sortant->priorite_id == 3,
+                                                    'important badge-priority-green' => $sortant->priorite_id == 2,
+                                                ])>
+                                                    {{ $sortant->priorite?->titre ?? 'N/A' }}
+                                                </div>
+                                            </td>
+                                        @endif
                                         <td class="text-nowrap">
                                             @if ($sortant->accuseReceptions->count() > 0)
                                                 <div class="box-avatar d-flex align-items-center">
@@ -916,14 +1004,52 @@
             <div class="tab-pane fade {{ $active_tab == 4 ? 'show active' : '' }}" id="finalise" role="tabpanel"
                 aria-labelledby="finalise-tab">
                 <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
-                    <div class="row g-3 align-items-center">
+                    <div class="row g-3 align-items-center mb-3">
                         <div class="col-lg-6 col-md-6">
                             <h4 class="no-padding no-margin ps-3">Courriers finalisés</h4>
                         </div>
                         <div class="col-lg-6 col-md-6">
-                            <input type="text" class="form-control input-search-card" placeholder="Recherche"
-                                style="border:none;" wire:model='search'>
+                            <div class="d-flex align-items-center justify-content-lg-end">
+                                <input type="text" class="form-control input-search-card" placeholder="Recherche"
+                                    style="border:none;" wire:model='search'>
+                            </div>
                         </div>
+                    </div>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 d-flex align-items-center justify-content-lg-end">
+                            <div class="d-flex align-items-center w-100">
+                               <div class="input-group block-input-filter flex-nowrap">
+                                   <select id="priority" class="form-select form-control" style="min-width: 75px; flex: 1;"
+                                       wire:model.debounce.500ms="priority">
+                                       <option value="null" selected disabled>Priorité</option>
+                                       <option value="">Toutes</option>
+                                       <option value=1>Faible</option>
+                                       <option value=2>Moyen</option>
+                                       <option value=3>Fort</option>
+                                       <option value=4>Urgent</option>
+                                   </select>
+                                   <select name="datep" id="mois" class="form-select form-control" style="min-width: 70px; flex: 1;"
+                                       wire:model.debounce.500ms='selectedMonth'>
+                                       <option value="null" selected disabled>Mois</option>
+                                       @for ($i = 1; $i <= 12; $i++)
+                                           <option value="{{ $i }}">{{ now()->month($i)->isoFormat('MMMM') }}
+                                           </option>
+                                       @endfor
+                                   </select>
+                                   <select name="datep" id="annee" class="form-select form-control"
+                                       style="min-width: 70px; max-width: 90px; border-right: none" wire:model.debounce.500ms='selectedYear'>
+                                       <option value="null" selected disabled>Année</option>
+                                       @for ($i = ((int) now()->year); $i > 1990; $i--)
+                                           <option value="{{ $i }}">{{ $i }}</option>
+                                       @endfor
+                                   </select>
+                                   <button class="btn btn-add refresh-filter btn-search-sm flex-shrink-0" type="button"
+                                       id="" wire:click="refreshSelection">
+                                       <i class="fi fi-rr-refresh"></i>
+                                   </button>
+                               </div>
+                           </div>
+                       </div>
                     </div>
                     <hr class="mb-0">
                     <div class="table-responsive">
@@ -933,6 +1059,7 @@
                                     <th scope="col">Titre</th>
                                     <th scope="col">N° d'enregistrement</th>
                                     <th scope="col">Expéditeur</th>
+                                    <th scope="col">Priorité</th>
                                     <th scope="col">Date de réception</th>
                                     <th scope="col">Statut</th>
                                     <th scope="col">Action</th>
@@ -944,6 +1071,22 @@
                                         <td>{{ $finalise->title }}</td>
                                         <td>{{ $finalise->reference_interne }}</td>
                                         <td>{{ $finalise->externExpediteur->nom ?? 'N/D' }}</td>
+                                        <td>
+                                            <div @class([
+                                                'badge-priority',
+                                                'badge-priority-gray' =>
+                                                    $finalise->priorite_id != 1 &&
+                                                    $finalise->priorite_id != 2 &&
+                                                    $finalise->priorite_id != 3 &&
+                                                    $finalise->priorite_id != 4,
+                                                'normal badge-priority-normal' => $finalise->priorite_id == 1,
+                                                'urgent  badge-priority-red' => $finalise->priorite_id == 4,
+                                                'absolute badge-priority-yellow' => $finalise->priorite_id == 3,
+                                                'important badge-priority-green' => $finalise->priorite_id == 2,
+                                            ])>
+                                                {{ $finalise->priorite?->titre ?? 'N/A' }}
+                                            </div>
+                                        </td>
                                         <td>{{ $finalise->created_at->format('d/m/Y') }}</td>
                                         <td><div class="badge badge-green">Finalisé</div></td>
                                         <td>
@@ -964,71 +1107,6 @@
                 </div>
             </div>
 
-            <!-- Priorité Tab (DG) -->
-            <div class="tab-pane fade {{ $active_tab == 5 ? 'show active' : '' }}" id="priorite" role="tabpanel"
-                aria-labelledby="priorite-tab">
-                <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
-                    <div class="row g-3 align-items-center">
-                        <div class="col-lg-6 col-md-6">
-                            <h4 class="no-padding no-margin ps-3">Filtrage par priorité</h4>
-                        </div>
-                        <div class="col-lg-6 col-md-6 text-end pe-3">
-                            <select wire:model="priority" class="form-select w-50 ms-auto">
-                                <option value="">Toutes les priorités</option>
-                                <option value="1">Faible</option>
-                                <option value="2">Moyen</option>
-                                <option value="3">Fort</option>
-                                <option value="4">Urgent</option>
-                            </select>
-                        </div>
-                    </div>
-                    <hr class="mb-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Titre</th>
-                                    <th scope="col">N° d'enregistrement</th>
-                                    <th scope="col">Priorité</th>
-                                    <th scope="col">Date</th>
-                                    <th scope="col">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($priorites as $priorite_item)
-                                    <tr>
-                                        <td>{{ $priorite_item->title }}</td>
-                                        <td>{{ $priorite_item->reference_interne }}</td>
-                                        <td>
-                                            <div @class([
-                                                'badge',
-                                                'badge-priority-gray' => !in_array($priorite_item->priorite_id, [1, 2, 3, 4]),
-                                                'badge-priority-normal' => $priorite_item->priorite_id == 1,
-                                                'badge-priority-green' => $priorite_item->priorite_id == 2,
-                                                'badge-priority-yellow' => $priorite_item->priorite_id == 3,
-                                                'badge-priority-red' => $priorite_item->priorite_id == 4,
-                                            ])>
-                                                {{ $priorite_item->priorite->titre ?? 'N/A' }}
-                                            </div>
-                                        </td>
-                                        <td>{{ $priorite_item->created_at->format('d/m/Y') }}</td>
-                                        <td>
-                                            <a href="{{ route('regidoc.courriers.show', $priorite_item) }}" class="btn">
-                                                <i class="fi fi-rr-eye"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr><td colspan="5" class="text-center">Aucun courrier trouvé</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                        @if ($priorites instanceof \Illuminate\Pagination\LengthAwarePaginator && $priorites->count() > 0)
-                            {{ $priorites->links() }}
-                        @endif
-                    </div>
-                </div>
-            </div>
         @endif
     </div>
 </div>
