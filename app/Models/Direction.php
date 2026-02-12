@@ -102,9 +102,13 @@ class Direction extends Model
         return $this->hasMany(Secretariat::class);
     }
 
-    public function secretaire()
+    public function getSecretaireAttribute()
     {
-        return $this->hasMany(Secretariat::class)->first()?->user() ?? $this->responsable->user();
+        $secretariat = $this->secretaires()->first();
+        if ($secretariat) {
+            return $secretariat->user;
+        }
+        return $this->responsable?->user;
     }
 
     /**

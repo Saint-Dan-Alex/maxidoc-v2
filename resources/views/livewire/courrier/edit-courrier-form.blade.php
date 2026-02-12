@@ -458,7 +458,7 @@
                             </div>
                         </div>
                     </div>
-                    @if (Auth::user()->agent->is(Auth::user()->agent->direction->secretaire->agent))
+                    @if (Auth::user()->agent?->isAssistant() || Auth::user()->agent?->isSecretaire())
                         <div class="col-12 d-none block_traitant" wire:ignore>
                             <div class="row">
                                 <label class="col-5 col-form-label">Service traitant</label>
