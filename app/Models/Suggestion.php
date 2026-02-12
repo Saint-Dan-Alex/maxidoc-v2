@@ -22,4 +22,9 @@ class Suggestion extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function historiques()
+    {
+        return $this->morphMany(Historique::class, 'historiquecable');
+    }
 }

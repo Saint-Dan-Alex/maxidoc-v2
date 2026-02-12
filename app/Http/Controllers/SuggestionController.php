@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SuggestionMail;
+use App\Models\Historique;
+use App\Models\User;
+use App\Notifications\SuggestionNotification;
+use Illuminate\Support\Facades\Notification;
 
 class SuggestionController extends Controller
 {
@@ -18,7 +22,7 @@ class SuggestionController extends Controller
             abort(403);
         }
 
-        $suggestions = Suggestion::with('user')->orderBy('created_at', 'desc')->paginate(20);
+        $suggestions = Suggestion::with(['user', 'historiques.user.agent'])->orderBy('created_at', 'desc')->paginate(20);
         return view('regidoc.pages.suggestions.index', compact('suggestions'));
     }
 
@@ -49,6 +53,30 @@ class SuggestionController extends Controller
             'image_path' => $imagePath,
         ]);
 
+        // Création de l'historique
+        Historique::create([
+            'key' => 'Création',
+            'historiquecable_id' => $suggestion->id,
+            'historiquecable_type' => Suggestion::class,
+            'description' => "Une nouvelle suggestion a été créée par " . Auth::user()->name,
+            'user_id' => Auth::id(),
+        ]);
+
+        // Notifications aux admins
+        try {
+            $admins = User::role(['Super Admin', 'Administrateur système'])->get();
+            if ($admins->count() > 0) {
+                Notification::send($admins, new SuggestionNotification(
+                    $suggestion, 
+                    Auth::user(), 
+                    "Nouvelle suggestion : " . $suggestion->objet, 
+                    'new'
+                ));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi notifications admins suggestion: ' . $e->getMessage());
+        }
+
         // Envoi de l'email
         try {
             Mail::to('maxidoc@newtech-rdc.net')->send(new SuggestionMail($suggestion));
@@ -71,6 +99,27 @@ class SuggestionController extends Controller
         ]);
 
         $suggestion->update(['status' => $request->status]);
+
+        // Création de l'historique
+        Historique::create([
+            'key' => 'Mise à jour statut',
+            'historiquecable_id' => $suggestion->id,
+            'historiquecable_type' => Suggestion::class,
+            'description' => "Le statut de la suggestion a été mis à jour à '" . $request->status . "' par " . Auth::user()->name,
+            'user_id' => Auth::id(),
+        ]);
+
+        // Notification à l'auteur
+        try {
+            $suggestion->user->notify(new SuggestionNotification(
+                $suggestion, 
+                Auth::user(), 
+                "Le statut de votre suggestion '" . $suggestion->objet . "' a été mis à jour à : " . $request->status, 
+                'status_update'
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi notification auteur suggestion: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Statut mis à jour.');
     }

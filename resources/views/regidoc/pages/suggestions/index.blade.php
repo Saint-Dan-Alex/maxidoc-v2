@@ -29,6 +29,16 @@
     .modal-content { border-radius: 15px; border: none; }
     .btn-view { border-radius: 8px; padding: 5px 15px; transition: all 0.2s; }
     .btn-view:hover { background: #4b7bec; color: white; }
+    .suggestion-history {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .history-item {
+        padding-bottom: 10px;
+    }
+    .ultra-small {
+        font-size: 0.7rem;
+    }
 </style>
 
 <div class="row">
@@ -135,17 +145,24 @@
                                 {{ $suggestion->message }}
                             </div>
                             
-                            @if($suggestion->image_path)
-                                <h6 class="text-muted small text-uppercase fw-bold mb-2">Pièce jointe:</h6>
-                                <div class="border p-2 rounded text-center bg-white shadow-sm">
-                                    <img src="{{ asset('storage/' . $suggestion->image_path) }}" class="img-fluid rounded" style="max-height: 350px;" alt="Capture d'écran">
-                                    <div class="mt-3">
-                                        <a href="{{ asset('storage/' . $suggestion->image_path) }}" target="_blank" class="btn btn-sm btn-secondary px-4">
-                                            <i class="fi fi-rr-expand me-1"></i> Ouvrir l'image
-                                        </a>
-                                    </div>
-                                </div>
                             @endif
+
+                            <div class="mt-4">
+                                <h6 class="text-muted small text-uppercase fw-bold mb-3">Historique des activités:</h6>
+                                <div class="suggestion-history ps-3 border-start">
+                                    @forelse($suggestion->historiques->sortByDesc('created_at') as $history)
+                                        <div class="history-item mb-3 position-relative">
+                                            <div class="small fw-bold">{{ $history->description }}</div>
+                                            <div class="text-muted ultra-small">
+                                                {{ $history->created_at->format('d/m/Y H:i') }} par 
+                                                {{ $history->user->agent ? ($history->user->agent->prenom . ' ' . $history->user->agent->nom) : $history->user->name }}
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="text-muted small italic">Aucun historique disponible</div>
+                                    @endforelse
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-5 border-start ps-md-4">
                             <div class="mb-4">
