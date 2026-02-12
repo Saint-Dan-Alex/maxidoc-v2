@@ -1228,6 +1228,7 @@
                     </div>
                 </div>
             </div>
+        @endif
 
             @if($isDG || $isAssistant || $isSecretaire || Auth::user()->can('Restaurer un courrier') || $isSuperAdmin)
             <!-- Corbeille Tab -->
@@ -1280,7 +1281,6 @@
                 </div>
             </div>
             @endif
-        @endif
     </div>
 </div>
 
