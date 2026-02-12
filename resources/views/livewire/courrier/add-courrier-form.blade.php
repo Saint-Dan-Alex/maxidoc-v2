@@ -156,7 +156,7 @@
                     <input type="hidden" name="is_scan" id="server_response" wire:ignore />
                     <div class="col-12" wire:ignore>
                         <div class="block-file ">
-                            <input type="file" id="file-upload" name="document" accept=".pdf" required>
+                            <input type="file" id="file-upload" name="document" accept=".*" required>
                             <label for="file-upload" class="d-flex">
                                 <svg viewBox="0 0 24 24" width="32" height="32">
                                     <path
