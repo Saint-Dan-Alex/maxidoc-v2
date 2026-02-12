@@ -25,13 +25,20 @@ class DesCourriers extends Component
     public $statut = null; 
     public $isSec = false;
     public $isDG = false;
+    public $isAssistant = false;
+    public $isSecretaire = false;
+    public $isSuperAdmin = false;
+    public $perPage = 10;
 
     public function mount()
     {
         $this->isSec = false;
         $this->isDG = false;
         $user = Auth::user();
-        
+
+        // Vérifier si Super Admin (même sans agent)
+        $this->isSuperAdmin = $user && $user->hasRole('Super Admin');
+
         if ($user && $user->agent) {
             // Vérifier si l'utilisateur est un secrétaire du DG
             $agent = $user->agent;
@@ -43,6 +50,17 @@ class DesCourriers extends Component
             
             // Vérifier si l'utilisateur est DG
             $this->isDG = $agent->isDG();
+            
+            // Vérifier si l'utilisateur est Assistant
+            $this->isAssistant = $agent->isAssistant();
+
+            // Vérifier si l'utilisateur est Secretaire
+            $this->isSecretaire = $agent->isSecretaire();
+        }
+
+        // Si Super Admin, l'onglet par défaut doit être la Corbeille (5)
+        if ($this->isSuperAdmin && $this->active_tab == 1) {
+            $this->active_tab = 5;
         }
     }
 
@@ -169,7 +187,7 @@ class DesCourriers extends Component
             'partages'
         ]);
 
-        $agentId = Auth::user()->agent->id;
+        $agentId = Auth::user()->agent?->id;
 
         // Fonction pour filtrer les courriers où l'utilisateur est impliqué
         $filterByUserInteraction = function ($query) use ($agentId) {
@@ -230,8 +248,18 @@ class DesCourriers extends Component
                     $query = $courriersQuery->where('statut_id', 3);
                     $filterByUserInteraction($query);
                     $query = $this->applyFilters($query)->orderBy('id', 'desc');
-                    $finalises = $query->paginate(10);
+                    $finalises = $query->paginate($this->perPage);
                     $finalises->getCollection()->transform(function ($courrier) {
+                        return $this->mapFollowerSingle($courrier);
+                    });
+                    break;
+                case 5: // Corbeille (Désormais pour DG, Admin et Assistants)
+                    $query = Courrier::onlyTrashed()->with([
+                        'expediteur', 'externExpediteur', 'externDestinateur', 'destinateurs'
+                    ]);
+                    $query = $this->applyFilters($query)->orderBy('deleted_at', 'desc');
+                    $trashed = $query->paginate($this->perPage);
+                    $trashed->getCollection()->transform(function ($courrier) {
                         return $this->mapFollowerSingle($courrier);
                     });
                     break;
@@ -279,6 +307,16 @@ class DesCourriers extends Component
                 $internes->getCollection()->transform(function ($courrier) {
                     return $this->mapFollowerSingle($courrier);
                 });
+            } elseif ($this->active_tab == 5) {
+                // Corbeille pour non-DG (Assistants)
+                $query = Courrier::onlyTrashed()->with([
+                    'expediteur', 'externExpediteur', 'externDestinateur', 'destinateurs'
+                ]);
+                $query = $this->applyFilters($query)->orderBy('deleted_at', 'desc');
+                $trashed = $query->paginate($this->perPage);
+                $trashed->getCollection()->transform(function ($courrier) {
+                    return $this->mapFollowerSingle($courrier);
+                });
             }
         }
 
@@ -288,7 +326,9 @@ class DesCourriers extends Component
             'sortants' => $sortants,
             'internes' => $internes,
             'finalises' => $finalises,
+            'trashed' => isset($trashed) ? $trashed : collect(),
             'priorites' => $priorites,
+            'isSuperAdmin' => $this->isSuperAdmin,
         ]);
     }
 
@@ -319,4 +359,75 @@ class DesCourriers extends Component
              ['path' => request()->url(), 'query' => request()->query()]
          );
      }
+     
+     // --- Actions de suppression ---
+
+    public function deleteCourrier($id)
+    {
+        $courrier = Courrier::findOrFail($id);
+        
+        if (Auth::user()->can('delete', $courrier)) {
+            $courrier->delete();
+            
+            \App\Models\Historique::create([
+                'key' => 'Suppression',
+                'historiquecable_id' => $id,
+                'historiquecable_type' => 'App\Models\Courrier',
+                'description' => "Le courrier a été déplacé dans la corbeille par " . Auth::user()->name,
+                'user_id' => Auth::user()->id,
+            ]);
+
+            $this->dispatchBrowserEvent('swal:modal', [
+                'type' => 'success',
+                'title' => 'Courrier supprimé',
+                'text' => 'Le courrier a été placé dans la corbeille.'
+            ]);
+        }
+    }
+
+    public function restoreCourrier($id)
+    {
+        $courrier = Courrier::onlyTrashed()->findOrFail($id);
+        
+        if (Auth::user()->can('restore', $courrier)) {
+            $courrier->restore();
+
+            \App\Models\Historique::create([
+                'key' => 'Restauration',
+                'historiquecable_id' => $id,
+                'historiquecable_type' => 'App\Models\Courrier',
+                'description' => "Le courrier a été restauré par " . Auth::user()->name,
+                'user_id' => Auth::user()->id,
+            ]);
+
+            $this->dispatchBrowserEvent('swal:modal', [
+                'type' => 'success',
+                'title' => 'Courrier restauré',
+                'text' => 'Le courrier a été remis dans la liste principale.'
+            ]);
+        }
+    }
+
+    public function forceDeleteCourrier($id)
+    {
+        $courrier = Courrier::onlyTrashed()->findOrFail($id);
+        
+        if (Auth::user()->can('forceDelete', $courrier)) {
+            $courrier->forceDelete();
+
+            \App\Models\Historique::create([
+                'key' => 'Suppression définitive',
+                'historiquecable_id' => $id,
+                'historiquecable_type' => 'App\Models\Courrier',
+                'description' => "Le courrier a été définitivement supprimé par " . Auth::user()->name,
+                'user_id' => Auth::user()->id,
+            ]);
+
+            $this->dispatchBrowserEvent('swal:modal', [
+                'type' => 'success',
+                'title' => 'Suppression définitive',
+                'text' => 'Le courrier a été supprimé définitivement.'
+            ]);
+        }
+    }
 }

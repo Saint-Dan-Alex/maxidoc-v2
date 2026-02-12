@@ -25,6 +25,9 @@ class Kernel extends ConsoleKernel
 
         // Force daily logout of open sessions at 23:59
         $schedule->command('auth:force-daily-logout')->dailyAt('23:59');
+
+        // Purge automatique de la corbeille (30 jours)
+        $schedule->command('courriers:purge')->daily();
     }
 
     /**

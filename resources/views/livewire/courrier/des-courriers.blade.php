@@ -24,7 +24,7 @@
                                 (Auth::user()->can('Numériser un document sortant') &&
                                     Auth::user()->can('Numériser un document interne'))
                             ) &&
-                                Auth::user()->can('Voir les courriers')))
+                                Auth::user()->can('Voir les courriers')) && !$isSuperAdmin)
                         <li class="nav-item" role="presentation">
                             <button class="nav-link {{ $active_tab == 1 ? 'active' : '' }}" id="all-tab"
                                 data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab"
@@ -33,60 +33,93 @@
                         </li>
                     @endif
 
-                    @if($isDG)
+                    @if ($isSuperAdmin)
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
-                                data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
-                                aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
-                                wire:click='changeTab(2)'>A orienter</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link {{ $active_tab == 3 ? 'active' : '' }}" id="sortant-tab"
-                                data-bs-toggle="tab" data-bs-target="#sortant" type="button" role="tab"
-                                aria-controls="sortant" aria-selected="{{ $active_tab == 3 }}"
-                                wire:click='changeTab(3)'>En cours</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link {{ $active_tab == 4 ? 'active' : '' }}" id="finalise-tab"
-                                data-bs-toggle="tab" data-bs-target="#finalise" type="button" role="tab"
-                                aria-controls="finalise" aria-selected="{{ $active_tab == 4 }}"
-                                wire:click='changeTab(4)'>Finalisés</button>
+                            <button class="nav-link {{ $active_tab == 5 ? 'active' : '' }}" id="trash-tab"
+                                data-bs-toggle="tab" data-bs-target="#trash" type="button" role="tab"
+                                aria-controls="trash" aria-selected="{{ $active_tab == 5 }}"
+                                wire:click='changeTab(5)'>
+                                <i class="fi fi-rr-trash me-1"></i> Corbeille
+                            </button>
                         </li>
                     @else
-                        @if (!$isSec)
-                            @can('Numériser un document entrant')
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
-                                        data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
-                                        aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
-                                        wire:click='changeTab(2)'>Entrants</button>
-                                </li>
-                            @endcan
-                        @endif
-
-                        @can('Numériser un document sortant')
+                        @if ($isDG)
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
+                                    data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
+                                    aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
+                                    wire:click='changeTab(2)'>A orienter</button>
+                            </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link {{ $active_tab == 3 ? 'active' : '' }}" id="sortant-tab"
                                     data-bs-toggle="tab" data-bs-target="#sortant" type="button" role="tab"
                                     aria-controls="sortant" aria-selected="{{ $active_tab == 3 }}"
-                                    wire:click='changeTab(3)'>Traités</button>
+                                    wire:click='changeTab(3)'>En cours</button>
                             </li>
-                        @endcan
-
-                        @can('Numériser un document interne')
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link {{ $active_tab == 4 ? 'active' : '' }}" id="interne-tab"
-                                    data-bs-toggle="tab" data-bs-target="#interne" type="button" role="tab"
-                                    aria-controls="interne" aria-selected="{{ $active_tab == 4 }}"
-                                    wire:click='changeTab(4)'>Internes</button>
+                                <button class="nav-link {{ $active_tab == 4 ? 'active' : '' }}" id="finalise-tab"
+                                    data-bs-toggle="tab" data-bs-target="#finalise" type="button" role="tab"
+                                    aria-controls="finalise" aria-selected="{{ $active_tab == 4 }}"
+                                    wire:click='changeTab(4)'>Finalisés</button>
                             </li>
-                        @endcan
+                            @if ($isDG || $isAssistant || $isSecretaire || Auth::user()->can('Restaurer un courrier'))
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {{ $active_tab == 5 ? 'active' : '' }}" id="trash-tab"
+                                        data-bs-toggle="tab" data-bs-target="#trash" type="button" role="tab"
+                                        aria-controls="trash" aria-selected="{{ $active_tab == 5 }}"
+                                        wire:click='changeTab(5)'>
+                                        <i class="fi fi-rr-trash me-1"></i> Corbeille
+                                    </button>
+                                </li>
+                            @endif
+                        @else
+                            @if (!$isSec)
+                                @can('Numériser un document entrant')
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link {{ $active_tab == 2 ? 'active' : '' }}" id="entrant-tab"
+                                            data-bs-toggle="tab" data-bs-target="#entrant" type="button" role="tab"
+                                            aria-controls="entrant" aria-selected="{{ $active_tab == 2 }}"
+                                            wire:click='changeTab(2)'>Entrants</button>
+                                    </li>
+                                @endcan
+                            @endif
+
+                            @can('Numériser un document sortant')
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {{ $active_tab == 3 ? 'active' : '' }}" id="sortant-tab"
+                                        data-bs-toggle="tab" data-bs-target="#sortant" type="button" role="tab"
+                                        aria-controls="sortant" aria-selected="{{ $active_tab == 3 }}"
+                                        wire:click='changeTab(3)'>Traités</button>
+                                </li>
+                            @endcan
+
+                            @can('Numériser un document interne')
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {{ $active_tab == 4 ? 'active' : '' }}" id="interne-tab"
+                                        data-bs-toggle="tab" data-bs-target="#interne" type="button" role="tab"
+                                        aria-controls="interne" aria-selected="{{ $active_tab == 4 }}"
+                                        wire:click='changeTab(4)'>Internes</button>
+                                </li>
+                            @endcan
+
+                            @if ($isAssistant || $isSecretaire || Auth::user()->can('Restaurer un courrier'))
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {{ $active_tab == 5 ? 'active' : '' }}" id="trash-tab"
+                                        data-bs-toggle="tab" data-bs-target="#trash" type="button" role="tab"
+                                        aria-controls="trash" aria-selected="{{ $active_tab == 5 }}"
+                                        wire:click='changeTab(5)'>
+                                        <i class="fi fi-rr-trash me-1"></i> Corbeille
+                                    </button>
+                                </li>
+                            @endif
+                        @endif
                     @endif
                 </ul>
             </div>
         </div>
         <div class="col-lg-4 col-sm-4 col-3 d-flex align-items-center justify-content-end">
             @can('Numériser un document')
+                @if(!$isSuperAdmin)
                 <a href="{{ route('regidoc.courriers.create') }}"
                     class="btn btn-add btn-add-hover ms-auto btn-scanner-inbox" style="flex: 0 0 auto;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -97,6 +130,7 @@
                     </svg>
                     <span>Numériser un document</span>
                 </a>
+                @endif
             @endcan
         </div>
     </div>
@@ -391,6 +425,12 @@
                                                                     <i class="fi fi-rr-eye"></i>
                                                                     <div class="tooltip-btn">Voir détails</div>
                                                                 </a>
+                                                                @can('delete', $courrier)
+                                                                    <button onclick="confirmDelete({{ $courrier->id }})" class="btn text-danger">
+                                                                        <i class="fi fi-rr-trash"></i>
+                                                                        <div class="tooltip-btn">Supprimer</div>
+                                                                    </button>
+                                                                @endcan
                                                             @endif
                                                         @endif
                                                     </div>
@@ -642,6 +682,12 @@
             <i class="fi fi-rr-eye"></i>
             <div class="tooltip-btn">Voir détails</div>
         </a>
+        @can('delete', $entrant)
+            <button onclick="confirmDelete({{ $entrant->id }})" class="btn text-danger">
+                <i class="fi fi-rr-trash"></i>
+                <div class="tooltip-btn">Supprimer</div>
+            </button>
+        @endcan
     @endif
 @endif
                                    @endif
@@ -868,6 +914,12 @@
                                                         <i class="fi fi-rr-eye"></i>
                                                         <div class="tooltip-btn">Voir détails</div>
                                                     </a>
+                                                    @can('delete', $sortant)
+                                                        <button onclick="confirmDelete({{ $sortant->id }})" class="btn text-danger">
+                                                            <i class="fi fi-rr-trash"></i>
+                                                            <div class="tooltip-btn">Supprimer</div>
+                                                        </button>
+                                                    @endcan
                                                 @endif
                                             </div>
                                         </td>
@@ -996,6 +1048,12 @@
                                                             <i class="fi fi-rr-eye"></i>
                                                             <div class="tooltip-btn">Voir détails</div>
                                                         </a>
+                                                        @can('delete', $interne)
+                                                            <button onclick="confirmDelete({{ $interne->id }})" class="btn text-danger">
+                                                                <i class="fi fi-rr-trash"></i>
+                                                                <div class="tooltip-btn">Supprimer</div>
+                                                            </button>
+                                                        @endcan
                                                     @endif
                                                 </div>
                                             </td>
@@ -1111,7 +1169,14 @@
                                         <td>
                                             <a href="{{ route('regidoc.courriers.show', $finalise) }}" class="btn">
                                                 <i class="fi fi-rr-eye"></i>
+                                                <div class="tooltip-btn">Voir détails</div>
                                             </a>
+                                            @can('delete', $finalise)
+                                                <button onclick="confirmDelete({{ $finalise->id }})" class="btn text-danger">
+                                                    <i class="fi fi-rr-trash"></i>
+                                                    <div class="tooltip-btn">Supprimer</div>
+                                                </button>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @empty
@@ -1126,9 +1191,96 @@
                 </div>
             </div>
 
+            @if($isDG || $isAssistant || $isSecretaire || Auth::user()->can('Restaurer un courrier') || $isSuperAdmin)
+            <!-- Corbeille Tab -->
+            <div class="tab-pane fade {{ $active_tab == 5 ? 'show active' : '' }}" id="trash" role="tabpanel"
+                aria-labelledby="trash-tab">
+                <div class="pb-5 card card-table" style="overflow:visible; border-radius: 12px 12px 12px 12px;">
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-lg-6">
+                            <h4 class="no-padding no-margin ps-3">Corbeille</h4>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Titre</th>
+                                    <th scope="col">Référence</th>
+                                    <th scope="col">Supprimé le</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($trashed as $item)
+                                    <tr>
+                                        <td>{{ $item->objet }}</td>
+                                        <td>{{ $item->reference_interne }}</td>
+                                        <td>{{ $item->deleted_at->format('d/m/Y H:i') }}</td>
+                                        <td>
+                                            <button wire:click="restoreCourrier({{ $item->id }})" class="btn text-success" title="Restaurer">
+                                                <i class="fi fi-rr-refresh"></i>
+                                            </button>
+                                            <button onclick="confirmForceDelete({{ $item->id }})" class="btn text-danger" title="Supprimer définitivement">
+                                                <i class="fi fi-rr-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="4" class="text-center">La corbeille est vide</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                        <div class="d-flex align-items-center justify-content-between gap-4 mt-3 px-3">
+                            <div class="ms-auto custom-pagination-shadcn">
+                                @if ($trashed instanceof \Illuminate\Pagination\LengthAwarePaginator && $trashed->count() > 0)
+                                    {{ $trashed->links() }}
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
         @endif
     </div>
 </div>
+
+<script>
+    function confirmDelete(id) {
+        Swal.fire({
+            title: 'Êtes-vous sûr ?',
+            text: "Le courrier sera déplacé dans la corbeille.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oui, supprimer !',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                @this.deleteCourrier(id);
+            }
+        })
+    }
+
+    function confirmForceDelete(id) {
+        Swal.fire({
+            title: 'Action irréversible !',
+            text: "Le courrier sera définitivement supprimé.",
+            icon: 'danger',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Supprimer définitivement',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                @this.forceDeleteCourrier(id);
+            }
+        })
+    }
+</script>
 
 <script>
     function initTooltips() {

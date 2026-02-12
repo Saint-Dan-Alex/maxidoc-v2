@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder
             ReceptionAgentSeeder::class,
             AssistanatSeeder::class,
             SecretariatSeeder::class,
+            CourrierPermissionSeeder::class,
         ]);
 
     }

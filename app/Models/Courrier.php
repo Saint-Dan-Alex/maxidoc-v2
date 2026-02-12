@@ -78,7 +78,7 @@ class Courrier extends Model implements Viewable
      * @var array
      */
 
-    // use SoftDeletes; // Utilisation du trait SoftDeletes
+    use SoftDeletes; // Utilisation du trait SoftDeletes
 
     
     protected $dates = ['date_du_courrier', 'date_arrive', 'date_fin', 'created_at', 'updated_at',];

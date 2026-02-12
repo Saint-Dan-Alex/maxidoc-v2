@@ -103,7 +103,12 @@ class CourrierPolicy
      */
     public function delete(User $user, Courrier $courrier)
     {
-        //
+        // L'auteur, un DG ou un Assistant peut supprimer (mettre à la corbeille)
+        return $user->can('Supprimer un courrier') || 
+               $courrier->created_by === $user->agent->id || 
+               $user->agent->isDG() || 
+               $user->agent->isAssistant() ||
+               $user->agent->isSecretaire();
     }
 
     /**
@@ -115,7 +120,11 @@ class CourrierPolicy
      */
     public function restore(User $user, Courrier $courrier)
     {
-        //
+        // Seul le DG, un admin ou un Assistant (avec permission spécifique ou rôle) peut restaurer
+        return $user->agent->isDG() || 
+               $user->agent->isAssistant() || 
+               $user->agent->isSecretaire() || 
+               $user->can('Restaurer un courrier');
     }
 
     /**
@@ -127,6 +136,10 @@ class CourrierPolicy
      */
     public function forceDelete(User $user, Courrier $courrier)
     {
-        //
+        // Seul le DG, un admin ou un Assistant peut supprimer définitivement
+        return $user->agent->isDG() || 
+               $user->agent->isAssistant() || 
+               $user->agent->isSecretaire() || 
+               $user->can('Suppression définitive');
     }
 }

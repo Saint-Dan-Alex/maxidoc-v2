@@ -85,6 +85,18 @@
                                     </span>
                                     <div class="tooltip-indicator">Suggestions reçues</div>
                                 </a>
+
+                                {{-- Lien Corbeille (Admin) --}}
+                                <a href="{{ route('regidoc.courriers.index', ['active_tab' => 5]) }}" class="{{ request()->fullUrlIs(route('regidoc.courriers.index', ['active_tab' => 5])) ? 'active' : '' }} panelsession">
+                                    <span>
+                                        <i class="fi fi-rr-trash fi-rr"></i>
+                                        <i class="fi fi-sr-trash fi-sr"></i>
+                                    </span>
+                                    <span class="title">
+                                        Corbeille (Admin)
+                                    </span>
+                                    <div class="tooltip-indicator">Corbeille</div>
+                                </a>
                             @endif
 
                         @else
