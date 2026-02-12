@@ -258,7 +258,7 @@ class DesCourriers extends Component
                     break;
                 case 5: // Corbeille (Désormais pour DG, Admin et Assistants)
                     $query = Courrier::onlyTrashed()->with([
-                        'expediteur', 'externExpediteur', 'externDestinateur', 'destinateurs'
+                        'expediteur', 'externExpediteur', 'externDestinateur', 'destinateurs', 'deletionHistory.user.agent'
                     ]);
                     $query = $this->applyFilters($query)->orderBy('deleted_at', 'desc');
                     $trashed = $query->paginate($this->perPage);
@@ -313,7 +313,7 @@ class DesCourriers extends Component
             } elseif ($this->active_tab == 5) {
                 // Corbeille pour non-DG (Assistants)
                 $query = Courrier::onlyTrashed()->with([
-                    'expediteur', 'externExpediteur', 'externDestinateur', 'destinateurs'
+                    'expediteur', 'externExpediteur', 'externDestinateur', 'destinateurs', 'deletionHistory.user.agent'
                 ]);
                 $query = $this->applyFilters($query)->orderBy('deleted_at', 'desc');
                 $trashed = $query->paginate($this->perPage);

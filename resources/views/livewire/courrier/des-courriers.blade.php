@@ -1264,8 +1264,12 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Titre</th>
-                                    <th scope="col">Référence</th>
+                                    <th scope="col">N° d'enregistrement</th>
+                                    <th scope="col">Expéditeur</th>
+                                    <th scope="col">Destinataire</th>
+                                    <th scope="col">Date de réception</th>
                                     <th scope="col">Supprimé le</th>
+                                    <th scope="col">Auteur de la suppression</th>
                                     <th scope="col">Actions</th>
                                 </tr>
                             </thead>
@@ -1274,7 +1278,30 @@
                                     <tr>
                                         <td>{{ $item->title ?? ($item->objet ?? 'Sans titre') }}</td>
                                         <td>{{ $item->reference_interne }}</td>
+                                        <td>
+                                            @if ($item->is_intern)
+                                                {{ optional($item->expediteur)->prenom }} {{ optional($item->expediteur)->nom }}
+                                            @else
+                                                {{ $item->externExpediteur->nom ?? 'N/D' }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($item->type_id == 2)
+                                                {{ $item->externDestinateur->nom ?? 'N/D' }}
+                                            @else
+                                                {{ optional($item->destinateurs->first())->prenom }}
+                                                {{ optional($item->destinateurs->first())->nom ?? 'N/D' }}
+                                            @endif
+                                        </td>
+                                        <td>{{ $item->created_at->format('d/m/Y H:i:s') }}</td>
                                         <td>{{ $item->deleted_at->format('d/m/Y H:i') }}</td>
+                                        <td>
+                                            @if($item->deletionHistory)
+                                                {{ $item->deletionHistory->user->agent ? ($item->deletionHistory->user->agent->prenom . ' ' . $item->deletionHistory->user->agent->nom) : $item->deletionHistory->user->name }}
+                                            @else
+                                                N/D
+                                            @endif
+                                        </td>
                                         <td>
                                             <div class="d-flex gap-2">
                                                 <a href="{{ route('regidoc.courriers.show', $item) }}" class="btn text-primary" title="Voir détails">

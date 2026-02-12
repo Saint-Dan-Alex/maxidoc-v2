@@ -42,6 +42,16 @@ class Courrier extends Model implements Viewable
     }
 
     /**
+     * Get the history record for the deletion of this courrier.
+     */
+    public function deletionHistory()
+    {
+        return $this->morphOne(Historique::class, 'historiquecable')
+            ->where('key', 'Suppression')
+            ->latestOfMany();
+    }
+
+    /**
      * Get all of the piecesJointes for the Courrier
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
