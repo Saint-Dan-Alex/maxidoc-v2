@@ -565,6 +565,10 @@ class CourrierController extends Controller
             $courrier = Courrier::find($request->courrier_id);
             $traitement = null;
 
+            // Marquer le courrier comme traité pour que le bouton disparaisse pour le DG/Délégué
+            $courrier->mark_as_done = 1;
+            $courrier->save();
+
             if ($courrier->traitements->count() == 0 || $request->is_original) {
                 // Créer un nouveau traitement
                 $traitement = new CourrierTraitement();
