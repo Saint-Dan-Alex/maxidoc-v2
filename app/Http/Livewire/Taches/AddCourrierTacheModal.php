@@ -67,38 +67,38 @@ class AddCourrierTacheModal extends Component
                     return;
                 }
                 $direction = Direction::find($this->stat['direction_id']);
-                $secretaires = $direction->secretaires->map(function ($secretaire)
-                {
-                    return $secretaire->responsable->id;
-                });
 
-                if ($secretaires->count()) {
-                    $partage1 = CourriersPartage::create([
-                        'courrier_id' => $this->courrier->id,
-                        'agent_id' => $secretaires->first(),
-                        // 'traitement_id' => $this->stat['traitement_id'] ?? null,
-                        'note' => $this->stat['note'],
-                        'send_by' => Auth::user()->id
-                    ]);
-                    event(new CourrierPartage($partage1, 'Un courrier vous a été partagé par ' . Auth::user()->agent->prenom . ' ' . Auth::user()->agent->nom));
-                } else {
-                    $this->emit('alert', 'error', 'Le partage n\'a pas reussi car la '.$direction->titre.' n\'a pas de secretaire');
+                // 1. Vérifier le responsable (OBLIGATOIRE)
+                if (!$direction->responsable) {
+                    $this->emit('alert', 'error', 'Le partage a échoué car la ' . $direction->titre . ' n\'a pas de responsable (directeur) défini.');
                     $this->emit('finishPartage');
                     return;
                 }
 
-                if ($direction->responsable) {
-                    $partage2 = CourriersPartage::create([
-                        'courrier_id' => $this->courrier->id,
-                        'agent_id' => $direction->responsable->id,
-                        'note' => $this->stat['note'],
-                        'send_by' => Auth::user()->id
-                    ]);
-                    event(new CourrierPartage($partage2, 'Un courrier vous a été partagé par ' . Auth::user()->agent->prenom . ' ' . Auth::user()->agent->nom));
-                } else {
-                    $this->emit('alert', 'error', 'Le partage n\'a pas reussi car la '.$direction->titre.' n\'a pas de directeur');
-                    $this->emit('finishPartage');
-                    return;
+                // 2. Partage au responsable
+                $partageResponsable = CourriersPartage::create([
+                    'courrier_id' => $this->courrier->id,
+                    'agent_id' => $direction->responsable->id,
+                    'note' => $this->stat['note'],
+                    'send_by' => Auth::user()->id
+                ]);
+                event(new CourrierPartage($partageResponsable, 'Un courrier vous a été partagé par ' . Auth::user()->agent->prenom . ' ' . Auth::user()->agent->nom));
+
+                // 3. Partage aux secrétaires (OPTIONNEL)
+                $secretaires = $direction->secretaires->map(function ($secretaire) {
+                    return $secretaire->responsable ? $secretaire->responsable->id : null;
+                })->filter();
+
+                if ($secretaires->count()) {
+                    foreach ($secretaires as $secretaireId) {
+                        $partageSecretaire = CourriersPartage::create([
+                            'courrier_id' => $this->courrier->id,
+                            'agent_id' => $secretaireId,
+                            'note' => $this->stat['note'],
+                            'send_by' => Auth::user()->id
+                        ]);
+                        event(new CourrierPartage($partageSecretaire, 'Un courrier vous a été partagé par ' . Auth::user()->agent->prenom . ' ' . Auth::user()->agent->nom));
+                    }
                 }
 
                 Historique::create([
