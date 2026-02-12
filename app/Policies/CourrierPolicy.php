@@ -53,7 +53,7 @@ class CourrierPolicy
         // Vérifier si l'utilisateur est l'auteur ou s'il a une relation de destinataire, suiveur ou partage avec le courrier
         $cacheKey = "courrier_access_{$user->id}_{$courrier->id}";
         $hasAccess = cache()->remember($cacheKey, 60, function () use ($courrier, $agentId) {
-            return $courrier->where(function ($query) use ($agentId) {
+            return Courrier::withTrashed()->where('id', $courrier->id)->where(function ($query) use ($agentId) {
                 $query->where('created_by', $agentId) // L'utilisateur est l'auteur
                     ->orWhereHas('destinateurs', function ($query) use ($agentId) {
                         $query->where('agent_id', $agentId);
@@ -63,7 +63,7 @@ class CourrierPolicy
                     })
                     ->orWhereHas('partages', function ($query) use ($agentId) {
                         $query->where('agent_id', $agentId);
-                    })->take(15);
+                    });
             })->exists();
         });
 

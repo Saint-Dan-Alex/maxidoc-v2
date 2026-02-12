@@ -44,6 +44,25 @@
         </div>
     </div>
 
+    <!-- Modal Restauration -->
+    <div class="modal fade" id="modal-restore-courrier" tabindex="-1" aria-hidden="true" wire:ignore.self style="z-index: 99999;">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-success">
+                <div class="modal-body">
+                    <div class="text-center content-text">
+                        <i class="fi fi-rr-refresh shadow-icon-success" style="font-size: 3rem; color: #198754;"></i>
+                        <h5 class="mt-3 text-success">Restaurer le courrier ?</h5>
+                        <p>Le courrier sera remis dans la liste principale.</p>
+                    </div>
+                    <div class="mb-3 block-btn d-flex justify-content-center">
+                        <button class="btn btn-cancel me-4" data-bs-dismiss="modal">Annuler</button>
+                        <button class="btn btn-add" wire:click="restoreCourrier" style="background-color: #198754; border-color: #198754;">Restaurer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="d-flex row justify-content-between align-items-center align-items-md-center block-action-table-2">
         <div class="col-lg-8 col-sm-8 col-9">
             <div class="d-flex">
@@ -1253,16 +1272,21 @@
                             <tbody>
                                 @forelse ($trashed as $item)
                                     <tr>
-                                        <td>{{ $item->objet }}</td>
+                                        <td>{{ $item->title ?? ($item->objet ?? 'Sans titre') }}</td>
                                         <td>{{ $item->reference_interne }}</td>
                                         <td>{{ $item->deleted_at->format('d/m/Y H:i') }}</td>
                                         <td>
-                                            <button wire:click="restoreCourrier({{ $item->id }})" class="btn text-success" title="Restaurer">
-                                                <i class="fi fi-rr-refresh"></i>
-                                            </button>
-                                            <button wire:click="confirmForceDeletion({{ $item->id }})" class="btn text-danger" title="Supprimer définitivement">
-                                                <i class="fi fi-rr-trash"></i>
-                                            </button>
+                                            <div class="d-flex gap-2">
+                                                <a href="{{ route('regidoc.courriers.show', $item) }}" class="btn text-primary" title="Voir détails">
+                                                    <i class="fi fi-rr-eye"></i>
+                                                </a>
+                                                <button wire:click="confirmRestoration({{ $item->id }})" class="btn text-success" title="Restaurer">
+                                                    <i class="fi fi-rr-refresh"></i>
+                                                </button>
+                                                <button wire:click="confirmForceDeletion({{ $item->id }})" class="btn text-danger" title="Supprimer définitivement">
+                                                    <i class="fi fi-rr-trash"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -1300,6 +1324,14 @@
 
         window.addEventListener('hide-force-delete-modal', event => {
             $('#modal-force-delete-courrier').modal('hide');
+        });
+
+        window.addEventListener('show-restore-modal', event => {
+            $('#modal-restore-courrier').modal('show');
+        });
+
+        window.addEventListener('hide-restore-modal', event => {
+            $('#modal-restore-courrier').modal('hide');
         });
     </script>
 

@@ -2190,7 +2190,7 @@ $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user(
 
     public function show($id)
     {
-        $courrier = Courrier::with(['document', 'views', 'type', 'accuseReceptions.user.agent'])->where('id', $id)->firstOrFail();
+        $courrier = Courrier::withTrashed()->with(['document', 'views', 'type', 'accuseReceptions.user.agent'])->where('id', $id)->firstOrFail();
         
         if (!$courrier) {
             abort(404, 'Courrier non trouvé');

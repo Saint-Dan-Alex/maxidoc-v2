@@ -31,6 +31,7 @@ class DesCourriers extends Component
     public $perPage = 10;
     public $selectedCourrierId = null;
     public $selectedForceDeleteId = null;
+    public $selectedRestoreId = null;
 
     public function mount()
     {
@@ -426,8 +427,17 @@ class DesCourriers extends Component
         }
     }
 
-    public function restoreCourrier($id)
+    public function confirmRestoration($id)
     {
+        $this->selectedRestoreId = $id;
+        $this->dispatchBrowserEvent('show-restore-modal');
+    }
+
+    public function restoreCourrier($id = null)
+    {
+        $id = $id ?: $this->selectedRestoreId;
+        if (!$id) return;
+
         $courrier = Courrier::onlyTrashed()->findOrFail($id);
         
         if (Auth::user()->can('restore', $courrier)) {
@@ -440,6 +450,9 @@ class DesCourriers extends Component
                 'description' => "Le courrier a été restauré par " . Auth::user()->name,
                 'user_id' => Auth::user()->id,
             ]);
+
+            $this->dispatchBrowserEvent('hide-restore-modal');
+            $this->selectedRestoreId = null;
 
             $this->emit('alert', 'success', 'Le courrier a été remis dans la liste principale.');
         }
