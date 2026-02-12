@@ -47,9 +47,9 @@
                                     data-get-items-field="title" data-method="get" data-label="title"
                                     data-related-model="CourrierCategory" data-tags="true" data-max-selection="1"
                                     multiple>
-                                    @if($courrier->courrierCategory)
-                                        <option value="{{ $courrier->courrierCategory->id }}" selected>
-                                            {{ $courrier->courrierCategory->title }}
+                                    @if($courrier->categorie)
+                                        <option value="{{ $courrier->categorie->id }}" selected>
+                                            {{ $courrier->categorie->title }}
                                         </option>
                                     @endif
                                 </select>
@@ -310,7 +310,7 @@
                             <label class="col-5 col-form-label">Référence du courrier</label>
                             <div class="col-7">
                                 <input type="text" class="form-control" name="ref" placeholder="Référence"
-                                    value="{{ $courrier->reference }}">
+                                    value="{{ $courrier->reference_courrier }}">
                             </div>
                         </div>
                     </div>
@@ -331,9 +331,9 @@
                             <div class="col-7" wire:ignore>
                                 <select class="form-select form-control select2" aria-label="Default select example"
                                     name="nature" data-placeholder="Sélectionnez une nature">
-                                    @if($courrier->courrierNature)
-                                        <option value="{{ $courrier->courrier_nature_id }}" selected>
-                                            {{ $courrier->courrierNature->titre }}
+                                    @if($courrier->nature)
+                                        <option value="{{ $courrier->nature_id }}" selected>
+                                            {{ $courrier->nature->titre }}
                                         </option>
                                     @endif
                                     @foreach ($natures as $nature)
@@ -376,7 +376,7 @@
                                     data-get-items-field="titre" data-method="get" data-label="titre"
                                     data-related-model="Priorite">
                                     
-                                    <option value="" disabled selected>Sélectionnez</option>
+                                    <option value="" disabled @if(!$courrier->priorite_id) selected @endif>Sélectionnez</option>
                                 
                                     @foreach ($priorites as $priorite)
                                         <option value="{{ $priorite->id }}" @selected($priorite->id == $courrier->priorite_id)>
@@ -430,12 +430,12 @@
                         </div>
                     </div>
 
-                    <div class="col-12 d-none block_initiateur" wire:ignore>
+                    <div class="col-12 block_initiateur" wire:ignore>
                         <div class="row">
                             <label class="col-5 col-form-label">Service initiateur</label>
                             <div class="col-7" wire:ignore>
                                 <select class="form-select form-control select2" aria-label="Default select example"
-                                    name="service_init" data-placeholder="Selectionner"
+                                    name="service" data-placeholder="Selectionner"
                                     data-get-items-route="{{ route('regidoc.ajax.typescourriers') }}"
                                     data-get-items-field="titre" data-method="get" data-label="titre"
                                     data-related-model="Service">
@@ -965,10 +965,12 @@
             });
             
             // Initialiser le champ de contact si un expéditeur est déjà sélectionné
-            var initialExpediteurId = $('select[name="exp"]').val();
-            if (initialExpediteurId) {
-                initContactField(initialExpediteurId);
-            }
+            setTimeout(function() {
+                var initialExpediteurId = $('select[name="exp"]').val();
+                if (initialExpediteurId) {
+                    initContactField(initialExpediteurId);
+                }
+            }, 500);
         });
     </script>
 @endpush

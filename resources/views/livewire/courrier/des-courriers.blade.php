@@ -472,9 +472,9 @@
                                                                 $courrier->created_by == Auth::user()->agent->id ||
                                                                 $courrier->partages->contains('agent_id', Auth::user()->agent->id))
                                                             @php
-                                                                // Vérifier si l'utilisateur est DG et si le statut n'est pas "En attente"
+                                                                // Vérifier si l'utilisateur est DG et si le traitement est assigné
                                                                 $isDG = Auth::user()->agent && Auth::user()->agent->isDG();
-                                                                $canViewButton = !$isDG || ($isDG && $courrier->statut_id != 1);
+                                                                $canViewButton = !$isDG || ($isDG && $courrier->traitement_id != null);
                                                             @endphp
                                                             @if ($canViewButton)
                                                                 <a href="{{ route('regidoc.courriers.show', $courrier) }}"
@@ -729,9 +729,9 @@
         $entrant->created_by == Auth::user()->agent->id ||
         $entrant->partages->contains('agent_id', Auth::user()->agent->id))
     @php
-        // Vérifier si l'utilisateur est DG et si le statut n'est pas "En attente"
+        // Vérifier si l'utilisateur est DG et si le traitement est assigné
         $isDG = Auth::user()->agent && Auth::user()->agent->isDG();
-        $canViewButton = !$isDG || ($isDG && $entrant->statut_id != 1);
+        $canViewButton = !$isDG || ($isDG && $entrant->traitement_id != null);
     @endphp
     @if ($canViewButton)
         <a href="{{ route('regidoc.courriers.show', $entrant) }}"
