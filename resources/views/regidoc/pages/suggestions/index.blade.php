@@ -145,6 +145,16 @@
                                 {{ $suggestion->message }}
                             </div>
                             
+                            @if($suggestion->image_path)
+                                <h6 class="text-muted small text-uppercase fw-bold mb-2">Pièce jointe:</h6>
+                                <div class="border p-2 rounded text-center bg-white shadow-sm">
+                                    <img src="{{ asset('storage/' . $suggestion->image_path) }}" class="img-fluid rounded" style="max-height: 350px;" alt="Capture d'écran">
+                                    <div class="mt-3">
+                                        <a href="{{ asset('storage/' . $suggestion->image_path) }}" target="_blank" class="btn btn-sm btn-secondary px-4">
+                                            <i class="fi fi-rr-expand me-1"></i> Ouvrir l'image
+                                        </a>
+                                    </div>
+                                </div>
                             @endif
 
                             <div class="mt-4">

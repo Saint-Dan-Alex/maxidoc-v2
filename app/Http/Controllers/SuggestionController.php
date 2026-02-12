@@ -64,7 +64,10 @@ class SuggestionController extends Controller
 
         // Notifications aux admins
         try {
-            $admins = User::role(['Super Admin', 'Administrateur système'])->get();
+            $admins = User::whereHas('roles', function($q) {
+                $q->whereIn('name', ['Super Admin', 'Administrateur système']);
+            })->get();
+            
             if ($admins->count() > 0) {
                 Notification::send($admins, new SuggestionNotification(
                     $suggestion, 
