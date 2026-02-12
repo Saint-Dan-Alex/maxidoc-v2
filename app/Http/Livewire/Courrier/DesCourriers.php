@@ -29,6 +29,8 @@ class DesCourriers extends Component
     public $isSecretaire = false;
     public $isSuperAdmin = false;
     public $perPage = 10;
+    public $selectedCourrierId = null;
+    public $selectedForceDeleteId = null;
 
     public function mount()
     {
@@ -362,8 +364,17 @@ class DesCourriers extends Component
      
      // --- Actions de suppression ---
 
-    public function deleteCourrier($id)
+    public function confirmDeletion($id)
     {
+        $this->selectedCourrierId = $id;
+        $this->dispatchBrowserEvent('show-delete-modal');
+    }
+
+    public function deleteCourrier($id = null)
+    {
+        $id = $id ?: $this->selectedCourrierId;
+        if (!$id) return;
+
         $courrier = Courrier::findOrFail($id);
         
         if (Auth::user()->can('delete', $courrier)) {
@@ -377,11 +388,41 @@ class DesCourriers extends Component
                 'user_id' => Auth::user()->id,
             ]);
 
-            $this->dispatchBrowserEvent('swal:modal', [
-                'type' => 'success',
-                'title' => 'Courrier supprimé',
-                'text' => 'Le courrier a été placé dans la corbeille.'
+            $this->dispatchBrowserEvent('hide-delete-modal');
+            $this->selectedCourrierId = null;
+
+            $this->emit('alert', 'success', 'Le courrier a été placé dans la corbeille.');
+        }
+    }
+
+    public function confirmForceDeletion($id)
+    {
+        $this->selectedForceDeleteId = $id;
+        $this->dispatchBrowserEvent('show-force-delete-modal');
+    }
+
+    public function forceDeleteCourrier($id = null)
+    {
+        $id = $id ?: $this->selectedForceDeleteId;
+        if (!$id) return;
+
+        $courrier = Courrier::onlyTrashed()->findOrFail($id);
+        
+        if (Auth::user()->can('forceDelete', $courrier)) {
+            $courrier->forceDelete();
+
+            \App\Models\Historique::create([
+                'key' => 'Suppression définitive',
+                'historiquecable_id' => $id,
+                'historiquecable_type' => 'App\Models\Courrier',
+                'description' => "Le courrier a été définitivement supprimé par " . Auth::user()->name,
+                'user_id' => Auth::user()->id,
             ]);
+
+            $this->dispatchBrowserEvent('hide-force-delete-modal');
+            $this->selectedForceDeleteId = null;
+
+            $this->emit('alert', 'success', 'Le courrier a été définitivement supprimé.');
         }
     }
 
@@ -400,34 +441,7 @@ class DesCourriers extends Component
                 'user_id' => Auth::user()->id,
             ]);
 
-            $this->dispatchBrowserEvent('swal:modal', [
-                'type' => 'success',
-                'title' => 'Courrier restauré',
-                'text' => 'Le courrier a été remis dans la liste principale.'
-            ]);
-        }
-    }
-
-    public function forceDeleteCourrier($id)
-    {
-        $courrier = Courrier::onlyTrashed()->findOrFail($id);
-        
-        if (Auth::user()->can('forceDelete', $courrier)) {
-            $courrier->forceDelete();
-
-            \App\Models\Historique::create([
-                'key' => 'Suppression définitive',
-                'historiquecable_id' => $id,
-                'historiquecable_type' => 'App\Models\Courrier',
-                'description' => "Le courrier a été définitivement supprimé par " . Auth::user()->name,
-                'user_id' => Auth::user()->id,
-            ]);
-
-            $this->dispatchBrowserEvent('swal:modal', [
-                'type' => 'success',
-                'title' => 'Suppression définitive',
-                'text' => 'Le courrier a été supprimé définitivement.'
-            ]);
+            $this->emit('alert', 'success', 'Le courrier a été remis dans la liste principale.');
         }
     }
 }

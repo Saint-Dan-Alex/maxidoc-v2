@@ -5,7 +5,45 @@
         </div>
     </div>
 </div> --}}
-<div class="col-lg-12">
+<div class="col-lg-12" id="des-courriers-root">
+    <!-- Modal Suppression (Soft Delete) -->
+    <div class="modal fade" id="modal-delete-courrier" tabindex="-1" aria-hidden="true" wire:ignore.self style="z-index: 99999;">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="text-center content-text">
+                        <i class="fi fi-rr-trash shadow-icon-danger" style="font-size: 3rem; color: #dc3545;"></i>
+                        <h5 class="mt-3">Mettre à la corbeille ?</h5>
+                        <p>Le courrier pourra être restauré par un administrateur.</p>
+                    </div>
+                    <div class="mb-3 block-btn d-flex justify-content-center">
+                        <button class="btn btn-cancel me-4" data-bs-dismiss="modal">Annuler</button>
+                        <button class="btn btn-delete" wire:click="deleteCourrier">Confirmer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Suppression Définitive (Force Delete) -->
+    <div class="modal fade" id="modal-force-delete-courrier" tabindex="-1" aria-hidden="true" wire:ignore.self style="z-index: 99999;">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-danger">
+                <div class="modal-body">
+                    <div class="text-center content-text">
+                        <i class="fi fi-rr-exclamation shadow-icon-danger" style="font-size: 3rem; color: #dc3545;"></i>
+                        <h5 class="mt-3 text-danger">Action irréversible !</h5>
+                        <p>Voulez-vous vraiment supprimer définitivement ce courrier ?</p>
+                    </div>
+                    <div class="mb-3 block-btn d-flex justify-content-center">
+                        <button class="btn btn-cancel me-4" data-bs-dismiss="modal">Annuler</button>
+                        <button class="btn btn-delete" wire:click="forceDeleteCourrier" style="background-color: #dc3545; border-color: #dc3545;">Supprimer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="d-flex row justify-content-between align-items-center align-items-md-center block-action-table-2">
         <div class="col-lg-8 col-sm-8 col-9">
             <div class="d-flex">
@@ -426,7 +464,7 @@
                                                                     <div class="tooltip-btn">Voir détails</div>
                                                                 </a>
                                                                 @can('delete', $courrier)
-                                                                    <button onclick="confirmDelete({{ $courrier->id }})" class="btn text-danger">
+                                                                    <button wire:click="confirmDeletion({{ $courrier->id }})" class="btn text-danger">
                                                                         <i class="fi fi-rr-trash"></i>
                                                                         <div class="tooltip-btn">Supprimer</div>
                                                                     </button>
@@ -683,7 +721,7 @@
             <div class="tooltip-btn">Voir détails</div>
         </a>
         @can('delete', $entrant)
-            <button onclick="confirmDelete({{ $entrant->id }})" class="btn text-danger">
+            <button wire:click="confirmDeletion({{ $entrant->id }})" class="btn text-danger">
                 <i class="fi fi-rr-trash"></i>
                 <div class="tooltip-btn">Supprimer</div>
             </button>
@@ -915,7 +953,7 @@
                                                         <div class="tooltip-btn">Voir détails</div>
                                                     </a>
                                                     @can('delete', $sortant)
-                                                        <button onclick="confirmDelete({{ $sortant->id }})" class="btn text-danger">
+                                                        <button wire:click="confirmDeletion({{ $sortant->id }})" class="btn text-danger">
                                                             <i class="fi fi-rr-trash"></i>
                                                             <div class="tooltip-btn">Supprimer</div>
                                                         </button>
@@ -1049,7 +1087,7 @@
                                                             <div class="tooltip-btn">Voir détails</div>
                                                         </a>
                                                         @can('delete', $interne)
-                                                            <button onclick="confirmDelete({{ $interne->id }})" class="btn text-danger">
+                                                            <button wire:click="confirmDeletion({{ $interne->id }})" class="btn text-danger">
                                                                 <i class="fi fi-rr-trash"></i>
                                                                 <div class="tooltip-btn">Supprimer</div>
                                                             </button>
@@ -1172,7 +1210,7 @@
                                                 <div class="tooltip-btn">Voir détails</div>
                                             </a>
                                             @can('delete', $finalise)
-                                                <button onclick="confirmDelete({{ $finalise->id }})" class="btn text-danger">
+                                                <button wire:click="confirmDeletion({{ $finalise->id }})" class="btn text-danger">
                                                     <i class="fi fi-rr-trash"></i>
                                                     <div class="tooltip-btn">Supprimer</div>
                                                 </button>
@@ -1221,7 +1259,7 @@
                                             <button wire:click="restoreCourrier({{ $item->id }})" class="btn text-success" title="Restaurer">
                                                 <i class="fi fi-rr-refresh"></i>
                                             </button>
-                                            <button onclick="confirmForceDelete({{ $item->id }})" class="btn text-danger" title="Supprimer définitivement">
+                                            <button wire:click="confirmForceDeletion({{ $item->id }})" class="btn text-danger" title="Supprimer définitivement">
                                                 <i class="fi fi-rr-trash"></i>
                                             </button>
                                         </td>
@@ -1246,41 +1284,24 @@
     </div>
 </div>
 
-<script>
-    function confirmDelete(id) {
-        Swal.fire({
-            title: 'Êtes-vous sûr ?',
-            text: "Le courrier sera déplacé dans la corbeille.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Oui, supprimer !',
-            cancelButtonText: 'Annuler'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                @this.deleteCourrier(id);
-            }
-        })
-    }
 
-    function confirmForceDelete(id) {
-        Swal.fire({
-            title: 'Action irréversible !',
-            text: "Le courrier sera définitivement supprimé.",
-            icon: 'danger',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Supprimer définitivement',
-            cancelButtonText: 'Annuler'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                @this.forceDeleteCourrier(id);
-            }
-        })
-    }
-</script>
+    <script>
+        window.addEventListener('show-delete-modal', event => {
+            $('#modal-delete-courrier').modal('show');
+        });
+
+        window.addEventListener('hide-delete-modal', event => {
+            $('#modal-delete-courrier').modal('hide');
+        });
+
+        window.addEventListener('show-force-delete-modal', event => {
+            $('#modal-force-delete-courrier').modal('show');
+        });
+
+        window.addEventListener('hide-force-delete-modal', event => {
+            $('#modal-force-delete-courrier').modal('hide');
+        });
+    </script>
 
 <script>
     function initTooltips() {
