@@ -198,42 +198,51 @@
                     };
                     reader.readAsDataURL(file);
                 } else if (isPdf) {
-                    // Preview for PDFs using server-side Imagick
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    
-                    try {
-                        const response = await fetch('{{ route("taches.generatePdfPreview") }}', {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
-                            },
-                            body: formData
-                        });
+                    // Preview for PDFs using client-side PDF.js
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const typedarray = new Uint8Array(e.target.result);
                         
-                        const data = await response.json();
-                        
-                        if (data.success && data.preview_url) {
-                            previewContainer.innerHTML = `
-                                <img src="${data.preview_url}" class="img-fluid" style="max-height: 300px; object-fit: contain;" alt="Aperçu du document">
-                                <div class="text-center mt-2">
-                                    <small class="text-muted">${file.name}</small>
-                                </div>`;
-                        } else {
-                            throw new Error(data.message || 'Erreur lors de la génération de l\'aperçu');
+                        // Ensure worker is set if not already done globally
+                        if (typeof PDFJS !== 'undefined' && !PDFJS.workerSrc) {
+                            PDFJS.workerSrc = '{{ asset("assets/js/pdfjs/pdf.worker.js") }}';
                         }
-                    } catch (error) {
-                        console.error('Erreur lors de la génération de l\'aperçu PDF :', error);
-                        previewContainer.innerHTML = `
-                            <div class="w-100 h-100 d-flex align-items-center justify-content-center">
-                                <div class="text-center text-muted">
-                                    <i class="fi fi-rr-file-pdf fs-1 d-block mb-2"></i>
-                                    <span>Impossible de générer l'aperçu du PDF</span>
-                                    <p class="small mt-2">${error.message || ''}</p>
-                                </div>
-                            </div>`;
-                    }
+                        
+                        PDFJS.getDocument(typedarray).then(function(pdf) {
+                            return pdf.getPage(1);
+                        }).then(function(page) {
+                            var viewport = page.getViewport(1.5); // Slightly larger scale for better quality
+                            var canvas = document.createElement('canvas');
+                            var context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+
+                            var renderContext = {
+                                canvasContext: context,
+                                viewport: viewport
+                            };
+                            
+                            page.render(renderContext).promise.then(function() {
+                                const imgData = canvas.toDataURL('image/png');
+                                previewContainer.innerHTML = `
+                                    <img src="${imgData}" class="img-fluid" style="max-height: 300px; object-fit: contain; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);" alt="Aperçu du PDF">
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted"><i class="fi fi-rr-file-pdf me-1"></i>${file.name}</small>
+                                    </div>`;
+                            });
+                        }).catch(function(error) {
+                            console.error('Erreur PDF.js:', error);
+                            previewContainer.innerHTML = `
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <div class="text-center text-muted">
+                                        <i class="fi fi-rr-file-pdf fs-1 d-block mb-2 text-danger"></i>
+                                        <span>Impossible de générer l'aperçu</span>
+                                        <p class="small mt-2">${error.message}</p>
+                                    </div>
+                                </div>`;
+                        });
+                    };
+                    reader.readAsArrayBuffer(file);
                 } else {
                     // For unsupported file types
                     previewContainer.innerHTML = `
