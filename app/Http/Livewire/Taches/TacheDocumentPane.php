@@ -29,6 +29,8 @@ class TacheDocumentPane extends Component
         'file' => 'required|file',
     ];
 
+    protected $listeners = ['deleteFichier' => 'deleteFichier'];
+
     public function mount($tache)
     {
         $this->tache = $tache;
@@ -289,16 +291,113 @@ class TacheDocumentPane extends Component
      
 
 
-    // public function deleteFichier($fichierId)
-    // {
-    //     $fichier = Document::findOrFail($fichierId);
+    public function deleteFichier($fichierId)
+    {
+        try {
+            Log::info('Tentative de suppression de fichier', ['fichier_id' => $fichierId, 'user_id' => Auth::id()]);
+            
+            $fichier = Document::find($fichierId);
+            
+            if (!$fichier) {
+                Log::warning('Fichier non trouvé pour suppression', ['fichier_id' => $fichierId]);
+                return;
+            }
 
-    //     Storage::disk('public')->delete($fichier->document);
+            Log::info('Vérification des permissions de suppression', [
+                'owner_id' => $fichier->user_id,
+                'current_user_id' => Auth::id(),
+                'tache_statut' => $this->tache->statut
+            ]);
 
-    //     $fichier->delete();
+            if ($fichier->user_id !== Auth::id()) {
+                Log::warning('Tentative de suppression non autorisée (mauvais utilisateur)', ['user_id' => Auth::id(), 'owner_id' => $fichier->user_id]);
+                return;
+            }
+            if (!$fichier) {
+                $this->dispatchBrowserEvent('swal:modal', [
+                    'type' => 'error',
+                    'title' => 'Erreur',
+                    'text' => 'Document introuvable.'
+                ]);
+                return;
+            }
+            
+            // Vérification des permissions : seul l'auteur peut supprimer SON propre document
+            if ($fichier->user_id !== Auth::id()) {
+                Log::warning('Suppression refusée: utilisateur non autorisé', ['fichier_id' => $fichierId, 'user_id' => Auth::id(), 'owner_id' => $fichier->user_id]);
+                $this->dispatchBrowserEvent('swal:modal', [
+                    'type' => 'error',
+                    'title' => 'Non autorisé',
+                    'text' => "Vous n'êtes pas autorisé à supprimer ce document."
+                ]);
+                return;
+            }
+            
+            // Vérifier si la tâche est terminée (ou autre condition bloquante)
+            if ($this->tache->statut === 2) { 
+                 $this->dispatchBrowserEvent('swal:modal', [
+                    'type' => 'error',
+                    'title' => 'Action impossible',
+                    'text' => "Impossible de supprimer une pièce jointe d'une tâche terminée."
+                ]);
+                return;
+            }
 
-    //     $this->emit('reloadComponent');
-    // }
+            $oldName = $fichier->libelle;
+            
+            // Détacher de la tâche
+            $this->tache->documents()->detach($fichierId);
+            
+            // Historique
+            Historique::create([
+                'key' => 'Suppression de document',
+                'historiquecable_id' => $this->tache->id,
+                'historiquecable_type' => Tache::class,
+                'description' => Auth::user()->agent->nom . ' ' . Auth::user()->agent->prenom . ' a supprimé la pièce jointe "' . $oldName . '".',
+                'user_id' => Auth::user()->id,
+            ]);
+
+            Log::info('Document supprimé avec succès de la tâche', ['document_id' => $fichierId]);
+            
+            $this->dispatchBrowserEvent('swal:modal', [
+                'type' => 'success',
+                'title' => 'Succès',
+                'text' => 'Document supprimé avec succès.'
+            ]);
+            
+            $this->refreshDocumentsList();
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression du document', ['error' => $e->getMessage()]);
+             $this->dispatchBrowserEvent('swal:modal', [
+                'type' => 'error',
+                'title' => 'Erreur',
+                'text' => "Une erreur est survenue lors de la suppression."
+            ]);
+        }
+    }
+
+    private function refreshDocumentsList() {
+        $urls = [];
+        foreach ($this->tache->fresh()->documents as $document) {
+            try {
+                $fileInfo = files($document->document);
+                $url = is_object($fileInfo) ? $fileInfo->link : '';
+                if ($url) {
+                    $url = str_replace('\\', '/', $url);
+                        array_push($urls, [
+                        'link' => $url,
+                        'id' => $document->id,
+                        'courrier_id' => $this->tache->courrier?->id ?? '',
+                        'user_id' => $document->user_id,
+                        'original_name' => is_object($fileInfo) ? $fileInfo->name : basename($url)
+                    ]);
+                }
+            } catch (\Exception $e) {}
+        }
+        $this->emit('documentDeleted', $urls);
+    }
+
 
     public function render()
     {

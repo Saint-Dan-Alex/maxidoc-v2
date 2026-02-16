@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Storage;
     <script src="{{ asset('assets/js/pdfjs/pdf.worker.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.6/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.16.0/pdf-lib.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <style>
         /* Style pour les boutons avec icônes */
@@ -1345,7 +1346,8 @@ use Illuminate\Support\Facades\Storage;
                                 'link' => $url,
                                 'id' => $document->id,
                                 'tache_id' => $tache->id ?? '',
-                                'original_name' => is_object($fileInfo) ? $fileInfo->name : basename($url)
+                                'original_name' => is_object($fileInfo) ? $fileInfo->name : basename($url),
+                                'user_id' => $document->user_id // ID du propriétaire du document
                             ]);
                         }
                     } catch (\Exception $e) {
@@ -1357,15 +1359,19 @@ use Illuminate\Support\Facades\Storage;
                     }
                 }
                 
-                // Ajouter un log avec le nombre de documents traités
-                \Log::info('Documents traités pour la tâche', [
-                    'tache_id' => $tache->id ?? null,
-                    'nb_documents' => count($urls),
-                    'documents' => $urls
+                // Log des données pour debug
+                \Log::info('Données envoyées au frontend', [
+                    'current_user_id' => Auth::id(),
+                    'tache_statut' => $tache->statut,
+                    'urls' => $urls
                 ]);
             @endphp
             <h6 class="mb-4">Toutes les pièces jointes</h6>
-            <div class="doc-vignette d-flex gap-1 flex-wrap" wire:ignore data-url="{{ json_encode($urls) }}"></div>
+            <div class="doc-vignette d-flex gap-1 flex-wrap" wire:ignore 
+                 data-url="{{ json_encode($urls) }}" 
+                 data-user-id="{{ Auth::id() }}" 
+                 data-tache-statut="{{ $tache->statut }}">
+            </div>
         </div>
     </div>
 

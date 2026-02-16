@@ -1,8 +1,9 @@
-<div class="col-12">
-    <h6>Ajouter une pièce jointe</h6>
-</div>
+<div>
+    <div class="col-12">
+        <h6>Ajouter une pièce jointe</h6>
+    </div>
 
-<div wire:ignore>
+    <div wire:ignore>
     <form id="fileUploadForm" action="{{ route('taches.documents.store', $tache) }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="mb-3">
@@ -114,6 +115,7 @@
 
 @push('scripts')
 <script src="{{ asset('assets/js/pdfjs/pdf.js') }}"></script>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const fileInput = document.getElementById('fileInput');

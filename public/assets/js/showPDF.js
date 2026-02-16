@@ -34,6 +34,22 @@ $(document).ready(function () {
     if (url) {
         showPDF(url);
     }
+
+    // Listen for deletion event
+    if (window.Livewire) {
+        window.Livewire.on('documentDeleted', function (id) {
+            console.log('Document deleted:', id);
+            Swal.fire({
+                title: 'Supprimé !',
+                text: 'Le document a été supprimé.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
+        });
+    }
 });
 
 // Fonctions pour gérer le loader
@@ -585,6 +601,72 @@ function showFirstPageImg(url = [], parentContainer) {
 
             content.appendChild(a);
             content.appendChild(span);
+
+            // Add delete button if conditions are met
+            const $parent = $(parentContainer);
+            const currentUserId = $parent.data('user-id');
+            const tacheStatut = $parent.data('tache-statut');
+            const docUserId = url[index].user_id;
+
+            // Only show delete button for attachments (index > 0 or specific check), 
+            // if current user is owner, and task is not finished (assuming 'terminee' or 2 is finished status)
+            if (index > 0 && currentUserId == docUserId && tacheStatut != 'terminee' && tacheStatut != 2) {
+                const deleteBtn = document.createElement("button");
+                deleteBtn.innerHTML = '<i class="fi fi-rr-cross-small"></i>';
+                deleteBtn.className = "btn btn-danger btn-sm positions-absolute delete-doc-btn";
+                deleteBtn.style.position = "absolute";
+                deleteBtn.style.top = "-8px";
+                deleteBtn.style.right = "-8px";
+                deleteBtn.style.borderRadius = "50%";
+                deleteBtn.style.width = "24px";
+                deleteBtn.style.height = "24px";
+                deleteBtn.style.padding = "0";
+                deleteBtn.style.display = "flex";
+                deleteBtn.style.alignItems = "center";
+                deleteBtn.style.justifyContent = "center";
+                deleteBtn.style.zIndex = "10";
+                deleteBtn.title = "Supprimer la pièce jointe";
+
+                deleteBtn.onclick = function (e) {
+                    e.stopPropagation(); // Prevent opening the document
+                    // Custom SweetAlert confirmation
+                    const swalWithBootstrapButtons = Swal.mixin({
+                        customClass: {
+                            confirmButton: 'btn btn-danger',
+                            cancelButton: 'btn btn-light me-2'
+                        },
+                        buttonsStyling: false
+                    });
+
+                    swalWithBootstrapButtons.fire({
+                        title: 'Supprimer ?',
+                        text: "Cette action est irréversible !",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Oui, supprimer',
+                        cancelButtonText: 'Annuler',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            console.log('Tentative de suppression (Image) via Livewire.emit pour ID:', id);
+                            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                            deleteBtn.disabled = true;
+
+                            if (window.Livewire) {
+                                window.Livewire.emit('deleteFichier', id);
+                                console.log('Event deleteFichier sent for (Image) ID:', id);
+                            } else {
+                                console.error('Livewire not found');
+                                Swal.fire('Erreur', 'Erreur interne : Livewire non chargé.', 'error');
+                            }
+                        }
+                    });
+                };
+
+                content.style.position = "relative";
+                content.appendChild(deleteBtn);
+            }
+
             parentContainer.append(content);
         } else if (isPdf) {
             // Handle PDF files
@@ -614,6 +696,69 @@ function showFirstPageImg(url = [], parentContainer) {
 
             content.appendChild(a);
             content.appendChild(span);
+
+            // Add delete button if conditions are met
+            const $parent = $(parentContainer);
+            const currentUserId = $parent.data('user-id');
+            const tacheStatut = $parent.data('tache-statut');
+            const docUserId = url[index].user_id;
+
+            if (index > 0 && currentUserId == docUserId && tacheStatut != 'terminee' && tacheStatut != 2) {
+                const deleteBtn = document.createElement("button");
+                deleteBtn.innerHTML = '<i class="fi fi-rr-cross-small"></i>';
+                deleteBtn.className = "btn btn-danger btn-sm positions-absolute delete-doc-btn";
+                deleteBtn.style.position = "absolute";
+                deleteBtn.style.top = "-8px";
+                deleteBtn.style.right = "-8px";
+                deleteBtn.style.borderRadius = "50%";
+                deleteBtn.style.width = "24px";
+                deleteBtn.style.height = "24px";
+                deleteBtn.style.padding = "0";
+                deleteBtn.style.display = "flex";
+                deleteBtn.style.alignItems = "center";
+                deleteBtn.style.justifyContent = "center";
+                deleteBtn.style.zIndex = "10";
+                deleteBtn.title = "Supprimer la pièce jointe";
+
+                deleteBtn.onclick = function (e) {
+                    e.stopPropagation();
+                    const swalWithBootstrapButtons = Swal.mixin({
+                        customClass: {
+                            confirmButton: 'btn btn-danger',
+                            cancelButton: 'btn btn-light me-2'
+                        },
+                        buttonsStyling: false
+                    });
+
+                    swalWithBootstrapButtons.fire({
+                        title: 'Supprimer ?',
+                        text: "Cette action est irréversible !",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Oui, supprimer',
+                        cancelButtonText: 'Annuler',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            console.log('Tentative de suppression (PDF) via Livewire.emit pour ID:', id);
+                            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                            deleteBtn.disabled = true;
+
+                            if (window.Livewire) {
+                                window.Livewire.emit('deleteFichier', id);
+                                console.log('Event deleteFichier sent for (PDF) ID:', id);
+                            } else {
+                                console.error('Livewire not found');
+                                Swal.fire('Erreur', 'Erreur interne : Livewire non chargé.', 'error');
+                            }
+                        }
+                    });
+                };
+
+                content.style.position = "relative";
+                content.appendChild(deleteBtn);
+            }
+
             parentContainer.append(content);
 
             // Load PDF preview in the background
