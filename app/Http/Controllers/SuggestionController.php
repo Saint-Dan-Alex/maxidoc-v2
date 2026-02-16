@@ -69,7 +69,11 @@ class SuggestionController extends Controller
             })->get();
             
             if ($admins->count() > 0) {
-                Notification::send($admins, new SuggestionNotification(
+                $targets = $admins->map(function($admin) {
+                    return $admin->agent ?? $admin;
+                });
+                
+                Notification::send($targets, new SuggestionNotification(
                     $suggestion, 
                     Auth::user(), 
                     "Nouvelle suggestion : " . $suggestion->objet, 
@@ -114,7 +118,8 @@ class SuggestionController extends Controller
 
         // Notification à l'auteur
         try {
-            $suggestion->user->notify(new SuggestionNotification(
+            $target = $suggestion->user->agent ?? $suggestion->user;
+            $target->notify(new SuggestionNotification(
                 $suggestion, 
                 Auth::user(), 
                 "Le statut de votre suggestion '" . $suggestion->objet . "' a été mis à jour à : " . $request->status, 

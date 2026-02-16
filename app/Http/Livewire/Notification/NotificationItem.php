@@ -5,7 +5,7 @@ namespace App\Http\Livewire\Notification;
 use App\Notifications\CourrierNotification;
 use App\Notifications\CourrierPartageNotification;
 use App\Notifications\DocumentNotification;
-use App\Notifications\TacheNotification;
+use App\Notifications\SuggestionNotification;
 use Livewire\Component;
 
 class NotificationItem extends Component
@@ -57,6 +57,10 @@ class NotificationItem extends Component
             } else {
                 $url = 'regidoc.taches.index';
             }
+        }
+        elseif ($this->notification->type == SuggestionNotification::class) {
+            // Pour les suggestions/bugs
+            $url = 'regidoc.admin.suggestions.index';
         }
 
         if (empty($url)) {

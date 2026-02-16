@@ -54,7 +54,8 @@ class SuggestionNotification extends Notification
             'data' => [
                 'agent' => [
                     'name' => $this->author->name,
-                    'image' => $this->author->agent?->image
+                    'image' => $this->author->agent?->image,
+                    'service' => $this->author->agent?->service?->titre ?? 'Non Défini'
                 ],
                 'message' => $this->message,
                 'object' => $this->suggestion->objet,

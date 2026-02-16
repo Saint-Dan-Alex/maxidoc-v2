@@ -89,7 +89,12 @@ class NotificationIcon extends Component
 
         // Si le nombre a augmenté et qu'on est déjà initialisé, on joue le son
         if (!$initial && $this->initialized && $newCount > $this->unreadCount) {
-            $this->dispatchBrowserEvent('play-notification-sound');
+            $isTask = false;
+            $latest = $this->notifications->first();
+            if ($latest && (str_contains($latest->type, 'Tache') || str_contains($latest->type, 'Task'))) {
+                $isTask = true;
+            }
+            $this->dispatchBrowserEvent('play-notification-sound', ['type' => $isTask ? 'task' : 'other']);
         }
 
         $this->unreadCount = $newCount;

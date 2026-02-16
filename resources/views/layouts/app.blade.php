@@ -57,5 +57,35 @@
         @livewireScripts
         @stack('scripts')
         <script src="{{ asset('js/role-management.js') }}"></script>
+
+        <!-- Notification Sounds -->
+        <audio id="sound-task" src="{{ asset('assets/songs/newMessage.wav') }}" preload="auto"></audio>
+        <audio id="sound-other" src="{{ asset('assets/songs/sendMessage.mp3') }}" preload="auto"></audio>
+
+        <script>
+            window.addEventListener('play-notification-sound', (event) => {
+                const type = (event.detail && event.detail.type) ? event.detail.type : 'other';
+                const soundId = (type === 'task') ? 'sound-task' : 'sound-other';
+                const sound = document.getElementById(soundId);
+                if (sound) {
+                    sound.play().catch(e => console.log('Audio play failed (interaction required):', e));
+                }
+            });
+
+            // Integration with flash messages/alerts
+            document.addEventListener('DOMContentLoaded', () => {
+                if (document.querySelector('.alert-success')) {
+                    window.dispatchEvent(new CustomEvent('play-notification-sound', { detail: { type: 'other' } }));
+                }
+            });
+
+            // Livewire alert event listener
+            window.addEventListener('alert', (event) => {
+                const type = (event.detail && event.detail.type) ? event.detail.type : event.detail[0];
+                if (type === 'success' || type === 'info') {
+                    window.dispatchEvent(new CustomEvent('play-notification-sound', { detail: { type: 'other' } }));
+                }
+            });
+        </script>
     </body>
 </html>
