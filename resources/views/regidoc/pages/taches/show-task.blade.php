@@ -1327,6 +1327,11 @@ use Illuminate\Support\Facades\Storage;
                         $fileInfo = files($document->document);
                         $url = is_object($fileInfo) ? $fileInfo->link : '';
                         
+                        // Nettoyage de l'URL pour éviter les problèmes de backslashes
+                        if ($url) {
+                            $url = str_replace('\\', '/', $url);
+                        }
+                        
                         // Ajouter des logs pour le débogage
                         \Log::info('Génération URL document', [
                             'document_id' => $document->id,
@@ -1360,7 +1365,7 @@ use Illuminate\Support\Facades\Storage;
                 ]);
             @endphp
             <h6 class="mb-4">Toutes les pièces jointes</h6>
-            <div class="doc-vignette d-flex gap-1 flex-wrap" data-url="{{ json_encode($urls) }}"></div>
+            <div class="doc-vignette d-flex gap-1 flex-wrap" wire:ignore data-url="{{ json_encode($urls) }}"></div>
         </div>
     </div>
 

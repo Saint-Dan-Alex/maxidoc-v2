@@ -9,6 +9,11 @@ let __PDF_DOC,
     __TOTAL_PAGES,
     __PAGE_RENDERING_IN_PROGRESS = 0;
 
+// Configurer le worker de PDFJS pour garantir son chargement correct
+if (typeof PDFJS !== 'undefined') {
+    PDFJS.workerSrc = '/assets/js/pdfjs/pdf.worker.js';
+}
+
 // Variables globales accessibles par signature.js - Déclarées mais initialisées après le DOM
 var url, docName, courrier_id, tache_id, docId, doc_id, code, is_original;
 
@@ -512,22 +517,38 @@ function showPage(canvas, vignetteCanvas, textLayer, page_no) {
 
 function showFirstPageImg(url = [], parentContainer) {
     for (let index = 0; index < url.length; index++) {
-        const file_url = url[index].link;
+        const file_url_raw = url[index].link;
         const id = url[index].id;
         const tache_id = url[index].tache_id;
+
+        // Nettoyage de l'URL pour éviter les problèmes de backslashes ou de format
+        let file_url = file_url_raw;
+        if (typeof file_url === 'string') {
+            file_url = file_url.trim().replace(/\\/g, '/').replace(/^["'\[\]{}]|["'\[\]{},]$/g, '');
+
+            // S'assurer que l'URL est complète si elle ne l'est pas
+            if (!file_url.startsWith('http') && !file_url.startsWith('blob:') && !file_url.startsWith('data:')) {
+                if (!file_url.startsWith('/')) {
+                    file_url = window.location.origin + '/' + file_url;
+                } else {
+                    file_url = window.location.origin + file_url;
+                }
+            }
+        }
+
         const file_extension = file_url.split('.').pop().toLowerCase();
         const isImage = ['png', 'jpg', 'jpeg'].includes(file_extension);
         const isPdf = file_extension === 'pdf';
 
         // Create common elements
-        var content = document.createElement("div");
+        const content = document.createElement("div");
         content.classList.add("text-center", "mb-3");
         content.style.width = "150px";
         content.style.display = "inline-block";
         content.style.margin = "0 10px 15px 0";
         content.style.verticalAlign = "top";
 
-        var a = document.createElement("a");
+        const a = document.createElement("a");
         a.setAttribute("href", "javascript:void(0)");
         a.classList.add("d-block", "vignette-page", "text-decoration-none");
         a.style.border = "1px solid #dee2e6";
@@ -542,16 +563,16 @@ function showFirstPageImg(url = [], parentContainer) {
         // Set click handler
         a.setAttribute(
             "onclick",
-            'changDoc("' + file_url + '", this, ' + id + ", " + tache_id + ", " + (index == 0 ? 1 : 0) + "); return false;"
+            'changDoc("' + file_url + '", this, ' + id + ", " + tache_id + ", " + (index == 0 ? 1 : 0) + ", " + courrier_id + "); return false;"
         );
 
-        var span = document.createElement("span");
+        const span = document.createElement("span");
         span.classList.add("d-block", "small", "mt-2");
         span.innerText = index > 0 ? "Pièce jointe " + index : "Document original";
 
         if (isImage) {
             // Handle image files (PNG, JPG, JPEG)
-            var img = document.createElement("img");
+            const img = document.createElement("img");
             img.src = file_url;
             img.style.maxWidth = "100%";
             img.style.maxHeight = "100%";
@@ -567,18 +588,18 @@ function showFirstPageImg(url = [], parentContainer) {
             parentContainer.append(content);
         } else if (isPdf) {
             // Handle PDF files
-            var pdfContainer = document.createElement("div");
+            const pdfContainer = document.createElement("div");
             pdfContainer.style.position = "relative";
             pdfContainer.style.width = "100%";
             pdfContainer.style.height = "100%";
 
-            var pdfIcon = document.createElement("i");
+            const pdfIcon = document.createElement("i");
             pdfIcon.className = "fi fi-rr-file-pdf";
             pdfIcon.style.fontSize = "3rem";
             pdfIcon.style.color = "#dc3545";
             pdfIcon.style.marginBottom = "10px";
 
-            var pdfText = document.createElement("div");
+            const pdfText = document.createElement("div");
             pdfText.innerText = "Aperçu PDF";
             pdfText.style.fontSize = "0.8rem";
             pdfText.style.color = "#6c757d";
@@ -596,11 +617,14 @@ function showFirstPageImg(url = [], parentContainer) {
             parentContainer.append(content);
 
             // Load PDF preview in the background
+            console.log('Tentative de chargement du PDF (Vignette):', file_url);
             PDFJS.getDocument({ url: file_url })
                 .then(function (pdf_doc) {
+                    console.log('PDF chargé avec succès (Vignette):', file_url);
                     return pdf_doc.getPage(1);
                 })
                 .then(function (page) {
+                    console.log('Page 1 récupérée (Vignette):', file_url);
                     var viewport = page.getViewport(1.0);
                     var canvas = document.createElement("canvas");
                     var context = canvas.getContext("2d");
@@ -618,6 +642,7 @@ function showFirstPageImg(url = [], parentContainer) {
                         canvasContext: context,
                         viewport: scaledViewport
                     }).promise.then(function () {
+                        console.log('Rendu de la page terminé (Vignette):', file_url);
                         // Replace icon with PDF preview
                         pdfContainer.innerHTML = '';
                         pdfContainer.style.padding = '0';
@@ -628,20 +653,29 @@ function showFirstPageImg(url = [], parentContainer) {
                         // Adjust container height to fit content
                         a.style.height = 'auto';
                         a.style.minHeight = '150px';
+                    }).catch(function (renderError) {
+                        console.error('Erreur de rendu (Vignette):', file_url, renderError);
                     });
                 })
                 .catch(function (error) {
-                    console.error("Erreur lors du chargement de l'aperçu PDF:", error);
+                    console.error("Erreur lors du chargement de l'aperçu PDF (Vignette):", file_url, error);
+                    // Remplacer l'icône de chargement par une icône d'erreur ou PDF standard
+                    pdfContainer.innerHTML = `
+                        <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                            <i class="fi fi-rr-file-pdf" style="font-size: 3rem; color: #dc3545; opacity: 0.5;"></i>
+                            <div style="font-size: 0.7rem; color: #6c757d; margin-top: 5px;">Aperçu indisponible</div>
+                        </div>
+                    `;
                 });
         } else {
             // Handle other file types
-            var fileIcon = document.createElement("i");
+            const fileIcon = document.createElement("i");
             fileIcon.className = "fi fi-rr-file";
             fileIcon.style.fontSize = "3rem";
             fileIcon.style.color = "#6c757d";
             fileIcon.style.marginBottom = "10px";
 
-            var fileText = document.createElement("div");
+            const fileText = document.createElement("div");
             fileText.innerText = file_extension.toUpperCase();
             fileText.style.fontSize = "0.7rem";
             fileText.style.color = "#6c757d";
