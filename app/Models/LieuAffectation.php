@@ -34,13 +34,13 @@ class LieuAffectation extends Model
     // }
 
     /**
-     * Get all of the comments for the LieuAffectation
+     * Get all of the directions for the LieuAffectation
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function directions(): HasMany
+    public function directions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->hasMany(Direction::class, 'lieu_id');
+        return $this->belongsToMany(Direction::class, 'direction_lieu', 'lieu_id', 'direction_id')->withTimestamps();
     }
 
 }

@@ -1274,3 +1274,12 @@ Did you mean one of these?
 [2026-02-17 13:57:45] local.INFO: Catégories chargées: {"type_id":"1","count":18} 
 [2026-02-17 13:57:46] local.INFO: changeNumRef - Nouvelle référence: {"type":"1","prefix":"DG","suffix":"ENT","num":"DG-0002-ENT"} 
 [2026-02-17 13:58:19] local.INFO: AccuserReception - hasSeen value {"hasSeen":false,"courrier_id":1,"user_id":3} 
+[2026-02-17 14:53:07] local.INFO: Données reçues : {"_token":"Psiwbo8a0GPLSXoDWOHDEKN7P5Gt6JkdrKixjTux","_method":"PUT","code":"DA","lieu_ids":["1","2","3"],"libelle":"Direction Administrative","responsable_id":null,"adjoint_id":null} 
+[2026-02-17 14:53:07] local.INFO: Direction actuelle : {"id":2,"titre":"Direction Administrative","code":"DA","description":"Direction","lieu_id":1,"responsable_id":null,"slug":"direction-administrative","adjoint_id":null,"created_at":"2026-02-17T12:43:06.000000Z","updated_at":"2026-02-17T12:43:06.000000Z","deleted_at":null} 
+[2026-02-17 14:53:07] local.INFO: Vérification du responsable adjoint {"ancien_adjoint_id":null,"nouvel_adjoint_id":null} 
+[2026-02-17 15:05:13] local.INFO: Données reçues : {"_token":"Psiwbo8a0GPLSXoDWOHDEKN7P5Gt6JkdrKixjTux","_method":"PUT","code":"DC","lieu_ids":["1","2","3"],"libelle":"Direction Commerciale","responsable_id":null,"adjoint_id":null} 
+[2026-02-17 15:05:13] local.INFO: Direction actuelle : {"id":3,"titre":"Direction Commerciale","code":"DC","description":"Direction","lieu_id":1,"responsable_id":null,"slug":"direction-commerciale","adjoint_id":null,"created_at":"2026-02-17T12:43:06.000000Z","updated_at":"2026-02-17T12:43:06.000000Z","deleted_at":null} 
+[2026-02-17 15:05:13] local.INFO: Vérification du responsable adjoint {"ancien_adjoint_id":null,"nouvel_adjoint_id":null} 
+[2026-02-17 15:28:44] local.INFO: Données reçues : {"_token":"Psiwbo8a0GPLSXoDWOHDEKN7P5Gt6JkdrKixjTux","_method":"PUT","code":"DO","lieu_ids":["1","2","3"],"libelle":"Direction des Opérations","responsable_id":null,"adjoint_id":null} 
+[2026-02-17 15:28:44] local.INFO: Direction actuelle : {"id":6,"titre":"Direction des Opérations","code":"DO","description":"Direction","lieu_id":1,"responsable_id":null,"slug":"direction-des-operations","adjoint_id":null,"created_at":"2026-02-17T12:43:06.000000Z","updated_at":"2026-02-17T12:43:06.000000Z","deleted_at":null} 
+[2026-02-17 15:28:45] local.INFO: Vérification du responsable adjoint {"ancien_adjoint_id":null,"nouvel_adjoint_id":null} 

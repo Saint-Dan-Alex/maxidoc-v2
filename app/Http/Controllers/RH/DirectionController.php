@@ -86,7 +86,8 @@ class DirectionController extends Controller
                 'libelle' => 'required|string|max:255',
                 'responsable_id' => 'nullable|exists:agents,id',
                 'adjoint_id' => 'nullable|exists:agents,id',
-                'lieu_id' => 'required|exists:lieu_affectations,id',
+                'lieu_ids' => 'required|array',
+                'lieu_ids.*' => 'exists:lieu_affectations,id',
                 'description' => 'nullable|string',
             ]);
 
@@ -96,9 +97,12 @@ class DirectionController extends Controller
                 'titre' => $validated['libelle'],
                 'responsable_id' => $validated['responsable_id'] ?? null,
                 'adjoint_id' => $validated['adjoint_id'] ?? null,
-                'lieu_id' => $validated['lieu_id'],
+                'lieu_id' => $validated['lieu_ids'][0], // On garde le premier comme lieu principal
                 'description' => $validated['description'] ?? null,
             ]);
+
+            // Synchronisation des lieux dans la table de jonction
+            $direction->lieux()->sync($validated['lieu_ids']);
 
             // Création automatique d'une division avec le même nom
             $direction->divisions()->create([
@@ -200,7 +204,8 @@ class DirectionController extends Controller
                 'libelle' => 'required|string|max:255',
                 'responsable_id' => 'nullable|exists:agents,id',
                 'adjoint_id' => 'nullable|exists:agents,id',
-                'lieu_id' => 'required|exists:lieu_affectations,id',
+                'lieu_ids' => 'required|array',
+                'lieu_ids.*' => 'exists:lieu_affectations,id',
                 'description' => 'nullable|string',
             ]);
 
@@ -231,9 +236,12 @@ class DirectionController extends Controller
                 'titre' => $validatedData['libelle'],
                 'responsable_id' => $validatedData['responsable_id'] ?? null,
                 'adjoint_id' => $validatedData['adjoint_id'] ?? null,
-                'lieu_id' => $validatedData['lieu_id'],
+                'lieu_id' => $validatedData['lieu_ids'][0], // Premier lieu comme principal
                 'description' => $validatedData['description'] ?? null,
             ]);
+
+            // Synchronisation des lieux
+            $direction->lieux()->sync($validatedData['lieu_ids']);
 
             // Mise à jour de la division principale
             $division = $direction->divisions()->first();

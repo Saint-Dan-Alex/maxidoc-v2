@@ -297,6 +297,7 @@ class PersonnelController extends Controller
                 'direction_id' => 'required|exists:directions,id',
                 'fonction_id' => 'nullable|exists:fonctions,id',
                 'sexe' => 'required',
+                'lieu_id' => 'required|exists:lieu_affectations,id',
             ]);
 
             // Vérification des doublons
@@ -502,6 +503,7 @@ class PersonnelController extends Controller
                 'direction_id' => 'required|exists:directions,id',
                 'fonction_id' => 'nullable|exists:fonctions,id',
                 'sexe' => 'required',
+                'lieu_id' => 'required|exists:lieu_affectations,id',
                 'role_id' => 'nullable|exists:roles,id',
             ]);
 

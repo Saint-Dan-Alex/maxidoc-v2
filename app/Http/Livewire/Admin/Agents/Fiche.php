@@ -170,7 +170,20 @@ class Fiche extends Component
             ];
 
             $this->lieus = LieuAffectation::select('id', 'titre')->get();
-            $this->directions = Direction::select('id', 'titre')->where('lieu_id', $this->form_stat['lieu_id'])->orderBy('titre')->get();
+            
+            // Filtrer les directions basées sur le lieu de l'agent (Siège ou Sites associés)
+            $lieuId = $this->form_stat['lieu_id'];
+            if ($lieuId && $lieuId != 0) {
+                $this->directions = Direction::where(function($q) use ($lieuId) {
+                    $q->where('lieu_id', $lieuId)
+                      ->orWhereHas('lieux', function($query) use ($lieuId) {
+                          $query->where('lieu_affectations.id', $lieuId);
+                      });
+                })->select('id', 'titre')->orderBy('titre')->get();
+            } else {
+                $this->directions = Direction::select('id', 'titre')->orderBy('titre')->get();
+            }
+
             $this->services = Service::select('id', 'titre')->where('direction_id', $this->form_stat['direction_id'])->get();
             // Liste libre des fonctions dès l'ouverture (pas de filtre)
             $this->fonctions = Fonction::orderBy('titre')->get();
@@ -193,7 +206,24 @@ class Fiche extends Component
     {
         $this->form_stat['direction_id'] = "";
         $this->form_stat['lieu_id'] = $id;
-        $this->directions = Direction::select('id', 'titre')->where('lieu_id', $this->form_stat['lieu_id'])->orderBy('titre')->get();
+        
+        if ($id && $id != 0) {
+            $this->directions = Direction::where(function($q) use ($id) {
+                $q->where('lieu_id', $id)
+                  ->orWhereHas('lieux', function($query) use ($id) {
+                      $query->where('lieu_affectations.id', $id);
+                  });
+            })->select('id', 'titre')->orderBy('titre')->get();
+        } else {
+            $this->directions = Direction::select('id', 'titre')->orderBy('titre')->get();
+        }
+        
+        $this->emit('select2');
+    }
+
+    public function updatedFormStatLieuId($value)
+    {
+        $this->changeLieu($value);
     }
 
     public function changeDirection($id)

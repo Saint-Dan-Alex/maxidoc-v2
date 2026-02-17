@@ -107,12 +107,11 @@ class FicheCreate extends Component
 
     public function mount()
     {
-        // $this->actifAgents = Agent::actif()->orderBy('nom');
-        // $this->inactifAgents = Agent::inactif()->orderBy('nom')->limit(5)->get();
-        // $this->archivedAgents = Agent::archived()->orderBy('nom')->limit(5)->get();
-        // $this->statuts = Statut::all();
-
         $this->statuts = DB::table('statuts')->select('id', 'libelle')->get();
+        $this->lieus = LieuAffectation::select('id', 'titre')->get();
+        $this->directions = Direction::select('id', 'titre')->orderBy('titre')->get();
+        $this->grades = Grade::select('id', 'titre')->get();
+        $this->fonctions = Fonction::orderBy('titre')->get();
     }
 
     public function hydrate()
@@ -147,7 +146,20 @@ class FicheCreate extends Component
         $this->lieus = LieuAffectation::select('id', 'titre')->get();
         // Liste libre des fonctions (indépendante de la hiérarchie)
         $this->fonctions = Fonction::orderBy('titre')->get();
-        $this->directions = Direction::select('id', 'titre')->where('lieu_id', $this->form_stat['lieu_id'])->orderBy('titre')->get();
+        
+        // Filtrer les directions basées sur le lieu de l'agent (Siège ou Sites associés)
+        $lieuId = $this->form_stat['lieu_id'];
+        if ($lieuId && $lieuId != 0) {
+            $this->directions = Direction::where(function($q) use ($lieuId) {
+                $q->where('lieu_id', $lieuId)
+                  ->orWhereHas('lieux', function($query) use ($lieuId) {
+                      $query->where('lieu_affectations.id', $lieuId);
+                  });
+            })->select('id', 'titre')->orderBy('titre')->get();
+        } else {
+            $this->directions = Direction::select('id', 'titre')->orderBy('titre')->get();
+        }
+
         $this->divisions = Division::select('id', 'libelle')->where('direction_id', $this->form_stat['direction_id'])->orderBy('libelle')->get();
         $this->services = Service::select('id', 'titre')->where('direction_id', $this->form_stat['division_id'])->get();
         $this->sections = Section::select('id', 'titre')->where('service_id', $this->form_stat['service_id'])->get();
@@ -158,7 +170,24 @@ class FicheCreate extends Component
     {
         $this->form_stat['direction_id'] = "";
         $this->form_stat['lieu_id'] = $id;
-        $this->directions = Direction::select('id', 'titre')->where('lieu_id', $this->form_stat['lieu_id'])->orderBy('titre')->get();
+
+        if ($id && $id != 0) {
+            $this->directions = Direction::where(function($q) use ($id) {
+                $q->where('lieu_id', $id)
+                  ->orWhereHas('lieux', function($query) use ($id) {
+                      $query->where('lieu_affectations.id', $id);
+                  });
+            })->select('id', 'titre')->orderBy('titre')->get();
+        } else {
+            $this->directions = Direction::select('id', 'titre')->orderBy('titre')->get();
+        }
+        
+        $this->emit('select2');
+    }
+
+    public function updatedFormStatLieuId($value)
+    {
+        $this->changeLieu($value);
     }
 
     public function changeDirection($id)

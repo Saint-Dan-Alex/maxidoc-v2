@@ -93,11 +93,18 @@ class CreatePersonnelForm extends Component
     public function updatedLieuId()
     {
         $this->reset(['direction_id', 'service_id']);
-        $this->isReadyOnly['direction'] = false;
-        $this->directions = LieuAffectation::with('directions')
-            ->findOrFail($this->lieu_id)
-            ->directions
-            ->sortBy('titre') ?? collect();
+        if ($this->lieu_id) {
+            $this->isReadyOnly['direction'] = false;
+            $this->directions = Direction::where(function($q) {
+                $q->where('lieu_id', $this->lieu_id)
+                  ->orWhereHas('lieux', function($query) {
+                      $query->where('lieu_affectations.id', $this->lieu_id);
+                  });
+            })->select('id', 'titre')->orderBy('titre')->get();
+        } else {
+            $this->isReadyOnly['direction'] = true;
+            $this->directions = collect();
+        }
     }
     public function updatedDirectionId()
     {

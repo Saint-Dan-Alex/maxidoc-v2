@@ -16,6 +16,12 @@ class Direction extends Model
     protected $guarded = [];
 
     protected $fillable = ['titre', 'direction_id', 'description', 'code', 'lieu_id', 'responsable_id', 'adjoint_id'];
+
+    public function lieux()
+    {
+        return $this->belongsToMany(LieuAffectation::class, 'direction_lieu', 'direction_id', 'lieu_id')->withTimestamps();
+    }
+
     // protected static function boot()
     // {
 

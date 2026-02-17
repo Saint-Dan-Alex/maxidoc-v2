@@ -104,8 +104,12 @@
                     @forelse ($directions as $direction)
                         <tr>
                             <td> {{ $direction->code }} </td>
-                            <td class="text-truncate"> {{ $direction->titre }} </td>
-                            <td> {{ $direction->lieu->titre }} </td>
+                             <td class="text-truncate"> {{ $direction->titre }} </td>
+                            <td>
+                                @foreach($direction->lieux as $l)
+                                    <span class="badge bg-light text-dark border">{{ $l->titre }}</span>
+                                @endforeach
+                            </td>
                             <td> {{ $direction->responsable ? $direction->responsable->prenom . ' ' . $direction->responsable->nom : 'Non défini' }} </td>
                             <td> {{ $direction->adjoint ? $direction->adjoint->prenom . ' ' . $direction->adjoint->nom : 'Non défini' }} </td>
                             <td> {{ $direction->agents->count() }} </td>
@@ -115,7 +119,7 @@
                                         data-direction-id="{{ $direction->id }}"
                                         data-direction-code="{{ $direction->code }}"
                                         data-direction-titre="{{ $direction->titre }}"
-                                        data-direction-lieu="{{ $direction->lieu_id }}"
+                                        data-direction-lieux="{{ json_encode($direction->lieux->pluck('id')->toArray()) }}"
                                         data-direction-responsable="{{ $direction->responsable_id }}"
                                         data-direction-adjoint="{{ $direction->adjoint_id }}">
                                         <i class="fi fi-rr-pencil"></i>
@@ -170,10 +174,9 @@
                             <label>Code</label>
                             <input type="text" name="code" id="edit-code" class="form-control" required>
                         </div>
-                        <div class="col-12 mb-3">
-                            <label for="lieu_id">Lieu d'affectation</label>
-                            <select name="lieu_id" id="edit-lieu" class="form-control" required>
-                                <option value="">Sélectionner un lieu</option>
+                        <div class="col-12 position-relative mb-3">
+                            <label for="edit-lieux">Lieux d'affectation</label>
+                            <select name="lieu_ids[]" id="edit-lieux" class="form-control select2-edit" data-placeholder="Sélectionner les lieux" multiple required>
                                 @foreach($lieus as $lieu)
                                     <option value="{{ $lieu->id }}">{{ $lieu->titre }}</option>
                                 @endforeach
@@ -229,10 +232,15 @@
                 
                 $(this).select2({
                     dropdownParent: $('#modal-edit-direction'),
-                    placeholder: $(this).data('placeholder'),
+                    placeholder: $(this).data('placeholder') || 'Sélectionner...',
                     language: "fr",
                     width: '100%',
-                    theme: 'bootstrap-5'
+                    templateResult: function(data) {
+                        return data.text;
+                    },
+                    templateSelection: function(data) {
+                        return data.text;
+                    }
                 });
             });
             console.log('✅ Select2 initialisés');
@@ -250,7 +258,7 @@
             const directionId = $(this).data('direction-id');
             const code = $(this).data('direction-code');
             const titre = $(this).data('direction-titre');
-            const lieuId = $(this).data('direction-lieu');
+            const lieuIds = $(this).data('direction-lieux');
             const responsableId = $(this).data('direction-responsable');
             const adjointId = $(this).data('direction-adjoint');
             
@@ -263,9 +271,9 @@
             // Remplir les champs
             $('#edit-code').val(code);
             $('#edit-titre').val(titre);
-            $('#edit-lieu').val(lieuId);
             
             // Définir les valeurs Select2
+            $('#edit-lieux').val(lieuIds).trigger('change');
             $('#edit-responsable').val(responsableId).trigger('change');
             $('#edit-adjoint').val(adjointId).trigger('change');
             

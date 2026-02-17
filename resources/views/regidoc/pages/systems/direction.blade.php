@@ -60,10 +60,9 @@
                             <label>Titre</label>
                             <input type="text" name="libelle" class="form-control" placeholder="Nom de la direction" required>
                         </div>
-                        <div class="col-12 mb-3">
-                            <label>Lieu</label>
-                            <select name="lieu_id" class="form-control select2Bis" data-placeholder="Sélectionner le lieu" required>
-                                <option value=""></option>
+                        <div class="col-12 position-relative mb-3">
+                            <label for="add-lieu-ids">Lieux d'affectation</label>
+                            <select name="lieu_ids[]" id="add-lieu-ids" class="form-control select2Bis" data-placeholder="Sélectionner les lieux" multiple required>
                                 @foreach ($lieus as $lieu)
                                     <option value="{{ $lieu->id }}">{{ $lieu->titre }}</option>
                                 @endforeach
@@ -113,21 +112,52 @@
         width: 100% !important;
     }
     
-    .modal .select2-container--default .select2-selection--single {
-        height: 38px;
-        padding: 0.375rem 0.75rem;
-        font-size: 1rem;
-        line-height: 1.5;
-        color: #495057;
-        background-color: #fff;
-        background-clip: padding-box;
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    .modal .select2-container--default .select2-selection--single,
+    .modal .select2-container--default .select2-selection--multiple {
+        min-height: 45px;
+        padding: 5px 12px;
+        background-color: #ffffff !important;
+        border: 1px solid #adb5bd !important; /* Gris plus foncé et net */
+        border-radius: 8px;
+        transition: all 0.2s ease-in-out;
+        cursor: text;
+    }
+
+    .modal .select2-container--default .select2-selection--single:hover,
+    .modal .select2-container--default .select2-selection--multiple:hover {
+        border-color: #6c757d !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .modal .select2-container--default.select2-container--focus .select2-selection--single,
+    .modal .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: var(--primaryColor) !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
     
     .modal .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 36px;
+        height: 40px;
+    }
+
+    .modal .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .modal .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: var(--primaryColor);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 2px 8px;
+        margin: 0;
+    }
+
+    .modal .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: white;
+        margin-right: 5px;
     }
     
     /* Ajustement de la largeur du menu déroulant */
@@ -153,15 +183,12 @@
                     dropdownParent: $(this).closest('.modal'), // Assure que le menu déroulant s'affiche correctement dans le modal
                     allowClear: true,
                     width: '100%',
-                    theme: 'bootstrap-5',
                     // Pour avoir l'apparence de multiple mais avec une seule sélection
                     templateResult: function(data) {
-                        if (!data.id) { return data.text; }
-                        return $('<span class="d-flex align-items-center"><span class="flex-grow-1">' + data.text + '</span><span class="badge bg-primary ms-2">1</span></span>');
+                        return data.text;
                     },
                     templateSelection: function(data) {
-                        if (!data.id) { return data.text; }
-                        return $('<span class="d-flex align-items-center"><span class="flex-grow-1">' + data.text + '</span><span class="badge bg-primary ms-2">1</span></span>');
+                        return data.text;
                     }
                 });
             });

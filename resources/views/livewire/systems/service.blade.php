@@ -295,12 +295,10 @@
                     theme: 'bootstrap-5',
                     // Pour avoir l'apparence de multiple mais avec une seule sélection
                     templateResult: function(data) {
-                        if (!data.id) { return data.text; }
-                        return $('<span class="d-flex align-items-center"><span class="flex-grow-1">' + data.text + '</span><span class="badge bg-primary ms-2">1</span></span>');
+                        return data.text;
                     },
                     templateSelection: function(data) {
-                        if (!data.id) { return data.text; }
-                        return $('<span class="d-flex align-items-center"><span class="flex-grow-1">' + data.text + '</span><span class="badge bg-primary ms-2">1</span></span>');
+                        return data.text;
                     }
                 });
             });
