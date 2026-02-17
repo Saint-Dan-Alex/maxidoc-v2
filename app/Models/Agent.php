@@ -100,6 +100,14 @@ class Agent extends Model
         return $this->id === $this->direction?->responsable?->id;
     }
 
+    public function isTM()
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+        return \Illuminate\Support\Str::contains($this->fonction?->titre, 'Manager Terminal');
+    }
+
     public function brouillons()
     {
         return $this->belongsToMany(Brouillon::class, 'agent_brouillons', 'agent_id', 'brouillon_id');
