@@ -187,7 +187,9 @@ class Document extends Component
         $this->loading = true;
         $this->resetPage();
         if ($value) {
-            $this->directions = Direction::where('lieu_id', $value)->get();
+            $this->directions = Direction::whereHas('lieus', function($q) use ($value) {
+                $q->where('lieu_affectations.id', $value);
+            })->get();
         } else {
             $this->directions = collect();
         }

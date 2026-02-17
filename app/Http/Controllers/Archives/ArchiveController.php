@@ -103,7 +103,7 @@ class ArchiveController extends Controller
     {
         // 1. Création ou récupération du classeur
         $classeur = Classeur::firstOrCreate(
-            ['titre' => Auth::user()->agent->direction?->lieu?->titre ?? 'Region inconnu'], 
+            ['titre' => Auth::user()->agent->lieu?->titre ?? Auth::user()->agent->direction?->lieu?->titre ?? 'Region inconnu'], 
             [
                 'reference' => 'DIR/' . Str::padLeft(Classeur::count() + 1, 4, '0'),
                 'direction_id' => Agent::find($destinateur)?->direction_id,

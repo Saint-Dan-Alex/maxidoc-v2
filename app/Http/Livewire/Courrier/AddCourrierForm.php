@@ -80,7 +80,7 @@ class AddCourrierForm extends Component
     {
         return $this->changeNumRef();
         // $services = Direction::find(1)->services->pluck('id')->toArray();
-        $prefix = $this->abbreviateTitle(Auth::user()->agent->direction?->lieu?->titre);
+        $prefix = $this->abbreviateTitle(Auth::user()->agent->lieu?->titre ?? Auth::user()->agent->direction?->lieu?->titre ?? 'DOC');
         
         // Log pour débogage
         Log::info('mount - Paramètres:', [
