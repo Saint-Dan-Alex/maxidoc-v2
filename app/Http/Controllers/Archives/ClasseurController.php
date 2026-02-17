@@ -44,7 +44,7 @@ class ClasseurController extends Controller
         $classeur = Classeur::create([
             // 'titre' => $request->titre,
             // 'reference' => $request->reference,
-            'titre' => Auth::user()->agent->direction?->lieu?->titre ?? 'Region inconnu',
+            'titre' => Auth::user()->agent->lieu?->titre ?? Auth::user()->agent->direction?->lieu?->titre ?? 'Region inconnu',
             'reference' => 'DIR'.Str::padLeft(Classeur::count() + 1,4,0),
             'direction_id' => Auth::user()->agent->direction_id,
             'description' => $request->description,
