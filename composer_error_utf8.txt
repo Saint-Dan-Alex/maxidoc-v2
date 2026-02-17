@@ -1,0 +1,85 @@
+﻿composer : The "3.0" 
+constraint for 
+"doctrine/dbal" 
+appears too strict 
+and will likely not 
+match what you want. 
+See https://getcompos
+er.org/constraints
+Au caractère Ligne:1 
+: 1
++ composer require 
+doctrine/dbal:^3.0 
+-W --dry-run > 
+composer_error.txt 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (The "3.   
+ 0" const...org/c    
+onstraints:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+./composer.json has 
+been updated
+Running composer 
+update doctrine/dbal 
+--with-all-dependenci
+es
+Loading composer 
+repositories with 
+package information
+Updating dependencies
+Your requirements 
+could not be 
+resolved to an 
+installable set of 
+packages.
+
+  Problem 1
+    - cyrildewit/eloq
+uent-viewable is 
+locked to version 
+v7.0.6 and an update 
+of this package was 
+not requested.
+    - Root 
+composer.json 
+requires 
+doctrine/dbal 3.0 -> 
+satisfiable by 
+doctrine/dbal[3.0.0].
+    - carbonphp/carbo
+n-doctrine-types 
+3.2.0 conflicts with 
+doctrine/dbal 3.0.0.
+    - cyrildewit/eloq
+uent-viewable v7.0.6 
+requires 
+nesbot/carbon 
+^2.0|^3.0 -> 
+satisfiable by nesbot
+/carbon[2.73.0].
+    - nesbot/carbon 
+2.73.0 requires carbo
+nphp/carbon-doctrine-
+types * -> 
+satisfiable by carbon
+php/carbon-doctrine-t
+ypes[3.2.0].
+
+
+Installation failed, 
+reverting 
+./composer.json and 
+./composer.lock to 
+their original 
+content.
