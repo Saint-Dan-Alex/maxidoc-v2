@@ -180,92 +180,60 @@
 
         .signature {
             position: fixed;
-            /* pointer-events: none; Make the signature element ignore mouse events */
-            z-index: 1025;
-            /* display: none; */
-            /* border: 1px solid #eee; */
-            width: 155px;
-            height: 75px;
-        }
-
-        .signature.tampon {
+            z-index: 1041;
             width: 175px;
-            height: 175px;
+            height: 75px;
+            cursor: move;
         }
 
+        .certificate {
+            width: 100%;
+            height: 100%;
+            border: 2px solid #000;
+            background-color: rgba(255, 255, 255, 0.9);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        .certificate span {
+            display: block;
+            width: 100%;
+            text-align: right;
+            font-size: 8px;
+            font-weight: bold;
+            color: #000;
+            line-height: 1.2;
+            word-break: break-all;
+        }
+
+        .signe-img-container {
+            position: absolute;
+            top: 50%;
+            left: 5px;
+            transform: translateY(-50%);
+            width: 70%;
+            height: 80%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .signe-img-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
 
         .signature.dropped-true {
             border: none;
         }
 
         .signature.dropped-true:hover {
-            border: 1px solid #eee;
-        }
-
-        .signature.dropped-true img {
-            cursor: pointer;
-            height: 100%;
-            width: 100%;
-            /* padding: 10px 0px; */
-            object-fit: contain;
-        }
-
-        .signature img {
-            cursor: pointer;
-            height: 100%;
-            width: 100%;
-            /* padding: 10px 0px; */
-            object-fit: contain;
-        }
-
-        .signature.dropped-true button {
-            display: none;
-        }
-
-        .signature.dropped-true:hover button {
-            display: initial;
-        }
-
-
-        /* annotation */
-        .pdf-content {
-            border: 1px solid #000000;
-        }
-
-        .annotationLayer>a {
-            display: block;
-            position: absolute;
-        }
-
-        .annotationLayer>a:hover {
-            opacity: 0.2;
-            background: #ff0;
-            box-shadow: 0px 2px 10px #ff0;
-        }
-
-        .annotText>div {
-            z-index: 200;
-            position: absolute;
-            padding: 0.6em;
-            max-width: 20em;
-            background-color: #FFFF99;
-            box-shadow: 0px 2px 10px #333;
-            border-radius: 7px;
-        }
-
-        .annotText>img {
-            position: absolute;
-            opacity: 0.6;
-        }
-
-        .annotText>img:hover {
-            opacity: 1;
-        }
-
-        .annotText>div>h1 {
-            font-size: 1.2em;
-            border-bottom: 1px solid #000000;
-            margin: 0px;
+            outline: 1px dashed #666;
         }
     </style>
 </head>
@@ -777,83 +745,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal-action-save" tabindex="-1" aria-labelledby="exampleModalLabel">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header ">
-                    <h5 class="modal-title d-flex align-items-center" id="exampleModalLabel">
-                        <span>Enregistrement</span>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="d-none position-absolute d-flex loader-card justify-content-center"
-                        style="z-index: 2; top:-35px;left:0;right:0;bottom:20px; background-color:rgba(255,255,255,0.95)">
-                        <div class="m-auto text-center">
-                            <div class="spinner-border text-success" role="status">
-                                <span class="sr-only"></span>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="mb-4 row g-lg-3 g-2">
-                        <div class="col-12">
-                            <label for="agent_id">Ajouter des signataires <small>(optionnel)</small></label>
-                            <select name="agent_id" id="agent_id" class="form-control select2">
-                                <option value="">Selectionner</option>
-                                @foreach ($agents as $agent)
-                                    <option value="">{{ $agent->prenom }} {{ $agent->nom }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row g-lg-3 g-2">
-                        <div class="col-12">
-                            <button id="saveCourrier"
-                                class="flex-row gap-3 btn btn-action-doc d-flex justify-content-center align-items-center w-100">
-                                {{-- <i class="fi fi-rr-upload"></i> --}}
-                                <i class="fi fi-rr-disk"></i>
-                                Enregistrer le traitement
-                            </button>
-                        </div>
-                        {{-- <div class="col-6">
-                            <button id="download" class="btn btn-action-doc d-flex flex-column h-100">
-                                <i class="fi fi-rr-download"></i>
-                                Enregistrer et sauvegarder sur l'ordinateur
-                            </button>
-                        </div>
-                        <div class="col-6">
-                            <button id="save" class="btn btn-action-doc d-flex flex-column h-100">
-                                <i class="fi fi-rr-folder-download"></i>
-                                Sauvegarder dans vos documents
-                            </button>
-                        </div> --}}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modal-error" tabindex="-1" aria-labelledby="exampleModalLabel">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header ">
-                    <h5 class="modal-title d-flex align-items-center" id="exampleModalLabel">
-                        <span>Erreur</span>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="d-flex loader-card justify-content-center">
-                        <div class="m-auto text-center">
-                            <p>Veuillez tout d'abord poser une action</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="modal modal-sm fade" id="modal-password" tabindex="-1" aria-labelledby="exampleModalLabel">
         <div class="modal-dialog modal-dialog-centered">
@@ -877,7 +769,7 @@
                             <input type="hidden" name="imgData" id="imgData">
                             <i class="fi fi-rr-envelope-download icon-modal"></i>
                             <h5 style="font-size: 20px">Veuillez consulter votre boite de réception.</h5>
-                            <p style="font-size: 16px">ddUn code de confirmation temporaire a été envoyé à
+                            <p style="font-size: 16px">Un code de confirmation temporaire a été envoyé à
                                 <span style="color: var(--colorTitre); font-family: 'Roboto-bold')">
                                     {{ Auth::user()->email }}
                                 </span>
@@ -956,6 +848,22 @@
                 <div class="modal-body">
                     <p>Voulez-vous enregistrer ce document avec la signature ?</p>
                     <p class="text-muted small">Le document signé sera créé en tant que pièce jointe au courrier.</p>
+                    
+                    <div class="mt-3">
+                        <label for="agent_id" class="form-label">Signer au nom de <small>(si différent)</small></label>
+                        <select name="agent_id" id="agent_id" class="form-control select2">
+                            <option value="{{ Auth::user()->agent->id }}" data-direction="{{ Auth::user()->agent->direction->titre ?? '' }}">
+                                {{ Auth::user()->agent->prenom }} {{ Auth::user()->agent->nom }} (Moi)
+                            </option>
+                            @foreach ($agents as $agent)
+                                @if($agent->id != Auth::user()->agent->id)
+                                    <option value="{{ $agent->id }}" data-direction="{{ $agent->direction->titre ?? '' }}">
+                                        {{ $agent->prenom }} {{ $agent->nom }}
+                                    </option>
+                                @endif
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

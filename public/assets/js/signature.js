@@ -1661,31 +1661,42 @@ async function loadPDF(ajaxUrl) {
 
     for (var index = 0; index < signatureElements.length; index++) {
       const signatureElement = signatureElements[index];
+      let signatureImgSrc = "";
 
-      const pngImageBytes = await fetch(
-        $(signatureElement).find("img").attr("src")
-      ).then((res) => res.arrayBuffer());
+      // Si l'élément contient un certificat (encadrement) non encore "aplati" en image
+      if ($(signatureElement).find(".certificate").length > 0) {
+        console.log("Baking certificate for signature", index);
+        const canvas = await html2canvas(signatureElement, {
+          backgroundColor: null,
+          scale: 2, // Pour une meilleure qualité dans le PDF
+          logging: false
+        });
+        signatureImgSrc = canvas.toDataURL("image/png");
+      } else {
+        signatureImgSrc = $(signatureElement).find("img").attr("src");
+      }
 
+      if (!signatureImgSrc) continue;
+
+      const pngImageBytes = await fetch(signatureImgSrc).then((res) => res.arrayBuffer());
       const pngImage = await pdfDoc.embedPng(pngImageBytes);
+
       var currentPage = $(signatureElement).data("page");
       const page = pdfDoc.getPages()[currentPage - 1];
 
       var pageParent = document.getElementById("page-" + currentPage);
-
       var pageParentX = $(pageParent).width();
       var pageParentY = $(pageParent).height();
 
       var facteurX = page.getWidth() / pageParentX;
       var facteurY = page.getHeight() / pageParentY;
 
-      var imgWidth = $(signatureElement).find("img").width() * facteurX;
-      var imgHeight = $(signatureElement).find("img").height() * facteurY;
+      // Utiliser les dimensions de l'élément signature (qui inclut le cadre) au lieu de juste l'img
+      var imgWidth = $(signatureElement).width() * facteurX;
+      var imgHeight = $(signatureElement).height() * facteurY;
 
-      var oldW = $(signatureElement).find("img").width();
-      var oldH = $(signatureElement).find("img").height();
-
-      var y = $(signatureElement).data("y") * facteurY; //- imgHeight;
-      var x = $(signatureElement).data("x") * facteurX; //- imgWidth;
+      var y = $(signatureElement).data("y") * facteurY;
+      var x = $(signatureElement).data("x") * facteurX;
 
       const signature = {
         width: imgWidth,
@@ -1871,3 +1882,32 @@ function compensateRotation(pageRotation, x, y, scale, dimensions, fontSize) {
     y: drawY,
   };
 }
+
+// Gestion dynamique des métadonnées pour l'encadrement de signature
+$(document).ready(function () {
+  $('body').on('change', '#agent_id', function () {
+    const $option = $(this).find('option:selected');
+    if ($option.length) {
+      const text = $option.text();
+      // Tenter de splitter le nom et prénom (format attendu: "Prénom Nom")
+      const parts = text.split(' ');
+      const prenom = parts[0] || '';
+      const nom = parts.slice(1).join(' ') || '';
+
+      // Mise à jour des métadonnées pour l'encadrement
+      window.__pageUserMeta = window.__pageUserMeta || {};
+      window.__pageUserMeta.agent_nom = nom;
+      window.__pageUserMeta.agent_prenom = prenom;
+      // La direction peut être ajoutée si présente dans un attribut data
+      const direction = $option.data('direction');
+      if (direction) {
+        window.__pageUserMeta.direction_titre = direction;
+      }
+
+      console.log('[Signature] Métadonnées mises à jour:', window.__pageUserMeta);
+
+      // Si une signature est en cours de déplacement, on pourrait forcer son rafraîchissement
+      // mais l'encadrement est généré au moment de createSignatureElement.
+    }
+  });
+});

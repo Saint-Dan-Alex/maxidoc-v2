@@ -185,63 +185,64 @@ class AjaxController extends Controller
 
     public function getUserSignature(Request $request)
     {
-        $password = null;
-        // Ne générer un mot de passe et envoyer un mail que si explicitement demandé
-        if ($request->has('request_code') || $request->has('signer')) {
-            $password = Random::generate(6,'0-9');
-            // Envoyer le code à l'utilisateur connecté
-            try {
-                $recipient = Auth::user()->email;
-                if ($recipient) {
-                    Mail::to($recipient)->send(new SignaturesMail($password));
-                }
-            } catch (\Throwable $e) {
-                Log::error("Erreur lors de l'envoi de l'email de signature (getUserSignature): " . $e->getMessage());
-            }
-        }
+        $password = $request->input('password');
+        $requestCode = $request->has('request_code') || $request->has('signer');
         
-        $data = [];
-        // Permettre de cibler la signature d'un agent spécifique (cas RH)
         $targetUserId = Auth::id();
         if ($request->filled('agent_id')) {
             $agent = Agent::find($request->input('agent_id'));
-            if (!$agent) {
-                return response()->json(['message' => 'Agent introuvable'], 404);
+            if ($agent && $agent->user_id) {
+                $targetUserId = $agent->user_id;
             }
-            if (!$agent->user_id) {
-                return response()->json(['message' => 'Aucun utilisateur lié à cet agent'], 422);
-            }
-            $targetUserId = $agent->user_id;
         }
 
-        $image = Image::select('image_url','password')
-            ->where('user_id', $targetUserId)
+        $image = Image::where('user_id', $targetUserId)
             ->where('type_image', 'SIGNATURE')
             ->first();
-       
-        $data['image'] = '';
 
-        // Mail::to("contact@newtech-rdc.net")->send(new EnvoiMailSigne($password)); 
+        $data = [
+            'image' => '',
+            'password' => null,
+            'action' => 1,
+            'success' => true
+        ];
 
-        if ($image && $password) {
-            // $details = ['email' => 'makombo.mwinaminayi@regideso.cd', 'password' => $password];
-
-            //SendEmail::dispatch(Auth::user()->email, new SignaturesMail($password)); 
-            // On n'écrase le mot de passe que pour l'utilisateur courant
-            if ($targetUserId === Auth::id()) {
-                $image->password = $password;
+        // 1. Validation du mot de passe si fourni
+        if ($password && $image) {
+            if ($image->password !== $password) {
+                return response()->json(['success' => false, 'message' => 'Mot de passe incorrect'], 403);
+            }
+            // Si valide, on peut continuer
+        } 
+        // 2. Génération d'un nouveau code si demandé (et pas de validation en cours)
+        elseif ($requestCode) {
+            $newPassword = Random::generate(6, '0-9');
+            if ($image && $targetUserId === Auth::id()) {
+                $image->password = $newPassword;
                 $image->save();
             }
-
-            $data['image'] = image($image->image_url); //$image; 
-        } elseif($image) {
-            $data['image'] = image($image->image_url);
+            $data['password'] = $newPassword;
+            
+            try {
+                $recipient = Auth::user()->email;
+                if ($recipient) {
+                    Mail::to($recipient)->send(new SignaturesMail($newPassword));
+                }
+            } catch (\Throwable $e) {
+                Log::error("Erreur lors de l'envoi de l'email de signature: " . $e->getMessage());
+            }
         }
 
-        $data['password'] = $password;
-        $data['action'] = 1;
-        // Contexte utilisateur pour composer le code de signature côté client
-        $user = Auth::user();
+        if ($image) {
+            $data['image'] = image($image->image_url);
+            // Pour la compatibilité avec le JS actuel qui attend 'password' dans la réponse pour comparer localement
+            if (!$data['password']) {
+                $data['password'] = $image->password;
+            }
+        }
+
+        // Toujours retourner les métadonnées de l'agent (pour l'encadrement)
+        $user = ($targetUserId === Auth::id()) ? Auth::user() : \App\Models\User::find($targetUserId);
         $agent = $user?->agent;
         $data['agent_nom'] = $agent?->nom ?? '';
         $data['agent_prenom'] = $agent?->prenom ?? '';

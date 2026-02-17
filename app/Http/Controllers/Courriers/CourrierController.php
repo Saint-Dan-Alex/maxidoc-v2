@@ -599,13 +599,13 @@ class CourrierController extends Controller
             $pdfFile = $request->file('document');
             $path = 'courrier-signatures/' . date('Y/m') . '/';
             
-            // Récupérer le nom original du document et ajouter (copie)
+            // Récupérer le nom original du document et ajouter (Signé)
             $originalDocName = $courrier->document?->libelle ?? 'Document';
             // Nettoyer le nom pour éviter les caractères spéciaux
             $cleanDocName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalDocName);
             $cleanDocName = preg_replace('/_+/', '_', $cleanDocName);
             
-            $filename = $cleanDocName . '_copie_' . time() . '.pdf';
+            $filename = $cleanDocName . '_Signé_' . time() . '.pdf';
             
             // IMPORTANT: Obtenir la taille AVANT de déplacer le fichier
             $fileSize = $pdfFile->getSize();
@@ -634,7 +634,7 @@ class CourrierController extends Controller
             $traitement->save();
 
             // Créer une pièce jointe avec le document signé
-            $originalName = $originalDocName . ' (copie).pdf';
+            $originalName = $originalDocName . ' (Signé).pdf';
             $documentJson = json_encode([
                 [
                     'download_link' => $savedPath,
