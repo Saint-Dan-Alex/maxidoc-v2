@@ -29,9 +29,11 @@ class SendDocumentCreatedNotification
      */
     public function handle(DocumentCreated $event)
     {
+        /*
         $agent = User::where('role_id', 1)->get()->map(function ($user) {
             return $user->agent;
         });
         Notification::send($agent, new DocumentNotification($event->document, $event->message));
+        */
     }
 }

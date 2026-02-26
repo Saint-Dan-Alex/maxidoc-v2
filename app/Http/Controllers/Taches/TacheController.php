@@ -272,7 +272,7 @@ class TacheController extends Controller
                 if ($tache->user && $tache->user->agent && $tache->user->agent->id != $auteurId) {
                     event(new TacheCreated($tache, $tache->user->agent->id, $msgAttach));
                 }
-                $agentsAssignes = $tache->agents()->get();
+                $agentsAssignes = $tache->agents()->get()->unique('id');
                 foreach ($agentsAssignes as $agent) {
                     if ($agent->id != $auteurId) {
                         event(new TacheCreated($tache, $agent->id, $msgAttach));
@@ -319,16 +319,17 @@ class TacheController extends Controller
             if ($tache->user && $tache->user->agent && $tache->user->agent->id != $auteurId) {
                 event(new TacheCreated($tache, $tache->user->agent->id, $msgAttach));
             }
-            $agentsAssignes = $tache->agents()->get();
+            $agentsAssignes = $tache->agents()->get()->unique('id');
             foreach ($agentsAssignes as $agent) {
                 if ($agent->id != $auteurId) {
                     event(new TacheCreated($tache, $agent->id, $msgAttach));
                 }
             }
             
-            // Notifier les followers du document
-            foreach ($followers as $follower) {
-                if ($follower && $follower->user) {
+            // Notifier les followers du document (s'ils ne sont pas déjà assignés)
+            $uniqueFollowers = collect($followers)->flatten()->unique('id');
+            foreach ($uniqueFollowers as $follower) {
+                if ($follower && $follower->user && !$agentsAssignes->contains('id', $follower->id)) {
                     event(new TacheCreated($tache, $follower->id, 'Un nouveau document a été attaché à la tâche : ' . $tache->titre));
                 }
             }
@@ -438,16 +439,17 @@ class TacheController extends Controller
             if ($tache->user && $tache->user->agent && $tache->user->agent->id != $auteurId) {
                 event(new TacheCreated($tache, $tache->user->agent->id, $msgAttach));
             }
-            $agentsAssignes = $tache->agents()->get();
+            $agentsAssignes = $tache->agents()->get()->unique('id');
             foreach ($agentsAssignes as $agent) {
                 if ($agent->id != $auteurId) {
                     event(new TacheCreated($tache, $agent->id, $msgAttach));
                 }
             }
             
-            // Notifier les followers du nouveau document
-            foreach ($followers as $follower) {
-                if ($follower && $follower->user) {
+            // Notifier les followers du nouveau document (s'ils ne sont pas déjà assignés)
+            $uniqueFollowers = collect($followers)->flatten()->unique('id');
+            foreach ($uniqueFollowers as $follower) {
+                if ($follower && $follower->user && !$agentsAssignes->contains('id', $follower->id)) {
                     event(new TacheCreated($tache, $follower->id, 'Un nouveau document a été créé et attaché à la tâche : ' . $tache->titre));
                 }
             }
@@ -540,20 +542,19 @@ class TacheController extends Controller
     public function store(Request $request)
     {
         try {
-            $followers = collect();
 
             if ($request->has('direction_id')) {
                 $directions = Direction::find($request->input('direction_id'));
 
                 foreach ($directions as $direction) {
-
+                    $followers = collect();
                     $responsable = $direction->responsable;
                     $secretaires = $direction->secretaires->map(function ($secretaire) {
                         return $secretaire->responsable;
                     });
-                    $secretaires2 = $secretaires;
+                    $secretaires2 = clone $secretaires;
                     $followers->push($secretaires2->add($responsable));
-                    $followers = $followers->flatten();
+                    $followers = $followers->flatten()->unique('id');
 
                     $tache = $this->createTache($request, $followers);
                     $tache->titre = $tache->titre . ' pour ' . $direction->titre;
@@ -633,6 +634,13 @@ class TacheController extends Controller
 
             } elseif ($request->has('division_id')) {
                 $divisions = Division::find($request->input('division_id'));
+                $followers = collect();
+                foreach ($divisions as $division) {
+                    if ($division->responsable) {
+                        $followers->push($division->responsable);
+                    }
+                }
+                $followers = $followers->unique('id');
                 
                 // Créer une seule tâche pour toutes les divisions
                 $tache = $this->createTache($request, $followers);
@@ -689,6 +697,13 @@ class TacheController extends Controller
             } elseif ($request->has('service_id')) {
 
                 $services = Service::find($request->input('service_id'));
+                $followers = collect();
+                foreach ($services as $service) {
+                    if ($service->responsable) {
+                        $followers->push($service->responsable);
+                    }
+                }
+                $followers = $followers->unique('id');
                 
                 // Créer une seule tâche pour tous les services
                 $tache = $this->createTache($request, $followers);
@@ -745,6 +760,13 @@ class TacheController extends Controller
                 }
             } elseif ($request->has('section_id')) {
                 $sections = Section::find($request->input('section_id'));
+                $followers = collect();
+                foreach ($sections as $section) {
+                    if ($section->responsable) {
+                        $followers->push($section->responsable);
+                    }
+                }
+                $followers = $followers->unique('id');
                 
                 // Créer une seule tâche pour toutes les sections
                 $tache = $this->createTache($request, $followers);

@@ -76,14 +76,25 @@ class NotificationIcon extends Component
         $prevCount = $this->notifications ? $this->notifications->count() : 0;
         $this->notifications = collect();
         
-        // Pour l'utilisateur super admin (id=1)
-        if ($user->id === 1) {
-            $this->notifications = $this->getUserNotifications($user);
-        } 
-        // Pour les autres utilisateurs avec un agent
-        elseif ($user->agent) {
-            $this->notifications = $this->getUserNotifications($user->agent);
+        // Initialiser une collection vide
+        $notifications = collect();
+        
+        // Récupérer les notifications de l'utilisateur (User)
+        $userNotifs = $this->getUserNotifications($user);
+        if ($userNotifs->isNotEmpty()) {
+            $notifications = $notifications->merge($userNotifs);
         }
+        
+        // Récupérer les notifications de l'agent associé (Agent)
+        if ($user->agent) {
+            $agentNotifs = $this->getUserNotifications($user->agent);
+            if ($agentNotifs->isNotEmpty()) {
+                $notifications = $notifications->merge($agentNotifs);
+            }
+        }
+        
+        // Trier par date et limiter à 10
+        $this->notifications = $notifications->sortByDesc('created_at')->take(10);
 
         $newCount = $this->notifications->count();
 

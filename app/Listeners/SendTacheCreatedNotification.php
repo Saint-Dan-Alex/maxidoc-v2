@@ -32,7 +32,16 @@ class SendTacheCreatedNotification
      */
     public function handle(TacheCreated $event)
     {
-        $agents = Agent::find($event->agents);
+        // Résoudre les agents de manière flexible (ID, tableau d'IDs, Collection ou Modèle)
+        $agents = $event->agents;
+        if (!($agents instanceof \Illuminate\Database\Eloquent\Model || $agents instanceof \Illuminate\Support\Collection)) {
+            $agents = Agent::find($agents);
+        }
+        
+        if (!$agents) {
+            return;
+        }
+
         $agentQuiADemarre = auth()->user()->agent;
         
         // Si le message contient "est en cours de traitement", on l'ajoute au début

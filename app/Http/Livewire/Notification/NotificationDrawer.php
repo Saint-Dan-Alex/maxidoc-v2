@@ -31,17 +31,21 @@ class NotificationDrawer extends Component
     {
         $user = Auth::user();
         
-        // Initialiser une collection vide par défaut
-        $this->notifications = collect();
+        // Initialiser une collection vide
+        $notifications = collect();
         
-        // Vérifier si l'utilisateur a un agent avec des notifications
-        if ($user->agent && $user->agent->unreadNotifications) {
-            $this->notifications = $user->agent->unreadNotifications->take(10);
+        // Récupérer les notifications de l'utilisateur (User)
+        if (method_exists($user, 'unreadNotifications')) {
+            $notifications = $notifications->merge($user->unreadNotifications()->take(10)->get());
         }
-        // Pour l'utilisateur super admin (id=1), on peut récupérer les notifications directement
-        elseif ($user->id === 1 && method_exists($user, 'unreadNotifications')) {
-            $this->notifications = $user->unreadNotifications->take(10);
+        
+        // Récupérer les notifications de l'agent associé (Agent)
+        if ($user->agent && method_exists($user->agent, 'unreadNotifications')) {
+            $notifications = $notifications->merge($user->agent->unreadNotifications()->take(10)->get());
         }
+        
+        // Trier par date et limiter à 10
+        $this->notifications = $notifications->sortByDesc('created_at')->take(10);
 
         return view('livewire.notification.notification-drawer');
     }
@@ -76,17 +80,13 @@ class NotificationDrawer extends Component
     {
         $user = Auth::user();
         
-        // Marquer la notification comme lue si l'utilisateur a un agent
-        if ($user->agent && $user->agent->notifications) {
-            $user->agent->notifications
-                ->where('id', $id)
-                ->markAsRead();
+        // Chercher et marquer dans les deux modèles par sécurité
+        if ($user->agent && method_exists($user->agent, 'unreadNotifications')) {
+            $user->agent->unreadNotifications()->where('id', $id)->first()?->markAsRead();
         }
-        // Pour l'utilisateur super admin, marquer directement depuis l'utilisateur
-        elseif ($user->id === 1 && method_exists($user, 'notifications')) {
-            $user->notifications
-                ->where('id', $id)
-                ->markAsRead();
+        
+        if (method_exists($user, 'unreadNotifications')) {
+            $user->unreadNotifications()->where('id', $id)->first()?->markAsRead();
         }
     }
 
@@ -97,16 +97,16 @@ class NotificationDrawer extends Component
     {
         $user = Auth::user();
         
-        // Marquer toutes les notifications comme lues si l'utilisateur a un agent
-        if ($user->agent && $user->agent->notifications) {
-            $user->agent->unreadNotifications->markAsRead();
-        }
-        // Pour l'utilisateur super admin, marquer directement depuis l'utilisateur
-        elseif ($user->id === 1 && method_exists($user, 'unreadNotifications')) {
-            $user->unreadNotifications->markAsRead();
+        // Marquer tout comme lu pour l'agent
+        if ($user->agent && method_exists($user->agent, 'unreadNotifications')) {
+            $user->agent->unreadNotifications()->update(['read_at' => now()]);
         }
         
-        // Rafraîchir la liste des notifications
+        // Marquer tout comme lu pour l'utilisateur
+        if (method_exists($user, 'unreadNotifications')) {
+            $user->unreadNotifications()->update(['read_at' => now()]);
+        }
+        
         $this->notifications = collect();
     }
 }

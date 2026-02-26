@@ -40,9 +40,6 @@ class Agent extends Model
 
     public function isDG()
     {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
         $direction = Direction::where('titre', 'Direction générale')->orWhere('id', 1)->first();
         return $this->id === $direction->responsable?->id;
     }
@@ -59,18 +56,12 @@ class Agent extends Model
 
     public function isDelegue()
     {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
         $direction = Direction::where('titre', 'Direction générale')->orWhere('id', 1)->first();
         return $this->id === $direction->responsable?->delegue_id;
     }
 
     public function isDGA()
     {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
         $direction = Direction::where('titre', 'Direction générale')
             ->orWhere('id', 1)->first();
         return $this->id === $direction->adjoint?->id;
@@ -78,25 +69,16 @@ class Agent extends Model
 
     public function isSecretaire()
     {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
         return in_array($this->id, $this->direction?->secretaires->pluck('responsable_id')->toArray() ?? []);
     }
 
     public function isAssistant()
     {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
         return in_array($this->id, $this->direction?->assistanats->pluck('responsable_id')->toArray() ?? []);
     }
 
     public function isResponsable()
     {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
         return $this->id === $this->direction?->responsable?->id;
     }
 
