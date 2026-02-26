@@ -95,7 +95,7 @@
                             <div class="col-12 col-md-8 col-sm-8 col-lg-8">
                                 <div class="d-flex align-items-center justify-content-end gap-2">
                                     <div class="input-group block-input-filter">
-                                        @if (Auth::user()->agent->isDG())
+                                        @if ($isDG)
                                             <select class="form-select form-control" name="lieu_query"
                                                 wire:model.debounce.500ms="lieu_query">
                                                 <option value="null" selected disabled>Lieu</option>
@@ -227,15 +227,7 @@
                                                 {{ Str::ucfirst($document->author?->nom ?? '') }}
                                             </td>
                                             <td>
-                                                @if (($document->is_default === 1) ||
-                                                    ($document->courrier?->isIntern() &&
-                                                        is_array($document->courrier?->destinateurs->pluck('id')->toArray()) &&
-                                                        in_array(Auth::user()->agent->id, $document->courrier?->destinateurs->pluck('id')->toArray())) ||
-                                                        (is_array($document->courrier?->followers->pluck('id')->toArray()) &&
-                                                            in_array(Auth::user()->agent->id, $document->courrier?->followers->pluck('id')->toArray())) ||
-                                                        $document->courrier?->created_by == Auth::user()->agent->id ||
-                                                        $document->created_by == Auth::user()->agent->id ||
-                                                        Auth::user()->agent->isDG())
+                                                @can('view', $document)
                                                     <div class="d-flex align-items-center">
                                                         <a class="btn"
                                                             href="{{ route('regidoc.documents.show', $document) }}">
@@ -250,7 +242,7 @@
                                                             </a>
                                                         @endcan
                                                     </div>
-                                                @endif
+                                                @endcan
                                             </td>
                                         </tr>
                                     @empty
@@ -531,11 +523,13 @@
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <!-- Bouton Voir -->
-                                                    <a href="{{ route('regidoc.documents.show', $document) }}" 
-                                                       class="btn">
-                                                        <i class="fi fi-rr-eye"></i>
-                                                        <div class="tooltip-btn">Voir détails</div>
-                                                    </a>
+                                                    @can('view', $document)
+                                                        <a href="{{ route('regidoc.documents.show', $document) }}" 
+                                                        class="btn">
+                                                            <i class="fi fi-rr-eye"></i>
+                                                            <div class="tooltip-btn">Voir détails</div>
+                                                        </a>
+                                                    @endcan
                                                 </div>
                                             </td>
                                         </tr>

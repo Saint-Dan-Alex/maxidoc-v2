@@ -38,15 +38,19 @@ class DesDocuments extends Component
     public $direction_query;
     public $division_query;
     public $agent_query;
-
-    public $active_tab = 1; 
-   
+    public $active_tab = 1;
+    public $isDG = false;
     public function mount()
     {  
         $this->lieus = LieuAffectation::select('id', 'titre')->get();
         $this->directions = collect();
         $this->divisions = collect();
-        $this->agents = collect();  
+        $this->agents = collect();
+        
+        $user = auth()->user();
+        if ($user && $user->agent) {
+            $this->isDG = $user->agent->isDG() || session('delegation_mode');
+        }
     }
 
     public function refreshPage()

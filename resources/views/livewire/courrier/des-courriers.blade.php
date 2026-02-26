@@ -466,29 +466,33 @@
                                                 </td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        @if (
-                                                            ($courrier->isIntern() && in_array(Auth::user()->agent->id, $courrier->destinateurs->pluck('id')->toArray())) ||
-                                                                in_array(Auth::user()->agent->id, $courrier->followers->pluck('id')->toArray()) ||
-                                                                $courrier->created_by == Auth::user()->agent->id ||
-                                                                $courrier->partages->contains('agent_id', Auth::user()->agent->id))
-                                                            @php
-                                                                // Vérifier si l'utilisateur est DG et si le traitement est assigné
-                                                                $isDG = Auth::user()->agent && Auth::user()->agent->isDG();
-                                                                $canViewButton = !$isDG || ($isDG && $courrier->traitement_id != null);
-                                                            @endphp
-                                                            @if ($canViewButton)
-                                                                <a href="{{ route('regidoc.courriers.show', $courrier) }}"
-                                                                    class="btn">
-                                                                    <i class="fi fi-rr-eye"></i>
-                                                                    <div class="tooltip-btn">Voir détails</div>
-                                                                </a>
-                                                                @can('delete', $courrier)
-                                                                    <button wire:click="confirmDeletion({{ $courrier->id }})" class="btn text-danger">
-                                                                        <i class="fi fi-rr-trash"></i>
-                                                                        <div class="tooltip-btn">Supprimer</div>
-                                                                    </button>
-                                                                @endcan
-                                                            @endif
+                                                        @php
+                                                            [$agentId, $dgAgentId] = \App\Helpers\DelegationHelper::getAgentIds();
+                                                            $agentIds = array_filter([$agentId, $dgAgentId]);
+                                                            
+                                                            $isAuthorized = ($courrier->isIntern() && array_intersect($courrier->destinateurs->pluck('id')->toArray(), $agentIds)) ||
+                                                                array_intersect($courrier->followers->pluck('id')->toArray(), $agentIds) ||
+                                                                in_array($courrier->created_by, $agentIds) ||
+                                                                $courrier->partages->whereIn('agent_id', $agentIds)->count() > 0 ||
+                                                                $isDG;
+                                                                
+                                                            // Seul le VRAI DG est restreint sur les nouveaux courriers (statut 1) 
+                                                            $isRealDG = Auth::user()->agent && Auth::user()->agent->isDG() && !session('delegation_mode');
+                                                            $canShowActions = $isAuthorized && (!$isRealDG || $courrier->statut_id != 1);
+                                                        @endphp
+                                                        
+                                                        @if ($canShowActions)
+                                                            <a href="{{ route('regidoc.courriers.show', $courrier) }}"
+                                                                class="btn">
+                                                                <i class="fi fi-rr-eye"></i>
+                                                                <div class="tooltip-btn">Voir détails</div>
+                                                            </a>
+                                                            @can('delete', $courrier)
+                                                                <button wire:click="confirmDeletion({{ $courrier->id }})" class="btn text-danger">
+                                                                    <i class="fi fi-rr-trash"></i>
+                                                                    <div class="tooltip-btn">Supprimer</div>
+                                                                </button>
+                                                            @endcan
                                                         @endif
                                                     </div>
                                                 </td>
@@ -709,47 +713,48 @@
                                         @endcan
                                     @endif
                                     <td>{{ $entrant->created_at->format('d/m/Y') }}</td>
-                                   @if (!$isSec)
-                                       <td>
-                                           <div @class([
-                                               'badge',
-                                           'badge-gray' => $entrant->statut_id == 1,
-                                           'badge-yellow' => $entrant->statut_id == 2,
-                                           'badge-green' => $entrant->statut_id == 3,
-                                       ])>
-                                           {{ $entrant->statut?->libelle ?? 'Inconnu' }}
-                                       </div>
-                                   </td>
-                                   <td>
-                                       <div class="d-flex align-items-center">
-                                           
-                                               @if (
-    ($entrant->isIntern() && in_array(Auth::user()->agent->id, $entrant->destinateurs->pluck('id')->toArray())) ||
-        in_array(Auth::user()->agent->id, $entrant->followers->pluck('id')->toArray()) ||
-        $entrant->created_by == Auth::user()->agent->id ||
-        $entrant->partages->contains('agent_id', Auth::user()->agent->id))
-    @php
-        // Vérifier si l'utilisateur est DG et si le traitement est assigné
-        $isDG = Auth::user()->agent && Auth::user()->agent->isDG();
-        $canViewButton = !$isDG || ($isDG && $entrant->traitement_id != null);
-    @endphp
-    @if ($canViewButton)
-        <a href="{{ route('regidoc.courriers.show', $entrant) }}"
-            class="btn">
-            <i class="fi fi-rr-eye"></i>
-            <div class="tooltip-btn">Voir détails</div>
-        </a>
-        @can('delete', $entrant)
-            <button wire:click="confirmDeletion({{ $entrant->id }})" class="btn text-danger">
-                <i class="fi fi-rr-trash"></i>
-                <div class="tooltip-btn">Supprimer</div>
-            </button>
-        @endcan
-    @endif
-@endif
-                                   @endif
-                                       </div>
-                                   </td>
+                                    @if (!$isSec)
+                                        <td>
+                                            <div @class([
+                                                'badge',
+                                                'badge-gray' => $entrant->statut_id == 1,
+                                                'badge-yellow' => $entrant->statut_id == 2,
+                                                'badge-green' => $entrant->statut_id == 3,
+                                            ])>
+                                                {{ $entrant->statut?->libelle ?? 'Inconnu' }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @php
+                                                    [$agentId, $dgAgentId] = \App\Helpers\DelegationHelper::getAgentIds();
+                                                    $agentIds = array_filter([$agentId, $dgAgentId]);
+                                                    
+                                                    $isAuthorized = ($entrant->isIntern() && array_intersect($entrant->destinateurs->pluck('id')->toArray(), $agentIds)) ||
+                                                        array_intersect($entrant->followers->pluck('id')->toArray(), $agentIds) ||
+                                                        in_array($entrant->created_by, $agentIds) ||
+                                                        $entrant->partages->whereIn('agent_id', $agentIds)->count() > 0 ||
+                                                        $isDG;
+                                                        
+                                                    $isRealDG = Auth::user()->agent && Auth::user()->agent->isDG() && !session('delegation_mode');
+                                                    $canShowActions = $isAuthorized && (!$isRealDG || $entrant->statut_id != 1);
+                                                @endphp
+                                                
+                                                @if ($canShowActions)
+                                                    <a href="{{ route('regidoc.courriers.show', $entrant) }}" class="btn">
+                                                        <i class="fi fi-rr-eye"></i>
+                                                        <div class="tooltip-btn">Voir détails</div>
+                                                    </a>
+                                                    @can('delete', $entrant)
+                                                        <button wire:click="confirmDeletion({{ $entrant->id }})" class="btn text-danger">
+                                                            <i class="fi fi-rr-trash"></i>
+                                                            <div class="tooltip-btn">Supprimer</div>
+                                                        </button>
+                                                    @endcan
+                                                @endif
+                                            </div>
+                                        </td>
+                                    @endif
                                </tr>
                            @empty
                                <tr>
@@ -961,11 +966,22 @@
                                         
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                @if (
-                                                    ($sortant->isIntern() && in_array(Auth::user()->agent->id, $sortant->destinateurs->pluck('id')->toArray())) ||
-                                                        in_array(Auth::user()->agent->id, $sortant->followers->pluck('id')->toArray()) ||
-                                                        $sortant->created_by == Auth::user()->agent->id ||
-                                                        $sortant->partages->contains('agent_id', Auth::user()->agent->id))
+                                                @php
+                                                    [$agentId, $dgAgentId] = \App\Helpers\DelegationHelper::getAgentIds();
+                                                    $agentIds = array_filter([$agentId, $dgAgentId]);
+                                                    
+                                                    $isAuthorized = ($sortant->isIntern() && array_intersect($sortant->destinateurs->pluck('id')->toArray(), $agentIds)) ||
+                                                        array_intersect($sortant->followers->pluck('id')->toArray(), $agentIds) ||
+                                                        in_array($sortant->created_by, $agentIds) ||
+                                                        $sortant->partages->whereIn('agent_id', $agentIds)->count() > 0 ||
+                                                        $isDG;
+                                                        
+                                                    // Seul le VRAI DG est restreint sur les nouveaux courriers (statut 1) 
+                                                    $isRealDG = Auth::user()->agent && Auth::user()->agent->isDG() && !session('delegation_mode');
+                                                    $canShowActions = $isAuthorized && (!$isRealDG || $sortant->statut_id != 1);
+                                                @endphp
+
+                                                @if ($canShowActions)
                                                     <a href="{{ route('regidoc.courriers.show', $sortant) }}"
                                                         class="btn">
                                                         <i class="fi fi-rr-eye"></i>
@@ -1095,11 +1111,22 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    @if (
-                                                        ($interne->isIntern() && in_array(Auth::user()->agent->id, $interne->destinateurs->pluck('id')->toArray())) ||
-                                                            in_array(Auth::user()->agent->id, $interne->followers->pluck('id')->toArray()) ||
-                                                            $interne->created_by == Auth::user()->agent->id ||
-                                                            $interne->partages->contains('agent_id', Auth::user()->agent->id))
+                                                    @php
+                                                        [$agentId, $dgAgentId] = \App\Helpers\DelegationHelper::getAgentIds();
+                                                        $agentIds = array_filter([$agentId, $dgAgentId]);
+                                                        
+                                                        $isAuthorized = ($interne->isIntern() && array_intersect($interne->destinateurs->pluck('id')->toArray(), $agentIds)) ||
+                                                            array_intersect($interne->followers->pluck('id')->toArray(), $agentIds) ||
+                                                            in_array($interne->created_by, $agentIds) ||
+                                                            $interne->partages->whereIn('agent_id', $agentIds)->count() > 0 ||
+                                                            $isDG;
+                                                            
+                                                        // Seul le VRAI DG est restreint sur les nouveaux courriers (statut 1) 
+                                                        $isRealDG = Auth::user()->agent && Auth::user()->agent->isDG() && !session('delegation_mode');
+                                                        $canShowActions = $isAuthorized && (!$isRealDG || $interne->statut_id != 1);
+                                                    @endphp
+
+                                                    @if ($canShowActions)
                                                         <a href="{{ route('regidoc.courriers.show', $interne) }}"
                                                             class="btn">
                                                             <i class="fi fi-rr-eye"></i>
@@ -1224,16 +1251,34 @@
                                         <td>{{ $finalise->created_at->format('d/m/Y') }}</td>
                                         <td><div class="badge badge-green">Finalisé</div></td>
                                         <td>
-                                            <a href="{{ route('regidoc.courriers.show', $finalise) }}" class="btn">
-                                                <i class="fi fi-rr-eye"></i>
-                                                <div class="tooltip-btn">Voir détails</div>
-                                            </a>
-                                            @can('delete', $finalise)
-                                                <button wire:click="confirmDeletion({{ $finalise->id }})" class="btn text-danger">
-                                                    <i class="fi fi-rr-trash"></i>
-                                                    <div class="tooltip-btn">Supprimer</div>
-                                                </button>
-                                            @endcan
+                                            <div class="d-flex align-items-center">
+                                                @php
+                                                    [$agentId, $dgAgentId] = \App\Helpers\DelegationHelper::getAgentIds();
+                                                    $agentIds = array_filter([$agentId, $dgAgentId]);
+                                                    
+                                                    $isAuthorized = ($finalise->isIntern() && array_intersect($finalise->destinateurs->pluck('id')->toArray(), $agentIds)) ||
+                                                        array_intersect($finalise->followers->pluck('id')->toArray(), $agentIds) ||
+                                                        in_array($finalise->created_by, $agentIds) ||
+                                                        $finalise->partages->whereIn('agent_id', $agentIds)->count() > 0 ||
+                                                        $isDG;
+                                                    
+                                                    // Pour les finalisés, pas de restriction de statut 1
+                                                    $canShowActions = $isAuthorized;
+                                                @endphp
+                                                
+                                                @if ($canShowActions)
+                                                    <a href="{{ route('regidoc.courriers.show', $finalise) }}" class="btn">
+                                                        <i class="fi fi-rr-eye"></i>
+                                                        <div class="tooltip-btn">Voir détails</div>
+                                                    </a>
+                                                    @can('delete', $finalise)
+                                                        <button wire:click="confirmDeletion({{ $finalise->id }})" class="btn text-danger">
+                                                            <i class="fi fi-rr-trash"></i>
+                                                            <div class="tooltip-btn">Supprimer</div>
+                                                        </button>
+                                                    @endcan
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
