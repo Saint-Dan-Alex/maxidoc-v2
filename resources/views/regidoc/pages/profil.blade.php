@@ -590,12 +590,12 @@
                             </div>
                             <div class="col-lg-12">
                                 <ul class="permissions checkbox list-unstyled permission-action mb-0">
-                                    <li class="d-flex align-items-center justify-content-between li-check">
+                                    <!-- <li class="d-flex align-items-center justify-content-between li-check">
                                         <label for="dga" class="mb-0">DGA</label>
                                         <input type="checkbox" class="the-permission form-check-input mt-0"
                                             name="to_dga" id="dga"
                                             value="{{ Auth::user()->agent->direction?->adjoint?->id }}">
-                                    </li>
+                                    </li> -->
                                 </ul>
                             </div>
                             <div class="col-lg-12">
@@ -615,7 +615,7 @@
                             <div class="col-lg-12">
                                 <ul class="permissions checkbox list-unstyled permission-action">
                                     @php
-                                        $permissions = Auth::user()->permissions->where('module_id', 2);
+                                        $permissions = Auth::user()->permissions;
                                     @endphp
                                     @foreach ($permissions as $perm)
                                         <li class="d-flex align-items-center justify-content-between li-check">
@@ -624,7 +624,7 @@
                                             </label>
                                             <input type="checkbox" style="flex: 0 0 auto"
                                                 id="permission-{{ $perm->id }}" name="permissions[]"
-                                                class="the-permission form-check-input mt-0" value="{{ $perm->id }}">
+                                                class="the-permission form-check-input mt-0" value="{{ $perm->id }}" checked>
                                         </li>
                                     @endforeach
                                 </ul>
@@ -638,6 +638,52 @@
             </div>
         </div>
     </div>
+
+    {{-- 🔍 DEBUG NON-BLOQUANT — soumission normale préservée --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('#modal-delegue form');
+        if (!form) {
+            console.error('%c[DELEGUE ERROR] Formulaire #modal-delegue introuvable dans le DOM !', 'color:red;font-weight:bold');
+            return;
+        }
+        console.log('%c[DELEGUE] ✅ Formulaire trouvé. Action = ' + form.action, 'color:green;font-weight:bold');
+
+        form.addEventListener('submit', function () {
+            // ⚠️ PAS de e.preventDefault() → le formulaire se soumet normalement
+
+            const autreAgent = form.querySelector('[name="autre_agent"]');
+            const toDga      = form.querySelector('[name="to_dga"]');
+
+            const agentId = (toDga && toDga.checked)
+                ? toDga.value
+                : (autreAgent ? autreAgent.value : null);
+
+            const permissionsChecked = Array.from(
+                form.querySelectorAll('input[name="permissions[]"]:checked')
+            ).map(cb => cb.value);
+
+            console.groupCollapsed('%c[DELEGUE] 📤 Soumission formulaire', 'color:blue;font-weight:bold');
+            if (!agentId || agentId === '') {
+                console.error('%c[DELEGUE ERROR] ❌ Aucun agent délégué sélectionné ! (agentId vide)', 'color:red;font-weight:bold');
+            } else {
+                console.log('%c[DELEGUE] Agent délégué ID = ' + agentId, 'color:green');
+            }
+
+            if (permissionsChecked.length === 0) {
+                console.warn('%c[DELEGUE WARN] ⚠️ Aucune permission cochée !', 'color:orange;font-weight:bold');
+            } else {
+                console.log('%c[DELEGUE] Permissions cochées (' + permissionsChecked.length + ') = ', 'color:green', permissionsChecked);
+            }
+
+            console.log('[DELEGUE] URL =', form.action, '| Méthode =', form.method);
+            console.groupEnd();
+
+            return true; // Laisser le formulaire se soumettre normalement
+        });
+    });
+    </script>
+    {{-- FIN DEBUG NON-BLOQUANT --}}
 
     <div class="modal fade" id="modal-change-photo-profil" tabindex="-1" aria-labelledby="exampleModalLabel"
         aria-hidden="true">

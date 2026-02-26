@@ -1959,6 +1959,11 @@ $document->expediteur_interne_id = $request->get('expediteur_id') ?? Auth::user(
                 // Ajouter le DG (responsable de la Direction Générale) s'il existe
                 if ($directionGenerale->responsable_id) {
                     $destinataires->push($directionGenerale->responsable_id);
+                    
+                    // Ajouter également le délégué du DG s'il existe
+                    if ($directionGenerale->responsable && $directionGenerale->responsable->delegue_id) {
+                        $destinataires->push($directionGenerale->responsable->delegue_id);
+                    }
                 }
                 
                 // Supprimer les doublons au cas où le DG serait aussi dans les assistants
