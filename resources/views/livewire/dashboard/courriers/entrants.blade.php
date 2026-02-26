@@ -150,21 +150,24 @@
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        @if (
-                                            ($courrier->isIntern() && in_array(Auth::user()->agent->id, $courrier->destinateurs->pluck('id')->toArray())) ||
-                                                in_array(Auth::user()->agent->id, $courrier->followers->pluck('id')->toArray()) ||
-                                                $courrier->created_by == Auth::user()->agent->id)
-                                            @php
-                                                // Vérifier si l'utilisateur est DG et si le statut n'est pas "En attente"
-                                                $isDG = Auth::user()->agent && Auth::user()->agent->isDG();
-                                                $canViewButton = !$isDG || ($isDG && $courrier->statut_id != 1);
-                                            @endphp
-                                            @if ($canViewButton)
-                                                <a href="{{ route('regidoc.courriers.show', $courrier) }}" class="btn">
-                                                    <i class="fi fi-rr-eye"></i>
-                                                    <div class="tooltip-btn">Voir détails</div>
-                                                </a>
-                                            @endif
+                                        @php
+                                            [$agentId, $dgAgentId] = \App\Helpers\DelegationHelper::getAgentIds();
+                                            $agentIds = array_filter([$agentId, $dgAgentId]);
+                                            
+                                            $isAuthorized = ($courrier->isIntern() && array_intersect($courrier->destinateurs->pluck('id')->toArray(), $agentIds)) ||
+                                                array_intersect($courrier->followers->pluck('id')->toArray(), $agentIds) ||
+                                                in_array($courrier->created_by, $agentIds);
+                                                
+                                            // Seul le VRAI DG est restreint sur les nouveaux courriers (statut 1)
+                                            $isRealDG = Auth::user()->agent && Auth::user()->agent->isDG() && !session('delegation_mode');
+                                            $canShow = $isAuthorized && (!$isRealDG || $courrier->statut_id != 1);
+                                        @endphp
+                                        
+                                        @if ($canShow)
+                                            <a href="{{ route('regidoc.courriers.show', $courrier) }}" class="btn">
+                                                <i class="fi fi-rr-eye"></i>
+                                                <div class="tooltip-btn">Voir détails</div>
+                                            </a>
                                         @endif
                                     </div>
                                 </td>
