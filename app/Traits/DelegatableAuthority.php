@@ -8,30 +8,18 @@ use Illuminate\Support\Facades\Auth;
 trait DelegatableAuthority
 {
     /**
-     * Boot the trait to apply global scope and events.
+     * Boot the trait to apply events.
+     * 
+     * NOTE: Le Query Merging est désormais géré par DelegationHelper::filterByUserInteraction()
+     * dans chaque composant, pour éviter les conflits avec les filtres métier existants.
      */
     public static function bootDelegatableAuthority()
     {
-        // 1. Query Merging: Application du Scope Global pour voir les ressources du DG
-        static::addGlobalScope('delegation_view', function (Builder $builder) {
-            $actingAsDgId = session('acting_as_dg_id');
-            
-            if ($actingAsDgId && Auth::check()) {
-                // On fusionne les vues: Mes outils + Outils du DG
-                // Note: On utilise whereIn pour inclure les deux IDs
-                $ownerColumn = (new static)->getOwnerColumn();
-                $builder->where(function ($query) use ($ownerColumn, $actingAsDgId) {
-                    $query->where($ownerColumn, Auth::id())
-                          ->orWhere($ownerColumn, $actingAsDgId);
-                });
-            }
-        });
-
-        // 2. Audit Trail Automatique
+        // Audit Trail Automatique : marquer les créations sous délégation
         static::creating(function ($model) {
             if (session('delegation_mode')) {
-                // On marque la création comme étant faite au nom de...
                 // Cette information sera récupérée par le système de log Historique
+                // via le middleware CheckActiveDelegation
             }
         });
     }

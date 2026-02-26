@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Courrier;
 
 use App\Models\Courrier;
 use App\Models\User;
+use App\Helpers\DelegationHelper;
 use Livewire\WithPagination;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
@@ -51,8 +52,8 @@ class DesCourriers extends Component
                 
             $this->isSec = $isSecretaireDG;
             
-            // Vérifier si l'utilisateur est DG
-            $this->isDG = $agent->isDG();
+            // Vérifier si l'utilisateur est DG OU agit comme DG (délégation)
+            $this->isDG = $agent->isDG() || session('delegation_mode');
             
             // Vérifier si l'utilisateur est Assistant
             $this->isAssistant = $agent->isAssistant();
@@ -190,24 +191,6 @@ class DesCourriers extends Component
             'partages'
         ]);
 
-        $agentId = Auth::user()->agent?->id;
-
-        // Fonction pour filtrer les courriers où l'utilisateur est impliqué
-        $filterByUserInteraction = function ($query) use ($agentId) {
-            $query->where(function ($q) use ($agentId) {
-                $q->where('created_by', $agentId)
-                  ->orWhereHas('destinateurs', function ($sq) use ($agentId) {
-                      $sq->where('agent_id', $agentId);
-                  })
-                  ->orWhereHas('followers', function ($sq) use ($agentId) {
-                      $sq->where('agent_id', $agentId);
-                  })
-                  ->orWhereHas('partages', function ($sq) use ($agentId) {
-                      $sq->where('agent_id', $agentId);
-                  });
-            });
-        };
-
         // Initialisation des variables pour la vue
         $allcourriers = collect();
         $entrants = collect();
@@ -222,7 +205,7 @@ class DesCourriers extends Component
             switch ($this->active_tab) {
                 case 1: // Tous
                     $query = $courriersQuery;
-                    $filterByUserInteraction($query);
+                    DelegationHelper::filterByUserInteraction($query);
                     $query = $this->applyFilters($query)->orderBy('id', 'desc');
                     $allcourriers = $query->paginate(10);
                     $allcourriers->getCollection()->transform(function ($courrier) {
@@ -231,7 +214,7 @@ class DesCourriers extends Component
                     break;
                 case 2: // A orienter (Pas de tâches liées)
                     $query = $courriersQuery->whereDoesntHave('taches');
-                    $filterByUserInteraction($query);
+                    DelegationHelper::filterByUserInteraction($query);
                     $query = $this->applyFilters($query)->orderBy('id', 'desc');
                     $entrants = $query->paginate(10); // On réutilise le nom entrants pour simplifier la vue
                     $entrants->getCollection()->transform(function ($courrier) {
@@ -240,7 +223,7 @@ class DesCourriers extends Component
                     break;
                 case 3: // En cours (A des tâches liées ET statut 2)
                     $query = $courriersQuery->whereHas('taches')->where('statut_id', 2);
-                    $filterByUserInteraction($query);
+                    DelegationHelper::filterByUserInteraction($query);
                     $query = $this->applyFilters($query)->orderBy('id', 'desc');
                     $sortants = $query->paginate(10); // On réutilise sortants
                     $sortants->getCollection()->transform(function ($courrier) {
@@ -249,7 +232,7 @@ class DesCourriers extends Component
                     break;
                 case 4: // Finalisés (Statut 3)
                     $query = $courriersQuery->where('statut_id', 3);
-                    $filterByUserInteraction($query);
+                    DelegationHelper::filterByUserInteraction($query);
                     $query = $this->applyFilters($query)->orderBy('id', 'desc');
                     $finalises = $query->paginate($this->perPage);
                     $finalises->getCollection()->transform(function ($courrier) {
@@ -276,7 +259,7 @@ class DesCourriers extends Component
                     $query->where('type_id', 1);
                 }
                 
-                $filterByUserInteraction($query);
+                DelegationHelper::filterByUserInteraction($query);
                 
                 $query = $this->applyFilters($query)->orderBy('id', 'desc');
                 $allcourriers = $query->paginate(10);
@@ -286,7 +269,7 @@ class DesCourriers extends Component
 
             } elseif ($this->active_tab == 2) {
                 $query = $courriersQuery->where('type_id', 1);
-                $filterByUserInteraction($query);
+                DelegationHelper::filterByUserInteraction($query);
                 $query = $this->applyFilters($query)->orderBy('id', 'desc');
                 $entrants = $query->paginate(10);
                 $entrants->getCollection()->transform(function ($courrier) {
@@ -295,7 +278,7 @@ class DesCourriers extends Component
 
             } elseif ($this->active_tab == 3) {
                 $query = $courriersQuery->where('type_id', 2);
-                $filterByUserInteraction($query);
+                DelegationHelper::filterByUserInteraction($query);
                 $query = $this->applyFilters($query)->orderBy('id', 'desc');
                 $sortants = $query->paginate(10);
                 $sortants->getCollection()->transform(function ($courrier) {
@@ -304,7 +287,7 @@ class DesCourriers extends Component
 
             } elseif ($this->active_tab == 4) {
                 $query = $courriersQuery->where('type_id', 3);
-                $filterByUserInteraction($query);
+                DelegationHelper::filterByUserInteraction($query);
                 $query = $this->applyFilters($query)->orderBy('id', 'desc');
                 $internes = $query->paginate(10);
                 $internes->getCollection()->transform(function ($courrier) {

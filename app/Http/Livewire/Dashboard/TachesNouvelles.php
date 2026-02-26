@@ -2,8 +2,8 @@
 
 namespace App\Http\Livewire\Dashboard;
 
-// use App\Models\PivotUserTache;
 use App\Models\Tache;
+use App\Helpers\DelegationHelper;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -11,16 +11,19 @@ class TachesNouvelles extends Component
 {
     public function render()
     {
-        $agentId = Auth::user()->agent->id;
-        $userId = Auth::user()->id;
+        $userIds = DelegationHelper::getUserIds();
+        [$agentId, $dgAgentId] = DelegationHelper::getAgentIds();
+        $agentIds = array_filter([$agentId, $dgAgentId]);
 
         $taches = Tache::with(['pivotusertaches', 'user', 'tache_statut', 'priorite', 'documents'])
-            ->whereHas('pivotusertaches', function ($query) use ($agentId) {
-                $query->where('agent_id', $agentId);
+            ->where(function($q) use ($agentIds, $userIds) {
+                $q->whereHas('pivotusertaches', function ($query) use ($agentIds) {
+                    $query->whereIn('agent_id', $agentIds);
+                })
+                ->orWhereIn('user_id', $userIds);
             })
-            ->orWhere('user_id', $userId)
             ->where('tache_statut_id', 1)
-            ->take(9) // Limiter les résultats directement au niveau de la requête
+            ->take(9)
             ->get();
 
         return view('livewire.dashboard.taches-nouvelles', compact('taches'));

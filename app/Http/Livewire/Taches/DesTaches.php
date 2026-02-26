@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Taches;
 
 use App\Events\TacheCreated;
 use App\Models\Tache;
+use App\Helpers\DelegationHelper;
 use Illuminate\Support\Facades\Auth; 
 use Livewire\WithPagination;
 use Livewire\Component;
@@ -80,8 +81,9 @@ class DesTaches extends Component
             $query = $this->filter($query, Session::get('tacheFilter'));  
         }
 
+        $userIds = DelegationHelper::getUserIds();
         $assignedTasks = Tache::getTachesForCurrentUser(); // Tasks where user is an agent
-        $createdTasks = Tache::where('user_id', Auth::user()->id)->get(); // Tasks created by user
+        $createdTasks = Tache::whereIn('user_id', $userIds)->get(); // Tasks created by user
         
         // All tasks related to the user (created OR assigned)
         $allRelatedTasks = $createdTasks->merge($assignedTasks)->unique('id');

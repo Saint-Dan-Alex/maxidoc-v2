@@ -49,20 +49,34 @@ class CourrierPolicy
     public function view(User $user, Courrier $courrier)
     {
         $agentId = $user->agent->id;
+        $agentIds = [$agentId];
 
-        // Vérifier si l'utilisateur est l'auteur ou s'il a une relation de destinataire, suiveur ou partage avec le courrier
-        $cacheKey = "courrier_access_{$user->id}_{$courrier->id}";
-        $hasAccess = cache()->remember($cacheKey, 60, function () use ($courrier, $agentId) {
-            return Courrier::withTrashed()->where('id', $courrier->id)->where(function ($query) use ($agentId) {
-                $query->where('created_by', $agentId) // L'utilisateur est l'auteur
-                    ->orWhereHas('destinateurs', function ($query) use ($agentId) {
-                        $query->where('agent_id', $agentId);
+        // Mode délégation : on ajoute l'ID de l'agent du DG pour la vérification
+        if (session('delegation_mode') && session('acting_as_dg_id')) {
+            $dgUser = \App\Models\User::find(session('acting_as_dg_id'));
+            if ($dgUser && $dgUser->agent) {
+                $agentIds[] = $dgUser->agent->id;
+                
+                // Si le document appartient au DG, accès autorisé (si permission de voir)
+                if ($courrier->created_by == $dgUser->agent->id) {
+                    return $user->can('Voir les courriers');
+                }
+            }
+        }
+
+        // Vérifier si l'un des agents (Moi ou DG) est l'auteur ou a une relation
+        $cacheKey = "courrier_access_multi_" . implode('_', $agentIds) . "_{$courrier->id}";
+        $hasAccess = cache()->remember($cacheKey, 60, function () use ($courrier, $agentIds) {
+            return Courrier::withTrashed()->where('id', $courrier->id)->where(function ($query) use ($agentIds) {
+                $query->whereIn('created_by', $agentIds)
+                    ->orWhereHas('destinateurs', function ($query) use ($agentIds) {
+                        $query->whereIn('agent_id', $agentIds);
                     })
-                    ->orWhereHas('followers', function ($query) use ($agentId) {
-                        $query->where('agent_id', $agentId);
+                    ->orWhereHas('followers', function ($query) use ($agentIds) {
+                        $query->whereIn('agent_id', $agentIds);
                     })
-                    ->orWhereHas('partages', function ($query) use ($agentId) {
-                        $query->where('agent_id', $agentId);
+                    ->orWhereHas('partages', function ($query) use ($agentIds) {
+                        $query->whereIn('agent_id', $agentIds);
                     });
             })->exists();
         });
@@ -79,7 +93,7 @@ class CourrierPolicy
      */
     public function create(User $user)
     {
-        //
+        return $user->can('Créer un courrier');
     }
 
     /**
@@ -91,7 +105,7 @@ class CourrierPolicy
      */
     public function update(User $user, Courrier $courrier)
     {
-        //
+        return $user->can('Modifier un courrier') || $courrier->created_by === $user->agent->id;
     }
 
     /**
@@ -103,10 +117,12 @@ class CourrierPolicy
      */
     public function delete(User $user, Courrier $courrier)
     {
+        $isDGOrActingAsDG = $user->agent->isDG() || session('delegation_mode');
+
         // L'auteur, un DG ou un Assistant peut supprimer (mettre à la corbeille)
         return $user->can('Supprimer un courrier') || 
                $courrier->created_by === $user->agent->id || 
-               $user->agent->isDG() || 
+               $isDGOrActingAsDG || 
                $user->agent->isAssistant() ||
                $user->agent->isSecretaire();
     }
@@ -120,8 +136,10 @@ class CourrierPolicy
      */
     public function restore(User $user, Courrier $courrier)
     {
-        // Seul le DG, un admin ou un Assistant (avec permission spécifique ou rôle) peut restaurer
-        return $user->agent->isDG() || 
+        $isDGOrActingAsDG = $user->agent->isDG() || session('delegation_mode');
+
+        // Seul le DG, un admin ou un Assistant peut restaurer
+        return $isDGOrActingAsDG || 
                $user->agent->isAssistant() || 
                $user->agent->isSecretaire() || 
                $user->can('Restaurer un courrier');
@@ -136,8 +154,10 @@ class CourrierPolicy
      */
     public function forceDelete(User $user, Courrier $courrier)
     {
+        $isDGOrActingAsDG = $user->agent->isDG() || session('delegation_mode');
+
         // Seul le DG, un admin ou un Assistant peut supprimer définitivement
-        return $user->agent->isDG() || 
+        return $isDGOrActingAsDG || 
                $user->agent->isAssistant() || 
                $user->agent->isSecretaire() || 
                $user->can('Suppression définitive');

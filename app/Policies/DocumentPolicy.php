@@ -52,8 +52,10 @@ class DocumentPolicy
             return $user->can('Voir les documents');
         }
 
-        // Vérifier si l'utilisateur a le rôle 'Admin', 'DG' ou 'Assistant DG'
-        if ($user->hasRole(['Admin', 'Directeur Générale'])) {
+        $isDGOrActingAsDG = $user->hasRole('Directeur Générale') || session('delegation_mode');
+
+        // Vérifier si l'utilisateur a le rôle 'Admin' ou 'DG' (ou délégué)
+        if ($user->hasRole('Admin') || $isDGOrActingAsDG) {
             return true;
         }
 
@@ -62,12 +64,21 @@ class DocumentPolicy
             return false;
         }
 
-        // Vérifier si l'utilisateur est l'auteur du document
-        $isAuthor = $document->created_by === $user->agent->id;
+        // IDs d'agents autorisés (Moi + DG si délégation)
+        $agentIds = [$user->agent->id];
+        if (session('delegation_mode') && session('acting_as_dg_id')) {
+            $dgUser = \App\Models\User::find(session('acting_as_dg_id'));
+            if ($dgUser && $dgUser->agent) {
+                $agentIds[] = $dgUser->agent->id;
+            }
+        }
 
-        // Vérifier si l'utilisateur est un suiveur du document
+        // Vérifier si l'utilisateur (ou son délégant) est l'auteur du document
+        $isAuthor = in_array($document->created_by, $agentIds);
+
+        // Vérifier si l'utilisateur (ou son délégant) est un suiveur du document
         $isFollower = $document->followers()
-            ->where('agent_id', $user->agent->id)
+            ->whereIn('agent_id', $agentIds)
             ->exists();
 
         // Vérifier si l'utilisateur est dans la même direction que l'auteur et qu'il est responsable
@@ -76,16 +87,13 @@ class DocumentPolicy
                 && $user->agent->isResponsable()
             : false;
 
-        // Vérifier si l'utilisateur est DG
-        $isDG = $user->hasRole('Directeur Générale');
-
         // Vérifier si l'utilisateur est Assistant DG et si l'auteur est dans la même direction
         $isAssistantDG = $user->hasRole('Assistant DG') && $document->author && $user->agent
             ? $document->author->direction_id === $user->agent->direction_id
             : false;
 
         // Retourner la permission finale
-        return $isAuthor || $isFollower || $isSameDirectionAndResponsable || $isDG || $isAssistantDG;
+        return $isAuthor || $isFollower || $isSameDirectionAndResponsable || $isAssistantDG;
     }
 
     /**
@@ -96,7 +104,7 @@ class DocumentPolicy
      */
     public function create(User $user)
     {
-        //
+        return $user->can('Créer un document');
     }
 
     /**
@@ -108,7 +116,7 @@ class DocumentPolicy
      */
     public function update(User $user, Document $document)
     {
-        //
+        return $user->can('Modifier un document') || $document->created_by === $user->agent->id;
     }
 
     /**
@@ -120,7 +128,8 @@ class DocumentPolicy
      */
     public function delete(User $user, Document $document)
     {
-        //
+        $isDGOrActingAsDG = $user->hasRole('Directeur Générale') || session('delegation_mode');
+        return $user->can('Supprimer un document') || $document->created_by === $user->agent->id || $isDGOrActingAsDG;
     }
 
     /**
@@ -132,7 +141,8 @@ class DocumentPolicy
      */
     public function restore(User $user, Document $document)
     {
-        //
+        $isDGOrActingAsDG = $user->hasRole('Directeur Générale') || session('delegation_mode');
+        return $user->can('Restaurer un document') || $isDGOrActingAsDG;
     }
 
     /**
@@ -144,6 +154,7 @@ class DocumentPolicy
      */
     public function forceDelete(User $user, Document $document)
     {
-        //
+        $isDGOrActingAsDG = $user->hasRole('Directeur Générale') || session('delegation_mode');
+        return $user->can('Suppression définitive') || $isDGOrActingAsDG;
     }
 }

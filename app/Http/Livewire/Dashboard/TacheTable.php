@@ -6,6 +6,7 @@ use App\Models\Courrier;
 use App\Models\CourrierType;
 use App\Models\PivotUserTache;
 use App\Models\Tache;
+use App\Helpers\DelegationHelper;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -31,14 +32,20 @@ class TacheTable extends Component
 
     public function render()
     {
-        $taches = Tache::whereIn(
-            'id',
-            PivotUserTache::select('id')
-                ->where('agent_id', Auth::user()->agent->id)->get()->toArray()
-        )
-            ->orWhere('user_id', Auth::user()->id)
+        $userIds = DelegationHelper::getUserIds();
+        [$agentId, $dgAgentId] = DelegationHelper::getAgentIds();
+        $agentIds = array_filter([$agentId, $dgAgentId]);
+
+        $taches = Tache::where(function($q) use ($agentIds, $userIds) {
+                 $q->whereHas('pivotusertaches', function($sq) use ($agentIds) {
+                     $sq->whereIn('agent_id', $agentIds);
+                 })
+                 ->orWhereIn('user_id', $userIds);
+            })
             ->where('tache_statut_id', 2)
-            ->get()->take(9);
+            ->take(9)
+            ->get();
+
         return view('livewire.dashboard.tache-table', compact('taches'));
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Dashboard\Courriers;
 
 use App\Models\Courrier;
 use App\Models\User;
+use App\Helpers\DelegationHelper;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -35,19 +36,8 @@ class Entrants extends Component
         }
 
         // Filtrer pour ne montrer que les courriers où l'utilisateur est impliqué
-        $courriers = $courriers->where(function ($query) {
-            $agentId = Auth::user()->agent->id;
-            $query->where('created_by', $agentId)
-                ->orWhereHas('destinateurs', function ($q) use ($agentId) {
-                    $q->where('agent_id', $agentId);
-                })
-                ->orWhereHas('followers', function ($q) use ($agentId) {
-                    $q->where('agent_id', $agentId);
-                })
-                ->orWhereHas('partages', function ($q) use ($agentId) {
-                    $q->where('agent_id', $agentId);
-                });
-        });
+        // + courriers du DG si délégation active
+        DelegationHelper::filterByUserInteraction($courriers);
 
         $courriers = $courriers->orderBy('id', 'desc')->take(5)->get();
 

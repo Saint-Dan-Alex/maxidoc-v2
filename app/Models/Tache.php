@@ -83,12 +83,24 @@ class Tache extends Model
     public static function getTachesForCurrentUser()
     {
         $agent = Auth::user()->agent;
+        if (!$agent) return collect();
+
+        $agentIds = [$agent->id];
+
+        // Inclusion de l'agent du DG en mode délégation
+        if (session('delegation_mode') && session('acting_as_dg_id')) {
+            $dgUser = \App\Models\User::find(session('acting_as_dg_id'));
+            if ($dgUser && $dgUser->agent) {
+                $agentIds[] = $dgUser->agent->id;
+            }
+        }
         
-        // Récupérer les tâches via la relation many-to-many
-        $taches = $agent->taches()
-            ->with(['agents', 'objectifs', 'tache_statut']) // Charger les relations nécessaires
-            ->wherePivot('type', 'App\Models\Agent') // S'assurer que le type est bien Agent
-            ->wherePivot('type_id', $agent->id) // Filtrer par l'ID de l'agent
+        // Récupérer les tâches via la relation many-to-many pour tous les agents concernés
+        $taches = Tache::with(['agents', 'objectifs', 'tache_statut'])
+            ->whereHas('agents', function($q) use ($agentIds) {
+                $q->where('type', 'App\Models\Agent')
+                  ->whereIn('pivot_taches_agents.agent_id', $agentIds);
+            })
             ->get()
             ->unique('id');
             

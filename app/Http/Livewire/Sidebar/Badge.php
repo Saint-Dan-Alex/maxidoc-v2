@@ -16,40 +16,43 @@ class Badge extends Component
     public function render()
     {
         $user = Auth::user();
-
         if (!$user->agent) {
-             $inboxCount = 0;
-             $tasksCount = 0;
-        } else {
-            $agentId = $user->agent->id;
-
-            $inboxCount = Courrier::where('statut_id', 1)
-                ->whereDoesntHave('views', function ($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                ->where(function ($q) use ($agentId) {
-                    $q->where('created_by', $agentId)
-                      ->orWhereHas('destinateurs', function ($sq) use ($agentId) {
-                          $sq->where('agent_id', $agentId);
-                      })
-                      ->orWhereHas('followers', function ($sq) use ($agentId) {
-                          $sq->where('agent_id', $agentId);
-                      })
-                      ->orWhereHas('partages', function ($sq) use ($agentId) {
-                          $sq->where('agent_id', $agentId);
-                      });
-                })
-                ->count();
-
-            // Compte uniquement les tâches ASSIGNÉES à l'agent avec statut Initial (1)
-            $tasksCount = Tache::where('tache_statut_id', 1) // Statut Initial seulement
-                ->whereHas('agents', function ($sq) use ($agentId) {
-                    $sq->where('agent_id', $agentId)
-                       ->where('type', 'App\\Models\\Agent')
-                       ->where('type_id', $agentId);
-                })
-                ->count();
+             return view('livewire.sidebar.badge', ['count' => 0, 'bg' => 'secondary']);
         }
+
+        $userIds = \App\Helpers\DelegationHelper::getUserIds();
+        [$agentId, $dgAgentId] = \App\Helpers\DelegationHelper::getAgentIds();
+        $agentIds = array_filter([$agentId, $dgAgentId]);
+
+        // Compte Inbox : non lus (Moi + DG)
+        $inboxCount = Courrier::where('statut_id', 1)
+            ->whereDoesntHave('views', function ($q) use ($userIds) {
+                $q->whereIn('user_id', $userIds);
+            })
+            ->where(function ($q) use ($agentIds) {
+                $q->whereIn('created_by', $agentIds)
+                  ->orWhereHas('destinateurs', function ($sq) use ($agentIds) {
+                      $sq->whereIn('agent_id', $agentIds);
+                  })
+                  ->orWhereHas('followers', function ($sq) use ($agentIds) {
+                      $sq->whereIn('agent_id', $agentIds);
+                  })
+                  ->orWhereHas('partages', function ($sq) use ($agentIds) {
+                      $sq->whereIn('agent_id', $agentIds);
+                  });
+            })
+            ->count();
+
+        // Compte Tâches : Initiales (Moi + DG)
+        $tasksCount = Tache::where('tache_statut_id', 1)
+            ->where(function($q) use ($agentIds, $userIds) {
+                $q->whereHas('agents', function ($sq) use ($agentIds) {
+                    $sq->whereIn('agent_id', $agentIds)
+                       ->where('type', 'App\Models\Agent');
+                })
+                ->orWhereIn('user_id', $userIds);
+            })
+            ->count();
 
         // Ne plus afficher de badge pour Documents et Archives
         $t = Str::lower($this->label);
