@@ -41,6 +41,16 @@
 
         <div class="wrapper">
             @include('regidoc.layouts.partials.header.navbar')
+
+            @if(session('delegation_mode'))
+                <div class="alert alert-warning py-2 mb-0 border-0 rounded-0 d-flex align-items-center justify-content-center shadow-sm" style="background: linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%); z-index: 1000; position: relative; border-bottom: 2px solid #ffeeba !important;">
+                    <i class="fi fi-rs-exclamation me-2 animate__animated animate__pulse animate__infinite"></i>
+                    <span class="fw-bold fs-6">MODE DÉLÉGATION ACTIF :</span>
+                     <span class="ms-1 fs-6">Vous agissez au nom de <strong>{{ \App\Models\User::find(session('acting_as_dg_id'))->name ?? 'DG' }}</strong>.</span>
+                     <span class="ms-3 badge bg-dark">Audit B.L.A.S.T. Strict</span>
+                </div>
+            @endif
+
             <div class="content">
                 @yield('content')
             </div>

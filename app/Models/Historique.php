@@ -12,6 +12,25 @@ class Historique extends Model
 
     protected static function booted()
     {
+        static::creating(function ($historique) {
+            // Règle d'Audit Trail BLAST: Gestion de la délégation P.O.
+            if (session('delegation_mode')) {
+                $delegate = auth()->user();
+                $dgId = session('acting_as_dg_id');
+                $dg = User::find($dgId);
+
+                if ($delegate && $dg) {
+                    $historique->represented_user_id = $dgId;
+                    $historique->delegation_type = 'PO';
+                    
+                    $mention = "[POUR ORDRE - {$dg->name}] ";
+                    if (!str_contains($historique->description, $mention)) {
+                        $historique->description = $mention . $historique->description;
+                    }
+                }
+            }
+        });
+
         static::created(function ($historique) {
             // Si l'historique est lié à une tâche, on le propage au courrier lié s'il existe
             if ($historique->historiquecable_type === 'App\Models\Tache' || $historique->historiquecable_type === Tache::class) {
@@ -49,7 +68,9 @@ class Historique extends Model
         "historiquecable_id",
         "historiquecable_type",
         "description",
-        "user_id"
+        "user_id",
+        "represented_user_id",
+        "delegation_type"
     ];
 
     /**

@@ -11,10 +11,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
+use App\Traits\DelegatableAuthority;
+
 class Tache extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use DelegatableAuthority;
 
     protected $guarded = [];
     /**

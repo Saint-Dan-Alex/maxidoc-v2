@@ -443,6 +443,9 @@
     <div class="sidebar">
         <div class="px-3 py-3 logo text-start d-flex align-items-center justify-content-between">
             <h6 class="mb-0" style="color: var(--colorTitre)">Aperçu du document</h6>
+            @if($courrier->isActingForDelegator())
+                <span class="badge bg-warning text-dark border-0 animate__animated animate__fadeIn"><i class="fi fi-rr-shield-check me-1"></i> Ressource DG</span>
+            @endif
         </div>
 
         <div class="content-sidebar">

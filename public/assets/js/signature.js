@@ -823,7 +823,14 @@ function createSignatureElement() {
     certificate.classList.add("certificate");
 
     var span1 = document.createElement("span");
-    span1.innerText = "Signé avec Maxidoc";
+    const pageMeta = window.__pageUserMeta || {};
+    if (pageMeta.delegation_mode) {
+      span1.innerText = "P.O. " + (pageMeta.delegator_name || "DG");
+      span1.style.fontWeight = "bold";
+      span1.style.color = "#d32f2f"; // Dark red for visibility
+    } else {
+      span1.innerText = "Signé avec Maxidoc";
+    }
 
     var span2 = document.createElement("span");
     // Code déterministe basé sur l'agent, la direction, la date/heure et un empreinte appareil

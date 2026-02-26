@@ -134,6 +134,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             Route::put('/mon-profil/avatar', [ProfilController::class, 'updateAvatar'])->name('profil.updateAvatar');
             Route::post('/mon-profil/delegues/save', [ProfilController::class, 'delegueSave'])->name('profil.delegueSave');
             Route::get('/mon-profil/delegues/remove', [ProfilController::class, 'delegueRemove'])->name('profil.delegueRemove');
+            Route::post('/mon-profil/delegations/{delegation}/revoke', [ProfilController::class, 'revokeDelegation'])->name('profil.delegation.revoke');
 
             // Ressources humaines / Personnels / Planning
             Route::post('/ressources-humaines/personnels/planning/update', [App\Http\Controllers\Rh\PersonnelController::class, 'updateplanning'])->name('rh.user.planning.update');

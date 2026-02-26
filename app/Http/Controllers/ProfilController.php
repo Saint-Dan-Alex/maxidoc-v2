@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Agent;
 use App\Models\DeleguePermission;
+use App\Models\Delegation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,7 +20,14 @@ class ProfilController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(10);
 
-        return view('regidoc.pages.profil', compact('agents', 'historiques'));
+        // Récupérer la délégation active (BLAST System)
+        $activeDelegation = Delegation::where('delegator_id', Auth::id())
+            ->where('is_active', true)
+            ->where('end_date', '>', now())
+            ->with('delegate.agent')
+            ->first();
+
+        return view('regidoc.pages.profil', compact('agents', 'historiques', 'activeDelegation'));
     }
 
     public function updateAvatar(Request $request)
@@ -111,6 +120,23 @@ class ProfilController extends Controller
                 }
                 \Log::error('[DELEGUE] Step 6 - Total permissions créées: ' . $permissionsCreated);
 
+                // --- NOUVELLE LOGIQUE BLAST: Enregistrement dans la table delegations ---
+                // Pour le moment, on délègue pour une durée indéterminée (ou 1 an par défaut)
+                Delegation::updateOrCreate(
+                    [
+                        'delegator_id' => Auth::id(),
+                        'delegate_id'  => $agent->user->id,
+                    ],
+                    [
+                        'start_date' => now(),
+                        'end_date'   => now()->addYear(),
+                        'is_active'  => true,
+                        'metadata'   => ['source' => 'profil_delegue_save']
+                    ]
+                );
+                \Log::error('[DELEGUE] Step 7 - Record Delegation créé/mis à jour');
+                // -----------------------------------------------------------------------
+
                 $content = json_encode([
                     'name'    => 'Ressources humaines',
                     'statut'  => 'success',
@@ -166,5 +192,27 @@ class ProfilController extends Controller
 
         return redirect()->back();
 
+    }
+
+    /**
+     * Kill Switch: Révocation immédiate d'une délégation
+     */
+    public function revokeDelegation(Delegation $delegation)
+    {
+        // Sécurité: Seul le délégant peut révoquer sa propre délégation
+        if ($delegation->delegator_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $delegation->update(['is_active' => false]);
+
+        $content = json_encode([
+            'name' => 'Sécurité',
+            'statut' => 'success',
+            'message' => 'Délégation révoquée avec succès !',
+        ]);
+
+        session()->flash('session', $content);
+        return redirect()->back();
     }
 }

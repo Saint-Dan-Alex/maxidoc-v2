@@ -57,16 +57,24 @@
                             <div class="col-6 d-flex justify-content-end">
                                 @if (Auth::user()->agent->isDG())
                                     <div class="text-center">
-                                        @if (Auth::user()->agent->delegue_id == null)
+                                        @if (!$activeDelegation)
                                             <button class="btn btn-action-delegue mt-2 mt-lg-0"
                                                 data-bs-target="#modal-delegue" data-bs-toggle="modal">
                                                 Déléguer mes responsabilités
                                             </button>
                                         @else
-                                            <a href="{{ route('regidoc.profil.delegueRemove') }}"
-                                                class="btn btn-action-delegue mt-2  mt-lg-0">
-                                                Reprendre mes responsabilités
-                                            </a>
+                                            <div class="d-flex flex-column align-items-end">
+                                                <div class="alert alert-info py-1 px-3 mb-1 d-flex align-items-center">
+                                                    <i class="fi fi-rr-user-robot me-2"></i>
+                                                    <small>Délégué: <strong>{{ $activeDelegation->delegate->agent->prenom }} {{ $activeDelegation->delegate->agent->nom }}</strong></small>
+                                                </div>
+                                                <form action="{{ route('regidoc.profil.delegation.revoke', $activeDelegation) }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment révoquer cette délégation immédiatement ?');">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-danger btn-sm w-100">
+                                                        <i class="fi fi-rr-cross-circle me-1"></i> Révoquer l'autorité
+                                                    </button>
+                                                </form>
+                                            </div>
                                         @endif
                                     </div>
                                 @endif

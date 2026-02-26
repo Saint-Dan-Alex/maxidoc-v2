@@ -902,6 +902,8 @@
             agent_nom: @json(Auth::user()->agent->nom ?? ''),
             agent_prenom: @json(Auth::user()->agent->prenom ?? ''),
             direction_titre: @json(Auth::user()->agent->direction->titre ?? ''),
+            delegation_mode: @json(session('delegation_mode', false)),
+            delegator_name: @json(session('delegation_mode') ? (\App\Models\User::find(session('acting_as_dg_id'))->name ?? 'DG') : null),
         };
     </script>
     <script src="{{ asset('assets/js/showPDF.js') }}"></script>

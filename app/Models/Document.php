@@ -12,12 +12,15 @@ use App\Models\Destination;
 use App\Models\CourrierExpediteur;
 use App\Models\CourrierNature;
 
+use App\Traits\DelegatableAuthority;
+
 class Document extends Model
 {
     use HasFactory;
     use SoftDeletes;
     // use Searchable;
     use RevisionableTrait;
+    use DelegatableAuthority;
 
     protected $revisionEnabled = true;
     protected $revisionCleanup = true; //Remove old revisions (works only when used with $historyLimit)

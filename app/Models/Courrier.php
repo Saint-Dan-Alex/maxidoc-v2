@@ -19,12 +19,17 @@ use App\Models\Historique;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
+use App\Traits\DelegatableAuthority;
+
 class Courrier extends Model implements Viewable
 {
     use HasFactory;
     use Searchable;
     use InteractsWithViews;
     use RevisionableTrait;
+    use DelegatableAuthority;
+
+    const OWNER_COLUMN = 'created_by';
 
     protected $revisionEnabled = true;
     protected $revisionCleanup = true; //Remove old revisions (works only when used with $historyLimit)
