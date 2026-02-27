@@ -567,6 +567,7 @@ class CourrierController extends Controller
 
             // Marquer le courrier comme traité pour que le bouton disparaisse pour le DG/Délégué
             $courrier->mark_as_done = 1;
+            $courrier->statut_id = 3; // On passe le statut à "Traité" (3)
             $courrier->save();
 
             if ($courrier->traitements->count() == 0 || $request->is_original) {

@@ -1087,10 +1087,10 @@
                             $hasLinkedTask = \App\Models\Tache::where('courrier_id', $courrier->id)->exists();
                         @endphp
 
-                        @if ((($courrier->type_id == 3 && $courrier->dest_interne_id == (Auth::user()->agent)->id) ||                      
-                            ($courrier->traitement && (Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()) &&
-                            $courrier->traitements->where('agent_id', Auth::user()->agent->id)->count() <= 0))
-                            && !$hasLinkedTask)
+                        @if ($courrier->mark_as_done != 1 && !$hasLinkedTask && (
+                                ($courrier->type_id == 3 && $courrier->dest_interne_id == Auth::user()->agent->id) ||                      
+                                ($courrier->traitement && (Auth::user()->agent->isDG() || Auth::user()->agent->isDelegue()))
+                            ))
                             <div class="d-flex  align-items-center block-action-doc mt-2" style="max-width: 100%">
                                 @php
                                     $titres = [
